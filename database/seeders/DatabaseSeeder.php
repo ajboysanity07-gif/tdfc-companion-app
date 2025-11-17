@@ -14,7 +14,8 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-$this->call(ReasonListSeeder::class);
+// $this->call(ReasonListSeeder::class);
+$this->call(WlnDisplaySeeder::class);
 // or fully qualified if it fails:
 // $this->call(\Database\Seeders\ReasonListSeeder::class);
 

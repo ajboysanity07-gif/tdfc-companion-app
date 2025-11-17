@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\WmasterLookupController;
 use App\Http\Controllers\LoanTransactionController;
 use App\Http\Controllers\RecentTransactionController;
-
+use App\Http\Controllers\Api\ProductController;
 // ✅ Your existing route - keep as is
 Route::get('/wmaster/lookup', WmasterLookupController::class)->middleware('throttle:60,1');
 
@@ -38,4 +38,15 @@ Route::get('/check-register-duplicate', function (Request $request) {
         'accntnoExists' => $accntnoExists,
         'emailExists' => $emailExists,
     ];
+});
+
+
+
+Route::middleware(['web', 'auth', 'role:admin'])->prefix('admin/products')->group(function () {
+    Route::get('/', [ProductController::class, 'index']);
+    Route::get('{typecode}', [ProductController::class, 'show']);
+    Route::post('/', [ProductController::class, 'store']);
+    Route::put('{typecode}', [ProductController::class, 'update']);
+    Route::delete('{typecode}', [ProductController::class, 'destroy']);
+    Route::post('{typecode}/tags', [ProductController::class, 'addTag']);
 });

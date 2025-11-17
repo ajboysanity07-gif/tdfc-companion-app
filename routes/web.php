@@ -79,7 +79,8 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
         return Inertia::render('admin/dashboard');
     })->name('dashboard');
 
-    Route::get('/products', fn() => Inertia::render('admin/products'))->name('products');
+    Route::get('/products', fn() => Inertia::render('admin/products-management'))->name('products');
+
     Route::get('/clients', fn() => Inertia::render('admin/clients'))->name('clients');
 
     Route::get('/client-management', [ClientManagementController::class, 'index'])

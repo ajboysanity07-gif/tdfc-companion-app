@@ -58,7 +58,7 @@ const adminNavItems: NavItem[] = [
     icon: LayoutGrid,
   },
   {
-    title: 'Products',
+    title: 'Products Management',
     href: '/admin/products',
     icon: Package,
   },
