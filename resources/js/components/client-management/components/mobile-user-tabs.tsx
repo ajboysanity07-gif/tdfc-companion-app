@@ -1,0 +1,202 @@
+import React, { useState } from 'react';
+import { Tabs, Tab, Paper, Box, useTheme, Divider, alpha } from '@mui/material';
+import SearchAutocomplete from './search-autocomplete';
+import UserAccordionList from './user-accordion-list';
+import CardPagination from './card-pagination';
+import UserListCard from './user-list-card';
+import { PendingUser } from '@/types';
+
+// 1) Get the prop type of the child component
+type UserAccordionListProps = React.ComponentProps<typeof UserAccordionList>;
+// 2) Type omitting certain auto-provided props
+type ForwardAccordionProps = Omit<
+  UserAccordionListProps,
+  'usersList' | 'groupTab' | 'searchValue' | 'isMobile'
+>;
+
+interface Props {
+  registeredUsers: PendingUser[];
+  pagedRegisteredUsers: PendingUser[];
+  registeredSearch: string;
+  setRegisteredSearch: (v: string) => void;
+  registeredTotalPages: number;
+  registeredPage: number;
+  setRegisteredPage: React.Dispatch<React.SetStateAction<number>>;
+
+  forApprovalUsers: PendingUser[];
+  pagedPendingUsers: PendingUser[];
+  pendingSearch: string;
+  setPendingSearch: (v: string) => void;
+  pendingTotalPages: number;
+  pendingPage: number;
+  setPendingPage: React.Dispatch<React.SetStateAction<number>>;
+
+  rejectedUsers: PendingUser[];
+  pagedRejectedUsers: PendingUser[];
+  rejectedSearch: string;
+  setRejectedSearch: (v: string) => void;
+  rejectedTotalPages: number;
+  rejectedPage: number;
+  setRejectedPage: React.Dispatch<React.SetStateAction<number>>;
+
+  // This provides the extra props to UserAccordionList
+  userAccordionProps: (groupTab: 0 | 1 | 2) => ForwardAccordionProps;
+}
+
+const USER_TABS = [
+  { label: 'Registered', color: '#F57979' },
+  { label: 'Pending', color: '#F57979' },
+  { label: 'Rejected', color: '#4C92F1' }
+];
+
+export default function MobileUserTabs(props: Props) {
+  const [tab, setTab] = useState(1); // Default to Pending Approval
+  const theme = useTheme();
+
+  const paperBg =
+    theme.palette.mode === 'dark'
+      ? alpha(theme.palette.background.paper, 0.92)
+      : theme.palette.background.paper;
+  const paperBorder =
+    theme.palette.mode === 'dark'
+      ? `1.5px solid ${alpha(theme.palette.divider, 0.30)}`
+      : undefined;
+
+  return (
+    <Paper
+      elevation={4}
+      sx={{
+        borderRadius: 3,
+        overflow: 'hidden',
+        width: '100%',
+        bgcolor: paperBg,
+        border: paperBorder,
+        transition: 'background-color 0.3s',
+        display: 'flex',
+        flexDirection: 'column',
+        minHeight: 400 // ensures enough vertical space, can tweak as needed
+      }}
+    >
+      <Tabs
+        value={tab}
+        onChange={(_, v: number) => setTab(v)}
+        variant="fullWidth"
+        sx={{
+          px: 1,
+          bgcolor: theme.palette.background.default,
+          '& button': { fontWeight: 700, fontSize: 16 },
+          '& .Mui-selected': { color: USER_TABS[tab].color + '!important' }
+        }}
+      >
+        <Tab label="Registered" />
+        <Tab label="Pending" />
+        <Tab label="Rejected" />
+      </Tabs>
+      <Box sx={{
+        flex: 1,
+        minHeight: 0,
+        display: 'flex',
+        flexDirection: 'column',
+        p: 2
+      }}>
+        {tab === 0 && (
+          <UserListCard
+            title="REGISTERED USERS"
+            titleColor="#F57979"
+            userCount={props.registeredUsers.length}
+            // Card content is flex to allow pushing pagination to bottom
+            sx={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 320 }}
+          >
+            <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+              <SearchAutocomplete
+                options={props.registeredUsers.map((u) => u.name)}
+                value={props.registeredSearch}
+                onChange={props.setRegisteredSearch}
+                placeholder="Search registered"
+              />
+              <UserAccordionList
+                usersList={props.pagedRegisteredUsers}
+                groupTab={0}
+                {...props.userAccordionProps(0)}
+                searchValue={props.registeredSearch}
+                isMobile={true}
+              />
+            </Box>
+            <Divider sx={{ mt: 0.5, mb: 0, borderColor: theme.palette.divider }} />
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', pt: 0.5 }}>
+              <CardPagination
+                count={props.registeredTotalPages}
+                page={props.registeredPage}
+                onChange={props.setRegisteredPage}
+              />
+            </Box>
+          </UserListCard>
+        )}
+        {tab === 1 && (
+          <UserListCard
+            title="PENDING APPROVAL"
+            titleColor="#F57979"
+            userCount={props.forApprovalUsers.length}
+            sx={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 320 }}
+          >
+            <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+              <SearchAutocomplete
+                options={props.forApprovalUsers.map((u) => u.name)}
+                value={props.pendingSearch}
+                onChange={props.setPendingSearch}
+                placeholder="Search pending"
+              />
+              <UserAccordionList
+                usersList={props.pagedPendingUsers}
+                groupTab={1}
+                {...props.userAccordionProps(1)}
+                searchValue={props.pendingSearch}
+                isMobile={true}
+              />
+            </Box>
+            <Divider sx={{ mt: 0.5, mb: 0, borderColor: theme.palette.divider }} />
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', pt: 0.5 }}>
+              <CardPagination
+                count={props.pendingTotalPages}
+                page={props.pendingPage}
+                onChange={props.setPendingPage}
+              />
+            </Box>
+          </UserListCard>
+        )}
+        {tab === 2 && (
+          <UserListCard
+            title="REJECTED USERS"
+            titleColor="#4C92F1"
+            userCount={props.rejectedUsers.length}
+            sx={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 320 }}
+          >
+            <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+              <SearchAutocomplete
+                options={props.rejectedUsers.map((u) => u.name)}
+                value={props.rejectedSearch}
+                onChange={props.setRejectedSearch}
+                placeholder="Search rejected"
+              />
+              <UserAccordionList
+                usersList={props.pagedRejectedUsers}
+                groupTab={2}
+                {...props.userAccordionProps(2)}
+                searchValue={props.rejectedSearch}
+                isMobile={true}
+              />
+            </Box>
+            <Divider sx={{ mt: 0.5, mb: 0, borderColor: theme.palette.divider }} />
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', pt: 0.5 }}>
+              <CardPagination
+                count={props.rejectedTotalPages}
+                page={props.rejectedPage}
+                onChange={props.setRejectedPage}
+              />
+            </Box>
+          </UserListCard>
+        )}
+      </Box>
+    </Paper>
+  );
+}
