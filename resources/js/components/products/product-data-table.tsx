@@ -1,7 +1,10 @@
+import { useMemo, useState, useEffect, useCallback } from 'react';
 import { useTheme } from '@mui/material/styles';
-import { DataGrid, GridColDef, GridRowParams } from '@mui/x-data-grid';
-import { Switch, Button } from '@mui/material';
+import { DataGrid, GridColDef } from '@mui/x-data-grid';
+import { Button, IconButton } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import IOSSwitch from '@/components/common/ios-switch';
 
 type ProductSettings = {
   ln_isActive?: boolean;
@@ -18,42 +21,113 @@ interface ProductDataTableProps {
   data: ProductRow[];
   loading: boolean;
   onRowSelect: (row: ProductRow) => void;
+  onToggleActive: (row: ProductRow, active: boolean) => Promise<void> | void;
   onAddClick: () => void;
   selectedTypecode?: string;
   search: string;
   setSearch: (val: string) => void;
 }
 
-const columns: GridColDef[] = [
-  {
-    field: 'active',
-    headerName: 'Active',
-    width: 110,
-    renderCell: (params) => (
-      <Switch checked={!!params.row.settings?.ln_isActive} disabled color="primary" />
-    ),
-    sortable: false,
-    align: 'center',
-    headerAlign: 'center',
-  },
-  {
-    field: 'lntype',
-    headerName: 'Loan Type',
-    minWidth: 170,
-    flex: 1,
-    sortable: true,
-  },
-];
-
 export default function ProductDataTable({
   data,
   loading,
   onRowSelect,
+  onToggleActive,
   onAddClick,
   search,
   setSearch,
 }: ProductDataTableProps) {
   const theme = useTheme();
+  const [pendingActive, setPendingActive] = useState<Record<string, boolean | undefined>>({});
+  const [updatingRows, setUpdatingRows] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    setPendingActive((prev) => {
+      let changed = false;
+      const next = { ...prev };
+      data.forEach((row) => {
+        const pendingValue = next[row.typecode];
+        if (typeof pendingValue !== 'undefined' && pendingValue === !!row.settings?.ln_isActive) {
+          delete next[row.typecode];
+          changed = true;
+        }
+      });
+      return changed ? next : prev;
+    });
+  }, [data]);
+
+  const handleToggleActive = useCallback((row: ProductRow, nextValue: boolean) => {
+    const previousValue = !!row.settings?.ln_isActive;
+    setPendingActive((prev) => ({ ...prev, [row.typecode]: nextValue }));
+    setUpdatingRows((prev) => ({ ...prev, [row.typecode]: true }));
+    Promise.resolve(onToggleActive(row, nextValue))
+      .catch(() => {
+        setPendingActive((prev) => ({ ...prev, [row.typecode]: previousValue }));
+      })
+      .finally(() => {
+        setUpdatingRows((prev) => {
+          const next = { ...prev };
+          delete next[row.typecode];
+          return next;
+        });
+      });
+  }, [onToggleActive]);
+  const columns: GridColDef[] = useMemo(() => [
+    {
+      field: 'active',
+      headerName: 'Active',
+      width: 110,
+      renderCell: (params) => (
+        <IOSSwitch
+          checked={pendingActive[params.row.typecode] ?? !!params.row.settings?.ln_isActive}
+          disabled={!!updatingRows[params.row.typecode]}
+          onClick={(event) => event.stopPropagation()}
+          onChange={(event, value) => {
+            event.stopPropagation();
+            handleToggleActive(params.row, value);
+          }}
+        />
+      ),
+      sortable: false,
+      align: 'center',
+      headerAlign: 'center',
+    },
+    {
+      field: 'lntype',
+      headerName: 'Loan Type',
+      minWidth: 170,
+      flex: 1,
+      sortable: true,
+    },
+    {
+      field: 'action',
+      headerName: '',
+      width: 100,
+      sortable: false,
+      align: 'center',
+      headerAlign: 'center',
+      disableColumnMenu: true,
+      renderCell: (params) => (
+        <IconButton
+          aria-label="View details"
+          onClick={(event) => {
+            event.stopPropagation();
+            onRowSelect(params.row);
+          }}
+          sx={{
+            bgcolor: "#f57979",
+            color: "#fff",
+            border: "1px solid #f57373",
+            '&:hover': {
+              bgcolor: "#f46464",
+            },
+          }}
+        >
+          <ArrowForwardIosIcon fontSize="small" />
+        </IconButton>
+      ),
+    },
+  ], [onRowSelect, pendingActive, updatingRows, handleToggleActive]);
 
   // Map typecode as grid row id
   const rows = data.map((row) => ({
@@ -65,13 +139,8 @@ export default function ProductDataTable({
       row.typecode?.toLowerCase().includes(search.toLowerCase())
     );
 
-  // Handle single selection only
-  const handleRowClick = (params: GridRowParams) => {
-    onRowSelect(params.row);
-  };
-
   return (
-    <div className="w-full h-full">
+    <div className="w-full h-full flex flex-col">
       {/* Header: Add Loan and Search Bar */}
       <div className="flex gap-3 items-center mb-4 w-full">
         <Button
@@ -106,7 +175,7 @@ export default function ProductDataTable({
         </div>
       </div>
       {/* DataGrid Table */}
-      <div className="w-full" style={{ height: 400 }}>
+      <div className="w-full flex-1" style={{ minHeight: 0 }}>
         <DataGrid
           rows={rows}
           columns={columns}
@@ -120,9 +189,10 @@ export default function ProductDataTable({
           disableRowSelectionOnClick
           loading={loading}
           sx={{
-            // Colors to match your design!
-            borderRadius: 3,
-            boxShadow: 1,
+            height: '100%',
+            borderRadius: 0,
+            boxShadow: 'none',
+            border: 'none',
             bgcolor: theme.palette.background.paper,
             '& .MuiDataGrid-columnHeaders': {
               backgroundColor: "#fff4f4",
@@ -132,20 +202,15 @@ export default function ProductDataTable({
               borderRadius: 0,
             },
             '& .MuiDataGrid-row': {
-              cursor: 'pointer',
+              cursor: 'default',
               fontSize: "1rem",
               borderBottom: "1px solid #f5e8e8",
-            },
-            '& .MuiDataGrid-row.Mui-selected, & .MuiDataGrid-row.Mui-selected:hover': {
-              backgroundColor: "#fff0f0",
-              color: theme.palette.primary.main,
             },
             '& .MuiDataGrid-root': {
               backgroundColor: "transparent",
             },
           }}
           isRowSelectable={() => false} // disables checkboxes
-          onRowClick={handleRowClick}
           getRowId={(row) => row.id}
         />
       </div>
