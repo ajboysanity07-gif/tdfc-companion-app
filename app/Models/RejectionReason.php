@@ -2,10 +2,12 @@
 
 // app/Models/RejectionReason.php
 namespace App\Models;
+
 use Illuminate\Database\Eloquent\Model;
 
 class RejectionReason extends Model
 {
+    protected $table = 'rejection_reasons';
     protected $fillable = ['code', 'label'];
 
     public function users()

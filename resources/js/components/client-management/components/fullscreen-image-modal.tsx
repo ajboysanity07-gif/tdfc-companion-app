@@ -1,235 +1,158 @@
-import { PendingUser } from '@/types';
-import { AnimatePresence, motion } from 'framer-motion';
-import { X } from 'lucide-react';
 import React from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { PendingUser } from '@/types/user';
 
-// Helper and Hook for responsive device category
-const getDeviceCategory = () => {
-    if (typeof window === 'undefined') return 'desktop';
-    if (window.innerWidth <= 600) return 'mobile';
-    if (window.innerWidth <= 1100) return 'tablet';
-    return 'desktop';
-};
-
-const useDeviceCategory = () => {
-    const [device, setDevice] = React.useState(getDeviceCategory());
-    React.useEffect(() => {
-        const onResize = () => setDevice(getDeviceCategory());
-        window.addEventListener('resize', onResize);
-        onResize(); // Sync on mount
-        return () => window.removeEventListener('resize', onResize);
-    }, []);
-    return device;
-};
-
-interface Props {
-    open: boolean;
-    imageUrl: string | null;
-    title: string;
-    modalImagesUser: PendingUser | null;
-    isMobile: boolean;
-    onClose: () => void;
+interface FullScreenImageModalProps {
+  open: boolean;
+  imageUrl: string | null;
+  title: string;
+  modalImagesUser: PendingUser | null;
+  isMobile: boolean;
+  onClose: () => void;
 }
 
-// Sub-label component
-const SubLabel: React.FC<{ children: React.ReactNode; device: string }> = ({ children, device }) => (
-    <span
-        style={{
-            display: 'block',
-            color: '#f7f7f7',
-            fontWeight: 500,
-            opacity: 0.89,
-            textShadow: '0 2px 8px rgba(0,0,0,0.22)',
-            marginBottom: device === 'mobile' ? 12 : device === 'tablet' ? 20 : 18,
-            fontSize: device === 'mobile' ? 15 : device === 'tablet' ? 21 : 19,
-            letterSpacing: 0.7,
-            textAlign: 'center',
-            marginTop: device === 'mobile' ? 6 : device === 'tablet' ? 12 : 12,
-            textTransform: 'capitalize',
-        }}
-    >
-        {children}
-    </span>
-);
+const FullScreenImageModal: React.FC<FullScreenImageModalProps> = ({
+  open,
+  imageUrl,
+  title,
+  modalImagesUser,
+  isMobile,
+  onClose,
+}) => {
+  if (!open || !imageUrl) return null;
 
-const FullScreenImageModal: React.FC<Props> = ({ open, imageUrl, title, modalImagesUser, onClose }) => {
-    const device = useDeviceCategory();
+  const showPrCpair = imageUrl === 'prc-both' && modalImagesUser;
 
-    // Label logic
-    let headerLabel = 'Document';
-    if (imageUrl === 'prc-both') headerLabel = 'PRC ID';
-    else if (title) headerLabel = title;
-    else if (imageUrl && imageUrl.toLowerCase().includes('payslip')) headerLabel = 'Payslip';
+  // Overlay
+  const overlayStyle: React.CSSProperties = {
+    position: 'fixed',
+    inset: 0,
+    zIndex: 999,
+    background: 'rgba(18,22,36,0.67)',
+    backdropFilter: 'blur(14px)',
+    WebkitBackdropFilter: 'blur(14px)',
+    width: '100vw',
+    height: '100vh',
+    overflow: 'auto',
+  };
 
-    return (
-        <AnimatePresence>
-            {open && (
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-0 backdrop-blur-sm"
-                    onClick={onClose}
-                    style={{
-                        position: 'fixed',
-                        inset: 0,
-                        zIndex: 50,
-                        padding: device === 'mobile' ? 6 : device === 'tablet' ? 24 : 34,
-                    }}
-                >
-                    {/* --- HEADER LABEL: Always visible & always on top --- */}
-                    <div
-                        style={{
-                            position: 'fixed', // fix so it stays on top
-                            top: device === 'mobile' ? 18 : device === 'tablet' ? 28 : 38,
-                            left: device === 'mobile' ? 16 : device === 'tablet' ? 30 : 48,
-                            color: '#fff',
-                            fontWeight: 700,
-                            fontSize: device === 'mobile' ? 18 : device === 'tablet' ? 36 : 30,
-                            letterSpacing: 0.6,
-                            zIndex: 200,
-                            textShadow: '0 2px 12px rgba(0,0,0,0.22)',
-                            userSelect: 'none',
-                            fontFamily: 'inherit',
-                            pointerEvents: 'none', // prevents dragging issue
-                        }}
-                    >
-                        {headerLabel}
-                    </div>
+  // Header top left
+  const headerStyle: React.CSSProperties = {
+    position: 'absolute',
+    left: isMobile ? 20 : 46,
+    top: isMobile ? 18 : 28,
+    color: '#fff',
+    fontWeight: 900,
+    fontSize: isMobile ? 26 : 36,
+    letterSpacing: '0.01em',
+    zIndex: 1501,
+    textShadow: '0 2px 14px #000a',
+    margin: 0,
+    pointerEvents: 'none',
+  };
 
-                    {/* --- CLOSE BUTTON (with label), always top right --- */}
-                    <button
-                        type="button"
-                        aria-label="Close"
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            onClose();
-                        }}
-                        className="absolute flex items-center gap-2 text-white transition-transform hover:scale-110"
-                        style={{
-                            top: device === 'mobile' ? 14 : device === 'tablet' ? 28 : 38,
-                            right: device === 'mobile' ? 14 : device === 'tablet' ? 30 : 48,
-                            zIndex: 200,
-                            background: 'transparent',
-                            border: 'none',
-                            padding: '2px 10px',
-                        }}
-                    >
-                        {' '}
-                        <span
-                            style={{
-                                fontWeight: 200,
-                                fontSize: device === 'mobile' ? 14 : device === 'tablet' ? 16 : 16,
-                                color: '#fff',
-                                letterSpacing: 0.5,
-                                opacity: 0.9,
-                                textShadow: '0 2px 8px rgba(0,0,0,0.16)',
-                                userSelect: 'none',
-                            }}
-                        >
-                            Close
-                        </span>
-                        <X className={device === 'mobile' ? 'h-7 w-7' : device === 'tablet' ? 'h-8 w-8' : 'h-8 w-8'} />
-                    </button>
+  // Close button top right
+  const closeStyle: React.CSSProperties = {
+    position: 'absolute',
+    right: isMobile ? 16 : 48,
+    top: isMobile ? 18 : 26,
+    color: '#fff',
+    fontWeight: 500,
+    fontSize: isMobile ? 20 : 27,
+    cursor: 'pointer',
+    userSelect: 'none',
+    background: 'none',
+    border: 'none',
+    zIndex: 1501,
+    textShadow: '0 2px 10px #000a',
+    padding: '4px 12px',
+  };
 
-                    {/* --- MODAL CONTENT --- */}
-                    <motion.div
-                        initial={{ scale: 0.98, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        exit={{ scale: 0.98, opacity: 0 }}
-                        className="relative flex w-full max-w-full items-center justify-center"
-                        style={{
-                            maxHeight: device === 'mobile' ? '82vh' : '90vh',
-                            width: '100%',
-                            marginTop: device === 'mobile' ? 24 : device === 'tablet' ? 28 : 0,
-                            marginBottom: device === 'mobile' ? 20 : device === 'tablet' ? 26 : 0,
-                        }}
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        {imageUrl === 'prc-both' && modalImagesUser ? (
-                            <div
-                                style={{
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    gap: device === 'mobile' ? 28 : device === 'tablet' ? 34 : '2vw',
-                                    alignItems: 'center',
-                                    position: 'relative',
-                                    paddingTop: device === 'mobile' ? 12 : device === 'tablet' ? 24 : 38,
-                                    paddingBottom: device === 'mobile' ? 16 : device === 'tablet' ? 28 : 34,
-                                    width: device === 'mobile' ? '97vw' : device === 'tablet' ? '85vw' : '70vw',
-                                    maxWidth: device === 'mobile' ? '96vw' : device === 'tablet' ? 1100 : 900,
-                                    justifyContent: 'center',
-                                    boxSizing: 'border-box',
-                                }}
-                            >
-                                {[
-                                    ['Front', modalImagesUser.prc_id_photo_front],
-                                    ['Back', modalImagesUser.prc_id_photo_back],
-                                ].map(([side, src]) => (
-                                    <div
-                                        key={side as string}
-                                        style={{
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                            alignItems: 'center',
-                                            width: '80%',
-                                            maxWidth: device === 'mobile' ? '94vw' : device === 'tablet' ? 950 : 760,
-                                            boxSizing: 'border-box',
-                                        }}
-                                    >
-                                        <SubLabel device={device}>{side}</SubLabel>
-                                        <img
-                                            src={src ? `/storage/${src}` : '/images/placeholder-document.png'}
-                                            alt={`PRC ID ${side}`}
-                                            style={{
-                                                width: '100%',
-                                                maxWidth: device === 'mobile' ? '90vw' : device === 'tablet' ? 900 : 760,
-                                                minWidth: 120,
-                                                maxHeight: device === 'mobile' ? '34vh' : device === 'tablet' ? '44vh' : '36vh',
-                                                borderRadius: 16,
-                                                objectFit: 'contain',
-                                                background: '#ededed',
-                                                boxShadow: device === 'mobile' ? '0 4px 14px 0 rgba(0,0,0,0.13)' : '0 8px 18px 0 rgba(0,0,0,0.10)',
-                                            }}
-                                        />
-                                    </div>
-                                ))}
-                            </div>
-                        ) : (
-                            <div
-                                style={{
-                                    position: 'relative',
-                                    width: device === 'mobile' ? '96vw' : device === 'tablet' ? '84vw' : '70vw',
-                                    maxWidth: device === 'mobile' ? '97vw' : device === 'tablet' ? 1100 : 900,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    paddingTop: device === 'mobile' ? 16 : device === 'tablet' ? 32 : 38,
-                                    paddingBottom: device === 'mobile' ? 16 : device === 'tablet' ? 32 : 38,
-                                }}
-                            >
-                                <img
-                                    src={imageUrl || undefined}
-                                    alt={title}
-                                    style={{
-                                        width: '100%',
-                                        maxWidth: device === 'mobile' ? '92vw' : device === 'tablet' ? 1040 : 870,
-                                        minWidth: 100,
-                                        maxHeight: device === 'mobile' ? '70vh' : device === 'tablet' ? '76vh' : '80vh',
-                                        borderRadius: imageUrl && imageUrl.toLowerCase().includes('payslip') ? 0 : 16,
-                                        marginTop: device === 'mobile' ? 10 : device === 'tablet' ? 18 : 18,
-                                        background: '#ededed',
-                                        objectFit: 'contain',
-                                        boxShadow: device === 'mobile' ? '0 4px 14px 0 rgba(0,0,0,0.13)' : '0 8px 16px 0 rgba(0,0,0,0.10)',
-                                    }}
-                                />
-                            </div>
-                        )}
-                    </motion.div>
-                </motion.div>
-            )}
-        </AnimatePresence>
-    );
+  // Absolutely center images (and labels)
+  const centeredContentStyle: React.CSSProperties = {
+    position: 'absolute',
+    left: '50%',
+    top: '53%',
+    transform: 'translate(-50%, -50%)',
+    width: '100%',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexDirection: showPrCpair && isMobile ? 'column' : (showPrCpair ? 'row' : 'column'),
+    gap: showPrCpair ? (isMobile ? 32 : 80) : 0,
+    zIndex: 10,
+    padding: isMobile ? '0 0' : '0 0',
+  };
+
+  const imgStyle: React.CSSProperties = {
+    maxWidth: isMobile ? '92vw' : '660px',
+    maxHeight: isMobile ? '29vh' : '70vh',
+    borderRadius: 22,
+    objectFit: 'cover',
+    background: '#17171b',
+  };
+
+  const labelStyle: React.CSSProperties = {
+    color: '#fff',
+    fontWeight: 500,
+    fontSize: isMobile ? 19 : 28,
+    marginTop: 14,
+    textAlign: 'center',
+    letterSpacing: '0.01em',
+    opacity: 0.98,
+    textShadow: '0 1px 7px #000b',
+  };
+
+  return (
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        style={overlayStyle}
+        onClick={onClose}
+      >
+        {/* Header top left, Close top right */}
+        <span style={headerStyle}>{title}</span>
+        <button style={closeStyle} aria-label="Close" onClick={onClose}>
+          Close&nbsp;×
+        </button>
+        <div style={centeredContentStyle} onClick={e => e.stopPropagation()}>
+          {showPrCpair && modalImagesUser ? (
+            <>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                <img
+                  src={`/storage/${modalImagesUser.prc_id_photo_front}`}
+                  alt="PRC Front"
+                  style={imgStyle}
+                  onError={e => { e.currentTarget.src = '/images/placeholder-document.png'; }}
+                />
+                <div style={labelStyle}>Front</div>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                <img
+                  src={`/storage/${modalImagesUser.prc_id_photo_back}`}
+                  alt="PRC Back"
+                  style={imgStyle}
+                  onError={e => { e.currentTarget.src = '/images/placeholder-document.png'; }}
+                />
+                <div style={labelStyle}>Back</div>
+              </div>
+            </>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+              <img
+                src={imageUrl}
+                alt={title}
+                style={imgStyle}
+                onError={e => { (e.currentTarget as HTMLImageElement).src = '/images/placeholder-document.png'; }}
+              />
+            </div>
+          )}
+        </div>
+      </motion.div>
+    </AnimatePresence>
+  );
 };
 
 export default FullScreenImageModal;

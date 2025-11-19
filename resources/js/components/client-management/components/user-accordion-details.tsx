@@ -1,4 +1,4 @@
-import { PendingUser } from '@/types';
+import { PendingUser } from '@/types/user';
 import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalanceWalletOutlined';
 import CalendarTodayOutlinedIcon from '@mui/icons-material/CalendarTodayOutlined';
 import CancelIcon from '@mui/icons-material/Cancel';
@@ -16,7 +16,7 @@ import {
   useMediaQuery,
   useTheme,
   IconButton,
-  Chip
+  Chip,
 } from '@mui/material';
 import React from 'react';
 import SalaryUpdatePopover from './salary-update-popover'; // import your popover here
@@ -43,7 +43,7 @@ const UserAccordionDetails: React.FC<Props> = ({
   processing,
   setModalImagesUser,
   setFullScreenImage,
-  setImageTitle
+  setImageTitle,
 }) => {
   const theme = useTheme();
   const isXs = useMediaQuery(theme.breakpoints.down('sm'));
@@ -62,13 +62,13 @@ const UserAccordionDetails: React.FC<Props> = ({
     alignItems: 'center',
     justifyContent: 'space-between',
     width: '100%',
-    gap: 1
+    gap: 1,
   };
   const detailLabelSx = {
     display: 'flex',
     alignItems: 'center',
     gap: 0.5,
-    flexShrink: 0
+    flexShrink: 0,
   };
   const detailValueSx = {
     fontSize: 13,
@@ -76,14 +76,13 @@ const UserAccordionDetails: React.FC<Props> = ({
     wordBreak: 'break-word',
     textAlign: 'right',
     flex: 1,
-    minWidth: 0
+    minWidth: 0,
   };
 
   // SalaryUpdatePopover integration:
   const [salaryPopoverAnchor, setSalaryPopoverAnchor] = React.useState<null | HTMLElement>(null);
   const [latestSalary, setLatestSalary] = React.useState(user?.salary_amount ? user.salary_amount.toString() : '');
-const [latestNote, setLatestNote] = React.useState(user?.notes || '');
-
+  const [latestNote, setLatestNote] = React.useState(user?.notes || '');
 
   const handleSalaryClick = (e: React.MouseEvent<HTMLElement>) => {
     setSalaryPopoverAnchor(e.currentTarget);
@@ -93,11 +92,11 @@ const [latestNote, setLatestNote] = React.useState(user?.notes || '');
     setSalaryPopoverAnchor(null);
   };
 
-const handleSalarySave = (salary: string, note: string) => {
+  const handleSalarySave = (salary: string, note: string) => {
     setLatestSalary(salary);
     setLatestNote(note);
     setSalaryPopoverAnchor(null);
-};
+  };
 
   return (
     <AccordionDetails
@@ -109,7 +108,7 @@ const handleSalarySave = (salary: string, note: string) => {
         borderTopRightRadius: 0,
         borderBottomLeftRadius: 2,
         borderBottomRightRadius: 2,
-        transition: 'background 0.4s'
+        transition: 'background 0.4s',
       }}
     >
       <Container maxWidth={false} disableGutters sx={{ width: '100%' }}>
@@ -123,8 +122,10 @@ const handleSalarySave = (salary: string, note: string) => {
             mx: 'auto',
             width: '100%',
             boxSizing: 'border-box',
-            boxShadow: theme.palette.mode === 'light' ? '0 2px 8px rgba(0,0,0,0.05)' : '0 2px 8px rgba(0,0,0,0.32)',
-            transition: 'background 0.3s, box-shadow 0.3s'
+            boxShadow: theme.palette.mode === 'light'
+              ? '0 2px 8px rgba(0,0,0,0.05)'
+              : '0 2px 8px rgba(0,0,0,0.32)',
+            transition: 'background 0.3s, box-shadow 0.3s',
           }}
         >
           {/* Heading */}
@@ -141,10 +142,9 @@ const handleSalarySave = (salary: string, note: string) => {
               width: '100%',
               mb: 1,
               mt: -0.1,
-              borderRadius: 1
+              borderRadius: 1,
             }}
           />
-
           {/* Client Details - icons/labels */}
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.7, mb: 2 }}>
             {/* EMAIL */}
@@ -183,12 +183,11 @@ const handleSalarySave = (salary: string, note: string) => {
                   month: 'short',
                   day: 'numeric',
                   hour: '2-digit',
-                  minute: '2-digit'
+                  minute: '2-digit',
                 })}
               </Typography>
             </Box>
           </Box>
-
           {/* Thumbnails */}
           <Box
             sx={{
@@ -198,7 +197,7 @@ const handleSalarySave = (salary: string, note: string) => {
               justifyContent: 'center',
               alignItems: 'center',
               mb: 2,
-              mt: 1
+              mt: 1,
             }}
           >
             {(user.prc_id_photo_front || user.prc_id_photo_back) && (
@@ -214,7 +213,7 @@ const handleSalarySave = (salary: string, note: string) => {
                     position: 'relative',
                     cursor: 'pointer',
                     transition: 'box-shadow 0.2s, transform 0.14s',
-                    '&:hover': { boxShadow: 3, transform: 'scale(1.04)' }
+                    '&:hover': { boxShadow: 3, transform: 'scale(1.04)' },
                   }}
                   onClick={e => {
                     e.stopPropagation();
@@ -233,7 +232,7 @@ const handleSalarySave = (salary: string, note: string) => {
                           height: '100%',
                           objectFit: 'cover',
                           borderRadius: user.prc_id_photo_back ? '6px 0 0 6px' : '6px',
-                          background: thirtiary
+                          background: thirtiary,
                         }}
                         onError={e => {
                           e.currentTarget.src = '/images/placeholder-document.png';
@@ -249,7 +248,7 @@ const handleSalarySave = (salary: string, note: string) => {
                           height: '100%',
                           objectFit: 'cover',
                           borderRadius: '0 6px 6px 0',
-                          background: thirtiary
+                          background: thirtiary,
                         }}
                         onError={e => {
                           e.currentTarget.src = '/images/placeholder-document.png';
@@ -269,7 +268,7 @@ const handleSalarySave = (salary: string, note: string) => {
                       left: 0,
                       right: 0,
                       bottom: 0,
-                      zIndex: 2
+                      zIndex: 2,
                     }}
                   >
                     <ZoomInIcon
@@ -280,7 +279,7 @@ const handleSalarySave = (salary: string, note: string) => {
                         color: secondary,
                         zIndex: 1,
                         mx: 'auto',
-                        textAlign: 'center'
+                        textAlign: 'center',
                       }}
                     />
                     <Typography
@@ -289,7 +288,7 @@ const handleSalarySave = (salary: string, note: string) => {
                         fontSize: '0.7rem',
                         color: secondary,
                         zIndex: 1,
-                        textAlign: 'center'
+                        textAlign: 'center',
                       }}
                     >
                       View PRC ID
@@ -311,7 +310,7 @@ const handleSalarySave = (salary: string, note: string) => {
                     position: 'relative',
                     cursor: 'pointer',
                     transition: 'box-shadow 0.2s, transform 0.14s',
-                    '&:hover': { boxShadow: 3, transform: 'scale(1.04)' }
+                    '&:hover': { boxShadow: 3, transform: 'scale(1.04)' },
                   }}
                   onClick={() => openFullScreenImage(`/storage/${user.payslip_photo_path}`, 'Payslip')}
                 >
@@ -323,7 +322,7 @@ const handleSalarySave = (salary: string, note: string) => {
                       height: '100%',
                       objectFit: 'cover',
                       borderRadius: 6,
-                      background: thirtiary
+                      background: thirtiary,
                     }}
                     onError={e => {
                       e.currentTarget.src = '/images/placeholder-document.png';
@@ -341,7 +340,7 @@ const handleSalarySave = (salary: string, note: string) => {
                       left: 0,
                       right: 0,
                       bottom: 0,
-                      zIndex: 2
+                      zIndex: 2,
                     }}
                   >
                     <ZoomInIcon
@@ -352,7 +351,7 @@ const handleSalarySave = (salary: string, note: string) => {
                         color: secondary,
                         zIndex: 1,
                         mx: 'auto',
-                        textAlign: 'center'
+                        textAlign: 'center',
                       }}
                     />
                     <Typography
@@ -361,7 +360,7 @@ const handleSalarySave = (salary: string, note: string) => {
                         fontSize: '0.7rem',
                         color: secondary,
                         zIndex: 1,
-                        textAlign: 'center'
+                        textAlign: 'center',
                       }}
                     >
                       View Payslip
@@ -384,23 +383,23 @@ const handleSalarySave = (salary: string, note: string) => {
                   ...(user.class === 'A' && {
                     bgcolor: 'transparent',
                     color: '#1976d2',
-                    border: '2.2px solid #1976d2'
+                    border: '2.2px solid #1976d2',
                   }),
                   ...(user.class === 'B' && {
                     bgcolor: 'transparent',
                     color: '#9C27B0',
-                    border: '2.2px solid #9C27B0'
+                    border: '2.2px solid #9C27B0',
                   }),
                   ...(user.class === 'C' && {
                     bgcolor: 'transparent',
                     color: '#B98400',
-                    border: '2.2px solid #FFBF00'
+                    border: '2.2px solid #FFBF00',
                   }),
                   ...(user.class === 'D' && {
                     bgcolor: 'transparent',
                     color: '#757575',
-                    border: '2.2px solid #757575'
-                  })
+                    border: '2.2px solid #757575',
+                  }),
                 }}
                 variant="outlined"
               />
@@ -417,7 +416,7 @@ const handleSalarySave = (salary: string, note: string) => {
                   {latestSalary
                     ? `₱${Number(latestSalary).toLocaleString(undefined, {
                         minimumFractionDigits: 2,
-                        maximumFractionDigits: 2
+                        maximumFractionDigits: 2,
                       })}`
                     : 'Not yet set'}
                 </Typography>
@@ -455,7 +454,7 @@ const handleSalarySave = (salary: string, note: string) => {
                 justifyContent: 'center',
                 alignItems: 'center',
                 gap: theme.spacing(1.2),
-                width: '100%'
+                width: '100%',
               }}
             >
               <Box sx={{ width: '100%' }}>
@@ -471,7 +470,7 @@ const handleSalarySave = (salary: string, note: string) => {
                     width: '100%',
                     background: secondary,
                     color: '#fff',
-                    border: `2px solid ${border}`
+                    border: `2px solid ${border}`,
                   }}
                 >
                   <CheckCircleIcon sx={{ width: 15, height: 15 }} />
@@ -491,7 +490,7 @@ const handleSalarySave = (salary: string, note: string) => {
                     width: '100%',
                     background: accent,
                     color: '#fff',
-                    border: `2px solid ${border}`
+                    border: `2px solid ${border}`,
                   }}
                 >
                   <CancelIcon sx={{ width: 15, height: 15 }} />

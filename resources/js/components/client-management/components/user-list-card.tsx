@@ -49,7 +49,7 @@ const UserListCard: React.FC<UserListCardProps> = ({
           letterSpacing: 1,
           mb: { xs: 0.9, md: 1.5 },
           px: 0.5,
-          wordBreak: 'break-word'
+          wordBreak: 'break-word',
         }}
       >
         {title} ({userCount})

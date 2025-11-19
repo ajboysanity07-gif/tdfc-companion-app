@@ -15,8 +15,12 @@ const CardPagination: React.FC<CardPaginationProps> = ({
 }) => {
   if (count < 1) return null;
 
+  // Custom onClick to match React setter signature
+  const changePage = (newPage: number) => {
+    onChange(() => newPage);
+  };
+
   return (
-    
     <div
       style={{
         display: 'flex',
@@ -28,7 +32,7 @@ const CardPagination: React.FC<CardPaginationProps> = ({
       }}
     >
       <button
-        onClick={() => onChange(page > 1 ? page - 1 : page)}
+        onClick={() => changePage(page > 1 ? page - 1 : page)}
         style={{
           border: 'none',
           background: isDarkMode ? '#302a34' : '#F57979',
@@ -61,7 +65,7 @@ const CardPagination: React.FC<CardPaginationProps> = ({
         {count}
       </span>
       <button
-        onClick={() => onChange(page < count ? page + 1 : page)}
+        onClick={() => changePage(page < count ? page + 1 : page)}
         style={{
           border: 'none',
           background: isDarkMode ? '#302a34' : '#F57979',

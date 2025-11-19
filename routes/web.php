@@ -78,19 +78,10 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/dashboard', function () {
         return Inertia::render('admin/dashboard');
     })->name('dashboard');
-
-    Route::get('/products', fn() => Inertia::render('admin/products'))->name('products');
+  Route::get('/client-management', fn() => Inertia::render('admin/client-management'))->name('client-management');
+    Route::get('/products', fn() => Inertia::render('admin/products-management'))->name('products');
     Route::get('/clients', fn() => Inertia::render('admin/clients'))->name('clients');
 
-    Route::get('/client-management', [ClientManagementController::class, 'index'])
-        ->name('client-management');
-
-    // ✅ FIXED: Explicit route model binding with custom primary key
-    Route::post('/client-management/approve/{user:user_id}', [ClientManagementController::class, 'approve'])
-        ->name('client-management.approve');
-
-    Route::post('/client-management/reject/{user:user_id}', [ClientManagementController::class, 'reject'])
-        ->name('client-management.reject');
 
     Route::post('/users/{user}/reject', [UserRejectionController::class, 'reject']);
     Route::get('/users/{user}/rejection-reasons', [UserRejectionController::class, 'getRejectionReasons']);

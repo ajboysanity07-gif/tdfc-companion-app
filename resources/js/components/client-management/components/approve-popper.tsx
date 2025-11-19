@@ -1,29 +1,9 @@
-import { Box, Button, Typography, Popper, ClickAwayListener, useTheme, alpha } from '@mui/material';
-import { PendingUser } from '@/types';
 import React, { useEffect, useState } from 'react';
+import { Box, Button, Typography, Popper, ClickAwayListener, useTheme, alpha } from '@mui/material';
+import type { PendingUser } from '@/types/user';
 import { motion, AnimatePresence } from 'framer-motion';
 
-function ArrowDown({ color }: { color: string }) {
-  return (
-    <Box sx={{
-      position: 'absolute',
-      left: '50%',
-      transform: 'translateX(-50%)',
-      top: '100%',
-      width: 24,
-      height: 12,
-      zIndex: 5,
-      pointerEvents: 'none'
-    }}>
-      <svg width="24" height="12" viewBox="0 0 24 12" fill="none">
-        <path d="M2 2L12 11L22 2" stroke="#eee" strokeWidth="2" fill="none"/>
-        <polygon points="4,2 12,9 20,2" fill={color}/>
-      </svg>
-    </Box>
-  );
-}
-
-interface Props {
+interface ApprovePopperProps {
   open: boolean;
   anchorEl: HTMLElement | null;
   user: PendingUser | null;
@@ -33,22 +13,25 @@ interface Props {
   onApprove: () => void;
 }
 
-const ApprovePopper: React.FC<Props> = ({
-  open, anchorEl, user, isMobile, processing, onCancel, onApprove
+const ApprovePopper: React.FC<ApprovePopperProps> = ({
+  open,
+  anchorEl,
+  user,
+  isMobile,
+  processing,
+  onCancel,
+  onApprove,
 }) => {
   const [showContent, setShowContent] = useState(open);
   const theme = useTheme();
-
-  // Use theme-aware background for popper
   const popperBg =
-    theme.palette.mode === "dark"
+    theme.palette.mode === 'dark'
       ? alpha(theme.palette.background.paper, 0.96)
       : theme.palette.background.paper;
   const borderColor =
-    theme.palette.mode === "dark"
+    theme.palette.mode === 'dark'
       ? alpha(theme.palette.divider, 0.32)
-      : "#eee";
-  const arrowColor = popperBg;
+      : '#eee';
 
   useEffect(() => {
     setShowContent(open);
@@ -65,17 +48,7 @@ const ApprovePopper: React.FC<Props> = ({
   if (!anchorEl) return null;
 
   return (
-    <Popper
-      open={true}
-      anchorEl={anchorEl}
-      placement="top"
-      modifiers={[{ name: 'offset', options: { offset: [0, 10] } }]}
-      style={{
-        zIndex: 2200, maxWidth: isMobile ? '85vw' : 350,
-        pointerEvents: 'auto'
-      }}
-      disablePortal={false}
-    >
+    <Popper open={true} anchorEl={anchorEl} placement="top" style={{ zIndex: 2200 }}>
       <ClickAwayListener onClickAway={handleClickAway}>
         <div>
           <AnimatePresence onExitComplete={handleExited}>
@@ -88,25 +61,35 @@ const ApprovePopper: React.FC<Props> = ({
                 transition={{ type: 'spring', stiffness: 400, damping: 35, duration: 0.22 }}
                 style={{ position: 'relative' }}
               >
-                <ArrowDown color={arrowColor} />
-                <Box sx={{
-                  p: isMobile ? 2.2 : 3,
-                  bgcolor: popperBg,
-                  borderRadius: 2,
-                  boxShadow: 3,
-                  minWidth: isMobile ? 180 : 250,
-                  border: `1.5px solid ${borderColor}`,
-                  position: 'relative'
-                }}>
-                  <Typography sx={{ fontWeight: 500, color: theme.palette.text.primary }}>
-                    Approve registration for:
+                <Box
+                  sx={{
+                    p: isMobile ? 2.2 : 3,
+                    bgcolor: popperBg,
+                    borderRadius: 2,
+                    boxShadow: 3,
+                    minWidth: isMobile ? 180 : 250,
+                    border: `1.5px solid ${borderColor}`,
+                    position: 'relative',
+                  }}
+                >
+                  <Typography sx={{ fontWeight: 500 }}>
+                    Approve registration for
                   </Typography>
-                  <Typography sx={{ fontWeight: 700, ml: isMobile ? 2 : 3, color: theme.palette.text.primary }}>
+                  <Typography sx={{ fontWeight: 700, ml: isMobile ? 2 : 3 }}>
                     {user?.name}
                   </Typography>
                   <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
-                    <Button onClick={handleClickAway} disabled={processing}>Cancel</Button>
-                    <Button onClick={onApprove} color="success" variant="contained" disabled={processing}>Yes</Button>
+                    <Button onClick={handleClickAway} disabled={processing}>
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={onApprove}
+                      color="success"
+                      variant="contained"
+                      disabled={processing}
+                    >
+                      Yes
+                    </Button>
                   </Box>
                 </Box>
               </motion.div>

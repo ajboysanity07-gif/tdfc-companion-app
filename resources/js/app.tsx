@@ -2,10 +2,14 @@ import '../css/app.css';
 
 import { createInertiaApp } from '@inertiajs/react';
 import { createRoot } from 'react-dom/client';
-import { initializeTheme, AppearanceProvider } from './hooks/use-appearance'; // ✅ Import AppearanceProvider
+import { initializeTheme, AppearanceProvider } from './hooks/use-appearance';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import MuiThemeWrapper from './components/mui-theme-wrapper';
+
+import axios from 'axios'; // ✅ Import axios
+
+axios.defaults.withCredentials = true; // ✅ Always send credentials/cookies
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
@@ -29,7 +33,7 @@ createInertiaApp({
       ...import.meta.glob('./pages/**/*.tsx', { eager: true }),
       ...import.meta.glob('./Pages/**/*.jsx', { eager: true }),
       ...import.meta.glob('./pages/**/*.jsx', { eager: true }),
-    }
+    };
     const page =
       pages[`./Pages/${name}.tsx`] ??
       pages[`./pages/${name}.tsx`] ??
@@ -41,9 +45,11 @@ createInertiaApp({
   },
 
   setup({ el, App, props }) {
+    // ✅ Call Sanctum's CSRF endpoint once when the SPA mounts
+    axios.get('/sanctum/csrf-cookie');
+
     const root = createRoot(el);
 
-    // ✅ Wrap with AppearanceProvider at the very top!
     root.render(
       <QueryClientProvider client={queryClient}>
         <AppearanceProvider>

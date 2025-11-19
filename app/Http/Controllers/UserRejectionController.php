@@ -1,21 +1,24 @@
 <?php
 
-// app/Http/Controllers/UserRejectionController.php
 namespace App\Http\Controllers;
+
 use Illuminate\Http\Request;
 use App\Models\AppUser;
 use App\Models\RejectionReason;
 
 class UserRejectionController extends Controller
 {
-    public function reject(Request $request, $user_id)
+    // Reject a user with selected reasons
+    public function reject(Request $request, $userId)
     {
-        $reasonCodes = $request->input('rejection_reasons', []); // ['prc_id_blurry', ...]
+        $request->validate([
+            'rejection_reasons' => 'required|array|min:1',
+            'rejection_reasons.*' => 'string|exists:rejection_reasons,code',
+        ]);
+        $reasonCodes = $request->input('rejection_reasons');
         $reasonIDs = RejectionReason::whereIn('code', $reasonCodes)->pluck('id')->toArray();
-
-        $user = AppUser::findOrFail($user_id);
+        $user = AppUser::findOrFail($userId);
         $user->rejectionReasons()->sync($reasonIDs);
-
         $user->status = 'rejected';
         $user->rejected_at = now();
         $user->save();
@@ -23,10 +26,10 @@ class UserRejectionController extends Controller
         return response()->json(['message' => 'Rejected reasons updated successfully.']);
     }
 
-    // To fetch reasons:
-    public function getRejectionReasons($user_id)
+    // Get user's rejection reasons as JSON
+    public function getRejectionReasons($userId)
     {
-        $user = AppUser::findOrFail($user_id);
+        $user = AppUser::findOrFail($userId);
         return response()->json($user->rejectionReasons);
     }
 }

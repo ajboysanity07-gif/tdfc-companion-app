@@ -18,6 +18,9 @@ return Application::configure(basePath: dirname(__DIR__))
         // Register web middleware
         $middleware->web(\App\Http\Middleware\HandleInertiaRequests::class);
 
+        // ✅ Sanctum SPA stateful middleware for API requests!
+        $middleware->api(\Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class);
+
         // Register middleware aliases
         $middleware->alias([
             'approved' => \App\Http\Middleware\EnsureUserIsApproved::class,

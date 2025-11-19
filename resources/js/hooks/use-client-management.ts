@@ -1,302 +1,309 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { router } from '@inertiajs/react';
-import type { PendingUser } from '@/types';
+import axios from 'axios';
+import type { PendingUser } from '@/types/user';
 import { useIsMobileTabs } from '@/hooks/use-isMobile-tabs';
-import type {
-    DesktopColumnConfig,
-    UserAccordionInjectedProps,
-} from '@/components/client-management/components/desktop-user-columns';
 
-const PAGE_SIZE = 10;
+const PAGESIZE = 10;
 
-export function useClientManagement(pendingUsers: PendingUser[]) {
-    const isMobileOrTablet = useIsMobileTabs();
-    const [expanded, setExpanded] = useState<number | null>(null);
-    const [expandedColumn, setExpandedColumn] = useState<number | null>(null);
-    const [selectedUser, setSelectedUser] = useState<PendingUser | null>(null);
-    const [approvePopperAnchor, setApprovePopperAnchor] = useState<null | HTMLElement>(null);
-    const [approvePopperUser, setApprovePopperUser] = useState<PendingUser | null>(null);
-    const [fullScreenImage, setFullScreenImage] = useState<string | null>(null);
-    const [imageTitle, setImageTitle] = useState<string>('');
-    const [modalImagesUser, setModalImagesUser] = useState<PendingUser | null>(null);
-    const [showRejectModal, setShowRejectModal] = useState(false);
-    const [selectedReasons, setSelectedReasons] = useState<string[]>([]);
-    const [processing, setProcessing] = useState(false);
+export function useClientManagement() {
+  // Device detection
+  const isMobileOrTablet = useIsMobileTabs();
 
-    const [rejectedSearch, setRejectedSearch] = useState('');
-    const [pendingSearch, setPendingSearch] = useState('');
-    const [registeredSearch, setRegisteredSearch] = useState('');
+  // All users for admin management
+  const [allUsers, setAllUsers] = useState<PendingUser[]>([]);
 
-    const rejectedUsers = useMemo(
-        () => pendingUsers?.filter((u: PendingUser) => u.status === 'rejected') || [],
-        [pendingUsers],
+  // Loading spinner
+  const [loading, setLoading] = useState(false);
+
+  // API: Fetch all users for management table/dashboard
+  const fetchUsers = useCallback(async () => {
+    setLoading(true);
+    try {
+      const { data } = await axios.get<PendingUser[]>('/api/clients');
+      setAllUsers(data);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Fetch users on mount and after update
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
+
+  // Expanded row for desktop details accordion
+  const [expanded, setExpanded] = useState<number | null>(null);
+
+  // Expanded column for multi-table layout
+  const [expandedColumn, setExpandedColumn] = useState<number | null>(null);
+
+  // Selected user for modals/details
+  const [selectedUser, setSelectedUser] = useState<PendingUser | null>(null);
+
+  // Approve Modal Popper states
+  const [approvePopperAnchor, setApprovePopperAnchor] = useState<HTMLElement | null>(null);
+  const [approvePopperUser, setApprovePopperUser] = useState<PendingUser | null>(null);
+
+  // Fullscreen image modal states
+  const [fullScreenImage, setFullScreenImage] = useState<string | null>(null);
+  const [imageTitle, setImageTitle] = useState<string>('');
+  const [modalImagesUser, setModalImagesUser] = useState<PendingUser | null>(null);
+
+  // Reject modal states
+  const [showRejectModal, setShowRejectModal] = useState(false);
+  const [selectedReasons, setSelectedReasons] = useState<string[]>([]);
+  const [processing, setProcessing] = useState(false);
+
+  // Search/filter states
+  const [rejectedSearch, setRejectedSearch] = useState('');
+  const [pendingSearch, setPendingSearch] = useState('');
+  const [registeredSearch, setRegisteredSearch] = useState('');
+
+  // Filtered lists based on status
+  const rejectedUsers = useMemo(() => allUsers.filter(u => u.status === 'rejected'), [allUsers]);
+  const forApprovalUsers = useMemo(() => allUsers.filter(u => u.status === 'pending'), [allUsers]);
+  const registeredUsers = useMemo(() => allUsers.filter(u => u.status === 'approved'), [allUsers]);
+
+  // Real-time searches
+  const filteredPendingUsers = useMemo(
+    () => forApprovalUsers.filter(u => u.name.toLowerCase().includes(pendingSearch.toLowerCase())),
+    [forApprovalUsers, pendingSearch]
+  );
+  const filteredRejectedUsers = useMemo(
+    () => rejectedUsers.filter(u => u.name.toLowerCase().includes(rejectedSearch.toLowerCase())),
+    [rejectedUsers, rejectedSearch]
+  );
+  const filteredRegisteredUsers = useMemo(
+    () => registeredUsers.filter(u => u.name.toLowerCase().includes(registeredSearch.toLowerCase())),
+    [registeredUsers, registeredSearch]
+  );
+
+  // Paging
+  const [pendingPage, setPendingPage] = useState(1);
+  const [rejectedPage, setRejectedPage] = useState(1);
+  const [registeredPage, setRegisteredPage] = useState(1);
+
+  useEffect(() => { setPendingPage(1); }, [pendingSearch, forApprovalUsers.length]);
+  useEffect(() => { setRejectedPage(1); }, [rejectedSearch, rejectedUsers.length]);
+  useEffect(() => { setRegisteredPage(1); }, [registeredSearch, registeredUsers.length]);
+
+  const pendingTotalPages = Math.max(1, Math.ceil(filteredPendingUsers.length / PAGESIZE));
+  const rejectedTotalPages = Math.max(1, Math.ceil(filteredRejectedUsers.length / PAGESIZE));
+  const registeredTotalPages = Math.max(1, Math.ceil(filteredRegisteredUsers.length / PAGESIZE));
+
+  // Pagination
+  const pagedPendingUsers = useMemo(() => {
+    const start = (pendingPage - 1) * PAGESIZE;
+    return filteredPendingUsers.slice(start, start + PAGESIZE);
+  }, [filteredPendingUsers, pendingPage]);
+
+  const pagedRejectedUsers = useMemo(() => {
+    const start = (rejectedPage - 1) * PAGESIZE;
+    return filteredRejectedUsers.slice(start, start + PAGESIZE);
+  }, [filteredRejectedUsers, rejectedPage]);
+
+  const pagedRegisteredUsers = useMemo(() => {
+    const start = (registeredPage - 1) * PAGESIZE;
+    return filteredRegisteredUsers.slice(start, start + PAGESIZE);
+  }, [filteredRegisteredUsers, registeredPage]);
+
+  // Image modal helpers
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const openFullScreenImage = (img: string, title: string) => {
+    setFullScreenImage(img);
+    setImageTitle(title);
+  };
+  const closeFullScreenImage = () => {
+    setFullScreenImage(null);
+    setImageTitle('');
+    setModalImagesUser(null);
+  };
+
+  // Approve popper/modal
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const handleApprove = (event: React.MouseEvent<HTMLElement>, user: PendingUser) => {
+    setApprovePopperAnchor(event.currentTarget);
+    setApprovePopperUser(user);
+  };
+
+  // Reject modal
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const handleRejectClick = (user: PendingUser) => {
+    setSelectedUser(user);
+    setShowRejectModal(true);
+    setSelectedReasons([]);
+  };
+
+  // Select/deselect rejection reasons
+  const toggleReason = (reason: string) => {
+    setSelectedReasons(prev =>
+      prev.includes(reason) ? prev.filter(r => r !== reason) : [...prev, reason]
     );
-    const forApprovalUsers = useMemo(
-        () => pendingUsers?.filter((u: PendingUser) => u.status === 'pending') || [],
-        [pendingUsers],
-    );
-    const registeredUsers = useMemo(
-        () => pendingUsers?.filter((u: PendingUser) => u.status === 'approved') || [],
-        [pendingUsers],
-    );
+  };
 
-    const filteredPendingUsers = useMemo(
-        () => forApprovalUsers.filter((u: PendingUser) => u.name.toLowerCase().includes(pendingSearch.toLowerCase())),
-        [forApprovalUsers, pendingSearch],
-    );
-    const filteredRejectedUsers = useMemo(
-        () => rejectedUsers.filter((u: PendingUser) => u.name.toLowerCase().includes(rejectedSearch.toLowerCase())),
-        [rejectedUsers, rejectedSearch],
-    );
-    const filteredRegisteredUsers = useMemo(
-        () => registeredUsers.filter((u: PendingUser) => u.name.toLowerCase().includes(registeredSearch.toLowerCase())),
-        [registeredUsers, registeredSearch],
-    );
+  // Submit rejection
+  const submitRejection = useCallback(async () => {
+    if (!selectedUser || selectedReasons.length === 0) return;
+    setProcessing(true);
+    try {
+      await axios.post(`/api/clients/${selectedUser.user_id}/reject`, { reasons: selectedReasons });
+      setShowRejectModal(false);
+      setSelectedUser(null);
+      setSelectedReasons([]);
+      await fetchUsers();
+    } finally {
+      setProcessing(false);
+    }
+  }, [selectedUser, selectedReasons, fetchUsers]);
 
-    const [pendingPage, setPendingPage] = useState(1);
-    const [rejectedPage, setRejectedPage] = useState(1);
-    const [registeredPage, setRegisteredPage] = useState(1);
+  // Submit approval
+  const submitApproval = useCallback(async () => {
+    if (!approvePopperUser) return;
+    setProcessing(true);
+    try {
+      await axios.post(`/api/clients/${approvePopperUser.user_id}/approve`);
+      setApprovePopperAnchor(null);
+      setApprovePopperUser(null);
+      await fetchUsers();
+    } finally {
+      setProcessing(false);
+    }
+  }, [approvePopperUser, fetchUsers]);
 
-    useEffect(() => {
-        setPendingPage(1);
-    }, [pendingSearch, forApprovalUsers.length]);
-    useEffect(() => {
-        setRejectedPage(1);
-    }, [rejectedSearch, rejectedUsers.length]);
-    useEffect(() => {
-        setRegisteredPage(1);
-    }, [registeredSearch, registeredUsers.length]);
+  // Helper props for Desktop accordion
+  const userAccordionProps = useCallback(
+    (columnIndex: number) => ({
+      expanded,
+      setExpanded,
+      openFullScreenImage,
+      handleApprove,
+      handleRejectClick,
+      isMobile: isMobileOrTablet,
+      setModalImagesUser,
+      processing,
+      setFullScreenImage,
+      setImageTitle,
+      columnIndex,
+      expandedColumn,
+      setExpandedColumn,
+    }),
+    [expanded, expandedColumn, isMobileOrTablet, openFullScreenImage, handleApprove, handleRejectClick, processing]
+  );
 
-    const pendingTotalPages = Math.max(1, Math.ceil(filteredPendingUsers.length / PAGE_SIZE));
-    const rejectedTotalPages = Math.max(1, Math.ceil(filteredRejectedUsers.length / PAGE_SIZE));
-    const registeredTotalPages = Math.max(1, Math.ceil(filteredRegisteredUsers.length / PAGE_SIZE));
+  // Desktop columns config for tables
+  const desktopColumns = useMemo(
+    () => [
+      {
+        key: 'registered',
+        title: 'REGISTERED USERS',
+        titleColor: '#F57979',
+        userCount: registeredUsers.length,
+        searchOptions: registeredUsers.map(u => u.name),
+        searchValue: registeredSearch,
+        setSearch: setRegisteredSearch,
+        pagedUsers: pagedRegisteredUsers,
+        totalPages: registeredTotalPages,
+        page: registeredPage,
+        setPage: setRegisteredPage,
+        groupTab: 0,
+        columnIndex: 0,
+      },
+      {
+        key: 'pending',
+        title: 'PENDING APPROVAL',
+        titleColor: '#F57979',
+        userCount: forApprovalUsers.length,
+        searchOptions: forApprovalUsers.map(u => u.name),
+        searchValue: pendingSearch,
+        setSearch: setPendingSearch,
+        pagedUsers: pagedPendingUsers,
+        totalPages: pendingTotalPages,
+        page: pendingPage,
+        setPage: setPendingPage,
+        groupTab: 1,
+        columnIndex: 1,
+      },
+      {
+        key: 'rejected',
+        title: 'REJECTED USERS',
+        titleColor: '#4C92F1',
+        userCount: rejectedUsers.length,
+        searchOptions: rejectedUsers.map(u => u.name),
+        searchValue: rejectedSearch,
+        setSearch: setRejectedSearch,
+        pagedUsers: pagedRejectedUsers,
+        totalPages: rejectedTotalPages,
+        page: rejectedPage,
+        setPage: setRejectedPage,
+        groupTab: 2,
+        columnIndex: 2,
+      },
+    ],
+    [
+      registeredUsers, registeredSearch, pagedRegisteredUsers, registeredTotalPages, registeredPage,
+      setRegisteredSearch, setRegisteredPage,
+      forApprovalUsers, pendingSearch, pagedPendingUsers, pendingTotalPages, pendingPage,
+      setPendingSearch, setPendingPage,
+      rejectedUsers, rejectedSearch, pagedRejectedUsers, rejectedTotalPages, rejectedPage,
+      setRejectedSearch, setRejectedPage
+    ]
+  );
 
-    const pagedPendingUsers = useMemo(() => {
-        const start = (pendingPage - 1) * PAGE_SIZE;
-        return filteredPendingUsers.slice(start, start + PAGE_SIZE);
-    }, [filteredPendingUsers, pendingPage]);
-    const pagedRejectedUsers = useMemo(() => {
-        const start = (rejectedPage - 1) * PAGE_SIZE;
-        return filteredRejectedUsers.slice(start, start + PAGE_SIZE);
-    }, [filteredRejectedUsers, rejectedPage]);
-    const pagedRegisteredUsers = useMemo(() => {
-        const start = (registeredPage - 1) * PAGE_SIZE;
-        return filteredRegisteredUsers.slice(start, start + PAGE_SIZE);
-    }, [filteredRegisteredUsers, registeredPage]);
-
-    const openFullScreenImage = useCallback((img: string, title: string) => {
-        setFullScreenImage(img);
-        setImageTitle(title);
-    }, []);
-
-    const closeFullScreenImage = useCallback(() => {
-        setFullScreenImage(null);
-        setImageTitle('');
-        setModalImagesUser(null);
-    }, []);
-
-    const handleApprove = useCallback((event: React.MouseEvent<HTMLElement>, user: PendingUser) => {
-        setApprovePopperAnchor(event.currentTarget);
-        setApprovePopperUser(user);
-    }, []);
-
-    const handleRejectClick = useCallback((user: PendingUser) => {
-        setSelectedUser(user);
-        setShowRejectModal(true);
-        setSelectedReasons([]);
-    }, []);
-
-    const toggleReason = useCallback((reason: string) => {
-        setSelectedReasons((prev) => (prev.includes(reason) ? prev.filter((r) => r !== reason) : [...prev, reason]));
-    }, []);
-
-    const submitRejection = useCallback(() => {
-        if (!selectedUser || selectedReasons.length === 0) return;
-        setProcessing(true);
-        router.post(
-            route('admin.client-management.reject', selectedUser.user_id),
-            { reasons: selectedReasons },
-            {
-                preserveScroll: true,
-                onSuccess: () => {
-                    setShowRejectModal(false);
-                    setSelectedUser(null);
-                    setSelectedReasons([]);
-                },
-                onFinish: () => setProcessing(false),
-            },
-        );
-    }, [selectedReasons, selectedUser]);
-
-    const submitApproval = useCallback(() => {
-        if (!approvePopperUser) return;
-        setProcessing(true);
-        router.post(
-            route('admin.client-management.approve', approvePopperUser.user_id),
-            {},
-            {
-                preserveScroll: true,
-                onFinish: () => {
-                    setProcessing(false);
-                    setApprovePopperAnchor(null);
-                    setApprovePopperUser(null);
-                },
-            },
-        );
-    }, [approvePopperUser]);
-
-    const userAccordionProps = useCallback(
-        (columnIndex: number): UserAccordionInjectedProps => ({
-            expanded,
-            setExpanded,
-            openFullScreenImage,
-            handleApprove,
-            handleRejectClick,
-            isMobile: isMobileOrTablet,
-            setModalImagesUser,
-            processing,
-            setFullScreenImage,
-            setImageTitle,
-            columnIndex,
-            expandedColumn,
-            setExpandedColumn,
-        }),
-        [
-            expanded,
-            expandedColumn,
-            handleApprove,
-            handleRejectClick,
-            isMobileOrTablet,
-            openFullScreenImage,
-            processing,
-        ],
-    );
-
-    const desktopColumns = useMemo<DesktopColumnConfig[]>(
-        () => [
-            {
-                key: 'registered',
-                title: 'REGISTERED USERS',
-                titleColor: '#F57979',
-                userCount: registeredUsers.length,
-                searchOptions: registeredUsers.map((u: PendingUser) => u.name),
-                searchValue: registeredSearch,
-                setSearch: setRegisteredSearch,
-                pagedUsers: pagedRegisteredUsers,
-                totalPages: registeredTotalPages,
-                page: registeredPage,
-                setPage: setRegisteredPage,
-                groupTab: 0,
-                columnIndex: 0,
-            },
-            {
-                key: 'pending',
-                title: 'PENDING APPROVAL',
-                titleColor: '#F57979',
-                userCount: forApprovalUsers.length,
-                searchOptions: forApprovalUsers.map((u: PendingUser) => u.name),
-                searchValue: pendingSearch,
-                setSearch: setPendingSearch,
-                pagedUsers: pagedPendingUsers,
-                totalPages: pendingTotalPages,
-                page: pendingPage,
-                setPage: setPendingPage,
-                groupTab: 1,
-                columnIndex: 1,
-            },
-            {
-                key: 'rejected',
-                title: 'REJECTED USERS',
-                titleColor: '#4C92F1',
-                userCount: rejectedUsers.length,
-                searchOptions: rejectedUsers.map((u: PendingUser) => u.name),
-                searchValue: rejectedSearch,
-                setSearch: setRejectedSearch,
-                pagedUsers: pagedRejectedUsers,
-                totalPages: rejectedTotalPages,
-                page: rejectedPage,
-                setPage: setRejectedPage,
-                groupTab: 2,
-                columnIndex: 2,
-            },
-        ],
-        [
-            forApprovalUsers,
-            pagedPendingUsers,
-            pagedRegisteredUsers,
-            pagedRejectedUsers,
-            pendingPage,
-            pendingSearch,
-            pendingTotalPages,
-            rejectedPage,
-            rejectedSearch,
-            rejectedTotalPages,
-            rejectedUsers,
-            registeredPage,
-            registeredSearch,
-            registeredTotalPages,
-            registeredUsers,
-            setPendingPage,
-            setPendingSearch,
-            setRejectedPage,
-            setRejectedSearch,
-            setRegisteredPage,
-            setRegisteredSearch,
-        ],
-    );
-
-    return {
-        isMobileOrTablet,
-        expanded,
-        setExpanded,
-        expandedColumn,
-        setExpandedColumn,
-        selectedUser,
-        setSelectedUser,
-        approvePopperAnchor,
-        setApprovePopperAnchor,
-        approvePopperUser,
-        setApprovePopperUser,
-        fullScreenImage,
-        imageTitle,
-        modalImagesUser,
-        showRejectModal,
-        setShowRejectModal,
-        selectedReasons,
-        processing,
-        rejectedUsers,
-        forApprovalUsers,
-        registeredUsers,
-        pagedPendingUsers,
-        pagedRejectedUsers,
-        pagedRegisteredUsers,
-        pendingSearch,
-        setPendingSearch,
-        rejectedSearch,
-        setRejectedSearch,
-        registeredSearch,
-        setRegisteredSearch,
-        pendingTotalPages,
-        rejectedTotalPages,
-        registeredTotalPages,
-        pendingPage,
-        setPendingPage,
-        rejectedPage,
-        setRejectedPage,
-        registeredPage,
-        setRegisteredPage,
-        userAccordionProps,
-        desktopColumns,
-        openFullScreenImage,
-        closeFullScreenImage,
-        handleApprove,
-        handleRejectClick,
-        toggleReason,
-        submitRejection,
-        submitApproval,
-        setProcessing,
-        setModalImagesUser,
-        setFullScreenImage,
-        setImageTitle,
-    };
+  // Expose all states/helpers to your SPA page/components
+  return {
+    isMobileOrTablet,
+    expanded,
+    setExpanded,
+    expandedColumn,
+    setExpandedColumn,
+    selectedUser,
+    setSelectedUser,
+    approvePopperAnchor,
+    setApprovePopperAnchor,
+    approvePopperUser,
+    setApprovePopperUser,
+    fullScreenImage,
+    imageTitle,
+    modalImagesUser,
+    showRejectModal,
+    setShowRejectModal,
+    selectedReasons,
+    processing,
+    rejectedUsers,
+    forApprovalUsers,
+    registeredUsers,
+    pagedPendingUsers,
+    pagedRejectedUsers,
+    pagedRegisteredUsers,
+    pendingSearch,
+    setPendingSearch,
+    rejectedSearch,
+    setRejectedSearch,
+    registeredSearch,
+    setRegisteredSearch,
+    pendingTotalPages,
+    rejectedTotalPages,
+    registeredTotalPages,
+    pendingPage,
+    setPendingPage,
+    rejectedPage,
+    setRejectedPage,
+    registeredPage,
+    setRegisteredPage,
+    userAccordionProps,
+    desktopColumns,
+    openFullScreenImage,
+    closeFullScreenImage,
+    handleApprove,
+    handleRejectClick,
+    toggleReason,
+    submitRejection,
+    submitApproval,
+    setProcessing,
+    setModalImagesUser,
+    setFullScreenImage,
+    setImageTitle,
+    loading,
+    fetchUsers,
+  };
 }

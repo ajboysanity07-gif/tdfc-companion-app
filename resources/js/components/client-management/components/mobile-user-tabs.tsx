@@ -4,11 +4,10 @@ import SearchAutocomplete from './search-autocomplete';
 import UserAccordionList from './user-accordion-list';
 import CardPagination from './card-pagination';
 import UserListCard from './user-list-card';
-import { PendingUser } from '@/types';
+import { PendingUser } from '@/types/user';
 
-// 1) Get the prop type of the child component
+// Get child prop type and omit auto-injected props for clean typing
 type UserAccordionListProps = React.ComponentProps<typeof UserAccordionList>;
-// 2) Type omitting certain auto-provided props
 type ForwardAccordionProps = Omit<
   UserAccordionListProps,
   'usersList' | 'groupTab' | 'searchValue' | 'isMobile'
@@ -18,39 +17,37 @@ interface Props {
   registeredUsers: PendingUser[];
   pagedRegisteredUsers: PendingUser[];
   registeredSearch: string;
-  setRegisteredSearch: (v: string) => void;
+  setRegisteredSearch: React.Dispatch<React.SetStateAction<string>>;
   registeredTotalPages: number;
   registeredPage: number;
   setRegisteredPage: React.Dispatch<React.SetStateAction<number>>;
-
   forApprovalUsers: PendingUser[];
   pagedPendingUsers: PendingUser[];
   pendingSearch: string;
-  setPendingSearch: (v: string) => void;
+  setPendingSearch: React.Dispatch<React.SetStateAction<string>>;
   pendingTotalPages: number;
   pendingPage: number;
   setPendingPage: React.Dispatch<React.SetStateAction<number>>;
-
   rejectedUsers: PendingUser[];
   pagedRejectedUsers: PendingUser[];
   rejectedSearch: string;
-  setRejectedSearch: (v: string) => void;
+  setRejectedSearch: React.Dispatch<React.SetStateAction<string>>;
   rejectedTotalPages: number;
   rejectedPage: number;
   setRejectedPage: React.Dispatch<React.SetStateAction<number>>;
 
-  // This provides the extra props to UserAccordionList
+  // This provides extra props to UserAccordionList
   userAccordionProps: (groupTab: 0 | 1 | 2) => ForwardAccordionProps;
 }
 
 const USER_TABS = [
   { label: 'Registered', color: '#F57979' },
   { label: 'Pending', color: '#F57979' },
-  { label: 'Rejected', color: '#4C92F1' }
+  { label: 'Rejected', color: '#4C92F1' },
 ];
 
 export default function MobileUserTabs(props: Props) {
-  const [tab, setTab] = useState(1); // Default to Pending Approval
+  const [tab, setTab] = useState<number>(1); // Default to Pending Approval
   const theme = useTheme();
 
   const paperBg =
@@ -74,7 +71,7 @@ export default function MobileUserTabs(props: Props) {
         transition: 'background-color 0.3s',
         display: 'flex',
         flexDirection: 'column',
-        minHeight: 400 // ensures enough vertical space, can tweak as needed
+        minHeight: 400, // ensures enough vertical space, can tweak as needed
       }}
     >
       <Tabs
@@ -85,26 +82,27 @@ export default function MobileUserTabs(props: Props) {
           px: 1,
           bgcolor: theme.palette.background.default,
           '& button': { fontWeight: 700, fontSize: 16 },
-          '& .Mui-selected': { color: USER_TABS[tab].color + '!important' }
+          '& .Mui-selected': { color: USER_TABS[tab].color + '!important' },
         }}
       >
         <Tab label="Registered" />
         <Tab label="Pending" />
         <Tab label="Rejected" />
       </Tabs>
-      <Box sx={{
-        flex: 1,
-        minHeight: 0,
-        display: 'flex',
-        flexDirection: 'column',
-        p: 2
-      }}>
+      <Box
+        sx={{
+          flex: 1,
+          minHeight: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          p: 2,
+        }}
+      >
         {tab === 0 && (
           <UserListCard
             title="REGISTERED USERS"
             titleColor="#F57979"
             userCount={props.registeredUsers.length}
-            // Card content is flex to allow pushing pagination to bottom
             sx={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 320 }}
           >
             <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>

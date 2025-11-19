@@ -1,7 +1,7 @@
 // hooks/useClientManagement.ts
 import { useState } from 'react';
 import { router } from '@inertiajs/react';
-import { PendingUser } from '@/types';
+import { PendingUser } from '@/types/user';
 
 export function useClientManagement(pendingUsers: PendingUser[]) {
     const [expanded, setExpanded] = useState<number | null>(null);
