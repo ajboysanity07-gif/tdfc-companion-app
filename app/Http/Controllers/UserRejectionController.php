@@ -8,28 +8,43 @@ use App\Models\RejectionReason;
 
 class UserRejectionController extends Controller
 {
-    // Reject a user with selected reasons
-    public function reject(Request $request, $userId)
+    /**
+     * Returns a list of possible rejection reasons (admin only) – JSON response.
+     */
+    public function getRejectionReasons(Request $request)
     {
-        $request->validate([
-            'rejection_reasons' => 'required|array|min:1',
-            'rejection_reasons.*' => 'string|exists:rejection_reasons,code',
-        ]);
-        $reasonCodes = $request->input('rejection_reasons');
-        $reasonIDs = RejectionReason::whereIn('code', $reasonCodes)->pluck('id')->toArray();
-        $user = AppUser::findOrFail($userId);
-        $user->rejectionReasons()->sync($reasonIDs);
-        $user->status = 'rejected';
-        $user->rejected_at = now();
-        $user->save();
+        // Adjust this if your reasons are static or seeded
+        $reasons = RejectionReason::all();
 
-        return response()->json(['message' => 'Rejected reasons updated successfully.']);
+        return response()->json([
+            'success' => true,
+            'reasons' => $reasons,
+        ]);
     }
 
-    // Get user's rejection reasons as JSON
-    public function getRejectionReasons($userId)
+    /**
+     * Rejects a user with a reason (admin only) – JSON response.
+     */
+    public function reject(Request $request)
     {
-        $user = AppUser::findOrFail($userId);
-        return response()->json($user->rejectionReasons);
+        $request->validate([
+            'userid' => 'required|exists:appusertable,userid',
+            'reasonid' => 'required|exists:rejectionreasons,id'
+        ]);
+
+        $user = AppUser::findOrFail($request->userid);
+        $user->status = 'rejected';
+        $user->rejectedat = now();
+        $user->reviewedby = $request->user()->userid;
+        $user->save();
+
+        // Attach reason to user (many-to-many, see your model relation)
+        $user->rejectionReasons()->attach($request->reasonid);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'User rejected with reason.',
+            'user'    => $user,
+        ]);
     }
 }

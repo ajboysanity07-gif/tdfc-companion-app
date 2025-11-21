@@ -4,56 +4,67 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\LoginAppUserRequest;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
+use App\Models\AppUser;
 use Illuminate\Support\Facades\Auth;
-use Inertia\Inertia;
-use Inertia\Response;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class AuthenticatedSessionController extends Controller
 {
-    public function create(): Response
+    public function store(LoginAppUserRequest $request): JsonResponse
     {
-        return Inertia::render('auth/login');
-    }
-public function store(LoginAppUserRequest $request): RedirectResponse
-{
-    $credentials = $request->only('email', 'password');
+        $credentials = $request->only('email', 'password');
 
-    if (! Auth::attempt($credentials, $request->boolean('remember'))) {
-        return back()->withErrors([
-            'email' => 'Invalid credentials.',
-        ])->onlyInput('email');
-    }
+        if (!Auth::guard('web')->attempt($credentials)) {
+            return response()->json([
+                'message' => 'Invalid email or password.'
+            ], 401);
+        }
 
-    $request->session()->regenerate();
-
-    $user = $request->user();
-
-    // Customer pending approval check
-    if ($user->role === 'customer' && $user->status !== 'approved') {
-        return redirect()->route('customer.registration.status');
-    }
-
-    // ✅ FIXED: Admin redirect to full dashboard path
-    if ($user->role === 'admin') {
-        return redirect()->route('admin.dashboard'); // This points to /admin/dashboard
+        $user = AppUser::where('email', $request->email)->firstOrFail();
+        // Create token for SPA/API
+        $token = $user->createToken('auth_token')->plainTextToken;
+        return response()->json([
+            'message' => 'Login successful',
+            'user' => [
+                'id'     => $user->getKey(), // primary key (user_id)
+                'user_id'=> $user->getKey(),
+                'acctno' => $user->acctno,
+                'role'   => $user->role,
+                'status' => $user->status,
+            ],
+            'token' => $token,
+        ]);
     }
 
-    // Customer approved - go to customer dashboard
-    return redirect()->route('dashboard'); // This points to /dashboard
-}
-
-
-
-
-    public function destroy(Request $request): RedirectResponse
+    public function user(): JsonResponse
     {
+        return response()->json(Auth::user());
+    }
+
+    public function destroy(Request $request)
+    {
+        $user = $request->user();
+
+        if ($user) {
+            // Revoke all tokens (API/Sanctum)
+            $user->tokens()->delete();
+        }
+
+        // Log out of the session guard if present
         Auth::guard('web')->logout();
 
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+        // Invalidate session + regenerate token when sessions are available (Inertia/web)
+        if ($request->hasSession()) {
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+        }
 
-        return redirect()->route('welcome');
+        // Respond appropriately for API vs Inertia/web
+        if ($request->expectsJson()) {
+            return response()->json(['message' => 'Logged out']);
+        }
+
+        return redirect()->route('login');
     }
 }

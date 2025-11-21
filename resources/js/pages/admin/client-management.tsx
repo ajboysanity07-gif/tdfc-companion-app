@@ -11,7 +11,7 @@ const breadcrumbs = [
   { title: 'Client Management', href: '/admin/client-management' },
 ];
 
-// Fix: appleSeparator prop should be a function returning CSSProperties
+// Apple separator style
 const appleSeparator = (): React.CSSProperties => ({
   margin: 0,
   padding: 0,
@@ -71,6 +71,15 @@ export default function ClientManagementPage() {
     submitApproval,
   } = useClientManagement();
 
+  // Example loading state. Replace with real loading check!
+  const loading = processing ||
+    pagedRegisteredUsers == null ||
+    pagedPendingUsers == null ||
+    pagedRejectedUsers == null;
+
+  // Optional: For multiple desktop columns, you can make loadingColumns = [loading,...]:
+  const loadingColumns = desktopColumns.map(() => loading);
+
   return (
     <AppLayout breadcrumbs={breadcrumbs}>
       <div
@@ -112,13 +121,14 @@ export default function ClientManagementPage() {
             rejectedPage={rejectedPage}
             setRejectedPage={setRejectedPage}
             userAccordionProps={userAccordionProps}
+            loading={loading}
           />
         ) : (
-          // Fix: Pass function, not object
           <DesktopUserColumns
             columns={desktopColumns}
             userAccordionProps={userAccordionProps}
             appleSeparator={appleSeparator}
+            loadingColumns={loadingColumns}
           />
         )}
 

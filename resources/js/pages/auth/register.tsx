@@ -1,13 +1,14 @@
-import PayslipFileRow from '@/components/payslip-filerow';
-import PRCFileRow from '@/components/prc-filerow';
+import PayslipFileRow from '@/components/auth/register/payslip-filerow';
+import PayslipWizard from '@/components/auth/register/payslip-wizard';
+import PRCFileRow from '@/components/auth/register/prc-filerow';
+import PrcWizard from '@/components/auth/register/prc-wizard';
 import AvatarCropModal from '@/components/ui/avatar-crop-modal';
-import InputError from '@/components/ui/input-error';
-import PayslipWizard from '@/components/ui/payslip-wizard';
-import PrcWizard from '@/components/ui/prc-wizard';
-import { Head, useForm } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
+import { AxiosError } from 'axios';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Eye, EyeOff, Plus } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
+import { register as apiRegister } from '../../api/auth-api';
 
 type Props = { adminMode?: boolean };
 
@@ -24,6 +25,34 @@ const Step = ({ children }: { children: React.ReactNode }) => (
 
 type LookupStatus = 'idle' | 'searching' | 'found' | 'not_found';
 
+type RegisterFormState = {
+    accntno: string;
+    full_name: string;
+    phone_no: string;
+    email: string;
+    password: string;
+    password_confirmation: string;
+    profile_picture: File | null;
+    prc_id_photo_front: File | null;
+    prc_id_photo_back: File | null;
+    payslip_photo: File | null;
+    admin_registration?: boolean;
+};
+
+const initialFormState: RegisterFormState = {
+    accntno: '',
+    full_name: '',
+    phone_no: '',
+    email: '',
+    password: '',
+    password_confirmation: '',
+    profile_picture: null,
+    prc_id_photo_front: null,
+    prc_id_photo_back: null,
+    payslip_photo: null,
+    admin_registration: false,
+};
+
 export default function Register({ adminMode = false }: Props) {
     const [step, setStep] = useState<1 | 2>(1);
     const [lookupStatus, setLookupStatus] = useState<LookupStatus>('idle');
@@ -34,39 +63,28 @@ export default function Register({ adminMode = false }: Props) {
     const [prcFront, setPrcFront] = useState<File | null>(null);
     const [prcBack, setPrcBack] = useState<File | null>(null);
     const [payName, setPayName] = useState<string | null>(null);
+    const [payslipWizardOpen, setPayslipWizardOpen] = useState(false);
+    const [phoneError, setPhoneError] = useState<string | null>(null);
+    const phoneReqIdRef = useRef(0);
+    const [phoneStatus, setPhoneStatus] = useState<'idle' | 'checking' | 'duplicate' | 'ok' | 'error'>('idle');
+    const emailReqIdRef = useRef(0);
+    const [emailStatus, setEmailStatus] = useState<'idle' | 'checking' | 'duplicate' | 'invalid' | 'ok' | 'error'>('idle');
+
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [pwValid, setPwValid] = useState<boolean | null>(null);
     const [pwMatch, setPwMatch] = useState<boolean | null>(null);
-    const [payslipWizardOpen, setPayslipWizardOpen] = useState(false);
 
-    // Duplicate checks - ADDED
+    // Field errors direct from Laravel backend!
+    const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
+    const [globalError, setGlobalError] = useState<string | null>(null);
+    const [success, setSuccess] = useState<boolean>(false);
+    const [loading, setLoading] = useState(false);
+
+    // Duplicate checks
     const [duplicateAccount, setDuplicateAccount] = useState(false);
-    const [duplicateEmail, setDuplicateEmail] = useState(false);
-
-    const { data, setData, post, processing, errors } = useForm<{
-        accntno: string;
-        full_name: string;
-        phone_no: string;
-        email: string;
-        password: string;
-        password_confirmation: string;
-        profile_picture: File | null;
-        prc_id_photo_front: File | null;
-        prc_id_photo_back: File | null;
-        payslip_photo: File | null;
-        admin_registration?: boolean;
-    }>({
-        accntno: '',
-        full_name: '',
-        phone_no: '',
-        email: '',
-        password: '',
-        password_confirmation: '',
-        profile_picture: null,
-        prc_id_photo_front: null,
-        prc_id_photo_back: null,
-        payslip_photo: null,
+    const [form, setForm] = useState<RegisterFormState>({
+        ...initialFormState,
         admin_registration: adminMode,
     });
 
@@ -74,10 +92,10 @@ export default function Register({ adminMode = false }: Props) {
     const reqIdRef = useRef(0);
 
     useEffect(() => {
-        const q = (data.accntno ?? '').trim();
+        const q = (form.accntno ?? '').trim();
         if (q.length !== 6) {
             setLookupStatus('idle');
-            setData('full_name', '');
+            setForm((prev) => ({ ...prev, full_name: '' }));
             controller.current?.abort();
             return;
         }
@@ -87,7 +105,7 @@ export default function Register({ adminMode = false }: Props) {
             controller.current?.abort();
             controller.current = new AbortController();
             try {
-                const res = await fetch(`/api/wmaster/lookup?acctno=${encodeURIComponent(q)}`, {
+                const res = await fetch(`/api/wmaster-lookup?acctno=${encodeURIComponent(q)}`, {
                     signal: controller.current.signal,
                     headers: { 'X-Requested-With': 'XMLHttpRequest' },
                 });
@@ -95,79 +113,221 @@ export default function Register({ adminMode = false }: Props) {
                 if (thisReqId !== reqIdRef.current) return;
                 if (j?.exists) {
                     setLookupStatus('found');
-                    setData('full_name', j.bname ?? '');
+                    setForm((prev) => ({
+                        ...prev,
+                        full_name: j.bname ?? '',
+                    }));
                 } else {
                     setLookupStatus('not_found');
-                    setData('full_name', '');
+                    setForm((prev) => ({ ...prev, full_name: '' }));
                 }
             } catch {
-                /* ignore */
+                if (thisReqId === reqIdRef.current) {
+                    setLookupStatus('not_found');
+                    setForm((prev) => ({ ...prev, full_name: '' }));
+                }
             }
         }, 250);
         return () => clearTimeout(timer);
-    }, [data.accntno, setData]);
+    }, [form.accntno]);
 
     useEffect(() => {
-        setPwValid(data.password.length === 0 ? null : data.password.length >= 8);
-        setPwMatch(data.password_confirmation.length === 0 ? null : data.password_confirmation === data.password);
-    }, [data.password, data.password_confirmation]);
+        setPwValid(form.password.length === 0 ? null : form.password.length >= 8);
+        setPwMatch(form.password_confirmation.length === 0 ? null : form.password_confirmation === form.password);
+    }, [form.password, form.password_confirmation]);
 
-    // reset to step 1 on backend validation errors
+    // duplicate checks (same as your useEffect logic)
     useEffect(() => {
-        if (step === 2 && Object.keys(errors).length > 0) {
-            setStep(1);
-        }
-    }, [errors, step]);
-
-    // DUPLICATE REG CHECKS
-    useEffect(() => {
-        if (data.accntno.length === 6) {
-            fetch(`/api/check-register-duplicate?accntno=${encodeURIComponent(data.accntno)}`)
+        if (form.accntno.length === 6) {
+            fetch(`/api/check-register-duplicate?accntno=${encodeURIComponent(form.accntno)}`)
                 .then((res) => res.json())
-                .then((json) => setDuplicateAccount(Boolean(json.accntnoExists)))
+                .then((json) => setDuplicateAccount(json.accntnoExists === true))
                 .catch(() => setDuplicateAccount(false));
         } else {
             setDuplicateAccount(false);
         }
-    }, [data.accntno]);
-    useEffect(() => {
-        if (data.email.length > 3) {
-            fetch(`/api/check-register-duplicate?email=${encodeURIComponent(data.email)}`)
-                .then((res) => res.json())
-                .then((json) => setDuplicateEmail(Boolean(json.emailExists)))
-                .catch(() => setDuplicateEmail(false));
-        } else {
-            setDuplicateEmail(false);
-        }
-    }, [data.email]);
+    }, [form.accntno]);
 
-    // ---- ADDED: Helper to clear errors and duplicate flags on step change ----
+    useEffect(() => {
+        const value = form.email.trim().toLowerCase();
+        const thisReqId = ++emailReqIdRef.current;
+
+        if (value.length < 4) {
+            setEmailStatus('idle');
+            return;
+        }
+
+        const emailFormatOk = /\S+@\S+\.\S+/.test(value);
+        if (!emailFormatOk) {
+            setEmailStatus('invalid');
+            return;
+        }
+
+        setEmailStatus('checking');
+        const timer = setTimeout(async () => {
+            try {
+                const res = await fetch(`/api/check-register-duplicate?email=${encodeURIComponent(value)}`, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                });
+                if (thisReqId !== emailReqIdRef.current) return;
+                if (!res.ok) throw new Error('dup-check-failed');
+
+                const json = await res.json();
+                const emailExists = json.emailExists === true;
+                setEmailStatus(emailExists ? 'duplicate' : 'ok');
+            } catch {
+                if (thisReqId !== emailReqIdRef.current) return;
+                setEmailStatus('error'); // block if we can't verify
+            }
+        }, 300);
+
+        return () => clearTimeout(timer);
+    }, [form.email]);
     const clearStep1State = () => {
-        (Object.keys(errors) as Array<keyof typeof errors>).forEach((key) => {
-            (errors as Record<string, string>)[key] = '';
-        });
-        setDuplicateEmail(false);
+        setFieldErrors({});
         setDuplicateAccount(false);
     };
 
-    // ---- ADDED: NEXT Step1 handler ----
     const handleStep1Next = () => {
         clearStep1State();
         setStep(2);
     };
+    useEffect(() => {
+        const value = form.phone_no.trim();
 
-    const submit = (e: React.FormEvent) => {
+        if (!value) {
+            setPhoneError(null);
+            setPhoneStatus('idle');
+            return;
+        }
+        if (!/^\d+$/.test(value)) {
+            setPhoneError('Phone must be numbers only.');
+            setPhoneStatus('idle');
+            return;
+        }
+        if (!value.startsWith('09')) {
+            setPhoneError('Phone must start with 09.');
+            setPhoneStatus('idle');
+            return;
+        }
+        if (value.length !== 11) {
+            setPhoneError('Phone must be exactly 11 digits.');
+            setPhoneStatus('idle');
+            return;
+        }
+        setPhoneError(null);
+
+        const thisReqId = ++phoneReqIdRef.current;
+        setPhoneStatus('checking');
+        const timer = setTimeout(async () => {
+            try {
+                const res = await fetch(`/api/check-register-duplicate?phone_no=${encodeURIComponent(value)}`, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                });
+                if (thisReqId !== phoneReqIdRef.current) return;
+                if (!res.ok) throw new Error('dup-check-failed');
+                const json = await res.json();
+                const exists = json.phoneExists === true;
+                setPhoneStatus(exists ? 'duplicate' : 'ok');
+            } catch {
+                if (thisReqId !== phoneReqIdRef.current) return;
+                setPhoneStatus('error');
+            }
+        }, 300);
+
+        return () => clearTimeout(timer);
+    }, [form.phone_no]);
+
+    // Handle field change (for all inputs)
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value, files } = e.target;
+        if (files) {
+            setForm((prev) => ({ ...prev, [name]: files[0] }));
+        } else {
+            setForm((prev) => ({ ...prev, [name]: value }));
+        }
+        if (fieldErrors[name]) setFieldErrors((prev) => ({ ...prev, [name]: [] }));
+    };
+    // Submit form! -- use your API, and grab errors from backend
+    const normalizeErrors = (errors: Record<string, string[]>) => ({
+        ...errors,
+        phone_no: errors.phone_no ?? errors.phoneno,
+    });
+
+    // Submit form! -- use your API, and grab errors from backend
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        const url = adminMode ? '/admin-registration' : '/register';
-        post(url, { forceFormData: true });
+        setFieldErrors({});
+        setGlobalError(null);
+        setSuccess(false);
+        setLoading(true);
+
+        // Fill formData object for files + text
+        const buildFormData = (form: RegisterFormState) => {
+            const fd = new FormData();
+            fd.append('accntno', form.accntno);
+            fd.append('fullname', form.full_name ?? '');
+            fd.append('phoneno', form.phone_no);
+            fd.append('email', form.email);
+            fd.append('password', form.password);
+            fd.append('password_confirmation', form.password_confirmation);
+            if (form.profile_picture) fd.append('profilepicture', form.profile_picture);
+            if (form.prc_id_photo_front) fd.append('prcidphotofront', form.prc_id_photo_front);
+            if (form.prc_id_photo_back) fd.append('prcidphotoback', form.prc_id_photo_back);
+            if (form.payslip_photo) fd.append('payslipphoto', form.payslip_photo);
+            return fd;
+        };
+        const fd = buildFormData(form);
+
+        Object.entries(form).forEach(([k, v]) => {
+            if (v !== undefined && v !== null) {
+                fd.append(k, v as string | Blob);
+            }
+        });
+
+        try {
+            await apiRegister(fd);
+            setSuccess(true);
+            setForm({
+                ...initialFormState,
+                admin_registration: adminMode,
+            });
+            setAvatarUrl(null);
+            setPayName(null);
+            setPrcFront(null);
+            setPrcBack(null);
+            // Redirect to login after successful registration
+            window.location.href = '/login';
+        } catch (err) {
+            const error = err as AxiosError<{ message?: string; errors?: Record<string, string[]> }>;
+            setSuccess(false);
+            if (error.response && error.response.data) {
+                setFieldErrors(normalizeErrors(error.response.data.errors || {}));
+                setGlobalError(error.response.data.message ?? null);
+            } else {
+                setGlobalError('Registration failed. Please try again.');
+            }
+        } finally {
+            setLoading(false);
+        }
     };
 
     const inputBase =
         'mt-2 w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-black placeholder:text-gray-400 outline-none focus:border-[#F57979] focus:ring-2 focus:ring-[#F57979]/50';
+    const phoneValid = phoneError === null && form.phone_no.trim().length === 11;
+    const emailValid = emailStatus === 'ok';
 
-    const canProceed = lookupStatus === 'found' && pwValid === true && pwMatch === true && !processing && !duplicateAccount && !duplicateEmail;
+    const canProceed =
+        lookupStatus === 'found' &&
+        pwValid === true &&
+        pwMatch === true &&
+        phoneValid &&
+        phoneStatus === 'ok' &&
+        emailValid &&
+        !loading &&
+        !duplicateAccount;
 
-    const canRegister = canProceed && data.prc_id_photo_front && data.prc_id_photo_back && data.payslip_photo;
+    const canRegister = canProceed && form.prc_id_photo_front && form.prc_id_photo_back && form.payslip_photo;
 
     const getPrcStatusDisplay = () => {
         if (prcFront && prcBack) return 'Front & Back completed ✓';
@@ -180,19 +340,14 @@ export default function Register({ adminMode = false }: Props) {
         <>
             <Head title="Register" />
             <div className="flex min-h-screen flex-col items-center justify-center bg-linear-to-br from-gray-100 via-white to-gray-200 p-6 sm:p-10">
-                <form onSubmit={submit} className="flex w-full max-w-full flex-col items-center">
+                <form onSubmit={handleSubmit} className="flex w-full max-w-full flex-col items-center">
+                    {/* Top global error/success display */}
+                    {success && <div className="mb-4 text-lg text-green-600">Registration successful!</div>}
+                    {globalError && <div className="mb-4 text-red-600">{globalError}</div>}
+
                     <AnimatePresence mode="wait">
                         {step === 1 ? (
                             <Step key="s1">
-                                {Object.keys(errors).length > 0 && (
-                                    <div className="mx-auto mb-4 w-full max-w-[400px]">
-                                        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-center text-sm text-red-700">
-                                            {Object.values(errors).map((msg, i) => (
-                                                <div key={i}>{msg}</div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
                                 <div className="mx-auto mb-6 max-w-[430px] text-center">
                                     <h1 className="mb-3 text-4xl font-extrabold tracking-tight text-[#F57979]">Register</h1>
                                     <p className="mx-auto max-w-[44ch] text-base leading-6 text-black/70">
@@ -201,124 +356,135 @@ export default function Register({ adminMode = false }: Props) {
                                     </p>
                                 </div>
                                 <div className="mx-auto mt-4 mb-4 w-full max-w-[400px] rounded-2xl bg-[#ededed] px-5 py-8 shadow">
+                                    {/* Account No */}
                                     <div className="mb-5">
                                         <label className="text-[14px] font-bold text-[#F57979]">Account Number</label>
                                         <input
-                                            value={data.accntno}
-                                            onChange={(e) => {
-                                                setData('accntno', e.target.value.replace(/\s/g, '').slice(0, 6));
-                                                if (errors.accntno) errors.accntno = '';
-                                                setDuplicateAccount(false); // <-- clear flag on change
-                                            }}
+                                            name="accntno"
+                                            type="text"
+                                            value={form.accntno}
+                                            onChange={handleChange}
                                             maxLength={6}
                                             placeholder="Enter account number"
-                                            aria-invalid={!!(errors.accntno || lookupStatus === 'not_found') || duplicateAccount}
                                             className={inputBase}
                                         />
+                                        {fieldErrors.accntno && <div className="text-xs text-red-500">{fieldErrors.accntno.join(', ')}</div>}
                                         <div className="mt-1 min-h-5 text-xs" role="status" aria-live="polite">
                                             {duplicateAccount ? (
                                                 <span className="text-[#DC2626]">Account number is already registered.</span>
-                                            ) : errors.accntno ? (
-                                                <span className="text-[#DC2626]">{errors.accntno}</span>
                                             ) : (
                                                 <span className="text-black/70">
                                                     {lookupStatus === 'searching' && 'Checking...'}
                                                     {lookupStatus === 'not_found' && 'Account number not found.'}
-                                                    {lookupStatus === 'found' && data.full_name && `This account no belongs to ${data.full_name}.`}
+                                                    {lookupStatus === 'found' && form.full_name && `This account no belongs to ${form.full_name}.`}
                                                 </span>
                                             )}
                                         </div>
                                     </div>
-                                    <input type="hidden" value={data.full_name} readOnly />
+                                    {/* Phone Number */}
                                     <div className="mb-5">
                                         <label className="text-[14px] font-bold text-[#F57979]">Phone Number</label>
                                         <input
-                                            value={data.phone_no}
+                                            name="phone_no"
+                                            type="text"
+                                            maxLength={11}
+                                            value={form.phone_no}
+                                            onChange={handleChange}
                                             inputMode="numeric"
-                                            onChange={(e) => {
-                                                setData('phone_no', e.target.value.replace(/\D/g, '').slice(0, 11));
-                                                if (errors.phone_no) errors.phone_no = '';
-                                            }}
                                             placeholder="09xxxxxxxxx"
-                                            aria-invalid={!!errors.phone_no}
                                             className={inputBase}
                                         />
-                                        <InputError key={data.phone_no} message={errors.phone_no} />
+                                        {phoneError && <div className="text-xs text-red-500">{phoneError}</div>}
+                                        {!phoneError && (
+                                            <>
+                                                {phoneStatus === 'checking' && (
+                                                    <div className="text-xs text-black/70">Checking phone...</div>
+                                                )}
+                                                {phoneStatus === 'duplicate' && (
+                                                    <div className="text-xs text-red-500">Phone number is already registered.</div>
+                                                )}
+                                                {phoneStatus === 'error' && (
+                                                    <div className="text-xs text-red-500">Could not verify phone. Please try again.</div>
+                                                )}
+                                                {phoneStatus === 'ok' && (
+                                                    <div className="text-xs text-emerald-600">Phone number looks good.</div>
+                                                )}
+                                                {fieldErrors.phone_no && (
+                                                    <div className="text-xs text-red-500">{fieldErrors.phone_no.join(', ')}</div>
+                                                )}
+                                            </>
+                                        )}
                                     </div>
+                                    {/* Email */}
                                     <div className="mb-5">
                                         <label className="text-[14px] font-bold text-[#F57979]">Email</label>
                                         <input
+                                            name="email"
                                             type="email"
-                                            value={data.email}
-                                            onChange={(e) => {
-                                                setData('email', e.target.value);
-                                                if (errors.email) errors.email = '';
-                                                setDuplicateEmail(false); // <-- clear flag on change
-                                            }}
+                                            value={form.email}
+                                            onChange={handleChange}
                                             placeholder="you@example.com"
-                                            aria-invalid={!!errors.email || duplicateEmail}
                                             className={inputBase}
                                         />
-                                        <InputError key={data.email} message={duplicateEmail ? 'Email is already registered.' : errors.email} />
+                                        <div className="mt-1 min-h-5 text-xs" role="status" aria-live="polite">
+                                            {emailStatus === 'checking' && <span className="text-black/70">Checking...</span>}
+                                            {emailStatus === 'duplicate' && <span className="text-red-500">Email is already registered.</span>}
+                                            {emailStatus === 'invalid' && <span className="text-red-500">Enter a valid email (e.g. user@mail.com).</span>}
+                                            {emailStatus === 'error' && <span className="text-red-500">Could not verify email. Please try again.</span>}
+                                            {emailStatus === 'ok' && <span className="text-emerald-600">Email looks good.</span>}
+                                        </div>
+                                        {fieldErrors.email && <div className="text-xs text-red-500">{fieldErrors.email.join(', ')}</div>}
                                     </div>
+                                    {/* Password */}
                                     <div className="mb-5">
                                         <label className="text-[14px] font-bold text-[#F57979]">Password</label>
                                         <div className="relative">
                                             <input
+                                                name="password"
                                                 type={showPassword ? 'text' : 'password'}
-                                                value={data.password}
-                                                onChange={(e) => setData('password', e.target.value)}
+                                                value={form.password}
+                                                onChange={handleChange}
                                                 placeholder="Minimum 8 characters"
-                                                aria-invalid={pwValid === false || !!errors.password}
-                                                className={`${inputBase} pr-10 ${
-                                                    pwValid === false ? 'border-red-300 focus:border-red-400 focus:ring-red-300' : ''
-                                                }`}
+                                                className={`${inputBase} pr-10 ${pwValid === false ? 'border-red-300 focus:border-red-400 focus:ring-red-300' : ''}`}
                                             />
                                             <button
                                                 type="button"
                                                 onClick={() => setShowPassword((v) => !v)}
                                                 className="absolute top-1/2 right-3 -translate-y-1/2 text-gray-400 hover:text-gray-700"
+                                                tabIndex={-1}
                                             >
                                                 {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                                             </button>
                                         </div>
-                                        <InputError
-                                            key={data.password}
-                                            message={errors.password ? errors.password : pwValid === false ? 'Minimum 8 characters.' : ''}
-                                        />
+                                        {fieldErrors.password && <div className="text-xs text-red-500">{fieldErrors.password.join(', ')}</div>}
+                                        {pwValid === false && <div className="text-xs text-red-500">Minimum 8 characters.</div>}
                                     </div>
+                                    {/* Password Confirmation */}
                                     <div className="mb-6">
                                         <label className="text-[14px] font-bold text-[#F57979]">Confirm Password</label>
                                         <div className="relative">
                                             <input
+                                                name="password_confirmation"
                                                 type={showConfirmPassword ? 'text' : 'password'}
-                                                value={data.password_confirmation}
-                                                onChange={(e) => setData('password_confirmation', e.target.value)}
+                                                value={form.password_confirmation}
+                                                onChange={handleChange}
                                                 placeholder="Re-enter your password"
-                                                aria-invalid={pwMatch === false || !!errors.password_confirmation}
-                                                className={`${inputBase} pr-10 ${
-                                                    pwMatch === false ? 'border-red-300 focus:border-red-400 focus:ring-red-300' : ''
-                                                }`}
+                                                className={`${inputBase} pr-10 ${pwMatch === false ? 'border-red-300 focus:border-red-400 focus:ring-red-300' : ''}`}
                                             />
                                             <button
                                                 type="button"
                                                 onClick={() => setShowConfirmPassword((v) => !v)}
                                                 className="absolute top-1/2 right-3 -translate-y-1/2 text-gray-400 hover:text-gray-700"
+                                                tabIndex={-1}
                                             >
                                                 {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                                             </button>
                                         </div>
-                                        <div className="mt-1 min-h-5 text-xs" role="status" aria-live="polite">
-                                            {errors.password_confirmation ? (
-                                                <span className="text-[#DC2626]">{errors.password_confirmation}</span>
-                                            ) : pwMatch === false ? (
-                                                <span className="text-[#DC2626]">Passwords do not match.</span>
-                                            ) : pwMatch === true ? (
-                                                <span className="text-emerald-600">Passwords match.</span>
-                                            ) : (
-                                                <span className="invisible">.</span>
-                                            )}
-                                        </div>
+                                        {fieldErrors.password_confirmation && (
+                                            <div className="text-xs text-red-500">{fieldErrors.password_confirmation.join(', ')}</div>
+                                        )}
+                                        {pwMatch === false && <div className="text-xs text-red-500">Passwords do not match.</div>}
+                                        {pwMatch === true && <div className="text-xs text-emerald-600">Passwords match.</div>}
                                     </div>
                                     <button
                                         type="button"
@@ -384,6 +550,9 @@ export default function Register({ adminMode = false }: Props) {
                                                 Crop will open before saving.
                                             </p>
                                         </div>
+                                        {fieldErrors.profile_picture && (
+                                            <div className="text-xs text-red-500">{fieldErrors.profile_picture.join(', ')}</div>
+                                        )}
                                     </div>
 
                                     {/* PRC File Row */}
@@ -393,13 +562,20 @@ export default function Register({ adminMode = false }: Props) {
                                         onClick={() => setPrcWizardOpen(true)}
                                         display={getPrcStatusDisplay()}
                                     />
+                                    {fieldErrors.prc_id_photo_front && (
+                                        <div className="text-xs text-red-500">{fieldErrors.prc_id_photo_front.join(', ')}</div>
+                                    )}
+                                    {fieldErrors.prc_id_photo_back && (
+                                        <div className="text-xs text-red-500">{fieldErrors.prc_id_photo_back.join(', ')}</div>
+                                    )}
 
                                     {/* Payslip File Row */}
                                     <PayslipFileRow
-                                        value={data.payslip_photo}
+                                        value={form.payslip_photo}
                                         onClick={() => setPayslipWizardOpen(true)}
                                         display={payName ?? undefined}
                                     />
+                                    {fieldErrors.payslip_photo && <div className="text-xs text-red-500">{fieldErrors.payslip_photo.join(', ')}</div>}
 
                                     <div className="mt-6 flex items-center justify-between">
                                         <button
@@ -423,6 +599,8 @@ export default function Register({ adminMode = false }: Props) {
                     </AnimatePresence>
                 </form>
             </div>
+
+            {/* Modal overlays: Avatar crop, PRC and Payslip wizard */}
             {avatarCropOpen && pendingAvatarSrc && (
                 <AvatarCropModal
                     src={pendingAvatarSrc}
@@ -434,7 +612,7 @@ export default function Register({ adminMode = false }: Props) {
                     }}
                     onCroppedFile={(file) => {
                         const url = URL.createObjectURL(file);
-                        setData('profile_picture', file);
+                        setForm((prev) => ({ ...prev, profile_picture: file }));
                         setAvatarUrl(url);
                         setAvatarCropOpen(false);
                     }}
@@ -446,8 +624,11 @@ export default function Register({ adminMode = false }: Props) {
                 onComplete={(front, back) => {
                     setPrcFront(front);
                     setPrcBack(back);
-                    setData('prc_id_photo_front', front);
-                    setData('prc_id_photo_back', back);
+                    setForm((prev) => ({
+                        ...prev,
+                        prc_id_photo_front: front,
+                        prc_id_photo_back: back,
+                    }));
                     setPrcWizardOpen(false);
                 }}
             />
@@ -455,11 +636,15 @@ export default function Register({ adminMode = false }: Props) {
                 open={payslipWizardOpen}
                 onCancel={() => setPayslipWizardOpen(false)}
                 onComplete={(file) => {
-                    setData('payslip_photo', file);
-                    setPayName(file?.name || null);
+                    setForm((prev) => ({ ...prev, payslip_photo: file }));
+                    setPayName(typeof file?.name === 'string' ? file.name : null);
                     setPayslipWizardOpen(false);
                 }}
             />
         </>
     );
 }
+
+
+
+

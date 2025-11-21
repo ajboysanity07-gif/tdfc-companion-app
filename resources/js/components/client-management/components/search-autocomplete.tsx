@@ -1,5 +1,5 @@
 import React from 'react';
-import { Autocomplete, TextField, InputAdornment } from '@mui/material';
+import { Autocomplete, TextField, InputAdornment, Skeleton } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import { useTheme } from '@mui/material/styles';
 
@@ -9,6 +9,8 @@ export interface SearchAutocompleteProps {
   onChange: (value: string) => void;
   placeholder: string;
   className?: string;
+  loading?: boolean; // <-- NEW
+  disabled?: boolean;  // <-- Add this line!
 }
 
 const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
@@ -17,12 +19,31 @@ const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
   onChange,
   placeholder,
   className,
+  loading = false,
 }) => {
   const theme = useTheme();
 
   const background = theme.palette.background.paper;
   const textColor = theme.palette.text.primary;
   const borderColor = theme.palette.divider;
+
+  if (loading) {
+    return (
+      <Skeleton
+        variant="rectangular"
+        height={42}
+        sx={{
+          width: '100%',
+          borderRadius: 2,
+          mb: 2,
+          mt: 2,
+          bgcolor: theme.palette.mode === 'dark'
+            ? theme.palette.background.default
+            : background,
+        }}
+      />
+    );
+  }
 
   return (
     <Autocomplete

@@ -15,29 +15,28 @@ type ForwardAccordionProps = Omit<
 
 interface Props {
   registeredUsers: PendingUser[];
-  pagedRegisteredUsers: PendingUser[];
+  pagedRegisteredUsers: PendingUser[] | null;
   registeredSearch: string;
   setRegisteredSearch: React.Dispatch<React.SetStateAction<string>>;
   registeredTotalPages: number;
   registeredPage: number;
   setRegisteredPage: React.Dispatch<React.SetStateAction<number>>;
   forApprovalUsers: PendingUser[];
-  pagedPendingUsers: PendingUser[];
+  pagedPendingUsers: PendingUser[] | null;
   pendingSearch: string;
   setPendingSearch: React.Dispatch<React.SetStateAction<string>>;
   pendingTotalPages: number;
   pendingPage: number;
   setPendingPage: React.Dispatch<React.SetStateAction<number>>;
   rejectedUsers: PendingUser[];
-  pagedRejectedUsers: PendingUser[];
+  pagedRejectedUsers: PendingUser[] | null;
   rejectedSearch: string;
   setRejectedSearch: React.Dispatch<React.SetStateAction<string>>;
   rejectedTotalPages: number;
   rejectedPage: number;
   setRejectedPage: React.Dispatch<React.SetStateAction<number>>;
-
-  // This provides extra props to UserAccordionList
   userAccordionProps: (groupTab: 0 | 1 | 2) => ForwardAccordionProps;
+  loading?: boolean; // <-- NEW
 }
 
 const USER_TABS = [
@@ -59,6 +58,8 @@ export default function MobileUserTabs(props: Props) {
       ? `1.5px solid ${alpha(theme.palette.divider, 0.30)}`
       : undefined;
 
+  const { loading = false } = props;
+
   return (
     <Paper
       elevation={4}
@@ -71,7 +72,7 @@ export default function MobileUserTabs(props: Props) {
         transition: 'background-color 0.3s',
         display: 'flex',
         flexDirection: 'column',
-        minHeight: 400, // ensures enough vertical space, can tweak as needed
+        minHeight: 400,
       }}
     >
       <Tabs
@@ -84,10 +85,11 @@ export default function MobileUserTabs(props: Props) {
           '& button': { fontWeight: 700, fontSize: 16 },
           '& .Mui-selected': { color: USER_TABS[tab].color + '!important' },
         }}
+        
       >
-        <Tab label="Registered" />
-        <Tab label="Pending" />
-        <Tab label="Rejected" />
+        <Tab label="Registered" disabled={loading}/>
+        <Tab label="Pending" disabled={loading}/>
+        <Tab label="Rejected" disabled={loading}/>
       </Tabs>
       <Box
         sx={{
@@ -111,6 +113,7 @@ export default function MobileUserTabs(props: Props) {
                 value={props.registeredSearch}
                 onChange={props.setRegisteredSearch}
                 placeholder="Search registered"
+                disabled={loading}
               />
               <UserAccordionList
                 usersList={props.pagedRegisteredUsers}
@@ -118,6 +121,7 @@ export default function MobileUserTabs(props: Props) {
                 {...props.userAccordionProps(0)}
                 searchValue={props.registeredSearch}
                 isMobile={true}
+                loading={loading}
               />
             </Box>
             <Divider sx={{ mt: 0.5, mb: 0, borderColor: theme.palette.divider }} />
@@ -126,6 +130,7 @@ export default function MobileUserTabs(props: Props) {
                 count={props.registeredTotalPages}
                 page={props.registeredPage}
                 onChange={props.setRegisteredPage}
+                disabled={loading}
               />
             </Box>
           </UserListCard>
@@ -143,6 +148,7 @@ export default function MobileUserTabs(props: Props) {
                 value={props.pendingSearch}
                 onChange={props.setPendingSearch}
                 placeholder="Search pending"
+                disabled={loading}
               />
               <UserAccordionList
                 usersList={props.pagedPendingUsers}
@@ -150,6 +156,7 @@ export default function MobileUserTabs(props: Props) {
                 {...props.userAccordionProps(1)}
                 searchValue={props.pendingSearch}
                 isMobile={true}
+                loading={loading}
               />
             </Box>
             <Divider sx={{ mt: 0.5, mb: 0, borderColor: theme.palette.divider }} />
@@ -158,6 +165,7 @@ export default function MobileUserTabs(props: Props) {
                 count={props.pendingTotalPages}
                 page={props.pendingPage}
                 onChange={props.setPendingPage}
+                disabled={loading}
               />
             </Box>
           </UserListCard>
@@ -175,6 +183,7 @@ export default function MobileUserTabs(props: Props) {
                 value={props.rejectedSearch}
                 onChange={props.setRejectedSearch}
                 placeholder="Search rejected"
+                disabled={loading}
               />
               <UserAccordionList
                 usersList={props.pagedRejectedUsers}
@@ -182,6 +191,7 @@ export default function MobileUserTabs(props: Props) {
                 {...props.userAccordionProps(2)}
                 searchValue={props.rejectedSearch}
                 isMobile={true}
+                loading={loading}
               />
             </Box>
             <Divider sx={{ mt: 0.5, mb: 0, borderColor: theme.palette.divider }} />
@@ -190,6 +200,7 @@ export default function MobileUserTabs(props: Props) {
                 count={props.rejectedTotalPages}
                 page={props.rejectedPage}
                 onChange={props.setRejectedPage}
+                disabled={loading}
               />
             </Box>
           </UserListCard>

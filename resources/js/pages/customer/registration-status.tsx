@@ -1,15 +1,18 @@
-import PayslipFileRow from '@/components/payslip-filerow';
-import PRCFileRow from '@/components/prc-filerow';
-import PayslipWizard from '@/components/ui/payslip-wizard';
-import PrcWizard from '@/components/ui/prc-wizard';
+import PayslipFileRow from '@/components/auth/register/payslip-filerow';
+import PRCFileRow from '@/components/auth/register/prc-filerow';
+import PayslipWizard from '@/components/auth/register/payslip-wizard';
+import PrcWizard from '@/components/auth/register/prc-wizard';
 import MinimalLayout from '@/layouts/minimal-layout';
-import { Head, useForm } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
 import { alpha, useTheme, useMediaQuery } from '@mui/material';
 import { motion } from 'framer-motion';
 import React, { useState } from 'react';
+import axiosClient from '@/api/axios-client';
 
 interface Props {
   name: string;
+  bname?: string | null;
+  acctno?: string;
   status: 'pending' | 'rejected';
   rejection_reasons?: { code: string; label: string }[];
   submitted_at: string;
@@ -19,6 +22,8 @@ interface Props {
 
 export default function RegistrationStatus({
   name,
+  bname,
+  acctno,
   status,
   rejection_reasons = [],
   submitted_at,
@@ -41,25 +46,94 @@ export default function RegistrationStatus({
   const [prcBack, setPrcBack] = useState<File | null>(null);
   const [payslipFile, setPayslipFile] = useState<File | null>(null);
   const [payName, setPayName] = useState<string | undefined>();
+  const [processing, setProcessing] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string | string[]>>({});
+  const normalizeStatus = (s: string | null | undefined) =>
+    s && s.trim().toLowerCase() === 'rejected' ? 'rejected' : 'pending';
+  const [currentStatus, setCurrentStatus] = useState<'pending' | 'rejected'>(normalizeStatus(status));
+  const [currentReasons, setCurrentReasons] = useState(rejection_reasons);
+  const [fallbackUser, setFallbackUser] = useState<{ name?: string; acctno?: string; created_at?: string }>({});
+  const displayName =
+    (bname?.trim()?.length ? bname.trim() : null) ||
+    (name?.trim()?.length ? name.trim() : null) ||
+    (fallbackUser.name?.trim()?.length ? fallbackUser.name?.trim() : null) ||
+    acctno ||
+    fallbackUser.acctno ||
+    'Your Account';
+  const submittedAtValue = submitted_at || fallbackUser.created_at || '';
+  const formattedSubmittedAt = submittedAtValue
+    ? new Date(submittedAtValue).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      })
+    : '';
 
-  const { post, processing, errors, setData } = useForm<{
-    prc_id_photo_front: File | null;
-    prc_id_photo_back: File | null;
-    payslip_photo: File | null;
-  }>({
-    prc_id_photo_front: null,
-    prc_id_photo_back: null,
-    payslip_photo: null,
-  });
+  React.useEffect(() => {
+    setCurrentStatus(normalizeStatus(status));
+    setCurrentReasons(rejection_reasons);
+  }, [status, rejection_reasons]);
+
+  // Fetch fallback user data (in case Inertia props are missing bname/name)
+  React.useEffect(() => {
+    if ((bname && bname.trim()) || (name && name.trim())) {
+      return;
+    }
+
+    axiosClient
+      .get('/user')
+      .then((res) => {
+        const u = res.data;
+        if (u) {
+          setFallbackUser({
+            name: u?.wmaster?.bname || u?.name || u?.email,
+            acctno: u?.acctno,
+            created_at: u?.created_at,
+          });
+        }
+      })
+      .catch(() => {
+        /* swallow */
+      });
+  }, [name, bname]);
 
   const canSubmit = (needsPRC ? prcFront && prcBack : true) && (needsPayslip ? payslipFile : true);
 
-  const handleResubmit = (e: React.FormEvent) => {
+  const handleResubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setData('prc_id_photo_front', needsPRC ? prcFront : null);
-    setData('prc_id_photo_back', needsPRC ? prcBack : null);
-    setData('payslip_photo', needsPayslip ? payslipFile : null);
-    post('/customer/register-resubmit', { forceFormData: true });
+    setErrors({});
+    setProcessing(true);
+
+    const fd = new FormData();
+    if (needsPRC) {
+      if (prcFront) fd.append('prc_id_photo_front', prcFront);
+      if (prcBack) fd.append('prc_id_photo_back', prcBack);
+    }
+    if (needsPayslip && payslipFile) {
+      fd.append('payslip_photo_path', payslipFile);
+    }
+
+    try {
+      await axiosClient.post('/customer/register-resubmit', fd, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      // On success, assume back to pending review
+      setCurrentStatus('pending');
+      setCurrentReasons([]);
+      setPrcFront(null);
+      setPrcBack(null);
+      setPayslipFile(null);
+      setPayName(undefined);
+    } catch (err: any) {
+      const respErrors = err?.response?.data?.errors;
+      if (respErrors) {
+        setErrors(respErrors);
+      } else {
+        setErrors({ general: 'Resubmission failed. Please try again.' });
+      }
+    } finally {
+      setProcessing(false);
+    }
   };
 
   const errorBorder =
@@ -87,7 +161,7 @@ export default function RegistrationStatus({
 
   return (
     <MinimalLayout>
-      <Head title={status === 'pending' ? 'Registration Under Review' : 'Registration Rejected'} />
+      <Head title={currentStatus === 'pending' ? 'Registration Under Review' : 'Registration Rejected'} />
 <div className="h-screen w-full bg-gray-100 dark:bg-neutral-900 flex items-center justify-center px-2 overflow-hidden">
   <motion.div
     initial={{ opacity: 0, y: 20 }}
@@ -127,26 +201,26 @@ export default function RegistrationStatus({
                 display: 'block',
               }}
             >
-              {name}
+              {displayName}
             </div>
           </div>
 
           {/* Main status content */}
-          <div className="mb-6 text-center">
+            <div className="mb-6 text-center">
             <div
               className={`mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-full ${
-                status === 'pending'
+                currentStatus === 'pending'
                   ? 'bg-yellow-100 dark:bg-yellow-900/30'
                   : 'bg-red-100 dark:bg-red-900/30'
               }`}
             >
-              <span className="text-5xl">{status === 'pending' ? '⏳' : '❌'}</span>
+              <span className="text-5xl">{currentStatus === 'pending' ? '⏳' : '❌'}</span>
             </div>
             <h2 className="mb-2 text-2xl font-bold text-gray-900 dark:text-neutral-100">
-              {status === 'pending' ? 'Under Review' : 'Registration Rejected'}
+              {currentStatus === 'pending' ? 'Under Review' : 'Registration Rejected'}
             </h2>
             <p className="text-gray-600 dark:text-neutral-400">
-              {status === 'pending'
+              {currentStatus === 'pending'
                 ? 'Your registration is currently being reviewed by our team.'
                 : 'Unfortunately, your registration could not be approved at this time.'}
             </p>
@@ -156,11 +230,7 @@ export default function RegistrationStatus({
             <div className="mb-2 flex items-center justify-between">
               <span className="text-sm text-gray-600 dark:text-neutral-400">Submitted</span>
               <span className="text-sm font-medium text-gray-900 dark:text-neutral-100">
-                {new Date(submitted_at).toLocaleDateString('en-US', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                })}
+                {formattedSubmittedAt || '—'}
               </span>
             </div>
             <div className="flex items-center justify-between">
@@ -170,32 +240,32 @@ export default function RegistrationStatus({
                   paddingLeft: '12px',
                   paddingRight: '12px',
                   paddingTop: '4px',
-                  paddingBottom: '4px',
-                  borderRadius: '9999px',
-                  fontSize: '14px',
-                  fontWeight: 500,
-                  background:
-                    status === 'pending'
-                      ? theme.palette.mode === 'dark'
-                        ? alpha(theme.palette.warning.main, 0.15)
-                        : '#FEF3C7'
-                      : theme.palette.mode === 'dark'
-                      ? alpha(theme.palette.error.main, 0.15)
-                      : '#FEE2E2',
-                  color:
-                    status === 'pending'
-                      ? theme.palette.mode === 'dark'
-                        ? theme.palette.warning.light
-                        : '#92400E'
-                      : theme.palette.mode === 'dark'
-                      ? theme.palette.error.light
+              paddingBottom: '4px',
+              borderRadius: '9999px',
+              fontSize: '14px',
+              fontWeight: 500,
+              background:
+                currentStatus === 'pending'
+                  ? theme.palette.mode === 'dark'
+                    ? alpha(theme.palette.warning.main, 0.15)
+                    : '#FEF3C7'
+                  : theme.palette.mode === 'dark'
+                  ? alpha(theme.palette.error.main, 0.15)
+                    : '#FEE2E2',
+              color:
+                currentStatus === 'pending'
+                  ? theme.palette.mode === 'dark'
+                    ? theme.palette.warning.light
+                    : '#92400E'
+                  : theme.palette.mode === 'dark'
+                  ? theme.palette.error.light
                       : '#991B1B',
                 }}
               >
-                {status === 'pending' ? 'Pending' : 'Rejected'}
+                {currentStatus === 'pending' ? 'Pending' : 'Rejected'}
               </span>
             </div>
-            {reviewed_at && status === 'rejected' && (
+            {reviewed_at && currentStatus === 'rejected' && (
               <div className="mt-2 flex items-center justify-between">
                 <span className="text-sm text-gray-600 dark:text-neutral-400">Reviewed on</span>
                 <span className="text-sm font-medium text-gray-900 dark:text-neutral-100">
@@ -203,7 +273,7 @@ export default function RegistrationStatus({
                 </span>
               </div>
             )}
-            {reviewed_by && status === 'rejected' && (
+            {reviewed_by && currentStatus === 'rejected' && (
               <div className="mt-2 flex items-center justify-between">
                 <span className="text-sm text-gray-600 dark:text-neutral-400">Reviewed by</span>
                 <span className="text-sm font-medium text-gray-900 dark:text-neutral-100">{reviewed_by}</span>
@@ -211,7 +281,7 @@ export default function RegistrationStatus({
             )}
           </div>
 
-          {status === 'rejected' && rejection_reasons && rejection_reasons.length > 0 && (
+          {currentStatus === 'rejected' && currentReasons && currentReasons.length > 0 && (
             <div className="mb-6">
               <h3 className="mb-2 text-left font-semibold text-gray-900 dark:text-neutral-100">Reasons for Rejection:</h3>
               <div
@@ -227,7 +297,7 @@ export default function RegistrationStatus({
                   marginBottom: '18px',
                 }}
               >
-                {rejection_reasons.map((reason) => (
+                {currentReasons.map((reason) => (
                   <div
                     key={reason.code}
                     style={{
@@ -259,9 +329,9 @@ export default function RegistrationStatus({
                     display={payName}
                   />
                 )}
-                {(errors.prc_id_photo_front || errors.prc_id_photo_back || errors.payslip_photo) && (
+                {(errors.prc_id_photo_front || errors.prc_id_photo_back || errors.payslip_photo_path || errors.general) && (
                   <div className="mb-2 text-sm text-red-600">
-                    {errors.prc_id_photo_front || errors.prc_id_photo_back || errors.payslip_photo}
+                    {errors.prc_id_photo_front || errors.prc_id_photo_back || errors.payslip_photo_path || errors.general}
                   </div>
                 )}
                 <button
@@ -305,7 +375,7 @@ export default function RegistrationStatus({
             </div>
           )}
           <p className={`mb-6 text-sm text-gray-500 dark:text-neutral-400 ${isMobile ? "px-2" : ""}`}>
-            {status === 'pending'
+            {currentStatus === 'pending'
               ? "We'll notify you once your registration has been reviewed. This typically takes 1-2 business days."
               : 'Please address the issues above and submit a new registration.'}
           </p>

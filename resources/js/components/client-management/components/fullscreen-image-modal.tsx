@@ -1,6 +1,8 @@
 import React from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
 import { PendingUser } from '@/types/user';
+import { alpha, useTheme } from '@mui/material/styles';
+import { AnimatePresence, motion } from 'framer-motion';
+import Box from '@mui/material/Box';
 
 interface FullScreenImageModalProps {
   open: boolean;
@@ -19,44 +21,36 @@ const FullScreenImageModal: React.FC<FullScreenImageModalProps> = ({
   isMobile,
   onClose,
 }) => {
+  const theme = useTheme();
   if (!open || !imageUrl) return null;
 
   const showPrCpair = imageUrl === 'prc-both' && modalImagesUser;
 
-  // Overlay
-  const overlayStyle: React.CSSProperties = {
-    position: 'fixed',
-    inset: 0,
-    zIndex: 999,
-    background: 'rgba(18,22,36,0.67)',
-    backdropFilter: 'blur(14px)',
-    WebkitBackdropFilter: 'blur(14px)',
-    width: '100vw',
-    height: '100vh',
-    overflow: 'auto',
-  };
+  // Styles for overlay/background
+  const overlayColor =
+    theme.palette.mode === 'dark'
+      ? alpha(theme.palette.background.default, 0.77)
+      : alpha(theme.palette.background.default, 0.85);
 
-  // Header top left
-  const headerStyle: React.CSSProperties = {
+  // Header and close button
+  const headerSx = {
     position: 'absolute',
     left: isMobile ? 20 : 46,
     top: isMobile ? 18 : 28,
-    color: '#fff',
+    color: theme.palette.text.primary,
     fontWeight: 900,
     fontSize: isMobile ? 26 : 36,
     letterSpacing: '0.01em',
     zIndex: 1501,
-    textShadow: '0 2px 14px #000a',
     margin: 0,
     pointerEvents: 'none',
   };
 
-  // Close button top right
-  const closeStyle: React.CSSProperties = {
+  const closeSx = {
     position: 'absolute',
     right: isMobile ? 16 : 48,
     top: isMobile ? 18 : 26,
-    color: '#fff',
+    color: theme.palette.text.primary,
     fontWeight: 500,
     fontSize: isMobile ? 20 : 27,
     cursor: 'pointer',
@@ -64,12 +58,16 @@ const FullScreenImageModal: React.FC<FullScreenImageModalProps> = ({
     background: 'none',
     border: 'none',
     zIndex: 1501,
-    textShadow: '0 2px 10px #000a',
     padding: '4px 12px',
+    transition: 'color 0.15s',
+    '&:hover': {
+      transform: 'scale(1.037)',
+      color: theme.palette.secondary.main,
+    },
   };
 
-  // Absolutely center images (and labels)
-  const centeredContentStyle: React.CSSProperties = {
+  // Centered content flex styles
+  const centeredContentSx = {
     position: 'absolute',
     left: '50%',
     top: '53%',
@@ -78,29 +76,59 @@ const FullScreenImageModal: React.FC<FullScreenImageModalProps> = ({
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    flexDirection: showPrCpair && isMobile ? 'column' : (showPrCpair ? 'row' : 'column'),
-    gap: showPrCpair ? (isMobile ? 32 : 80) : 0,
+    flexDirection: showPrCpair && isMobile ? 'column' : showPrCpair ? 'row' : 'column',
+    gap: showPrCpair ? (isMobile ? 4 : 10) : 0,
     zIndex: 10,
-    padding: isMobile ? '0 0' : '0 0',
+    padding: 0,
   };
 
-  const imgStyle: React.CSSProperties = {
+  // Wrapper for each image+label
+  const imageWrapperSx = {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 2.7,
+    transition: 'box-shadow 0.18s, transform 0.18s',
+    cursor: 'pointer',
+    '&:hover': {
+      transform: 'scale(1.037)',
+      '& img': {
+        boxShadow: theme.palette.mode === 'dark'
+          ? `0 0 24px 0 ${theme.palette.secondary.main}`
+          : `0 0 24px 0 ${theme.palette.secondary.main}`,
+        filter: 'brightness(1.1) saturate(1.18)',
+        transform: 'scale(1.03)',
+        transition: 'filter 0.18s, transform 0.18s',
+      },
+      '& .img-label': {
+        color: theme.palette.secondary.main,
+        transition: 'color 0.2s, text-shadow 0.2s',
+      }
+    },
+    m: showPrCpair && !isMobile ? 2.4 : 0,
+  };
+
+  // Image itself
+  const imgSx = {
     maxWidth: isMobile ? '92vw' : '660px',
     maxHeight: isMobile ? '29vh' : '70vh',
-    borderRadius: 22,
+    borderRadius: 2.7,
     objectFit: 'cover',
-    background: '#17171b',
+    background: theme.palette.background.paper,
+    transition: 'filter 0.18s, transform 0.18s',
   };
 
-  const labelStyle: React.CSSProperties = {
-    color: '#fff',
-    fontWeight: 500,
+  // Label for the image
+  const labelSx = {
+    color: theme.palette.text.primary,
+    fontWeight: 550,
     fontSize: isMobile ? 19 : 28,
-    marginTop: 14,
+    mt: 1.5,
     textAlign: 'center',
     letterSpacing: '0.01em',
     opacity: 0.98,
-    textShadow: '0 1px 7px #000b',
+    transition: 'color 0.18s, text-shadow 0.18s',
   };
 
   return (
@@ -109,47 +137,73 @@ const FullScreenImageModal: React.FC<FullScreenImageModalProps> = ({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        style={overlayStyle}
+        style={{
+          position: 'fixed',
+          inset: 0,
+          zIndex: 999,
+          background: overlayColor,
+          backdropFilter: 'blur(11px)',
+          WebkitBackdropFilter: 'blur(11px)',
+          width: '100vw',
+          height: '100vh',
+          overflow: 'auto',
+        }}
         onClick={onClose}
       >
-        {/* Header top left, Close top right */}
-        <span style={headerStyle}>{title}</span>
-        <button style={closeStyle} aria-label="Close" onClick={onClose}>
+        <Box component="span" sx={headerSx}>
+          {title}
+        </Box>
+        <Box
+          component="button"
+          sx={closeSx}
+          aria-label="Close"
+          onClick={onClose}
+        >
           Close&nbsp;×
-        </button>
-        <div style={centeredContentStyle} onClick={e => e.stopPropagation()}>
+        </Box>
+        <Box sx={centeredContentSx} onClick={e => e.stopPropagation()}>
           {showPrCpair && modalImagesUser ? (
             <>
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                <img
+              <Box sx={imageWrapperSx}>
+                <Box
+                  component="img"
                   src={`/storage/${modalImagesUser.prc_id_photo_front}`}
                   alt="PRC Front"
-                  style={imgStyle}
-                  onError={e => { e.currentTarget.src = '/images/placeholder-document.png'; }}
+                  sx={imgSx}
+                  onError={e => {
+                    e.currentTarget.src = '/images/placeholder-document.png';
+                  }}
                 />
-                <div style={labelStyle}>Front</div>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                <img
+                <Box className="img-label" sx={labelSx}>Front</Box>
+              </Box>
+              <Box sx={imageWrapperSx}>
+                <Box
+                  component="img"
                   src={`/storage/${modalImagesUser.prc_id_photo_back}`}
                   alt="PRC Back"
-                  style={imgStyle}
-                  onError={e => { e.currentTarget.src = '/images/placeholder-document.png'; }}
+                  sx={imgSx}
+                  onError={e => {
+                    e.currentTarget.src = '/images/placeholder-document.png';
+                  }}
                 />
-                <div style={labelStyle}>Back</div>
-              </div>
+                <Box className="img-label" sx={labelSx}>Back</Box>
+              </Box>
             </>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-              <img
-                src={imageUrl}
+            <Box sx={imageWrapperSx}>
+              <Box
+                component="img"
+                src={imageUrl as string}
                 alt={title}
-                style={imgStyle}
-                onError={e => { (e.currentTarget as HTMLImageElement).src = '/images/placeholder-document.png'; }}
+                sx={imgSx}
+                onError={e => {
+                  (e.currentTarget as HTMLImageElement).src = '/images/placeholder-document.png';
+                }}
               />
-            </div>
+              {/* Optional: Single image label if desired */}
+            </Box>
           )}
-        </div>
+        </Box>
       </motion.div>
     </AnimatePresence>
   );

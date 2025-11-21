@@ -13,7 +13,7 @@ export default function AppSidebarLayout({
   return (
     <AppShell variant="sidebar">
       {/* Sidebar: visible only on desktop */}
-      <div className="hidden md:flex md:w-64 shrink-0">
+      <div className="hidden md:flex shrink-0">
         <AppSidebar />
       </div>
 

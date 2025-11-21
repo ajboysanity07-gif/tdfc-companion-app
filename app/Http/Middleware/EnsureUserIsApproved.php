@@ -19,7 +19,8 @@ class EnsureUserIsApproved
         if ($user && $user->role === 'customer') {
             // If status is not approved, redirect to status page
             if ($user->status !== 'approved') {
-                return redirect()->route('customer.registration.status');
+                $acctno = $user->acctno ?? $request->route('acctno');
+                return redirect()->route('client.registration-status', ['acctno' => $acctno]);
             }
         }
         

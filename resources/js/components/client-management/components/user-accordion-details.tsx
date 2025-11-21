@@ -19,7 +19,8 @@ import {
   Chip,
 } from '@mui/material';
 import React from 'react';
-import SalaryUpdatePopover from './salary-update-popover'; // import your popover here
+import SalaryUpdatePopover from './salary-update-popover';
+import UserAccordionDetailsSkeleton from './skeletons/user-accordion-details-skeleton';
 
 interface Props {
   user: PendingUser;
@@ -32,6 +33,7 @@ interface Props {
   setModalImagesUser: (user: PendingUser | null) => void;
   setFullScreenImage: (value: string) => void;
   setImageTitle: (title: string) => void;
+  loading?: boolean;
 }
 
 const UserAccordionDetails: React.FC<Props> = ({
@@ -44,6 +46,7 @@ const UserAccordionDetails: React.FC<Props> = ({
   setModalImagesUser,
   setFullScreenImage,
   setImageTitle,
+  loading = false,
 }) => {
   const theme = useTheme();
   const isXs = useMediaQuery(theme.breakpoints.down('sm'));
@@ -56,7 +59,7 @@ const UserAccordionDetails: React.FC<Props> = ({
   const text = theme.palette.text.primary;
   const mutedText = theme.palette.text.secondary;
   const panelBg = theme.palette.background.paper;
-  const aroundPanelBg = theme.palette.mode === 'light' ? '#f8f8fa' : '#3a3a3a';
+  const aroundPanelBg = theme.palette.mode === 'light' ? '#f8f8fa' : '#282a36';
   const detailRowSx = {
     display: 'flex',
     alignItems: 'center',
@@ -98,6 +101,15 @@ const UserAccordionDetails: React.FC<Props> = ({
     setSalaryPopoverAnchor(null);
   };
 
+  // ----- SKELETON LOADING STATE -----
+if (loading) {
+  return (
+    <UserAccordionDetailsSkeleton />
+  );
+}
+
+
+  // ----- MAIN DETAILS STATE -----
   return (
     <AccordionDetails
       sx={{

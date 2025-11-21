@@ -1,18 +1,43 @@
 import React from 'react';
+import { Skeleton } from '@mui/material';
 
 export interface CardPaginationProps {
   count: number;
   page: number;
   onChange: React.Dispatch<React.SetStateAction<number>>;
   isDarkMode?: boolean;
+  loading?: boolean; // <--- Added
+    disabled?: boolean;  // <-- Add this line!
 }
 
 const CardPagination: React.FC<CardPaginationProps> = ({
   count,
   page,
   onChange,
-  isDarkMode
+  isDarkMode,
+  loading = false  // <--- Default
 }) => {
+  if (loading) {
+    // Skeleton line and two "button" skeletons
+    return (
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '14px 0 6px 0',
+          background: 'transparent',
+          paddingBottom: 0,
+          gap: 8
+        }}
+      >
+        <Skeleton variant="rounded" width={38} height={34} sx={{ borderRadius: 6 }} />
+        <Skeleton variant="rectangular" width={78} height={20} sx={{ borderRadius: 3, mx: 1 }} />
+        <Skeleton variant="rounded" width={38} height={34} sx={{ borderRadius: 6 }} />
+      </div>
+    );
+  }
+
   if (count < 1) return null;
 
   // Custom onClick to match React setter signature

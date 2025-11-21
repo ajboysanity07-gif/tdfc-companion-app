@@ -8,9 +8,11 @@ import { BookOpen, Folder, LayoutGrid, Calculator, Briefcase, PiggyBank, Users, 
 import AppLogo from './app-logo';
 import { useMemo } from 'react';
 
-// ✅ Properly typed (no 'any')
+// Properly typed
 type AuthUser = {
   id?: number;
+  user_id?: number;
+  acctno?: string | null;
   name?: string;
   email?: string;
   role?: string;
@@ -29,81 +31,51 @@ type SharedPageProps = {
 };
 
 const customerNavItems: NavItem[] = [
-  {
-    title: 'Home',
-    href: 'customer/dashboard',
-    icon: LayoutGrid,
-  },
-  {
-    title: 'Loan Transactions',
-    href: 'customer/loans/transactions',
-    icon: Briefcase,
-  },
-  {
-    title: 'Loan Calculator',
-    href: 'customer/loans/calculator',
-    icon: Calculator,
-  },
-  {
-    title: 'Savings',
-    href: 'customer/savings',
-    icon: PiggyBank,
-  },
+  { title: 'Home', href: 'customer/dashboard', icon: LayoutGrid },
+  { title: 'Loan Transactions', href: 'customer/loans/transactions', icon: Briefcase },
+  { title: 'Loan Calculator', href: 'customer/loans/calculator', icon: Calculator },
+  { title: 'Savings', href: 'customer/savings', icon: PiggyBank },
 ];
 
 const adminNavItems: NavItem[] = [
-  {
-    title: 'Dashboard',
-    href: '/admin/dashboard',
-    icon: LayoutGrid,
-  },
-  {
-    title: 'Products',
-    href: '/admin/products',
-    icon: Package,
-  },
-  {
-    title: 'Clients',
-    href: '/admin/client-management',
-    icon: Users,
-  },
-  {
-    title: 'Registrations',
-    href: '/admin/registrations',
-    icon: Briefcase,
-  },
+  { title: 'Dashboard', href: '/admin/dashboard', icon: LayoutGrid },
+  { title: 'Products', href: '/admin/products', icon: Package },
+  { title: 'Clients', href: '/admin/client-management', icon: Users },
+  { title: 'Registrations', href: '/admin/registrations', icon: Briefcase },
 ];
 
 const footerNavItems: NavItem[] = [
-  {
-    title: 'Repository',
-    href: 'https://github.com/laravel/react-starter-kit',
-    icon: Folder,
-  },
-  {
-    title: 'Documentation',
-    href: 'https://laravel.com/docs/starter-kits#react',
-    icon: BookOpen,
-  },
+  { title: 'Repository', href: 'https://github.com/laravel/react-starter-kit', icon: Folder },
+  { title: 'Documentation', href: 'https://laravel.com/docs/starter-kits#react', icon: BookOpen },
 ];
 
 export function AppSidebar() {
   const { props } = usePage<SharedPageProps>();
   const user = props.auth?.user;
   const userRole = user?.role || 'customer';
+  const adminId = user?.acctno ?? user?.id ?? user?.user_id ?? '';
 
-  // ✅ Enhanced: Memoized navigation items with role-based filtering
+  const adminDashboardHref =
+    userRole === 'admin'
+      ? `/admin/${adminId}/dashboard`
+      : '/dashboard';
+
   const mainNavItems = useMemo(() => {
     if (userRole === 'admin') {
-      return adminNavItems;
+      return adminNavItems.map((item) =>
+        item.href === '/admin/dashboard'
+          ? { ...item, href: adminDashboardHref }
+          : item.href === '/admin/client-management'
+            ? { ...item, href: `/admin/${adminId}/client-management` }
+            : item
+      );
     }
     return customerNavItems;
-  }, [userRole]);
+  }, [adminDashboardHref, adminId, userRole]);
 
-  // ✅ Enhanced: Dynamic home link based on role
   const homeLink = useMemo(() => {
-    return userRole === 'admin' ? '/admin/dashboard' : '/dashboard';
-  }, [userRole]);
+    return userRole === 'admin' ? adminDashboardHref : '/dashboard';
+  }, [adminDashboardHref, userRole]);
 
   return (
     <Sidebar collapsible="icon" variant="inset">

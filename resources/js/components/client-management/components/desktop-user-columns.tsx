@@ -5,7 +5,6 @@ import UserAccordionList from './user-accordion-list';
 import UserListCard from './user-list-card';
 import { PendingUser } from '@/types/user';
 
-// Define injected props type if possible
 export type UserAccordionInjectedProps = {
   expanded: number | null;
   setExpanded: React.Dispatch<React.SetStateAction<number | null>>;
@@ -30,7 +29,7 @@ export interface DesktopColumnConfig {
   searchOptions: string[];
   searchValue: string;
   setSearch: React.Dispatch<React.SetStateAction<string>>;
-  pagedUsers: PendingUser[];
+  pagedUsers: PendingUser[] | null;
   totalPages: number;
   page: number;
   setPage: React.Dispatch<React.SetStateAction<number>>;
@@ -42,13 +41,17 @@ export interface DesktopUserColumnsProps {
   columns: DesktopColumnConfig[];
   userAccordionProps: (columnIndex: number) => UserAccordionInjectedProps;
   appleSeparator: () => React.CSSProperties;
+  loadingColumns?: boolean[]; // Add loading indicator per column (optional)
 }
 
 const DesktopUserColumns: React.FC<DesktopUserColumnsProps> = ({
-  columns, userAccordionProps, appleSeparator,
+  columns,
+  userAccordionProps,
+  appleSeparator,
+  loadingColumns = [], // optional - pass [true, false, ...] in parent to show skeleton
 }) => (
   <div className="flex w-full min-w-0 flex-row gap-8">
-    {columns.map((column) => (
+    {columns.map((column, idx) => (
       <div key={column.key} className="relative flex min-h-[800px] min-w-0 flex-1 flex-col overflow-hidden rounded-xl shadow-md transition-colors duration-300">
         <UserListCard title={column.title} titleColor={column.titleColor} userCount={column.userCount}>
           <div className="flex h-full flex-col">
@@ -64,6 +67,7 @@ const DesktopUserColumns: React.FC<DesktopUserColumnsProps> = ({
                 groupTab={column.groupTab}
                 {...userAccordionProps(column.columnIndex)}
                 searchValue={column.searchValue}
+                loading={loadingColumns[idx] === true}  // pass skeleton state down
               />
             </div>
             <div style={appleSeparator()} />

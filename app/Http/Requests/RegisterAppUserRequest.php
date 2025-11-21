@@ -3,35 +3,41 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class RegisterAppUserRequest extends FormRequest
 {
-    public function authorize(): bool
+    public function authorize()
     {
-        return true; // guests only by route middleware
+        return true;
     }
 
-    public function rules(): array
+    public function rules()
     {
         return [
-            'accntno' => ['required', 'string', 'max:6', Rule::exists('wmaster', 'acctno')],
-            'full_name' => ['nullable', 'string', 'max:255'], // from wmaster, ignored server-side
-            'phone_no' => ['required', 'regex:/^\d{11}$/'],
-            'email' => ['required', 'email', 'max:255', Rule::unique('app_user_table', 'email')],
-            'password' => ['required', 'confirmed', 'min:8'],
-            'profile_picture' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
-            'prc_id_photo_front' => 'required|image|mimes:jpeg,png,jpg,webp|max:2048',
-            'prc_id_photo_back'  => 'required|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'accntno'         => 'required|string|max:6|unique:app_user_table,acctno',
+            'fullname'        => 'required|string|max:255',
+            // Enforces exactly 11 digits and numeric only for PH
+            'phoneno'         => ['required', 'digits:11', 'regex:/^09\d{9}$/', 'unique:app_user_table,phone_no'],
+            'email'           => 'required|email|max:255|unique:app_user_table,email',
+            'password'        => 'required|string|min:8|confirmed',
 
-            'payslip_photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
+            'profilepicture'  => 'nullable|image|max:2048',
+            'prcidphotofront' => 'nullable|image|max:2048',
+            'prcidphotoback'  => 'nullable|image|max:2048',
+            'payslipphoto'    => 'nullable|image|max:2048',
         ];
     }
 
-    public function messages(): array
+    public function messages()
     {
         return [
-            'phone_no.regex' => 'Phone must be 11 digits.',
+            'phoneno.required' => 'Phone number is required.',
+            'phoneno.digits' => 'Phone number must be exactly 11 digits.',
+            'phoneno.regex' => 'Phone number must start with 09 and be 11 digits long.',
+            'phoneno.unique' => 'Phone number is already registered.',
+            'accntno.unique' => 'Account number already exists.',
+            'email.unique' => 'Email is already registered.',
+            'password.confirmed' => 'Password confirmation does not match.',
         ];
     }
 }

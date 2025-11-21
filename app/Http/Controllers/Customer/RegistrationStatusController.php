@@ -26,7 +26,7 @@ class RegistrationStatusController extends Controller
         }
 
         // Always eager-load rejectionReasons, in case user is rejected
-        $user->load('rejectionReasons');
+        $user->load(['rejectionReasons', 'wmaster']);
 
         // --- Find the reviewer's name if reviewed_by exists ---
         $reviewer = null;
@@ -40,7 +40,9 @@ class RegistrationStatusController extends Controller
 
         // Show status page for pending or rejected users
         return Inertia::render('customer/registration-status', [
-            'name' => $user->name, // <-- ADD THIS LINE
+            'name' => $user->wmaster?->bname ?? $user->name,
+            'bname' => $user->wmaster?->bname,
+            'acctno' => $user->acctno,
             'status' => $user->status,
             'rejection_reasons' => $user->rejectionReasons->map(function($reason) {
                 return [
@@ -64,7 +66,7 @@ class RegistrationStatusController extends Controller
         $validated = $request->validate([
             'prc_id_photo_front' => 'nullable|image|max:8192',
             'prc_id_photo_back'  => 'nullable|image|max:8192',
-            'payslip_photo'      => 'nullable|image|max:8192',
+            'payslip_photo_path'      => 'nullable|image|max:8192',
         ]);
 
         // Store any new uploads
@@ -74,8 +76,8 @@ class RegistrationStatusController extends Controller
         if ($request->hasFile('prc_id_photo_back')) {
             $user->prc_id_photo_back = $request->file('prc_id_photo_back')->store('uploads/prc', 'public');
         }
-        if ($request->hasFile('payslip_photo')) {
-            $user->payslip_photo = $request->file('payslip_photo')->store('uploads/payslips', 'public');
+        if ($request->hasFile('payslip_photo_path')) {
+            $user->payslip_photo_path = $request->file('payslip_photo_path')->store('uploads/payslips', 'public');
         }
 
         // Reset status for review

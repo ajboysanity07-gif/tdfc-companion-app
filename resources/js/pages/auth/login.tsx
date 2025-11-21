@@ -1,96 +1,164 @@
-// resources/js/pages/auth/login.tsx
-import React, { useEffect, useState } from 'react';
-import { Head, useForm } from '@inertiajs/react';
+import { login as apiLogin } from '@/api/auth-api';
 import AuthCard from '@/components/ui/auth-card';
-import InputError from '@/components/ui/input-error';
+import { Head } from '@inertiajs/react';
+import { AxiosError } from 'axios';
 import { Eye, EyeOff } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 
 export default function Login() {
-  const { data, setData, post, processing, errors } = useForm({
-    email: '',
-    password: '',
-    remember: false as boolean,
-  });
-
+  // SPA state
+  const [form, setForm] = useState({ email: '', password: '', remember: false });
   const [showPassword, setShowPassword] = useState(false);
-
-  // Realtime client validation
-  const [emailValid, setEmailValid] = useState<boolean | null>(null); // null = untouched, true/false after typing
+  const [emailValid, setEmailValid] = useState<boolean | null>(null);
   const [pwValid, setPwValid] = useState<boolean | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  // Simple, robust email check for UI hints
+  // Error states from server validation
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
+  const [globalError, setGlobalError] = useState<string | null>(null);
+
   const isValidEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 
   useEffect(() => {
-    if (data.email.length === 0) setEmailValid(null);
-    else setEmailValid(isValidEmail(data.email));
-  }, [data.email]);
+    if (form.email.length === 0) setEmailValid(null);
+    else setEmailValid(isValidEmail(form.email));
+  }, [form.email]);
 
   useEffect(() => {
-    if (data.password.length === 0) setPwValid(null);
-    else setPwValid(data.password.length >= 8);
-  }, [data.password]);
+    if (form.password.length === 0) setPwValid(null);
+    else setPwValid(form.password.length >= 8);
+  }, [form.password]);
 
-  const submit = (e: React.FormEvent) => {
+  const emailError =
+    fieldErrors.email && fieldErrors.email.length
+      ? fieldErrors.email.join(', ')
+      : emailValid === false
+      ? 'Please enter a valid email address.'
+      : '';
+
+  const passwordError =
+    fieldErrors.password && fieldErrors.password.length
+      ? fieldErrors.password.join(', ')
+      : pwValid === false
+      ? 'Password must be at least 8 characters.'
+      : '';
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value, type, checked } = e.target;
+    setForm((prev) => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value,
+    }));
+    if (fieldErrors[name]) setFieldErrors((prev) => ({ ...prev, [name]: [] }));
+  };
+
+  // Role/Status redirect after login
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    post('/login');
+    setLoading(true);
+    setFieldErrors({});
+    setGlobalError(null);
+
+    try {
+      const response = await apiLogin({
+        email: form.email,
+        password: form.password,
+      });
+
+      const user = response.data.user;
+      const acct = user.acctno ?? user.user_id ?? user.id; // admin has no acctno, fall back to primary key
+
+      // --- Role/Status-based SPA redirect ---
+      if (user.role === 'admin') {
+        window.location.href = `/admin/${acct}/dashboard`;
+      } else if (user.role === 'customer') {
+        if (user.status === 'approved') {
+          window.location.href = `/client/${user.acctno}/dashboard`;
+        } else if (user.status === 'rejected' || user.status === 'pending') {
+          window.location.href = `/client/${user.acctno}/registration-status`;
+        } else {
+          window.location.href = '/'; // fallback
+        }
+      } else {
+        window.location.href = '/'; // unknown role fallback
+      }
+    } catch (err) {
+      const error = err as AxiosError<{ message?: string; errors?: Record<string, string[]> }>;
+      if (error.response && error.response.data) {
+        setFieldErrors(error.response.data.errors || {});
+        setGlobalError(error.response.data.message ?? null);
+      } else {
+        setGlobalError('Login failed. Please try again.');
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   const inputBase =
     'mt-2 w-full rounded-xl border border-gray-300 bg-white px-3 py-3 text-black placeholder:text-gray-400 outline-none focus:border-[#F57979] focus:ring-2 focus:ring-[#F57979]/50';
 
-  // Derive the error messages to show (server errors take priority)
-  const emailError =
-    errors.email ? errors.email : emailValid === false ? 'Please enter a valid email address.' : '';
-  const passwordError =
-    errors.password ? errors.password : pwValid === false ? 'Password must be at least 8 characters.' : '';
-
   return (
     <>
       <Head title="Login" />
-      <div className="mx-auto grid min-h-screen place-items-start bg-gradient-to-br from-gray-100 via-white to-gray-200 px-4 py-8 sm:place-items-center">
-        <form onSubmit={submit} className="w-full max-w-[540px]">
+      <div className="mx-auto grid min-h-screen place-items-start bg-linear-to-br from-gray-100 via-white to-gray-200 px-4 py-8 sm:place-items-center">
+        <form onSubmit={handleSubmit} className="w-full max-w-[540px]">
           <h1 className="text-center text-4xl font-extrabold tracking-tight text-[#F57979]">Login</h1>
           <p className="mx-auto mt-3 max-w-[46ch] text-center text-[15px] leading-6 text-black/70">
             Welcome back. Enter your credentials to continue.
           </p>
 
           <AuthCard>
+            {/* Show global error message */}
+            {globalError && (
+              <div
+                className="mb-4 w-full rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-center text-[15px] text-red-700 shadow"
+                role="alert"
+              >
+                {globalError}
+              </div>
+            )}
+
             {/* Email */}
             <div className="mb-4">
-              <label className="text-[13px] font-extrabold uppercase tracking-wide text-[#F57979]">Email</label>
+              <label className="text-[13px] font-extrabold tracking-wide text-[#F57979] uppercase">Email</label>
               <input
                 type="email"
-                value={data.email}
-                onChange={(e) => setData('email', e.target.value)}
+                name="email"
+                value={form.email}
+                onChange={handleChange}
                 placeholder="you@example.com"
                 aria-invalid={Boolean(emailError)}
                 className={`${inputBase} ${emailError ? 'border-red-300 focus:border-red-400 focus:ring-red-300' : ''}`}
+                autoComplete="email"
               />
-              <InputError message={emailError} />
+              {emailError && <div className="mt-1 text-xs text-red-500">{emailError}</div>}
             </div>
 
             {/* Password */}
             <div className="mb-6">
-              <label className="text-[13px] font-extrabold uppercase tracking-wide text-[#F57979]">Password</label>
+              <label className="text-[13px] font-extrabold tracking-wide text-[#F57979] uppercase">Password</label>
               <div className="relative">
                 <input
+                  name="password"
                   type={showPassword ? 'text' : 'password'}
-                  value={data.password}
-                  onChange={(e) => setData('password', e.target.value)}
+                  value={form.password}
+                  onChange={handleChange}
                   placeholder="Minimum 8 characters"
                   aria-invalid={Boolean(passwordError)}
                   className={`${inputBase} pr-10 ${passwordError ? 'border-red-300 focus:border-red-400 focus:ring-red-300' : ''}`}
+                  autoComplete="current-password"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword((v) => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  className="absolute top-1/2 right-3 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  tabIndex={-1}
                 >
                   {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
               </div>
-              <InputError message={passwordError} />
+              {passwordError && <div className="mt-1 text-xs text-red-500">{passwordError}</div>}
             </div>
 
             {/* Remember + Forgot */}
@@ -98,24 +166,21 @@ export default function Login() {
               <label className="flex items-center gap-2 text-sm text-black/70">
                 <input
                   type="checkbox"
-                  checked={data.remember}
-                  onChange={(e) => setData('remember', e.target.checked)}
+                  name="remember"
+                  checked={form.remember}
+                  onChange={handleChange}
                   className="rounded border-gray-300"
                 />
                 Remember me
               </label>
-              <a
-                href="/forgot-password"
-                className="text-sm font-semibold text-[#F57979] hover:underline"
-              >
+              <a href="/forgot-password" className="text-sm font-semibold text-[#F57979] hover:underline">
                 Forgot password?
               </a>
             </div>
 
-            {/* CTA */}
             <button
               type="submit"
-              disabled={processing}
+              disabled={loading}
               className="w-full rounded-2xl bg-[#F57979] py-3 text-sm font-extrabold tracking-wide text-white hover:opacity-95 disabled:opacity-40"
             >
               Sign In
