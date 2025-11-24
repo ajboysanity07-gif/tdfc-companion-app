@@ -9,7 +9,8 @@ class WSalaryRecord extends Model
 {
     use HasFactory;
 
-    protected $table = 'wsalaryrecords';
+    // Match the migration table name
+    protected $table = 'wsalary_records';
     protected $primaryKey = 'id';
     public $incrementing = true;
     protected $keyType = 'int';

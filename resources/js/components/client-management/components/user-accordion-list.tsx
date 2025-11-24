@@ -2,8 +2,8 @@ import { PendingUser } from '@/types/user';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { Accordion, AccordionSummary, Box, Typography, useTheme } from '@mui/material';
 import React from 'react';
-import UserAccordionDetails from './user-accordion-details';
 import UserAccordionListSkeleton from './skeletons/user-accordion-list-skeleton';
+import UserAccordionDetails from './user-accordion-details';
 
 interface Props {
     usersList: PendingUser[] | null; // <-- Must now accept null!
@@ -54,7 +54,7 @@ const UserAccordionList: React.FC<Props> = ({
 
     // --- FIX: Show skeleton ANYTIME loading is true or usersList is not loaded ---
     if (loading || usersList == null) {
-        return <UserAccordionListSkeleton/>;
+        return <UserAccordionListSkeleton />;
     }
 
     // --- Only show empty state if we're NOT loading and we really have no data ---
@@ -151,6 +151,7 @@ const UserAccordionList: React.FC<Props> = ({
                         },
                     }}
                 >
+                   
                     <img
                         src={
                             user.profile_picture_path
@@ -160,6 +161,7 @@ const UserAccordionList: React.FC<Props> = ({
                                 : '/images/default-profile-01.png'
                         }
                         alt="Profile"
+                        loading="lazy"
                         style={{
                             width: isMobile ? 28 : 34,
                             height: isMobile ? 28 : 34,

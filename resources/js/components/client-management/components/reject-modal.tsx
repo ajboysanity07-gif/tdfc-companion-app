@@ -1,4 +1,4 @@
-import { PendingUser, RejectionReason } from '@/types/user';
+import { PendingUser, RejectionReasonEntry } from '@/types/user';
 import { alpha, Box, Checkbox, FormControlLabel, FormGroup, useTheme } from '@mui/material';
 import { AnimatePresence, motion } from 'framer-motion';
 import React from 'react';
@@ -6,7 +6,7 @@ import React from 'react';
 interface RejectModalProps {
     open: boolean;
     user: PendingUser | null;
-    rejectionReasons: Array<{ code: RejectionReason; label: string }>;
+    rejectionReasons: RejectionReasonEntry[];
     selectedReasons: string[];
     processing: boolean;
     onClose: () => void;

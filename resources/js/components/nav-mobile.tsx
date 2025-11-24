@@ -1,5 +1,6 @@
 import React, { useMemo } from "react";
 import { Link, usePage, router } from "@inertiajs/react";
+import { route } from "ziggy-js";
 import {
   Home,
   UserRound,
@@ -11,10 +12,16 @@ import {
 } from "lucide-react";
 import { useTheme } from '@mui/material/styles'; // <-- ADD THIS
 
-type AuthUser = { role?: string; };
+type AuthUser = { 
+  role?: string,
+  acctno?: string | null;
+  user_id?: number;
+};
 
 type SharedPageProps = {
   auth: { user?: AuthUser | null; };
+  admin?: string | number;
+  acctno?: string | null;
 };
 
 export default function NavMobile() {
@@ -23,25 +30,33 @@ export default function NavMobile() {
 
   const { props } = usePage<SharedPageProps>();
   const user = props.auth?.user;
-  const userRole = user?.role || "customer";
+  const userRole = user?.role || 'customer';
+  const adminId = props.admin ?? user?.acctno ?? user?.user_id ?? '';
+  const customerAcct = props.acctno ?? user?.acctno ?? '';
+
+  const adminDashboardHref = adminId ? `/admin/${adminId}/dashboard` : '/admin/dashboard';
+  const adminClientsHref = adminId ? `/admin/${adminId}/client-management` : '/admin/client-management';
+  const customerDashboardHref = customerAcct ? `/client/${customerAcct}/dashboard` : '/dashboard';
+  const customerLoansHref = customerAcct ? `/client/${customerAcct}/loan-transactions` : '/loan-transactions';
+
   const isDashboard =
-    pathname === "/dashboard" ||
-    pathname === "/admin/dashboard";
+    pathname === customerDashboardHref ||
+    pathname === adminDashboardHref;
 
   // MUI theme hook
   const theme = useTheme();
 
   const customerNav = useMemo(() => [
-    { href: "/dashboard", label: "Home", icon: Home },
-    { href: "/loan-transactions", label: "Loans", icon: Briefcase },
+    { href: customerDashboardHref, label: "Home", icon: Home },
+    { href: customerLoansHref, label: "Loans", icon: Briefcase },
     { href: route("profile.edit"), label: "Account", icon: UserRound },
-  ], []);
+  ], [customerDashboardHref, customerLoansHref]);
 
   const adminNav = useMemo(() => [
-    { href: "/admin/dashboard", label: "Home", icon: Home },
+    { href: adminDashboardHref, label: "Home", icon: Home },
     { href: "/admin/products", label: "Products", icon: Package },
-    { href: "/admin/client-management", label: "Clients", icon: Users },
-  ], []);
+    { href: adminClientsHref, label: "Clients", icon: Users },
+  ], [adminDashboardHref, adminClientsHref]);
 
   const items = useMemo(() => {
     if (userRole === "admin") return adminNav;

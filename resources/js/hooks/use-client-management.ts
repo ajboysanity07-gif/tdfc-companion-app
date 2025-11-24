@@ -1,6 +1,6 @@
 import { useIsMobileTabs } from '@/hooks/use-isMobile-tabs';
+import axiosClient from '@/api/axios-client';
 import type { PendingUser } from '@/types/user';
-import axios from 'axios';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 const PAGESIZE = 10;
@@ -19,8 +19,11 @@ export function useClientManagement() {
     const fetchUsers = useCallback(async () => {
         setLoading(true);
         try {
-            const { data } = await axios.get<PendingUser[]>('/api/clients');
+            const { data } = await axiosClient.get<PendingUser[]>('clients');
             setAllUsers(data);
+        } catch (err) {
+            console.error('Failed to load clients', err);
+            setAllUsers([]);
         } finally {
             setLoading(false);
         }
@@ -154,7 +157,7 @@ export function useClientManagement() {
         setProcessing(true);
         setShowRejectModal(false); // close modal immediately for UX
         try {
-            await axios.post(`/api/clients/${selectedUser.user_id}/reject`, { reasons: selectedReasons });
+            await axiosClient.post(`clients/${selectedUser.user_id}/reject`, { reasons: selectedReasons });
             await fetchUsers();
         } catch (err) {
             console.error('Rejection failed:', err);
@@ -170,7 +173,7 @@ export function useClientManagement() {
         if (!approvePopperUser) return;
         setProcessing(true);
         try {
-            await axios.post(`/api/clients/${approvePopperUser.user_id}/approve`);
+            await axiosClient.post(`clients/${approvePopperUser.user_id}/approve`);
             setApprovePopperAnchor(null);
             setApprovePopperUser(null);
             await fetchUsers();

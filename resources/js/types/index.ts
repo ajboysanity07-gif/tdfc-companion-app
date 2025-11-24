@@ -1,4 +1,4 @@
-import type { ComponentType } from 'react';
+import type { LucideIcon } from 'lucide-react';
 
 // Shared/central type definitions used across the app
 export type BreadcrumbItem = {
@@ -9,7 +9,7 @@ export type BreadcrumbItem = {
 export type NavItem = {
     title: string;
     href: string;
-    icon?: ComponentType<unknown>;
+    icon?: LucideIcon;
 };
 
 export type User = {

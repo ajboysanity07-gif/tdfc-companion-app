@@ -82,6 +82,7 @@ const UserAccordionDetails: React.FC<Props> = ({
     minWidth: 0,
   };
 
+
   // SalaryUpdatePopover integration:
   const [salaryPopoverAnchor, setSalaryPopoverAnchor] = React.useState<null | HTMLElement>(null);
   const [latestSalary, setLatestSalary] = React.useState(user?.salary_amount ? user.salary_amount.toString() : '');
@@ -239,6 +240,7 @@ if (loading) {
                       <img
                         src={`/storage/${user.prc_id_photo_front}`}
                         alt="PRC ID Front"
+                        loading="lazy"
                         style={{
                           width: user.prc_id_photo_back ? '50%' : '100%',
                           height: '100%',
@@ -255,6 +257,7 @@ if (loading) {
                       <img
                         src={`/storage/${user.prc_id_photo_back}`}
                         alt="PRC ID Back"
+                        loading="lazy"
                         style={{
                           width: '50%',
                           height: '100%',
@@ -329,6 +332,7 @@ if (loading) {
                   <img
                     src={`/storage/${user.payslip_photo_path}`}
                     alt="Payslip"
+                    loading="lazy"
                     style={{
                       width: '100%',
                       height: '100%',

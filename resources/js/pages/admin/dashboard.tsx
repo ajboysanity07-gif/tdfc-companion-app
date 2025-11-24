@@ -5,15 +5,19 @@ import { Head, router, usePage } from '@inertiajs/react';
 import { LogOut, Package, User, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
+
 type UserProps = {
     auth: {
         user: {
+            user_id?: number;
+            acctno?: string | null;
             name: string;
             email: string;
             role: string;
             avatar?: string | null;
         };
     };
+    admin?: string | number;
 };
 
 type Summary = { totalUsers: number; admins: number; customers: number };
@@ -22,6 +26,9 @@ type RecentUser = { user_id: number; email: string; role: string; status: string
 export default function AdminDashboard() {
     const { props } = usePage<UserProps>();
     const user = props.auth?.user ?? { name: 'Admin', role: 'admin' };
+    const adminId = props.admin ?? user.acctno ?? user.user_id;
+    const adminDashboardHref = adminId ? `/admin/${adminId}/dashboard` : '/admin/dashboard';
+    const clientManagementHref = adminId ? `/admin/${adminId}/client-management` : '/admin/client-management';
     const theme = useMyTheme();
     const [summary, setSummary] = useState<Summary | null>(null);
     const [recent, setRecent] = useState<RecentUser[]>([]);
@@ -42,7 +49,7 @@ export default function AdminDashboard() {
     }, []);
 
     return (
-        <AppLayout breadcrumbs={[{ title: 'Admin Dashboard', href: '/admin/dashboard' }]}>
+        <AppLayout breadcrumbs={[{ title: 'Admin Dashboard', href: adminDashboardHref }]}>
             <Head title="Admin Dashboard" />
             <div className={`w-full px-4 pb-10 pt-6 sm:px-6 lg:px-8 ${theme.bgClass}`}> 
                 <div className="flex w-full flex-col gap-6 sm:gap-8">
@@ -81,7 +88,7 @@ export default function AdminDashboard() {
                         </button>
 
                         <button
-                            onClick={() => router.visit('/admin/client-management')}
+                            onClick={() => router.visit(clientManagementHref)}
                             className="group flex w-full transform flex-col items-center justify-center rounded-2xl border border-gray-200 bg-white p-8 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg dark:border-neutral-700 dark:bg-neutral-800 sm:p-10"
                         >
                             <div className="mb-4 rounded-full bg-[#F57979]/10 p-5 transition-colors group-hover:bg-[#F57979]/20">

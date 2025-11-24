@@ -25,6 +25,21 @@ const FullScreenImageModal: React.FC<FullScreenImageModalProps> = ({
   if (!open || !imageUrl) return null;
 
   const showPrCpair = imageUrl === 'prc-both' && modalImagesUser;
+  const docFallback = '/images/prc-sample-front.png';
+  const prcFrontSrc = showPrCpair && modalImagesUser
+    ? modalImagesUser.prc_id_photo_front_url ?? (modalImagesUser.prc_id_photo_front ? `/storage/${modalImagesUser.prc_id_photo_front}` : '')
+    : null;
+  const prcBackSrc = showPrCpair && modalImagesUser
+    ? modalImagesUser.prc_id_photo_back_url ?? (modalImagesUser.prc_id_photo_back ? `/storage/${modalImagesUser.prc_id_photo_back}` : '')
+    : null;
+  const modalImgMaxWidth = showPrCpair
+    ? isMobile
+      ? '88vw'
+      : '42vw'
+    : isMobile
+      ? '92vw'
+      : '86vw';
+  const modalImgMaxHeight = isMobile ? '70vh' : '82vh';
 
   // Styles for overlay/background
   const overlayColor =
@@ -88,35 +103,26 @@ const FullScreenImageModal: React.FC<FullScreenImageModalProps> = ({
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 2.7,
-    transition: 'box-shadow 0.18s, transform 0.18s',
     cursor: 'pointer',
-    '&:hover': {
-      transform: 'scale(1.037)',
-      '& img': {
-        boxShadow: theme.palette.mode === 'dark'
-          ? `0 0 24px 0 ${theme.palette.secondary.main}`
-          : `0 0 24px 0 ${theme.palette.secondary.main}`,
-        filter: 'brightness(1.1) saturate(1.18)',
-        transform: 'scale(1.03)',
-        transition: 'filter 0.18s, transform 0.18s',
-      },
-      '& .img-label': {
-        color: theme.palette.secondary.main,
-        transition: 'color 0.2s, text-shadow 0.2s',
-      }
-    },
-    m: showPrCpair && !isMobile ? 2.4 : 0,
+    gap: 10,
+    m: showPrCpair && !isMobile ? 1.8 : 0.8,
   };
 
   // Image itself
   const imgSx = {
-    maxWidth: isMobile ? '92vw' : '660px',
-    maxHeight: isMobile ? '29vh' : '70vh',
-    borderRadius: 2.7,
-    objectFit: 'cover',
-    background: theme.palette.background.paper,
-    transition: 'filter 0.18s, transform 0.18s',
+    width: '100%',
+    maxWidth: modalImgMaxWidth,
+    minWidth: showPrCpair ? (isMobile ? '70vw' : '380px') : (isMobile ? '75vw' : '520px'),
+    height: 'auto',
+    maxHeight: modalImgMaxHeight,
+    minHeight: isMobile ? '50vh' : '60vh',
+    objectFit: 'contain',
+    background: 'transparent',
+    borderRadius: 14,
+    boxShadow: theme.palette.mode === 'dark'
+      ? '0 18px 44px rgba(0,0,0,0.42), 0 0 0 1px rgba(255,255,255,0.08)'
+      : '0 18px 44px rgba(15,23,42,0.18), 0 0 0 1px rgba(255,255,255,0.25)',
+    display: 'block',
   };
 
   // Label for the image
@@ -167,23 +173,23 @@ const FullScreenImageModal: React.FC<FullScreenImageModalProps> = ({
               <Box sx={imageWrapperSx}>
                 <Box
                   component="img"
-                  src={`/storage/${modalImagesUser.prc_id_photo_front}`}
+                  src={prcFrontSrc || docFallback}
                   alt="PRC Front"
                   sx={imgSx}
-                  onError={e => {
-                    e.currentTarget.src = '/images/placeholder-document.png';
+                  onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+                    e.currentTarget.src = docFallback;
                   }}
                 />
                 <Box className="img-label" sx={labelSx}>Front</Box>
               </Box>
               <Box sx={imageWrapperSx}>
                 <Box
-                  component="img"
-                  src={`/storage/${modalImagesUser.prc_id_photo_back}`}
-                  alt="PRC Back"
-                  sx={imgSx}
-                  onError={e => {
-                    e.currentTarget.src = '/images/placeholder-document.png';
+                component="img"
+                src={prcBackSrc || docFallback}
+                alt="PRC Back"
+                sx={imgSx}
+                  onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+                    e.currentTarget.src = docFallback;
                   }}
                 />
                 <Box className="img-label" sx={labelSx}>Back</Box>
@@ -196,8 +202,8 @@ const FullScreenImageModal: React.FC<FullScreenImageModalProps> = ({
                 src={imageUrl as string}
                 alt={title}
                 sx={imgSx}
-                onError={e => {
-                  (e.currentTarget as HTMLImageElement).src = '/images/placeholder-document.png';
+                onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+                  (e.currentTarget as HTMLImageElement).src = docFallback;
                 }}
               />
               {/* Optional: Single image label if desired */}

@@ -24,6 +24,8 @@ type SharedPageProps = {
   auth: {
     user: AuthUser | null;
   };
+  admin?: string | number;
+  acctno?: string | null;
   flash?: {
     success?: string;
     error?: string;
@@ -53,29 +55,39 @@ export function AppSidebar() {
   const { props } = usePage<SharedPageProps>();
   const user = props.auth?.user;
   const userRole = user?.role || 'customer';
-  const adminId = user?.acctno ?? user?.id ?? user?.user_id ?? '';
+  const adminParam = props.admin ?? user?.acctno ?? user?.user_id ?? user?.id ?? '';
+  const customerAcct = props.acctno ?? user?.acctno ?? '';
 
-  const adminDashboardHref =
-    userRole === 'admin'
-      ? `/admin/${adminId}/dashboard`
-      : '/dashboard';
+  const adminPath = (suffix: string) => (adminParam ? `/admin/${adminParam}${suffix}` : `/admin${suffix}`);
+  const adminDashboardHref = adminPath('/dashboard');
+  const adminClientManagementHref = adminPath('/client-management');
+  const customerDashboardHref = customerAcct ? `/client/${customerAcct}/dashboard` : '/dashboard';
 
   const mainNavItems = useMemo(() => {
-    if (userRole === 'admin') {
-      return adminNavItems.map((item) =>
-        item.href === '/admin/dashboard'
-          ? { ...item, href: adminDashboardHref }
-          : item.href === '/admin/client-management'
-            ? { ...item, href: `/admin/${adminId}/client-management` }
-            : item
+    if (userRole !== 'admin') {
+      return customerNavItems.map((item) =>
+        item.title === 'Home'
+          ? { ...item, href: customerDashboardHref }
+          : item
       );
     }
-    return customerNavItems;
-  }, [adminDashboardHref, adminId, userRole]);
+
+    return adminNavItems.map((item) => {
+      if (item.href === '/admin/dashboard') {
+        return { ...item, href: adminDashboardHref };
+      }
+
+      if (item.href === '/admin/client-management') {
+        return { ...item, href: adminClientManagementHref };
+      }
+
+      return item;
+    });
+  }, [adminClientManagementHref, adminDashboardHref, customerDashboardHref, userRole]);
 
   const homeLink = useMemo(() => {
-    return userRole === 'admin' ? adminDashboardHref : '/dashboard';
-  }, [adminDashboardHref, userRole]);
+    return userRole === 'admin' ? adminDashboardHref : customerDashboardHref;
+  }, [adminDashboardHref, customerDashboardHref, userRole]);
 
   return (
     <Sidebar collapsible="icon" variant="inset">

@@ -2,53 +2,125 @@
 
 namespace App\Http\Controllers\Admin;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use App\Models\AppUser;
-use App\Models\RejectionReason;
+use Illuminate\Http\Request;
 use App\Models\WSalaryRecord;
+use App\Models\RejectionReason;
+use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+
 class ClientManagementController extends Controller
 {
-    // Return all clients for admin management as JSON
+    // Return all clients for admin management as JSON (SPA/API)
     public function apiIndex(Request $request)
     {
-        $clients = AppUser::with('wmaster', 'rejectionReasons:id,code,label')
-            ->whereNotNull('prc_id_photo_front')
-            ->whereNotNull('prc_id_photo_back')
-            ->whereNotNull('payslip_photo_path')
-            ->orderBy('created_at', 'asc')
-            ->get()
-            ->map(function ($user) {
-                return [
-                    'user_id' => $user->user_id,
-                    'name' => $user->name,
-                    'email' => $user->email,
-                    'profile_picture_path' => $user->profile_picture_path,
-                    'phone_no' => $user->phone_no,
-                    'acctno' => $user->acctno,
-                    'status' => $user->status,
-                    'class' => $user->overallClass ?? null,
-                    'prc_id_photo_front' => $user->prc_id_photo_front,
-                    'prc_id_photo_back' => $user->prc_id_photo_back,
-                    'payslip_photo_path' => $user->payslip_photo_path,
-                    'created_at' => Carbon::parse($user->created_at)->toISOString(),
-                    'reviewed_at' => $user->reviewed_at ? Carbon::parse($user->reviewed_at)->toISOString() : null,
-                    'reviewed_by' => $user->reviewed_by,
-                    'salary_amount' => optional($user->latestSalary)->salary_amount,
-                    'notes' => optional($user->latestSalary)->notes,
-                    'rejection_reasons' => $user->isRejected()
-                        ? $user->rejectionReasons->map(fn($r) => [
-                            'code' => $r->code,
-                            'label' => $r->label,
-                        ])->toArray()
-                        : [],
-                ];
-            });
+        try {
+            $clients = AppUser::with(['wmaster', 'rejectionReasons:id,code,label'])
+                ->whereNotNull('prc_id_photo_front')
+                ->whereNotNull('prc_id_photo_back')
+                ->whereNotNull('payslip_photo_path')
+                ->orderBy('created_at', 'asc')
+                ->get()
+                ->map(function ($user) {
+                    // Inline old class detection logic against vloandue
+                    $loanRows = collect();
+                    try {
+                        $loanConnection = DB::connection($user->getConnectionName());
+                        if ($loanConnection->getSchemaBuilder()->hasTable('vloandue')) {
+                            $loanRows = $loanConnection
+                                ->table('vloandue')
+                                ->where('acctno', $user->acctno)
+                                ->get();
+                        } else {
+                            Log::warning('vloandue table missing while loading client list', [
+                                'acctno' => $user->acctno,
+                            ]);
+                        }
+                    } catch (\Throwable $e) {
+                        Log::warning('Unable to query vloandue while loading client list', [
+                            'acctno' => $user->acctno,
+                            'error' => $e->getMessage(),
+                        ]);
+                    }
 
-        return response()->json($clients);
+                    $highestClassPriority = null;
+                    foreach ($loanRows as $loanData) {
+                        $misspayment = $loanData->misspayment ?? null;
+                        $dateEnd = isset($loanData->date_end)
+                            ? Carbon::parse($loanData->date_end)
+                            : null;
+                        $now = Carbon::now();
+                        $diffDays = $dateEnd ? $dateEnd->diffInDays($now, false) : null;
+                        $classPriority = null;
+
+                        if ($misspayment != 999) {
+                            $classPriority = 1; // A
+                        } elseif ($misspayment == 999 && $diffDays !== null) {
+                            if ($diffDays < 60) {
+                                $classPriority = 2; // B
+                            } elseif ($diffDays >= 60 && $diffDays < 90) {
+                                $classPriority = 3; // C
+                            } elseif ($diffDays >= 90) {
+                                $classPriority = 4; // D
+                            }
+                        }
+
+                        if ($classPriority !== null && ($highestClassPriority === null || $classPriority > $highestClassPriority)) {
+                            $highestClassPriority = $classPriority;
+                        }
+                    }
+
+                    $overallClass = null;
+                    if ($highestClassPriority === 1) {
+                        $overallClass = 'A';
+                    } elseif ($highestClassPriority === 2) {
+                        $overallClass = 'B';
+                    } elseif ($highestClassPriority === 3) {
+                        $overallClass = 'C';
+                    } elseif ($highestClassPriority === 4) {
+                        $overallClass = 'D';
+                    }
+
+                    $latestSalary = WSalaryRecord::where('acctno', $user->acctno)
+                        ->orderBy('created_at', 'desc')
+                        ->first();
+
+                    return [
+                        'user_id' => $user->user_id,
+                        'name' => $user->name,
+                        'email' => $user->email,
+                        'profile_picture_path' => $user->profile_picture_path,
+                        'phone_no' => $user->phone_no,
+                        'acctno' => $user->acctno,
+                        'status' => $user->status,
+                        'class' => $overallClass,
+                        'prc_id_photo_front' => $user->prc_id_photo_front,
+                        'prc_id_photo_back' => $user->prc_id_photo_back,
+                        'payslip_photo_path' => $user->payslip_photo_path,
+                        'created_at' => $user->created_at->toISOString(),
+                        'reviewed_at' => $user->reviewed_at?->toISOString(),
+                        'reviewed_by' => $user->reviewed_by,
+                        'salary_amount' => $latestSalary?->salary_amount,
+                        'notes' => $latestSalary?->notes,
+                        'rejection_reasons' => $user->isRejected()
+                            ? $user->rejectionReasons->map(fn($r) => [
+                                'code' => $r->code,
+                                'label' => $r->label,
+                            ])->toArray()
+                            : [],
+                    ];
+                });
+
+            return response()->json($clients);
+        } catch (\Exception $e) {
+            Log::error('Error loading client management list', [
+                'error' => $e->getMessage(),
+            ]);
+            return response()->json(['error' => 'Error loading clients'], 500);
+        }
     }
 
     // Approve user

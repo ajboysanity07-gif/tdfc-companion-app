@@ -58,6 +58,7 @@ export default function ClientManagementPage() {
     approvePopperUser,
     setApprovePopperUser,
     processing,
+    loading,
     fullScreenImage,
     imageTitle,
     modalImagesUser,
@@ -71,14 +72,11 @@ export default function ClientManagementPage() {
     submitApproval,
   } = useClientManagement();
 
-  // Example loading state. Replace with real loading check!
-  const loading = processing ||
-    pagedRegisteredUsers == null ||
-    pagedPendingUsers == null ||
-    pagedRejectedUsers == null;
+  // Loading state from hook (API fetch)
+  const loadingState = loading;
 
   // Optional: For multiple desktop columns, you can make loadingColumns = [loading,...]:
-  const loadingColumns = desktopColumns.map(() => loading);
+  const loadingColumns = desktopColumns.map(() => loadingState);
 
   return (
     <AppLayout breadcrumbs={breadcrumbs}>
@@ -121,7 +119,7 @@ export default function ClientManagementPage() {
             rejectedPage={rejectedPage}
             setRejectedPage={setRejectedPage}
             userAccordionProps={userAccordionProps}
-            loading={loading}
+            loading={loadingState}
           />
         ) : (
           <DesktopUserColumns
@@ -157,12 +155,12 @@ export default function ClientManagementPage() {
           open={showRejectModal}
           user={selectedUser}
           rejectionReasons={[
-            { code: 'prc_id_blurry', label: 'Blurry PRC ID' },
-            { code: 'not_prc_id', label: 'Not a PRC ID' },
-            { code: 'prc_id_expired', label: 'Expired PRC ID' },
-            { code: 'payslip_blurry', label: 'Blurry Payslip' },
-            { code: 'payslip_too_old', label: 'Payslip too old' },
-            { code: 'documents_tampered', label: 'Documents tampered' },
+            { id: 1, code: 'prc_id_blurry', label: 'Blurry PRC ID' },
+            { id: 2, code: 'not_prc_id', label: 'Not a PRC ID' },
+            { id: 3, code: 'prc_id_expired', label: 'Expired PRC ID' },
+            { id: 4, code: 'payslip_blurry', label: 'Blurry Payslip' },
+            { id: 5, code: 'payslip_too_old', label: 'Payslip too old' },
+            { id: 6, code: 'documents_tampered', label: 'Documents tampered' },
           ]}
           selectedReasons={selectedReasons}
           processing={processing}
