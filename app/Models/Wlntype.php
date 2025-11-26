@@ -21,8 +21,5 @@ class WlnType extends Model
     {
         return $this->hasMany(WlnTags::class, 'typecode', 'typecode');
     }
-    public function active()
-    {
-        return $this->hasOne(WlnActive::class, 'typecode', 'typecode');
-    }
+
 }

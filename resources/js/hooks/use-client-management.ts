@@ -1,6 +1,6 @@
 import { useIsMobileTabs } from '@/hooks/use-isMobile-tabs';
 import axiosClient from '@/api/axios-client';
-import type { PendingUser } from '@/types/user';
+import type { PendingUser, RejectionReasonEntry } from '@/types/user';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 const PAGESIZE = 10;
@@ -34,6 +34,20 @@ export function useClientManagement() {
         fetchUsers();
     }, [fetchUsers]);
 
+    // Fetch rejection reasons on mount
+    useEffect(() => {
+        const loadRejectionReasons = async () => {
+            try {
+                const { data } = await axiosClient.get('/rejection-reasons');
+                setRejectionReasons(data.reasons ?? []);
+            } catch (err) {
+                console.error('Failed to load rejection reasons', err);
+                setRejectionReasons([]);
+            }
+        };
+        loadRejectionReasons();
+    }, []);
+
     // Expanded row for desktop details accordion
     const [expanded, setExpanded] = useState<number | null>(null);
 
@@ -56,6 +70,7 @@ export function useClientManagement() {
     const [showRejectModal, setShowRejectModal] = useState(false);
     const [selectedReasons, setSelectedReasons] = useState<string[]>([]);
     const [processing, setProcessing] = useState(false);
+    const [rejectionReasons, setRejectionReasons] = useState<RejectionReasonEntry[]>([]);
 
     // Search/filter states
     const [rejectedSearch, setRejectedSearch] = useState('');
@@ -158,13 +173,30 @@ export function useClientManagement() {
         setShowRejectModal(false); // close modal immediately for UX
         try {
             await axiosClient.post(`clients/${selectedUser.user_id}/reject`, { reasons: selectedReasons });
+            // Optimistically update local state so the user moves columns without a full reload
+            setAllUsers((prev) =>
+                prev
+                    ? prev.map((u) =>
+                        u.user_id === selectedUser.user_id
+                            ? { ...u, status: 'rejected' }
+                            : u,
+                    )
+                    : prev,
+            );
             await fetchUsers();
-        } catch (err) {
-            console.error('Rejection failed:', err);
-        } finally {
-            setProcessing(false);
             setSelectedUser(null);
             setSelectedReasons([]);
+        } catch (err: any) {
+            console.error('Rejection failed:', err);
+            // Sync data in case the server state changed (e.g., already rejected/approved elsewhere)
+            fetchUsers();
+            // Extract a meaningful message if available
+            const serverMsg = err?.response?.data?.error || err?.response?.data?.message;
+            window.alert(serverMsg || 'Rejection failed. Please try again or check the console for details.');
+            // Re-open the modal so the user can try again and see the reasons
+            setShowRejectModal(true);
+        } finally {
+            setProcessing(false);
         }
     }, [selectedUser, selectedReasons, fetchUsers]);
 
@@ -176,6 +208,16 @@ export function useClientManagement() {
             await axiosClient.post(`clients/${approvePopperUser.user_id}/approve`);
             setApprovePopperAnchor(null);
             setApprovePopperUser(null);
+            // Optimistically update local state so the user moves columns without a full reload
+            setAllUsers((prev) =>
+                prev
+                    ? prev.map((u) =>
+                        u.user_id === approvePopperUser.user_id
+                            ? { ...u, status: 'approved', rejection_reasons: [] }
+                            : u,
+                    )
+                    : prev,
+            );
             await fetchUsers();
         } finally {
             setProcessing(false);
@@ -295,6 +337,7 @@ export function useClientManagement() {
         showRejectModal,
         setShowRejectModal,
         selectedReasons,
+        rejectionReasons,
         processing,
         rejectedUsers,
         forApprovalUsers,

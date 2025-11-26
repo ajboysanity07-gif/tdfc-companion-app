@@ -63,6 +63,34 @@ class RegistrationStatusController extends Controller
     {
         $user = $request->user();
 
+        $this->processResubmit($request, $user);
+
+        // Redirect WITH FLASH MESSAGE
+        return redirect()
+            ->route('customer.registration.status')
+            ->with('success', 'Resubmission successful! Your application is under review again.');
+    }
+
+    /**
+     * API variant for resubmission (Sanctum).
+     */
+    public function resubmitApi(Request $request)
+    {
+        $user = $request->user();
+
+        try {
+            $this->processResubmit($request, $user);
+            return response()->json(['success' => true]);
+        } catch (\Throwable $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Shared resubmit logic for web/API.
+     */
+    private function processResubmit(Request $request, $user): void
+    {
         $validated = $request->validate([
             'prc_id_photo_front' => 'nullable|image|max:8192',
             'prc_id_photo_back'  => 'nullable|image|max:8192',
@@ -88,10 +116,5 @@ class RegistrationStatusController extends Controller
 
         // Detach all previous rejection reasons
         $user->rejectionReasons()->detach();
-
-        // Redirect WITH FLASH MESSAGE
-        return redirect()
-            ->route('customer.registration.status')
-            ->with('success', 'Resubmission successful! Your application is under review again.');
     }
 }

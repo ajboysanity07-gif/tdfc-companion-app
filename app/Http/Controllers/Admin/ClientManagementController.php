@@ -25,64 +25,7 @@ class ClientManagementController extends Controller
                 ->orderBy('created_at', 'asc')
                 ->get()
                 ->map(function ($user) {
-                    // Inline old class detection logic against vloandue
-                    $loanRows = collect();
-                    try {
-                        $loanConnection = DB::connection($user->getConnectionName());
-                        if ($loanConnection->getSchemaBuilder()->hasTable('vloandue')) {
-                            $loanRows = $loanConnection
-                                ->table('vloandue')
-                                ->where('acctno', $user->acctno)
-                                ->get();
-                        } else {
-                            Log::warning('vloandue table missing while loading client list', [
-                                'acctno' => $user->acctno,
-                            ]);
-                        }
-                    } catch (\Throwable $e) {
-                        Log::warning('Unable to query vloandue while loading client list', [
-                            'acctno' => $user->acctno,
-                            'error' => $e->getMessage(),
-                        ]);
-                    }
-
-                    $highestClassPriority = null;
-                    foreach ($loanRows as $loanData) {
-                        $misspayment = $loanData->misspayment ?? null;
-                        $dateEnd = isset($loanData->date_end)
-                            ? Carbon::parse($loanData->date_end)
-                            : null;
-                        $now = Carbon::now();
-                        $diffDays = $dateEnd ? $dateEnd->diffInDays($now, false) : null;
-                        $classPriority = null;
-
-                        if ($misspayment != 999) {
-                            $classPriority = 1; // A
-                        } elseif ($misspayment == 999 && $diffDays !== null) {
-                            if ($diffDays < 60) {
-                                $classPriority = 2; // B
-                            } elseif ($diffDays >= 60 && $diffDays < 90) {
-                                $classPriority = 3; // C
-                            } elseif ($diffDays >= 90) {
-                                $classPriority = 4; // D
-                            }
-                        }
-
-                        if ($classPriority !== null && ($highestClassPriority === null || $classPriority > $highestClassPriority)) {
-                            $highestClassPriority = $classPriority;
-                        }
-                    }
-
-                    $overallClass = null;
-                    if ($highestClassPriority === 1) {
-                        $overallClass = 'A';
-                    } elseif ($highestClassPriority === 2) {
-                        $overallClass = 'B';
-                    } elseif ($highestClassPriority === 3) {
-                        $overallClass = 'C';
-                    } elseif ($highestClassPriority === 4) {
-                        $overallClass = 'D';
-                    }
+                    $overallClass = $this->determineLoanClass($user);
 
                     $latestSalary = WSalaryRecord::where('acctno', $user->acctno)
                         ->orderBy('created_at', 'desc')
@@ -138,7 +81,7 @@ class ClientManagementController extends Controller
             $user->rejectionReasons()->detach(); // Remove rejection reasons if any
             $user->save();
 
-            return response()->json(['success' => true, 'user' => $user]);
+            return response()->json(['success' => true]);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
@@ -163,7 +106,7 @@ class ClientManagementController extends Controller
             $user->reviewed_by = Auth::id();
             $user->save();
 
-            return response()->json(['success' => true, 'user' => $user]);
+            return response()->json(['success' => true]);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
@@ -195,5 +138,71 @@ class ClientManagementController extends Controller
             Log::error('Error saving salary record', ['msg' => $e->getMessage()]);
             return response()->json(['error' => $e->getMessage()], 500);
         }
+    }
+
+    /**
+     * Derive the loan class (A-D) for a user using vloandue data if available.
+     */
+    protected function determineLoanClass(AppUser $user): ?string
+    {
+        $loanRows = collect();
+        $loanConnectionName = env('LOAN_CLASS_CONNECTION', $user->getConnectionName() ?? config('database.default'));
+        $loanTable = env('LOAN_CLASS_TABLE', 'vloandue');
+
+        try {
+            $loanRows = DB::connection($loanConnectionName)
+                ->table($loanTable)
+                ->where('acctno', $user->acctno)
+                ->get();
+        } catch (\Throwable $e) {
+            Log::warning('Unable to query loan class while loading client list', [
+                'acctno' => $user->acctno,
+                'connection' => $loanConnectionName,
+                'table' => $loanTable,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        $highestClassPriority = null;
+        foreach ($loanRows as $loanData) {
+            $misspayment = $loanData->misspayment ?? null;
+            $dateEnd = isset($loanData->date_end)
+                ? Carbon::parse($loanData->date_end)
+                : null;
+            $now = Carbon::now();
+            $diffDays = $dateEnd ? $dateEnd->diffInDays($now, false) : null;
+            $classPriority = null;
+
+            if ($misspayment != 999) {
+                $classPriority = 1; // A
+            } elseif ($misspayment == 999 && $diffDays !== null) {
+                if ($diffDays < 60) {
+                    $classPriority = 2; // B
+                } elseif ($diffDays >= 60 && $diffDays < 90) {
+                    $classPriority = 3; // C
+                } elseif ($diffDays >= 90) {
+                    $classPriority = 4; // D
+                }
+            }
+
+            if ($classPriority !== null && ($highestClassPriority === null || $classPriority > $highestClassPriority)) {
+                $highestClassPriority = $classPriority;
+            }
+        }
+
+        if ($highestClassPriority === 1) {
+            return 'A';
+        }
+        if ($highestClassPriority === 2) {
+            return 'B';
+        }
+        if ($highestClassPriority === 3) {
+            return 'C';
+        }
+        if ($highestClassPriority === 4) {
+            return 'D';
+        }
+
+        return null;
     }
 }

@@ -147,14 +147,14 @@ const PayslipWizard = ({
           {/* Modal body with fixed height (desktop) and scrollable main area */}
           <motion.div
             className="bg-white shadow-2xl w-full mx-auto flex flex-col relative overflow-hidden
-                      h-screen md:h-[820px] md:max-h-[90vh] md:rounded-2xl md:max-w-lg"
+                      h-screen md:h-auto md:max-h-[92vh] md:rounded-2xl md:max-w-lg"
             initial={{ y: "100%", opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: "100%", opacity: 0 }}
             transition={{ type: "spring", damping: 30, stiffness: 200 }}
           >
             {/* Main content and step wizard: fill space, vertically center 100% */}
-            <div className="flex-1 min-h-0 flex flex-col px-5 w-full relative">
+            <div className="flex-1 min-h-0 flex flex-col px-5 w-full relative overflow-y-auto pb-24">
               <AnimatePresence custom={direction} mode="wait">
                 <motion.div
                   key={step + "|" + mode}

@@ -27,11 +27,10 @@ const FullScreenImageModal: React.FC<FullScreenImageModalProps> = ({
   const showPrCpair = imageUrl === 'prc-both' && modalImagesUser;
   const docFallback = '/images/prc-sample-front.png';
   const prcFrontSrc = showPrCpair && modalImagesUser
-    ? modalImagesUser.prc_id_photo_front_url ?? (modalImagesUser.prc_id_photo_front ? `/storage/${modalImagesUser.prc_id_photo_front}` : '')
-    : null;
+    ? `/storage/${modalImagesUser.prc_id_photo_front}` : null
+
   const prcBackSrc = showPrCpair && modalImagesUser
-    ? modalImagesUser.prc_id_photo_back_url ?? (modalImagesUser.prc_id_photo_back ? `/storage/${modalImagesUser.prc_id_photo_back}` : '')
-    : null;
+    ? `/storage/${modalImagesUser.prc_id_photo_back}` : null;
   const modalImgMaxWidth = showPrCpair
     ? isMobile
       ? '88vw'
@@ -104,25 +103,39 @@ const FullScreenImageModal: React.FC<FullScreenImageModalProps> = ({
     alignItems: 'center',
     justifyContent: 'center',
     cursor: 'pointer',
-    gap: 10,
+    gap: 1.5,
     m: showPrCpair && !isMobile ? 1.8 : 0.8,
+    width: '100%',
+    maxWidth: modalImgMaxWidth,
+    padding: 0,
+    '&:hover .fs-img': {
+      transform: 'scale(1.02)',
+      boxShadow: theme.palette.mode === 'dark'
+        ? '0 20px 50px rgba(0,0,0,0.48), 0 0 0 1px rgba(255,255,255,0.12)'
+        : '0 22px 54px rgba(15,23,42,0.22), 0 0 0 1px rgba(255,255,255,0.3)',
+    },
+    '&:hover .img-label': {
+      transform: 'scale(1.02)',
+      opacity: 1,
+    },
   };
 
   // Image itself
   const imgSx = {
+    display: 'block',
     width: '100%',
-    maxWidth: modalImgMaxWidth,
-    minWidth: showPrCpair ? (isMobile ? '70vw' : '380px') : (isMobile ? '75vw' : '520px'),
+    maxWidth: '100%',
     height: 'auto',
     maxHeight: modalImgMaxHeight,
-    minHeight: isMobile ? '50vh' : '60vh',
     objectFit: 'contain',
     background: 'transparent',
-    borderRadius: 14,
+    borderRadius: 5,
+    overflow: 'hidden',
+    transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+    transformOrigin: 'center',
     boxShadow: theme.palette.mode === 'dark'
       ? '0 18px 44px rgba(0,0,0,0.42), 0 0 0 1px rgba(255,255,255,0.08)'
       : '0 18px 44px rgba(15,23,42,0.18), 0 0 0 1px rgba(255,255,255,0.25)',
-    display: 'block',
   };
 
   // Label for the image
@@ -130,11 +143,11 @@ const FullScreenImageModal: React.FC<FullScreenImageModalProps> = ({
     color: theme.palette.text.primary,
     fontWeight: 550,
     fontSize: isMobile ? 19 : 28,
-    mt: 1.5,
+    mt: 1,
     textAlign: 'center',
     letterSpacing: '0.01em',
     opacity: 0.98,
-    transition: 'color 0.18s, text-shadow 0.18s',
+    transition: 'color 0.18s, text-shadow 0.18s, transform 0.18s',
   };
 
   return (
@@ -171,8 +184,9 @@ const FullScreenImageModal: React.FC<FullScreenImageModalProps> = ({
           {showPrCpair && modalImagesUser ? (
             <>
               <Box sx={imageWrapperSx}>
-                <Box
+              <Box
                   component="img"
+                  className="fs-img"
                   src={prcFrontSrc || docFallback}
                   alt="PRC Front"
                   sx={imgSx}
@@ -183,8 +197,9 @@ const FullScreenImageModal: React.FC<FullScreenImageModalProps> = ({
                 <Box className="img-label" sx={labelSx}>Front</Box>
               </Box>
               <Box sx={imageWrapperSx}>
-                <Box
+              <Box
                 component="img"
+                className="fs-img"
                 src={prcBackSrc || docFallback}
                 alt="PRC Back"
                 sx={imgSx}
@@ -199,6 +214,7 @@ const FullScreenImageModal: React.FC<FullScreenImageModalProps> = ({
             <Box sx={imageWrapperSx}>
               <Box
                 component="img"
+                className="fs-img"
                 src={imageUrl as string}
                 alt={title}
                 sx={imgSx}

@@ -18,8 +18,8 @@ class ProductController extends Controller
         $products = WlnType::with([
             'settings', 'display', 'tags.summaries'
         ])->whereHas('display', function ($q) {
-            $q->where('isDisplayed', true);
-        })->get();
+            $q->where('isDisplayed', false);
+        })->get('typecode', 'lntype', 'int_rate');
 
         return response()->json($products);
     }

@@ -67,6 +67,7 @@ export default function ClientManagementPage() {
     setShowRejectModal,
     selectedUser,
     selectedReasons,
+    rejectionReasons,
     toggleReason,
     submitRejection,
     submitApproval,
@@ -82,7 +83,7 @@ export default function ClientManagementPage() {
     <AppLayout breadcrumbs={breadcrumbs}>
       <div
         className="rounded-2xl flex flex-1 flex-col gap-4 overflow-x-auto bg-[#FAFAFA] p-4 transition-colors duration-300 dark:bg-neutral-900"
-        style={{ minHeight: '100vh' }}
+      
       >
         <div className="relative mb-6 h-[180px] overflow-hidden rounded-xl bg-[#F57979] shadow-lg">
           <div className="relative z-10 p-6">
@@ -154,14 +155,7 @@ export default function ClientManagementPage() {
         <RejectModal
           open={showRejectModal}
           user={selectedUser}
-          rejectionReasons={[
-            { id: 1, code: 'prc_id_blurry', label: 'Blurry PRC ID' },
-            { id: 2, code: 'not_prc_id', label: 'Not a PRC ID' },
-            { id: 3, code: 'prc_id_expired', label: 'Expired PRC ID' },
-            { id: 4, code: 'payslip_blurry', label: 'Blurry Payslip' },
-            { id: 5, code: 'payslip_too_old', label: 'Payslip too old' },
-            { id: 6, code: 'documents_tampered', label: 'Documents tampered' },
-          ]}
+          rejectionReasons={rejectionReasons}
           selectedReasons={selectedReasons}
           processing={processing}
           onClose={() => setShowRejectModal(false)}

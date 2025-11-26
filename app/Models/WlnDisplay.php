@@ -8,6 +8,9 @@ class WlnDisplay extends Model
 {
     protected $table = 'wln_display';
     protected $fillable = ['typecode', 'isDisplayed'];
+    protected $casts = [
+        'isDisplayed' => 'boolean',
+    ];
 
     public function type()
     {

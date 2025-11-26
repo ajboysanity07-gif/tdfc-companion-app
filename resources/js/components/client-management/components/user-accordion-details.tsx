@@ -81,6 +81,38 @@ const UserAccordionDetails: React.FC<Props> = ({
     flex: 1,
     minWidth: 0,
   };
+  const getClassChipSx = (cls?: string) => ({
+    fontWeight: 700,
+    letterSpacing: '0.06em',
+    fontSize: 13,
+    px: 1.6,
+    height: 26,
+    ...(cls === 'A' && {
+      bgcolor: 'transparent',
+      color: '#1976d2',
+      border: '2.2px solid #1976d2',
+    }),
+    ...(cls === 'B' && {
+      bgcolor: 'transparent',
+      color: '#9C27B0',
+      border: '2.2px solid #9C27B0',
+    }),
+    ...(cls === 'C' && {
+      bgcolor: 'transparent',
+      color: '#B98400',
+      border: '2.2px solid #FFBF00',
+    }),
+    ...(cls === 'D' && {
+      bgcolor: 'transparent',
+      color: '#757575',
+      border: '2.2px solid #757575',
+    }),
+    ...(!cls && {
+      bgcolor: 'transparent',
+      color: mutedText,
+      border: `2.2px solid ${mutedText}`,
+    }),
+  });
 
 
   // SalaryUpdatePopover integration:
@@ -388,38 +420,11 @@ if (loading) {
           </Box>
           {/* Customer Class Chip */}
           <Box sx={{ mt: 1.5, mb: 1, textAlign: 'center' }}>
-            {user.class && (
-              <Chip
-                label={`Class ${user.class}`}
-                sx={{
-                  fontWeight: 700,
-                  letterSpacing: '0.06em',
-                  fontSize: 15,
-                  px: 2,
-                  ...(user.class === 'A' && {
-                    bgcolor: 'transparent',
-                    color: '#1976d2',
-                    border: '2.2px solid #1976d2',
-                  }),
-                  ...(user.class === 'B' && {
-                    bgcolor: 'transparent',
-                    color: '#9C27B0',
-                    border: '2.2px solid #9C27B0',
-                  }),
-                  ...(user.class === 'C' && {
-                    bgcolor: 'transparent',
-                    color: '#B98400',
-                    border: '2.2px solid #FFBF00',
-                  }),
-                  ...(user.class === 'D' && {
-                    bgcolor: 'transparent',
-                    color: '#757575',
-                    border: '2.2px solid #757575',
-                  }),
-                }}
-                variant="outlined"
-              />
-            )}
+            <Chip
+              label={user.class ? `Class ${user.class}` : 'Class N/A'}
+              sx={getClassChipSx(user.class)}
+              variant="outlined"
+            />
           </Box>
           {/* Client Salary Details - only show for Registered tab */}
           {groupTab === 0 && (

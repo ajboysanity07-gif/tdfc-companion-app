@@ -208,84 +208,77 @@ const RejectModal: React.FC<RejectModalProps> = ({
                             {capitalizedName}
                         </div>
                         {/* Checkbox options */}
-                        <Box
-                            sx={{
-                                border: `1.5px solid ${borderColor}`,
-                                borderRadius: 2,
-                                padding: 2,
-                                background: isDark ? alpha(cardBg, 0.24) : alpha(cardBg, 0.54),
-                                mb: 2,
-                            }}
-                        >
+                        <Box sx={{ mb: 2 }}>
                             <FormGroup>
-                                {rejectionReasons.map((reason) => (
-                                    <FormControlLabel
-                                        key={reason.code}
-                                        control={
-                                            <Checkbox
-                                                checked={selectedReasons.includes(reason.code)}
-                                                onChange={() => onToggleReason(reason.code)}
-                                                disabled={processing}
+                                {rejectionReasons.map((reason) => {
+                                    const isChecked = selectedReasons.includes(reason.code);
+                                    return (
+                                            <Box
+                                                key={reason.code}
                                                 sx={{
-                                                    // Unchecked state color
-                                                    color: checkboxUnchecked,
-
-                                                    // Padding around the checkbox
-                                                    padding: '9px',
-
-                                                    // Checked state styling
-                                                    '&.Mui-checked': {
-                                                        color: errorMain,
-                                                    },
-
-                                                    // Hover effect (both checked and unchecked)
-                                                    '&:hover': {
-                                                        backgroundColor: checkboxHover,
-                                                    },
-
-                                                    // Disabled state
-                                                    '&.Mui-disabled': {
-                                                        color: alpha(theme.palette.text.disabled, 0.3),
-                                                    },
-
-                                                    // Icon (checkbox box) styling
-                                                    '& .MuiSvgIcon-root': {
-                                                        fontSize: 26,
-                                                        // Optional: add border radius to make it more rounded
-                                                        borderRadius: '4px',
-                                                    },
-
-                                                    // Ripple effect color when clicked
-                                                    '& .MuiTouchRipple-root': {
-                                                        color: errorMain,
-                                                    },
-
-                                                    // Spacing adjustments
-                                                    marginRight: 2,
-                                                    marginLeft: 1,
-
-                                                    // Smooth transition for color changes
-                                                    transition: 'all 0.2s ease-in-out',
-                                                }}
-                                            />
-                                        }
-                                        label={
-                                            <span
-                                                style={{
-                                                    fontSize: 17,
-                                                    color: mainText,
-                                                    fontWeight: 500,
+                                                border: `1.2px solid ${isChecked ? errorMain : borderColor}`,
+                                                borderRadius: 1.8,
+                                                mb: 1.1,
+                                                px: isChecked ? 1.5 : 1.2,
+                                                py: isChecked ? 0.7 : 0.4,
+                                                backgroundColor: isChecked
+                                                    ? alpha(errorMain, isDark ? 0.12 : 0.08)
+                                                    : 'transparent',
+                                                transform: isChecked ? 'scale(1.02)' : 'scale(1)',
+                                                boxShadow: 'none',
+                                                transition: 'border 0.2s, background-color 0.2s, transform 0.18s ease',
                                                 }}
                                             >
-                                                {reason.label}
-                                            </span>
-                                        }
-                                        sx={{
-                                            padding: 0,
-                                            alignItems: 'center',
-                                        }}
-                                    />
-                                ))}
+                                            <FormControlLabel
+                                                control={
+                                                    <Checkbox
+                                                        checked={isChecked}
+                                                        onChange={() => onToggleReason(reason.code)}
+                                                        disabled={processing}
+                                                        sx={{
+                                                            color: isChecked ? errorMain : checkboxUnchecked,
+                                                            padding: '9px',
+                                                            '&.Mui-checked': {
+                                                                color: errorMain,
+                                                            },
+                                                            '&:hover': {
+                                                                backgroundColor: checkboxHover,
+                                                            },
+                                                            '&.Mui-disabled': {
+                                                                color: alpha(theme.palette.text.disabled, 0.3),
+                                                            },
+                                                            '& .MuiSvgIcon-root': {
+                                                                fontSize: 26,
+                                                                borderRadius: '4px',
+                                                            },
+                                                            '& .MuiTouchRipple-root': {
+                                                                color: errorMain,
+                                                            },
+                                                            marginRight: 2,
+                                                            marginLeft: 1,
+                                                            transition: 'all 0.2s ease-in-out',
+                                                        }}
+                                                    />
+                                                }
+                                                        label={
+                                                            <span
+                                                                style={{
+                                                                    fontSize: isChecked ? 17.5 : 17,
+                                                                    color: isChecked ? errorMain : mainText,
+                                                                    fontWeight: isChecked ? 700 : 600,
+                                                                }}
+                                                            >
+                                                                {reason.label}
+                                                            </span>
+                                                        }
+                                                sx={{
+                                                    padding: 0,
+                                                    alignItems: 'center',
+                                                }}
+                                            />
+                                        </Box>
+                                    );
+                                })}
                             </FormGroup>
                         </Box>
                         {/* selected reason count warning */}
