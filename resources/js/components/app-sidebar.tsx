@@ -61,6 +61,7 @@ export function AppSidebar() {
   const adminPath = (suffix: string) => (adminParam ? `/admin/${adminParam}${suffix}` : `/admin${suffix}`);
   const adminDashboardHref = adminPath('/dashboard');
   const adminClientManagementHref = adminPath('/client-management');
+  const adminProductManagementHref = adminPath('/products');
   const customerDashboardHref = customerAcct ? `/client/${customerAcct}/dashboard` : '/dashboard';
 
   const mainNavItems = useMemo(() => {
@@ -80,10 +81,13 @@ export function AppSidebar() {
       if (item.href === '/admin/client-management') {
         return { ...item, href: adminClientManagementHref };
       }
+      if (item.href === '/admin/products'){
+        return { ...item, href: adminProductManagementHref}
+      }
 
       return item;
     });
-  }, [adminClientManagementHref, adminDashboardHref, customerDashboardHref, userRole]);
+  }, [adminClientManagementHref, adminDashboardHref, customerDashboardHref, adminProductManagementHref, userRole]);
 
   const homeLink = useMemo(() => {
     return userRole === 'admin' ? adminDashboardHref : customerDashboardHref;

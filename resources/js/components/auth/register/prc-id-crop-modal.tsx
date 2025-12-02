@@ -47,7 +47,7 @@ const PrcIdCropModal: React.FC<Props> = ({
   return open ? (
     <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center">
       <div
-        className="bg-white shadow-2xl max-w-md w-full mx-auto flex flex-col h-screen md:h-[650px] md:max-h-[90vh] md:rounded-xl"
+        className="bg-white shadow-2xl max-w-md w-full mx-auto flex flex-col h-screen md:h[650px] md:max-h-[90vh] md:rounded-xl"
         style={{ maxWidth: "100vw", maxHeight: "100vh" }}
       >
         <div className="overflow-y-auto py-7 px-5 w-full flex-1 flex flex-col">

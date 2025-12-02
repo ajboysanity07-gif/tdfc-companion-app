@@ -16,7 +16,13 @@ const PayslipCropBox: React.FC<Props> = ({ src, aspect, onCancel }) => {
       <img src={src} style={{ aspectRatio: aspect }} alt="Crop preview" />
       {/* Add croppie or react-easy-crop, etc */}
       <button onClick={onCancel}>Cancel</button>
-      <button onClick={() => {/* run cropping logic, then onDone(croppedFile) */}}>Crop & Next</button>
+      <button
+        onClick={() => {
+          /* run cropping logic, then onDone(croppedFile) */
+        }}
+      >
+        Crop & Next
+      </button>
     </div>
   );
 };

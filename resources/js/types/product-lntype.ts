@@ -1,46 +1,100 @@
-export interface WlnSettings {
-  typecode: string;
-  ln_isActive?: boolean;
-  ln_scheme?: string;
-  max_term?: number;
-  max_term_isEditable?: boolean;
-  max_amortization?: number;
-  max_amortization_isEditable?: boolean;
-  service_fee?: number;
-  lrf?: number;
-  doc_stamp?: number;
-  mort_notarial?: number;
-  terms_and_info?: string;
-}
+// types/product-lntype.ts
 
-export interface WlnDisplay {
-  typecode: string;
-  isDisplayed: boolean;
-  created_at?: string | null;
-  updated_at?: string | null;
-}
-
-export interface WlnTagSummary {
-  id: number;
-  wlntag_id: number;
-  created_at?: string | null;
-  updated_at?: string | null;
-}
-
-export interface WlnTag {
-  id: number;
-  typecode: string;
-  tag_name: string;
-  created_at?: string | null;
-  updated_at?: string | null;
-  summaries?: WlnTagSummary[];
-}
-
+// Main Product Type (from WlnProducts model)
 export interface ProductLntype {
-  typecode: string;
-  lntype: string;
-  int_rate?: number;
-  settings?: WlnSettings;
-  display?: WlnDisplay;
-  tags?: WlnTag[];
+    // Primary key
+    product_id: number;
+
+    // Fillable fields from WlnProducts
+    product_name: string;
+    is_active: boolean;
+    is_multiple: boolean;
+    schemes: string | null;
+    mode: string | null;
+    interest_rate: number | null;
+    max_term_days: number | null;
+    is_max_term_editable: boolean | null;
+    max_amortization_mode: 'FIXED' | 'BASIC' | 'CUSTOM';
+    max_amortization_formula: string | null;
+    max_amortization: number | null;
+    is_max_amortization_editable: boolean | null;
+    service_fee: number | null;
+    lrf: number | null;
+    document_stamp: number | null;
+    mort_plus_notarial: number | null;
+    terms: string | null;
+
+    // // Timestamps (public $timestamps = true)
+    // created_at: string;
+    // updated_at: string;
+
+    // Relationships (when loaded)
+    types?: WlnType[]; // From ->load('types')
+    tags?: WlnProductTag[]; // From ->load('tags') if ever used
+}
+
+// Type from WlnType model
+export interface WlnType {
+    controlno: number; // Primary key
+    typecode: string; // Used in relationships
+    lntype: string;
+    lntags: string;
+    // Add other fields from your wlntype table here based on the actual columns
+    description?: string; // Example - adjust based on your actual table structure
+    created_at?: string;
+    updated_at?: string;
+
+    // Pivot data (if using withPivot())
+    pivot?: {
+        product_id: number;
+        typecode: string;
+        created_at: string;
+        updated_at: string;
+    };
+}
+
+// Pivot table (from WlnProductTags model)
+export interface WlnProductTag {
+    product_id: number;
+    typecode: string;
+    created_at: string;
+    updated_at: string;
+}
+
+// Payload for Create/Update (matches fillable + typecodes)
+export interface ProductPayload {
+    product_name: string;
+    is_active: boolean;
+    is_multiple: boolean;
+    schemes?: string | null;
+    mode?: string | null;
+    interest_rate?: number | null;
+    max_term_days?: number | null;
+    is_max_term_editable?: boolean | null;
+    max_amortization_mode: 'FIXED' | 'BASIC' | 'CUSTOM';
+    max_amortization_formula: string | null;
+    max_amortization?: number | null;
+    is_max_amortization_editable?: boolean | null;
+    service_fee?: number | null;
+    lrf?: number | null;
+    document_stamp?: number | null;
+    mort_plus_notarial?: number | null;
+    terms?: string | null;
+    typecodes?: string[]; // For syncing the relationship
+}
+
+// Laravel Pagination Response
+export interface PaginatedResponse<T> {
+    data: T[];
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+    from: number | null;
+    to: number | null;
+}
+
+// Delete Response
+export interface DeleteResponse {
+    deleted: boolean;
 }

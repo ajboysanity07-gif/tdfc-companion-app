@@ -44,9 +44,14 @@ Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->midd
 
 // --- ADMIN DASHBOARD APIs ---
 Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
+    // Dashboard summary & recent users
     Route::get('/admin/dashboard/summary', [AdminDashboardController::class, 'summary']);
     Route::get('/admin/dashboard/recent-users', [AdminDashboardController::class, 'recentUsers']);
-    // add more endpoints as needed
+
+    // Product Management - fetch all products with tags  
+    Route::apiResource('products', ProductManagementController::class)->except(['create', 'edit']);
+    Route::get('/product-types', [ProductManagementController::class, 'typesIndex']);
+
 });
 
 // Public & utility APIs (keep as needed)
@@ -68,15 +73,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('/clients/{user}/approve', [ClientManagementController::class, 'apiApprove']);
         Route::post('/clients/{user}/reject', [ClientManagementController::class, 'apiReject']);
         Route::post('/clients/{acctno}/salary', [ClientManagementController::class, 'updateSalary']);
-
-        // Product Management
-        Route::get('/products', [ProductManagementController::class, 'index']);
-        Route::get('/products/hidden', [ProductManagementController::class, 'hidden']); // only isDisplayed=false
-    // activate/deactivate...
-        Route::post('/products/{typecode}/activate', [ProductManagementController::class, 'activate']);
-        Route::post('/products/{typecode}/deactivate', [ProductManagementController::class, 'deactivate']);
-
-
 
         // Rejection reasons lookup
         Route::get('/rejection-reasons', [UserRejectionController::class, 'getRejectionReasons']);

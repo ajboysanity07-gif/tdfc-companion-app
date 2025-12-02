@@ -12,7 +12,7 @@ const PRCFileRow: React.FC<Props> = ({ valueFront, valueBack, onClick, display }
   // Helper to describe what's uploaded
   const getStatusDisplay = () => {
     if (display) return display;
-    if (valueFront && valueBack) return 'Front & Back completed ✓';
+    if (valueFront && valueBack) return 'Front & Back completed �o"';
     if (valueFront) return 'Front completed, back pending';
     if (valueBack) return 'Back completed, front pending';
     return 'Click to upload...';

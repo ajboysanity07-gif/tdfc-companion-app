@@ -1,58 +1,100 @@
-import { useEffect, useState } from 'react';
-import AppLayout from '@/layouts/app-layout';
 import DesktopView from '@/components/product-management/desktop/desktop-view';
-import DisplayProductsModal from '@/components/product-management/display-products-modal';
-import { useProductsApi } from '@/hooks/use-products-api';
+import MobileView from '@/components/product-management/mobile/mobile-view';
+import { useProductManagement } from '@/hooks/use-product-management';
+import AppLayout from '@/layouts/app-layout';
+import { ProductLntype, ProductPayload } from '@/types/product-lntype';
+import { LinearProgress, Slide, useMediaQuery } from '@mui/material';
+import { useEffect, useState } from 'react';
 
 const breadcrumbs = [{ title: 'Product Management', href: '/admin/products' }];
 
 export default function ProductsManagementPage() {
-  const { products, loading, error, fetchProducts, toggleDisplay } = useProductsApi();
-  const [showDisplayModal, setShowDisplayModal] = useState(false);
+    const { products, types, loading, error, fetchTypes, fetchProducts, createProduct, updateProduct, deleteProduct } = useProductManagement();
+    const [selected, setSelected] = useState<ProductLntype | null>(null);
+    const [isAdding, setIsAdding] = useState(false);
 
-  useEffect(() => {
-    fetchProducts();
-  }, [fetchProducts]);
+    useEffect(() => {
+        fetchProducts();
+        fetchTypes();
+    }, [fetchProducts, fetchTypes]);
 
-  const handleToggleDisplay = async (typecode: string, next: boolean) => {
-    await toggleDisplay(typecode, next);
-  };
+    const isMobile = useMediaQuery('(max-width:900px)');
 
-  const handleActivateMany = async (typecodes: string[]) => {
-    for (const tc of typecodes) {
-      await toggleDisplay(tc, true);
-    }
-    await fetchProducts();
-  };
+    const handleSave = async (payload: ProductPayload, productId?: number | null) => {
+        const id = productId ?? selected?.product_id;
+        if (id) {
+            await updateProduct(id, payload);
+        } else {
+            await createProduct(payload);
+        }
+        setSelected(null);
+        setIsAdding(false);
+    };
 
-  return (
-    <AppLayout breadcrumbs={breadcrumbs}>
-      <div className="flex flex-1 flex-col gap-4 overflow-x-auto rounded-2xl bg-[#FAFAFA] p-4 transition-colors duration-300 dark:bg-neutral-900">
-        <div className="relative mb-6 h-[180px] overflow-hidden rounded-xl bg-[#F57979] shadow-lg">
-          <div className="relative z-10 p-6">
-            <h1 className="mb-2 text-3xl font-extrabold tracking-tight text-[#FFF172]">Product Management</h1>
-            <div className="text-[1.08rem] font-medium text-white opacity-90">
-              Activate and manage product listings
+    const handleDelete = async (productId?: number | null) => {
+        const id = productId ?? selected?.product_id;
+        if (!id) return;
+        await deleteProduct(id);
+        setSelected(null);
+        setIsAdding(false);
+    };
+
+    const handleToggleActive = async (productId: number, value: boolean) => {
+        await updateProduct(productId, { is_active: value });
+        setSelected((prev) => (prev && prev.product_id === productId ? { ...prev, is_active: value } : prev));
+    };
+
+    return (
+        <AppLayout breadcrumbs={breadcrumbs}>
+            {loading ? <LinearProgress color="primary" sx={{ position: 'fixed', top: 0, left: 0, width: '100%', zIndex: 60 }} /> : null}
+            <Slide in={!!(loading || error)} direction="down" mountOnEnter unmountOnExit>
+                <div className="fixed top-4 left-1/2 z-50 flex -translate-x-1/2 flex-col items-center gap-2">
+                    {loading ? (
+                        <div className="rounded-full bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-sky-900/30">
+                            Loading...
+                        </div>
+                    ) : null}
+                    {error ? (
+                        <div className="rounded-full bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-red-900/30">{error}</div>
+                    ) : null}
+                </div>
+            </Slide>
+            <div className="flex flex-col gap-5 overflow-x-auto bg-[#FAFAFA] p-4 transition-colors duration-300 dark:bg-neutral-900">
+                <div className="relative h-[180px] overflow-hidden rounded-xl bg-[#F57979] shadow-lg">
+                    <div className="relative z-10 p-6">
+                        <h1 className="mb-2 text-3xl font-extrabold tracking-tight text-[#FFF172]">Product Management</h1>
+                        <div className="text-[1.08rem] font-medium text-white opacity-90">Activate and manage product listings</div>
+                    </div>
+                </div>
+
+                {isMobile ? (
+                    <MobileView
+                        products={products}
+                        availableTypes={types}
+                        onSave={(payload, id) => handleSave(payload, id)}
+                        onDelete={(id) => handleDelete(id)}
+                        onToggleActive={handleToggleActive}
+                    />
+                ) : (
+                    <DesktopView
+                        products={products}
+                        availableTypes={types}
+                        selected={selected}
+                        isAdding={isAdding}
+                        onSelect={(product_id) => {
+                            setSelected(products.find((p) => p.product_id === product_id) ?? null);
+                            setIsAdding(false);
+                        }}
+                        onSave={handleSave}
+                        onDelete={handleDelete}
+                        onToggleActive={handleToggleActive}
+                        onAdd={() => {
+                            setSelected(null);
+                            setIsAdding(true);
+                        }}
+                    />
+                )}
             </div>
-          </div>
-        </div>
-
-        {loading && <div>Loading...</div>}
-        {error && <div className="text-red-600">{error}</div>}
-
-        <DesktopView
-          products={products}
-          onToggleDisplay={handleToggleDisplay}
-          onAdd={() => setShowDisplayModal(true)}
-        />
-      </div>
-
-      <DisplayProductsModal
-        open={showDisplayModal}
-        onClose={() => setShowDisplayModal(false)}
-        onActivateMany={handleActivateMany}
-        loading={loading}
-      />
-    </AppLayout>
-  );
+        </AppLayout>
+    );
 }

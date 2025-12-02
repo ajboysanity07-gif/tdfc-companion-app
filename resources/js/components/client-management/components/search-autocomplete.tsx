@@ -1,5 +1,5 @@
 import React from 'react';
-import { Autocomplete, TextField, InputAdornment, Skeleton } from '@mui/material';
+import { Autocomplete, TextField, Box, Skeleton } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import { useTheme } from '@mui/material/styles';
 
@@ -8,9 +8,10 @@ export interface SearchAutocompleteProps {
   value: string;
   onChange: (value: string) => void;
   placeholder: string;
+  label?: string;
   className?: string;
-  loading?: boolean; // <-- NEW
-  disabled?: boolean;  // <-- Add this line!
+  loading?: boolean;
+  disabled?: boolean;
 }
 
 const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
@@ -20,6 +21,7 @@ const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
   placeholder,
   className,
   loading = false,
+  disabled = false,
 }) => {
   const theme = useTheme();
 
@@ -51,11 +53,16 @@ const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
       renderInput={(params) => (
         <TextField
           {...params}
-          label={null}
-          placeholder={placeholder}
+          label={
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+             <SearchIcon fontSize="small" />
+              {placeholder}              
+            </Box>
+          }
           variant="outlined"
           size="small"
           className={className}
+          disabled={disabled}
           sx={{
             mb: 2,
             mt: 2,
@@ -85,17 +92,13 @@ const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
             ...Object.fromEntries(
               Object.entries(params.InputProps).filter(([key]) => key !== 'disableUnderline')
             ),
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon sx={{ color: theme.palette.text.secondary, fontSize: 22 }} />
-              </InputAdornment>
-            ),
           }}
         />
       )}
       value={value}
       onInputChange={(_, v) => onChange(v)}
       freeSolo
+      disabled={disabled}
     />
   );
 };

@@ -11,11 +11,13 @@ import {
   Settings,
 } from "lucide-react";
 import { useTheme } from '@mui/material/styles'; // <-- ADD THIS
+import { useEffect, useState } from "react";
 
 type AuthUser = { 
   role?: string,
   acctno?: string | null;
   user_id?: number;
+  id?: number;
 };
 
 type SharedPageProps = {
@@ -31,11 +33,12 @@ export default function NavMobile() {
   const { props } = usePage<SharedPageProps>();
   const user = props.auth?.user;
   const userRole = user?.role || 'customer';
-  const adminId = props.admin ?? user?.acctno ?? user?.user_id ?? '';
+  const adminId = props.admin ?? user?.acctno ?? user?.user_id ?? user?.id ?? '';
   const customerAcct = props.acctno ?? user?.acctno ?? '';
 
   const adminDashboardHref = adminId ? `/admin/${adminId}/dashboard` : '/admin/dashboard';
   const adminClientsHref = adminId ? `/admin/${adminId}/client-management` : '/admin/client-management';
+  const adminProductsHref = adminId ? `/admin/${adminId}/products` : '/admin/products';
   const customerDashboardHref = customerAcct ? `/client/${customerAcct}/dashboard` : '/dashboard';
   const customerLoansHref = customerAcct ? `/client/${customerAcct}/loan-transactions` : '/loan-transactions';
 
@@ -45,6 +48,19 @@ export default function NavMobile() {
 
   // MUI theme hook
   const theme = useTheme();
+  const navZIndex = Math.max(theme.zIndex.modal, 3000) + 50;
+  const floatingZIndex = navZIndex + 20;
+  const [productModalOpen, setProductModalOpen] = useState(false);
+
+  useEffect(() => {
+    const sync = () => {
+      if (typeof document === "undefined") return;
+      setProductModalOpen(document.body.classList.contains("product-details-open"));
+    };
+    sync();
+    window.addEventListener("product-details-toggle", sync);
+    return () => window.removeEventListener("product-details-toggle", sync);
+  }, []);
 
   const customerNav = useMemo(() => [
     { href: customerDashboardHref, label: "Home", icon: Home },
@@ -54,9 +70,9 @@ export default function NavMobile() {
 
   const adminNav = useMemo(() => [
     { href: adminDashboardHref, label: "Home", icon: Home },
-    { href: "/admin/products", label: "Products", icon: Package },
+    { href: adminProductsHref, label: "Products", icon: Package },
     { href: adminClientsHref, label: "Clients", icon: Users },
-  ], [adminDashboardHref, adminClientsHref]);
+  ], [adminDashboardHref, adminClientsHref, adminProductsHref]);
 
   const items = useMemo(() => {
     if (userRole === "admin") return adminNav;
@@ -73,6 +89,7 @@ export default function NavMobile() {
         style={{
           background: theme.palette.background.paper, // <--- USE THEME!
           borderColor: theme.palette.divider,
+          zIndex: navZIndex,
         }}
       >
         <ul
@@ -117,24 +134,28 @@ export default function NavMobile() {
         </ul>
       </nav>
       {/* FLOATING SETTINGS BUTTON */}
-      <Link
-        href={settingsUrl}
-        className="fixed z-50 bottom-36 right-6 rounded-full bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700 shadow-lg p-4 transition-colors flex items-center justify-center md:hidden"
-        style={{
-          boxShadow: "0 3px 16px 0 rgba(80,80,80,0.10)",
-        }}
-        title="Account Settings"
-      >
-        <Settings className="w-6 h-6 text-gray-700 dark:text-neutral-200" />
-      </Link>
+      {!productModalOpen && (
+        <Link
+          href={settingsUrl}
+          className="fixed z-50 bottom-36 right-6 rounded-full bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700 shadow-lg p-4 transition-colors flex items-center justify-center md:hidden"
+          style={{
+            boxShadow: "0 3px 16px 0 rgba(80,80,80,0.10)",
+            zIndex: floatingZIndex,
+          }}
+          title="Account Settings"
+        >
+          <Settings className="w-6 h-6 text-gray-700 dark:text-neutral-200" />
+        </Link>
+      )}
       {/* Floating log-out button */}
-      {!isDashboard && (
+      {!isDashboard && !productModalOpen && (
         <button
           type="button"
           onClick={() => router.post('/logout')}
           className="fixed z-50 bottom-20 right-6 rounded-full bg-[#F57979] hover:bg-[#da4747] shadow-lg p-4 text-white transition-colors flex items-center justify-center md:hidden"
           style={{
             boxShadow: "0 3px 16px 0 rgba(245,121,121,0.12)",
+            zIndex: floatingZIndex,
           }}
           title="Log out"
         >

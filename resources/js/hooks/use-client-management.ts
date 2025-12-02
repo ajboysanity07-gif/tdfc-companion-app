@@ -14,16 +14,21 @@ export function useClientManagement() {
 
     // Loading spinner
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     // API: Fetch all users for management table/dashboard
     const fetchUsers = useCallback(async () => {
         setLoading(true);
+        setError(null);
         try {
             const { data } = await axiosClient.get<PendingUser[]>('clients');
             setAllUsers(data);
-        } catch (err) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (err: any) {
             console.error('Failed to load clients', err);
             setAllUsers([]);
+            const serverMsg= err?.response?.data?.message || err?.message;
+            setError(serverMsg || 'Failed to load clients');
         } finally {
             setLoading(false);
         }
@@ -43,6 +48,7 @@ export function useClientManagement() {
             } catch (err) {
                 console.error('Failed to load rejection reasons', err);
                 setRejectionReasons([]);
+                setError('Failed to load rejection reasons');
             }
         };
         loadRejectionReasons();
@@ -186,6 +192,7 @@ export function useClientManagement() {
             await fetchUsers();
             setSelectedUser(null);
             setSelectedReasons([]);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (err: any) {
             console.error('Rejection failed:', err);
             // Sync data in case the server state changed (e.g., already rejected/approved elsewhere)
@@ -374,6 +381,7 @@ export function useClientManagement() {
         setFullScreenImage,
         setImageTitle,
         loading,
+        error,
         fetchUsers,
     };
 }

@@ -27,7 +27,7 @@ Route::middleware('guest')->group(function () {
 // Admin pages
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('{admin}/dashboard', fn($admin) => Inertia::render('admin/dashboard', ['admin' => $admin]))->name('dashboard');
-    Route::get('products', fn() => Inertia::render('admin/products-management'))->name('products');
+    Route::get('{admin}/products', fn($admin) => Inertia::render('admin/products-management', ['admin' => $admin]))->name('products');
     Route::get('{admin}/client-management', fn($admin) => Inertia::render('admin/client-management', ['admin' => $admin]))->name('client-management');
 });
 

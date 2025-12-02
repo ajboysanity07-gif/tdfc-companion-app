@@ -1,4 +1,5 @@
 import React from 'react';
+import { LinearProgress, Slide } from '@mui/material';
 import ApprovePopper from '@/components/client-management/components/approve-popper';
 import DesktopUserColumns from '@/components/client-management/components/desktop-user-columns';
 import FullScreenImageModal from '@/components/client-management/components/fullscreen-image-modal';
@@ -59,6 +60,7 @@ export default function ClientManagementPage() {
     setApprovePopperUser,
     processing,
     loading,
+    error,
     fullScreenImage,
     imageTitle,
     modalImagesUser,
@@ -81,6 +83,26 @@ export default function ClientManagementPage() {
 
   return (
     <AppLayout breadcrumbs={breadcrumbs}>
+      {loading ? (
+        <LinearProgress
+          color="primary"
+          sx={{ position: 'fixed', top: 0, left: 0, width: '100%', zIndex: 60 }}
+        />
+      ) : null}
+      <Slide in={!!(loading || error)} direction="down" mountOnEnter unmountOnExit>
+        <div className="fixed left-1/2 top-4 z-50 flex -translate-x-1/2 flex-col items-center gap-2">
+          {loading ? (
+            <div className="rounded-full bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-sky-900/30">
+              Loading...
+            </div>
+          ) : null}
+          {error ? (
+            <div className="rounded-full bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-red-900/30">
+              {error}
+            </div>
+          ) : null}
+        </div>
+      </Slide>
       <div
         className="rounded-2xl flex flex-1 flex-col gap-4 overflow-x-auto bg-[#FAFAFA] p-4 transition-colors duration-300 dark:bg-neutral-900"
       

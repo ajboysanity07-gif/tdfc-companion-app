@@ -19,5 +19,6 @@ class DatabaseSeeder extends Seeder
         // $this->call(\Database\Seeders\ReasonListSeeder::class);
         $this->call(AdminUserSeeder::class);
         $this->call(WlnDisplaySeeder::class);
+        $this->call(WlntypeTagsSeeder::class);
     }
 }
