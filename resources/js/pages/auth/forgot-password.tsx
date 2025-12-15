@@ -13,7 +13,7 @@ export default function ForgotPassword() {
   return (
     <>
       <Head title="Forgot Password" />
-      <div className="mx-auto grid min-h-screen place-items-center bg-black/[.02] px-4 py-8">
+      <div className="mx-auto grid min-h-screen place-items-center bg-black/2 px-4 py-8">
         <AuthCard title="Reset password">
           <form onSubmit={submit} className="space-y-4">
             <div>
@@ -22,7 +22,7 @@ export default function ForgotPassword() {
                 value={data.email}
                 onChange={(e) => setData("email", e.target.value)}
                 aria-invalid={Boolean(errors.email)}
-                className="mt-1 w-full rounded-lg border border-black/15 px-3 py-2 aria-[invalid=true]:ring-2 aria-[invalid=true]:ring-[--ring-invalid]"
+                className="mt-1 w-full rounded-lg border border-black/15 px-3 py-2 aria-invalid:ring-2 aria-invalid:ring-[--ring-invalid]"
               />
               {errors.email && <p className="mt-1 text-xs text-red-600">{errors.email}</p>}
             </div>

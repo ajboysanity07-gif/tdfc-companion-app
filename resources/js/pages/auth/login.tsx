@@ -1,19 +1,17 @@
 import { login as apiLogin } from '@/api/auth-api';
-import AuthCard from '@/components/ui/auth-card';
+import AuthCardLayout from '@/layouts/auth/auth-card-layout';
 import { Head } from '@inertiajs/react';
 import { AxiosError } from 'axios';
 import { Eye, EyeOff } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 
 export default function Login() {
-  // SPA state
   const [form, setForm] = useState({ email: '', password: '', remember: false });
   const [showPassword, setShowPassword] = useState(false);
   const [emailValid, setEmailValid] = useState<boolean | null>(null);
   const [pwValid, setPwValid] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // Error states from server validation
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
   const [globalError, setGlobalError] = useState<string | null>(null);
 
@@ -52,7 +50,6 @@ export default function Login() {
     if (fieldErrors[name]) setFieldErrors((prev) => ({ ...prev, [name]: [] }));
   };
 
-  // Role/Status redirect after login
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -60,15 +57,10 @@ export default function Login() {
     setGlobalError(null);
 
     try {
-      const response = await apiLogin({
-        email: form.email,
-        password: form.password,
-      });
-
+      const response = await apiLogin({ email: form.email, password: form.password });
       const user = response.data.user;
-      const acct = user.acctno ?? user.user_id ?? user.id; // admin has no acctno, fall back to primary key
+      const acct = user.acctno ?? user.user_id ?? user.id;
 
-      // --- Role/Status-based SPA redirect ---
       if (user.role === 'admin') {
         window.location.href = `/admin/${acct}/dashboard`;
       } else if (user.role === 'customer') {
@@ -77,10 +69,10 @@ export default function Login() {
         } else if (user.status === 'rejected' || user.status === 'pending') {
           window.location.href = `/client/${user.acctno}/registration-status`;
         } else {
-          window.location.href = '/'; // fallback
+          window.location.href = '/';
         }
       } else {
-        window.location.href = '/'; // unknown role fallback
+        window.location.href = '/';
       }
     } catch (err) {
       const error = err as AxiosError<{ message?: string; errors?: Record<string, string[]> }>;
@@ -101,101 +93,101 @@ export default function Login() {
   return (
     <>
       <Head title="Login" />
-      <div className="mx-auto grid min-h-screen place-items-start bg-linear-to-br from-gray-100 via-white to-gray-200 px-4 py-8 sm:place-items-center">
-        <form onSubmit={handleSubmit} className="w-full max-w-[540px]">
-          <h1 className="text-center text-4xl font-extrabold tracking-tight text-[#F57979]">Login</h1>
-          <p className="mx-auto mt-3 max-w-[46ch] text-center text-[15px] leading-6 text-black/70">
-            Welcome back. Enter your credentials to continue.
-          </p>
+      <AuthCardLayout
+        title="Login"
+        description="Welcome back. Enter your credentials to continue."
+        footer={
+          <>
+            Don't have an account?{' '}
+            <a href="/register" className="font-semibold text-[#F57979] hover:underline">
+              Register
+            </a>
+          </>
+        }
+      >
+        <form onSubmit={handleSubmit} className="w-full mx-auto">
 
-          <AuthCard>
-            {/* Show global error message */}
-            {globalError && (
+          {globalError && (
+            <div className="mb-4">
               <div
-                className="mb-4 w-full rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-center text-[15px] text-red-700 shadow"
+                className="w-full rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-center text-[15px] text-red-700 shadow"
                 role="alert"
               >
                 {globalError}
               </div>
-            )}
+            </div>
+          )}
 
-            {/* Email */}
-            <div className="mb-4">
-              <label className="text-[13px] font-extrabold tracking-wide text-[#F57979] uppercase">Email</label>
+          <div className="mb-4">
+            <label className="text-[13px] font-extrabold tracking-wide text-[#F57979] uppercase">Email</label>
+            <input
+              type="email"
+              name="email"
+              value={form.email}
+              onChange={handleChange}
+              placeholder="you@example.com"
+              aria-invalid={Boolean(emailError)}
+              className={`${inputBase} ${emailError ? 'border-red-300 focus:border-red-400 focus:ring-red-300' : ''}`}
+              autoComplete="email"
+            />
+            <div className="min-h-[16px] mt-1 text-xs text-red-500">
+              {emailError || ''}
+            </div>
+          </div>
+
+          <div className="mb-6">
+            <label className="text-[13px] font-extrabold tracking-wide text-[#F57979] uppercase">Password</label>
+            <div className="relative">
               <input
-                type="email"
-                name="email"
-                value={form.email}
+                name="password"
+                type={showPassword ? 'text' : 'password'}
+                value={form.password}
                 onChange={handleChange}
-                placeholder="you@example.com"
-                aria-invalid={Boolean(emailError)}
-                className={`${inputBase} ${emailError ? 'border-red-300 focus:border-red-400 focus:ring-red-300' : ''}`}
-                autoComplete="email"
+                placeholder="Minimum 8 characters"
+                aria-invalid={Boolean(passwordError)}
+                className={`${inputBase} pr-10 ${passwordError ? 'border-red-300 focus:border-red-400 focus:ring-red-300' : ''}`}
+                autoComplete="current-password"
               />
-              {emailError && <div className="mt-1 text-xs text-red-500">{emailError}</div>}
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                className="absolute top-1/2 right-3 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                tabIndex={-1}
+              >
+                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+              </button>
             </div>
-
-            {/* Password */}
-            <div className="mb-6">
-              <label className="text-[13px] font-extrabold tracking-wide text-[#F57979] uppercase">Password</label>
-              <div className="relative">
-                <input
-                  name="password"
-                  type={showPassword ? 'text' : 'password'}
-                  value={form.password}
-                  onChange={handleChange}
-                  placeholder="Minimum 8 characters"
-                  aria-invalid={Boolean(passwordError)}
-                  className={`${inputBase} pr-10 ${passwordError ? 'border-red-300 focus:border-red-400 focus:ring-red-300' : ''}`}
-                  autoComplete="current-password"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((v) => !v)}
-                  className="absolute top-1/2 right-3 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                  tabIndex={-1}
-                >
-                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                </button>
-              </div>
-              {passwordError && <div className="mt-1 text-xs text-red-500">{passwordError}</div>}
+            <div className="min-h-[16px] mt-1 text-xs text-red-500">
+              {passwordError || ''}
             </div>
+          </div>
 
-            {/* Remember + Forgot */}
-            <div className="mb-4 flex items-center justify-between">
-              <label className="flex items-center gap-2 text-sm text-black/70">
-                <input
-                  type="checkbox"
-                  name="remember"
-                  checked={form.remember}
-                  onChange={handleChange}
-                  className="rounded border-gray-300"
-                />
-                Remember me
-              </label>
-              <a href="/forgot-password" className="text-sm font-semibold text-[#F57979] hover:underline">
-                Forgot password?
-              </a>
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full rounded-2xl bg-[#F57979] py-3 text-sm font-extrabold tracking-wide text-white hover:opacity-95 disabled:opacity-40"
-            >
-              Sign In
-            </button>
-          </AuthCard>
-
-          {/* Optional footer link to register */}
-          <p className="mt-4 text-center text-sm text-black/70">
-            Don’t have an account?{' '}
-            <a href="/register" className="font-semibold text-[#F57979] hover:underline">
-              Register
+          <div className="mb-4 flex items-center justify-between">
+            <label className="flex items-center gap-2 text-sm text-black/70">
+              <input
+                type="checkbox"
+                name="remember"
+                checked={form.remember}
+                onChange={handleChange}
+                className="rounded border-gray-300"
+              />
+              Remember me
+            </label>
+            <a href="/forgot-password" className="text-sm font-semibold text-[#F57979] hover:underline">
+              Forgot password?
             </a>
-          </p>
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full rounded-2xl bg-[#F57979] py-3 text-sm font-extrabold tracking-wide text-white hover:opacity-95 disabled:opacity-40"
+          >
+            Sign In
+          </button>
+
         </form>
-      </div>
+      </AuthCardLayout>
     </>
   );
 }

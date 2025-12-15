@@ -1,23 +1,33 @@
-import PayslipFileRow from '@/components/auth/register/payslip-filerow';
+﻿import PayslipFileRow from '@/components/auth/register/payslip-filerow';
 import PayslipWizard from '@/components/auth/register/payslip-wizard';
 import PRCFileRow from '@/components/auth/register/prc-filerow';
 import PrcWizard from '@/components/auth/register/prc-wizard';
 import AvatarCropModal from '@/components/ui/avatar-crop-modal';
+import AuthCardLayout from '@/layouts/auth/auth-card-layout';
 import { Head } from '@inertiajs/react';
 import { AxiosError } from 'axios';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Eye, EyeOff, Plus } from 'lucide-react';
+import { Eye, EyeOff, Plus, Check, CircleCheckBig, CircleX } from 'lucide-react';
+import { Slide } from '@mui/material';
 import React, { useEffect, useRef, useState } from 'react';
 import { register as apiRegister } from '../../api/auth-api';
 
 type Props = { adminMode?: boolean };
 
+const stepVariants = {
+    enter: { opacity: 0 },
+    center: { opacity: 1 },
+    exit: { opacity: 0 },
+};
+
 const Step = ({ children }: { children: React.ReactNode }) => (
     <motion.div
-        initial={{ x: 60, opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
-        exit={{ x: -40, opacity: 0 }}
-        transition={{ type: 'spring', stiffness: 280, damping: 26 }}
+        layout
+        variants={stepVariants}
+        initial="enter"
+        animate="center"
+        exit="exit"
+        transition={{ duration: 0.2 }}
     >
         {children}
     </motion.div>
@@ -329,8 +339,19 @@ export default function Register({ adminMode = false }: Props) {
 
     const canRegister = canProceed && form.prc_id_photo_front && form.prc_id_photo_back && form.payslip_photo;
 
-    const getPrcStatusDisplay = () => {
-        if (prcFront && prcBack) return 'Front & Back completed ✓';
+    const stepDescription =
+        step === 1
+            ? 'To register, use the account number provided to you and your phone number registered with us. Please enter an active email address and create a secure password.'
+            : 'Upload a CLEAR picture of your valid PRC ID for verification, and a photo of yourself to use as your profile picture.';
+
+        const getPrcStatusDisplay = () => {
+        if (prcFront && prcBack)
+            return (
+                <span className="flex items-center gap-2 text-emerald-600">
+                    <Check className="h-4 w-4" />
+                    Front & Back completed.
+                </span>
+            );
         if (prcFront) return 'Front completed, back pending';
         if (prcBack) return 'Back completed, front pending';
         return 'Click to upload...';
@@ -339,50 +360,85 @@ export default function Register({ adminMode = false }: Props) {
     return (
         <>
             <Head title="Register" />
-            <div className="flex min-h-screen flex-col items-center justify-center bg-linear-to-br from-gray-100 via-white to-gray-200 p-6 sm:p-10">
-                <form onSubmit={handleSubmit} className="flex w-full max-w-full flex-col items-center">
-                    {/* Top global error/success display */}
-                    {success && <div className="mb-4 text-lg text-green-600">Registration successful!</div>}
-                    {globalError && <div className="mb-4 text-red-600">{globalError}</div>}
+            <Slide in={!!(success || globalError)} direction="down" mountOnEnter unmountOnExit>
+                <div className="fixed top-4 left-1/2 z-50 flex -translate-x-1/2 flex-col items-center gap-2">
+                    {success ? (
+                        <div className="rounded-full bg-green-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-emerald-900/30 flex items-center gap-2">
+                            <CircleCheckBig className="h-4 w-4" />
+                            <span>Registration successful!</span>
+                        </div>
+                    ) : null}
+                    {globalError ? (
+                        <div className="rounded-full bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-red-900/30 flex items-center gap-2">
+                            <CircleX className="h-4 w-4" />
+                            <span>{globalError}</span>
+                        </div>
+                    ) : null}
+                </div>
+            </Slide>
 
-                    <AnimatePresence mode="wait">
-                        {step === 1 ? (
-                            <Step key="s1">
-                                <div className="mx-auto mb-6 max-w-[430px] text-center">
-                                    <h1 className="mb-3 text-4xl font-extrabold tracking-tight text-[#F57979]">Register</h1>
-                                    <p className="mx-auto max-w-[44ch] text-base leading-6 text-black/70">
-                                        To register, use the account number provided to you and your phone number registered with us. Please enter an
-                                        active email address and create a secure password.
-                                    </p>
-                                </div>
-                                <div className="mx-auto mt-4 mb-4 w-full max-w-[400px] rounded-2xl bg-[#ededed] px-5 py-8 shadow">
+            <AuthCardLayout
+                title="Register"
+                description={stepDescription}
+                footer={
+                    <>
+                        Already have an account?{' '}
+                        <a href="/login" className="font-semibold text-[#F57979] hover:underline">
+                            Log in
+                        </a>
+                    </>
+                }
+            >
+                <AnimatePresence mode="wait" initial={false}>
+                    <motion.div
+                        key={`card-step-${step}`}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.25 }}
+                    >
+                <form onSubmit={handleSubmit} className="flex w-full flex-col items-stretch">
+                    <div className="relative w-full overflow-hidden">
+                        <AnimatePresence mode="wait" initial={false}>
+                            {step === 1 ? (
+                                <Step key="s1">
+                                <div className="mt-0 mb-0 w-full space-y-4">
                                     {/* Account No */}
-                                    <div className="mb-5">
+                                    <div>
                                         <label className="text-[14px] font-bold text-[#F57979]">Account Number</label>
-                                        <input
-                                            name="accntno"
-                                            type="text"
-                                            value={form.accntno}
-                                            onChange={handleChange}
-                                            maxLength={6}
-                                            placeholder="Enter account number"
-                                            className={inputBase}
-                                        />
-                                        {fieldErrors.accntno && <div className="text-xs text-red-500">{fieldErrors.accntno.join(', ')}</div>}
-                                        <div className="mt-1 min-h-5 text-xs" role="status" aria-live="polite">
-                                            {duplicateAccount ? (
-                                                <span className="text-[#DC2626]">Account number is already registered.</span>
-                                            ) : (
-                                                <span className="text-black/70">
-                                                    {lookupStatus === 'searching' && 'Checking...'}
-                                                    {lookupStatus === 'not_found' && 'Account number not found.'}
-                                                    {lookupStatus === 'found' && form.full_name && `This account no belongs to ${form.full_name}.`}
-                                                </span>
-                                            )}
-                                        </div>
+                                    <input
+                                        name="accntno"
+                                        type="text"
+                                        value={form.accntno}
+                                        onChange={handleChange}
+                                        maxLength={6}
+                                        placeholder="Enter account number"
+                                        className={inputBase}
+                                    />
+                                    <div className="mt-1 min-h-5 text-xs" role="status" aria-live="polite">
+                                        {fieldErrors.accntno ? (
+                                            <span className="text-red-500">{fieldErrors.accntno.join(', ')}</span>
+                                        ) : duplicateAccount ? (
+                                            <span className="text-[#DC2626]">Account number is already registered.</span>
+                                        ) : (
+                                            <span className="text-black/70">
+                                                {lookupStatus === 'searching' && 'Checking...'}
+                                                {lookupStatus === 'not_found' && 'Account number not found.'}
+                                                {lookupStatus === 'found' && form.full_name && (
+                                                    <>
+                                                        This account no belongs to{' '}
+                                                        <span className="font-semibold text-black">
+                                                            {form.full_name}
+                                                        </span>
+                                                        .
+                                                    </>
+                                                )}
+                                            </span>
+                                        )}
+                                    </div>
                                     </div>
                                     {/* Phone Number */}
-                                    <div className="mb-5">
+                                    <div>
                                         <label className="text-[14px] font-bold text-[#F57979]">Phone Number</label>
                                         <input
                                             name="phone_no"
@@ -394,29 +450,24 @@ export default function Register({ adminMode = false }: Props) {
                                             placeholder="09xxxxxxxxx"
                                             className={inputBase}
                                         />
-                                        {phoneError && <div className="text-xs text-red-500">{phoneError}</div>}
-                                        {!phoneError && (
-                                            <>
-                                                {phoneStatus === 'checking' && (
-                                                    <div className="text-xs text-black/70">Checking phone...</div>
-                                                )}
-                                                {phoneStatus === 'duplicate' && (
-                                                    <div className="text-xs text-red-500">Phone number is already registered.</div>
-                                                )}
-                                                {phoneStatus === 'error' && (
-                                                    <div className="text-xs text-red-500">Could not verify phone. Please try again.</div>
-                                                )}
-                                                {phoneStatus === 'ok' && (
-                                                    <div className="text-xs text-emerald-600">Phone number looks good.</div>
-                                                )}
-                                                {fieldErrors.phone_no && (
-                                                    <div className="text-xs text-red-500">{fieldErrors.phone_no.join(', ')}</div>
-                                                )}
-                                            </>
-                                        )}
+                                        <div className="mt-1 min-h-[18px] text-xs" role="status" aria-live="polite">
+                                            {phoneError ? (
+                                                <span className="text-red-500">{phoneError}</span>
+                                            ) : fieldErrors.phone_no ? (
+                                                <span className="text-red-500">{fieldErrors.phone_no.join(', ')}</span>
+                                            ) : phoneStatus === 'checking' ? (
+                                                <span className="text-black/70">Checking phone...</span>
+                                            ) : phoneStatus === 'duplicate' ? (
+                                                <span className="text-red-500">Phone number is already registered.</span>
+                                            ) : phoneStatus === 'error' ? (
+                                                <span className="text-red-500">Could not verify phone. Please try again.</span>
+                                            ) : phoneStatus === 'ok' ? (
+                                                <span className="text-emerald-600">Phone number looks good.</span>
+                                            ) : null}
+                                        </div>
                                     </div>
                                     {/* Email */}
-                                    <div className="mb-5">
+                                    <div>
                                         <label className="text-[14px] font-bold text-[#F57979]">Email</label>
                                         <input
                                             name="email"
@@ -426,17 +477,24 @@ export default function Register({ adminMode = false }: Props) {
                                             placeholder="you@example.com"
                                             className={inputBase}
                                         />
-                                        <div className="mt-1 min-h-5 text-xs" role="status" aria-live="polite">
-                                            {emailStatus === 'checking' && <span className="text-black/70">Checking...</span>}
-                                            {emailStatus === 'duplicate' && <span className="text-red-500">Email is already registered.</span>}
-                                            {emailStatus === 'invalid' && <span className="text-red-500">Enter a valid email (e.g. user@mail.com).</span>}
-                                            {emailStatus === 'error' && <span className="text-red-500">Could not verify email. Please try again.</span>}
-                                            {emailStatus === 'ok' && <span className="text-emerald-600">Email looks good.</span>}
+                                        <div className="mt-1 min-h-[18px] text-xs" role="status" aria-live="polite">
+                                            {fieldErrors.email ? (
+                                                <span className="text-red-500">{fieldErrors.email.join(', ')}</span>
+                                            ) : emailStatus === 'checking' ? (
+                                                <span className="text-black/70">Checking...</span>
+                                            ) : emailStatus === 'duplicate' ? (
+                                                <span className="text-red-500">Email is already registered.</span>
+                                            ) : emailStatus === 'invalid' ? (
+                                                <span className="text-red-500">Enter a valid email (e.g. user@mail.com).</span>
+                                            ) : emailStatus === 'error' ? (
+                                                <span className="text-red-500">Could not verify email. Please try again.</span>
+                                            ) : emailStatus === 'ok' ? (
+                                                <span className="text-emerald-600">Email looks good.</span>
+                                            ) : null}
                                         </div>
-                                        {fieldErrors.email && <div className="text-xs text-red-500">{fieldErrors.email.join(', ')}</div>}
                                     </div>
                                     {/* Password */}
-                                    <div className="mb-5">
+                                    <div>
                                         <label className="text-[14px] font-bold text-[#F57979]">Password</label>
                                         <div className="relative">
                                             <input
@@ -456,11 +514,13 @@ export default function Register({ adminMode = false }: Props) {
                                                 {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                                             </button>
                                         </div>
-                                        {fieldErrors.password && <div className="text-xs text-red-500">{fieldErrors.password.join(', ')}</div>}
-                                        {pwValid === false && <div className="text-xs text-red-500">Minimum 8 characters.</div>}
+                                        <div className="mt-1 min-h-[18px] text-xs text-red-500">
+                                            {fieldErrors.password && fieldErrors.password.join(', ')}
+                                            {!fieldErrors.password && pwValid === false ? 'Minimum 8 characters.' : ''}
+                                        </div>
                                     </div>
                                     {/* Password Confirmation */}
-                                    <div className="mb-6">
+                                    <div>
                                         <label className="text-[14px] font-bold text-[#F57979]">Confirm Password</label>
                                         <div className="relative">
                                             <input
@@ -480,11 +540,15 @@ export default function Register({ adminMode = false }: Props) {
                                                 {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                                             </button>
                                         </div>
-                                        {fieldErrors.password_confirmation && (
-                                            <div className="text-xs text-red-500">{fieldErrors.password_confirmation.join(', ')}</div>
-                                        )}
-                                        {pwMatch === false && <div className="text-xs text-red-500">Passwords do not match.</div>}
-                                        {pwMatch === true && <div className="text-xs text-emerald-600">Passwords match.</div>}
+                                        <div className="mt-1 min-h-[18px] text-xs" role="status" aria-live="polite">
+                                            {fieldErrors.password_confirmation ? (
+                                                <span className="text-red-500">{fieldErrors.password_confirmation.join(', ')}</span>
+                                            ) : pwMatch === false ? (
+                                                <span className="text-red-500">Passwords do not match.</span>
+                                            ) : pwMatch === true ? (
+                                                <span className="text-emerald-600">Passwords match.</span>
+                                            ) : null}
+                                        </div>
                                     </div>
                                     <button
                                         type="button"
@@ -495,25 +559,12 @@ export default function Register({ adminMode = false }: Props) {
                                         NEXT
                                     </button>
                                 </div>
-                                <p className="mt-4 text-center text-sm text-black/70">
-                                    Already have an account?{' '}
-                                    <a href="/login" className="font-semibold text-[#F57979] hover:underline">
-                                        Log in
-                                    </a>
-                                </p>
                             </Step>
                         ) : (
-                            <Step key="s2">
-                                <div className="mx-auto mb-6 max-w-[430px] text-center">
-                                    <h1 className="mb-3 text-4xl font-extrabold tracking-tight text-[#F57979]">Register</h1>
-                                    <p className="mx-auto max-w-[44ch] text-base leading-6 text-black/70">
-                                        Upload a CLEAR picture of your valid PRC ID for verification, a profile photo of yourself, and your latest
-                                        payslip.
-                                    </p>
-                                </div>
-                                <div className="mx-auto mt-4 mb-4 w-full max-w-[400px] rounded-2xl bg-[#ededed] px-5 py-8 shadow">
+                                <Step key="s2">
+                                <div className="mt-0 mb-0 w-full space-y-4">
                                     {/* Profile Picture Upload */}
-                                    <div className="mb-8">
+                                    <div>
                                         <label className="mb-2 block text-[14px] font-bold text-[#F57979]">Upload Profile Picture</label>
                                         <div className="flex items-center gap-4">
                                             <button
@@ -551,7 +602,9 @@ export default function Register({ adminMode = false }: Props) {
                                             </p>
                                         </div>
                                         {fieldErrors.profile_picture && (
-                                            <div className="text-xs text-red-500">{fieldErrors.profile_picture.join(', ')}</div>
+                                            <div className="mt-1 min-h-[18px] text-xs text-red-500">
+                                                {fieldErrors.profile_picture.join(', ')}
+                                            </div>
                                         )}
                                     </div>
 
@@ -563,27 +616,44 @@ export default function Register({ adminMode = false }: Props) {
                                         display={getPrcStatusDisplay()}
                                     />
                                     {fieldErrors.prc_id_photo_front && (
-                                        <div className="text-xs text-red-500">{fieldErrors.prc_id_photo_front.join(', ')}</div>
+                                        <div className="mt-1 text-xs text-red-500">
+                                            {fieldErrors.prc_id_photo_front.join(', ')}
+                                        </div>
                                     )}
                                     {fieldErrors.prc_id_photo_back && (
-                                        <div className="text-xs text-red-500">{fieldErrors.prc_id_photo_back.join(', ')}</div>
+                                        <div className="text-xs text-red-500">
+                                            {fieldErrors.prc_id_photo_back.join(', ')}
+                                        </div>
                                     )}
 
                                     {/* Payslip File Row */}
                                     <PayslipFileRow
                                         value={form.payslip_photo}
                                         onClick={() => setPayslipWizardOpen(true)}
-                                        display={payName ?? undefined}
+                                        display={
+                                            form.payslip_photo ? (
+                                                <span className="flex items-center gap-2 text-emerald-600">
+                                                    <Check className="h-4 w-4" />
+                                                    Payslip uploaded.
+                                                </span>
+                                            ) : (
+                                                payName ?? undefined
+                                            )
+                                        }
                                     />
-                                    {fieldErrors.payslip_photo && <div className="text-xs text-red-500">{fieldErrors.payslip_photo.join(', ')}</div>}
+                                    {fieldErrors.payslip_photo && (
+                                        <div className="mt-1 text-xs text-red-500">
+                                            {fieldErrors.payslip_photo.join(', ')}
+                                        </div>
+                                    )}
 
-                                    <div className="mt-6 flex items-center justify-between">
+                                    <div className="mt-4 flex items-center justify-between">
                                         <button
                                             type="button"
                                             onClick={() => setStep(1)}
                                             className="inline-flex items-center gap-2 rounded-full border border-gray-300 bg-white px-5 py-3 text-sm font-semibold text-black/80 hover:bg-black/5"
                                         >
-                                            ← Back
+                                            â† Back
                                         </button>
                                         <button
                                             type="submit"
@@ -597,8 +667,12 @@ export default function Register({ adminMode = false }: Props) {
                             </Step>
                         )}
                     </AnimatePresence>
+                    </div>
                 </form>
-            </div>
+                    </motion.div>
+                </AnimatePresence>
+            </AuthCardLayout>
+       
 
             {/* Modal overlays: Avatar crop, PRC and Payslip wizard */}
             {avatarCropOpen && pendingAvatarSrc && (
@@ -644,6 +718,9 @@ export default function Register({ adminMode = false }: Props) {
         </>
     );
 }
+
+
+
 
 
 

@@ -6,7 +6,7 @@ import CameraCaptureBox from "./camera-capture-box";
 
 type WizardMode = "upload" | "camera" | null;
 type WizardStep = 1 | 2 | 3 | 4;
-const aspectRect = 1.585;
+const aspectRect = 1.586; // ID-1 ratio for PH IDs (e.g., driver's license, PRC ID)
 
 const StepHeader: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <div className="w-full flex flex-col items-center sticky top-0 z-20 bg-white pt-2 pb-2 border-b border-gray-200">
@@ -176,10 +176,9 @@ const PRCIDWizard = ({
             transition={{ type: "spring", damping: 30, stiffness: 200 }}
           >
             <div
-              className="overflow-y-hidden  h-screen flex items-center justify-center px-5 py-5 w-full flex-1"
-             
+              className="overflow-hidden h-screen flex items-center justify-center px-5 py-5 w-full flex-1"
             >
-              <AnimatePresence custom={direction} mode="wait">
+              <AnimatePresence custom={direction} mode="wait" initial={false}>
                 <motion.div
                   key={step + "|" + mode}
                   custom={direction}
@@ -197,11 +196,13 @@ const PRCIDWizard = ({
                   {step === 1 && (
                     <>
                       <StepHeader>Upload your PRC ID</StepHeader>
-                      <SamplePreview
-                        showFront
-                        showBack
-                        caption="Your PRC ID photos (front and back) should be clear and all details legible."
-                      />
+                      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }}>
+                        <SamplePreview
+                          showFront
+                          showBack
+                          caption="Your PRC ID photos (front and back) should be clear and all details legible."
+                        />
+                      </motion.div>
                       <div className="flex flex-col items-center">
                         <p className="text-sm text-gray-600 mb-3 w-[80vw] max-w-[300px] text-center">
                           Choose how you'd like to provide your PRC ID photos

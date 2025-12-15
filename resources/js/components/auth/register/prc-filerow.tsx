@@ -1,18 +1,17 @@
-import React from 'react';
+﻿import React from 'react';
 import { Plus } from 'lucide-react';
 
-type Props = {
+interface Props {
   valueFront?: File | null;
   valueBack?: File | null;
   onClick: () => void;
-  display?: string;
-};
+  display?: React.ReactNode;
+}
 
 const PRCFileRow: React.FC<Props> = ({ valueFront, valueBack, onClick, display }) => {
-  // Helper to describe what's uploaded
   const getStatusDisplay = () => {
     if (display) return display;
-    if (valueFront && valueBack) return 'Front & Back completed �o"';
+    if (valueFront && valueBack) return 'Front & Back completed';
     if (valueFront) return 'Front completed, back pending';
     if (valueBack) return 'Back completed, front pending';
     return 'Click to upload...';

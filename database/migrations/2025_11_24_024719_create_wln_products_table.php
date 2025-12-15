@@ -27,10 +27,10 @@ return new class extends Migration
             $table->smallInteger('max_amortization')->nullable();
             
             $table->boolean('is_max_amortization_editable')->default(false);
-            $table->decimal('service_fee', 5, 2);
-            $table->decimal('lrf', 5, 2);
-            $table->decimal('document_stamp', 5, 2);
-            $table->decimal('mort_plus_notarial', 5, 2);
+            $table->decimal('service_fee', 5, 2)->nullable();
+            $table->decimal('lrf', 5, 2)->nullable();
+            $table->decimal('document_stamp', 5, 2)->nullable();
+            $table->decimal('mort_plus_notarial', 5, 2)->nullable();
             $table->longText('terms');
             $table->timestamps();
         });

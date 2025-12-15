@@ -1,7 +1,18 @@
 // resources/js/utils/prc-id-get-cropped-img.ts
+const toRadian = (deg: number) => (deg * Math.PI) / 180;
+
+const rotateSize = (width: number, height: number, rotation: number) => {
+  const rotRad = toRadian(rotation);
+  return {
+    width: Math.abs(Math.cos(rotRad) * width) + Math.abs(Math.sin(rotRad) * height),
+    height: Math.abs(Math.sin(rotRad) * width) + Math.abs(Math.cos(rotRad) * height),
+  };
+};
+
 export async function prcIdGetCroppedImg(
   imageSrc: string,
-  pixelCrop: { x: number; y: number; width: number; height: number }
+  pixelCrop: { x: number; y: number; width: number; height: number },
+  rotation: number = 0
 ): Promise<Blob> {
   const createImage = (url: string): Promise<HTMLImageElement> =>
     new Promise((resolve, reject) => {
@@ -13,26 +24,34 @@ export async function prcIdGetCroppedImg(
     });
 
   const image = await createImage(imageSrc);
+  const rotRad = toRadian(rotation);
+  const { width: bBoxW, height: bBoxH } = rotateSize(image.width, image.height, rotation);
+
+  // Draw the rotated image on a temp canvas
   const canvas = document.createElement('canvas');
-  canvas.width = pixelCrop.width;
-  canvas.height = pixelCrop.height;
+  canvas.width = bBoxW;
+  canvas.height = bBoxH;
   const ctx = canvas.getContext('2d');
   if (!ctx) throw new Error('Context not found');
 
-  ctx.drawImage(
-    image,
-    pixelCrop.x,
-    pixelCrop.y,
-    pixelCrop.width,
-    pixelCrop.height,
-    0,
-    0,
-    pixelCrop.width,
-    pixelCrop.height
-  );
+  ctx.translate(bBoxW / 2, bBoxH / 2);
+  ctx.rotate(rotRad);
+  ctx.translate(-image.width / 2, -image.height / 2);
+  ctx.drawImage(image, 0, 0);
+
+  // Extract the cropped area
+  const data = ctx.getImageData(pixelCrop.x, pixelCrop.y, pixelCrop.width, pixelCrop.height);
+
+  // Place it on a new canvas of the target size
+  const outCanvas = document.createElement('canvas');
+  outCanvas.width = pixelCrop.width;
+  outCanvas.height = pixelCrop.height;
+  const outCtx = outCanvas.getContext('2d');
+  if (!outCtx) throw new Error('Context not found');
+  outCtx.putImageData(data, 0, 0);
 
   return new Promise((resolve, reject) => {
-    canvas.toBlob(blob => {
+    outCanvas.toBlob(blob => {
       if (blob) resolve(blob);
       else reject(new Error('Could not get image blob'));
     }, 'image/jpeg');

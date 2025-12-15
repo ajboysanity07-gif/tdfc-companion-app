@@ -52,16 +52,22 @@ const DesktopUserColumns: React.FC<DesktopUserColumnsProps> = ({
 }) => (
   <div className="flex w-full min-w-0 flex-row gap-8">
     {columns.map((column, idx) => (
-      <div key={column.key} className="relative flex min-h-[800px] min-w-0 flex-1 flex-col overflow-hidden rounded-xl shadow-md transition-colors duration-300">
+      <div
+        key={column.key}
+        className="relative flex min-h-[800px] h-[calc(100vh-260px)] min-w-0 flex-1 flex-col overflow-hidden rounded-xl shadow-md transition-colors duration-300"
+      >
         <UserListCard title={column.title} titleColor={column.titleColor} userCount={column.userCount}>
-          <div className="flex h-full flex-col">
+          <div className="flex h-full min-h-0 flex-col">
             <SearchAutocomplete
               options={column.searchOptions}
               value={column.searchValue}
               onChange={column.setSearch}
               placeholder={`Search ${column.title.toLowerCase()}`}
             />
-            <div className="hide-scrollbar flex-1 overflow-y-scroll" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+            <div
+              className="hide-scrollbar flex-1 min-h-0 overflow-y-auto"
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
               <UserAccordionList
                 usersList={column.pagedUsers}
                 groupTab={column.groupTab}

@@ -1,6 +1,21 @@
 // src/api/axios-client.ts
 import axios from "axios";
 
+const AUTH_TOKEN_KEY = "auth_token";
+
+const getStoredToken = () => (typeof window !== "undefined" ? localStorage.getItem(AUTH_TOKEN_KEY) : null);
+
+export const setAuthToken = (token: string | null) => {
+    if (typeof window === "undefined") return;
+    if (token) {
+        localStorage.setItem(AUTH_TOKEN_KEY, token);
+        axiosClient.defaults.headers.common.Authorization = `Bearer ${token}`;
+    } else {
+        localStorage.removeItem(AUTH_TOKEN_KEY);
+        delete axiosClient.defaults.headers.common.Authorization;
+    }
+};
+
 // Stick to relative paths so the SPA origin and the API always match (important for Sanctum cookies).
 const API_BASE_URL = "";
 
@@ -15,6 +30,12 @@ const axiosClient = axios.create({
         "X-Requested-With": "XMLHttpRequest",
     },
 });
+
+// Restore token on reload so protected API calls stay authenticated
+const existingToken = getStoredToken();
+if (existingToken) {
+    axiosClient.defaults.headers.common.Authorization = `Bearer ${existingToken}`;
+}
 
 // Helper to get CSRF cookie for Laravel Sanctum
 export const getCsrfCookie = () =>

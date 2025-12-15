@@ -1,11 +1,11 @@
-import React from 'react';
+﻿import React from 'react';
 import { Plus } from 'lucide-react';
 
-type Props = {
+interface Props {
   value?: File | null;
   onClick: () => void;
-  display?: string;
-};
+  display?: React.ReactNode;
+}
 
 const PayslipFileRow: React.FC<Props> = ({ value, onClick, display }) => (
   <div className="mb-10">

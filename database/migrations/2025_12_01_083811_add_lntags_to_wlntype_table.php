@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('wlntype', function (Blueprint $table) {
-            $table->char('lntags', 20)->nullable()->after('wlntype.lntype');
+            $table->char('lntags', 20)->nullable();
         });
     }
 

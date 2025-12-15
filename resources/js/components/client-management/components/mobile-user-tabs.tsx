@@ -125,7 +125,7 @@ export default function MobileUserTabs(props: Props) {
               />
             </Box>
             <Divider sx={{ mt: 0.5, mb: 0, borderColor: theme.palette.divider }} />
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', pt: 0.5 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'center', pt: 0.5 }}>
               <CardPagination
                 count={props.registeredTotalPages}
                 page={props.registeredPage}
@@ -160,7 +160,7 @@ export default function MobileUserTabs(props: Props) {
               />
             </Box>
             <Divider sx={{ mt: 0.5, mb: 0, borderColor: theme.palette.divider }} />
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', pt: 0.5 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'center', pt: 0.5 }}>
               <CardPagination
                 count={props.pendingTotalPages}
                 page={props.pendingPage}
@@ -195,7 +195,7 @@ export default function MobileUserTabs(props: Props) {
               />
             </Box>
             <Divider sx={{ mt: 0.5, mb: 0, borderColor: theme.palette.divider }} />
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', pt: 0.5 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'center', pt: 0.5 }}>
               <CardPagination
                 count={props.rejectedTotalPages}
                 page={props.rejectedPage}

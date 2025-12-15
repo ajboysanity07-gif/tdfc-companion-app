@@ -14,12 +14,12 @@ class WlntypeTagsSeeder extends Seeder
     public function run(): void
     {
         $rows = [
-            ['lntype' => 'BONUS-YEBL',             'lntags' => 'BONUS-Y'],
+            ['lntype' => 'BONUS-YEBL',             'lntags' => 'BONUS-YEBL'],
             ['lntype' => 'BECL',                   'lntags' => 'BECL'],
             ['lntype' => 'COLLECTION AGENCY',      'lntags' => 'CA'],
             ['lntype' => 'L/R-REM',                'lntags' => 'LR-R'],
             ['lntype' => 'L/R-CHATTEL',            'lntags' => 'LR-C'],
-            ['lntype' => 'BONUS-PBB',              'lntags' => 'BON-P'],
+            ['lntype' => 'BONUS-PBB',              'lntags' => 'BONUS-PBB'],
             ['lntype' => 'SALARY LOAN',            'lntags' => 'SAL'],
             ['lntype' => 'HONORARIUM LOAN',        'lntags' => 'HON'],
             ['lntype' => 'PENSION LOAN',           'lntags' => 'PEN'],
@@ -33,7 +33,7 @@ class WlntypeTagsSeeder extends Seeder
             ['lntype' => 'INDIVIDUAL LOAN',        'lntags' => 'IND'],
             ['lntype' => 'RESTRUCTURED LOAN-APDS', 'lntags' => 'R-APDS'],
             ['lntype' => 'APDS LOAN',              'lntags' => 'APDS'],
-            ['lntype' => 'BONUS-WBL',              'lntags' => 'BONUS-W'],
+            ['lntype' => 'BONUS-MYBL',             'lntags' => 'BONUS-MYBL'],
             ['lntype' => 'MY2EBL',                 'lntags' => 'MY2EL'],
         ];
 

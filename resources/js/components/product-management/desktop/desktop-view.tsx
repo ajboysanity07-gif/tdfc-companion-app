@@ -1,5 +1,5 @@
 import type { ProductLntype, ProductPayload, WlnType } from '@/types/product-lntype';
-import { Box, Stack, Typography, Button } from '@mui/material';
+import { Box, Stack } from '@mui/material';
 import { AnimatePresence, motion } from 'framer-motion';
 import React, { useEffect, useMemo, useState } from 'react';
 import ProductList from '../product-list';
@@ -25,14 +25,18 @@ const DesktopView: React.FC<Props> = ({ products, selected, isAdding = false,  a
 
     useEffect(() => setLocalSelected(selected), [selected]);
 
+    const activeProduct = useMemo(() => {
+        return isAdding ? null : localSelected;
+    }, [isAdding, localSelected]);
+
     const syncedProducts = useMemo(
         () =>
             products.map((p) =>
-                localSelected && p.product_id === localSelected.product_id
-                    ? { ...p, is_active: localSelected.is_active }
+                activeProduct && p.product_id === activeProduct.product_id
+                    ? { ...p, is_active: activeProduct.is_active }
                     : p,
             ),
-        [products, localSelected],
+        [products, activeProduct],
     );
 
     const filtered = useMemo(() => {
@@ -84,6 +88,7 @@ const DesktopView: React.FC<Props> = ({ products, selected, isAdding = false,  a
                     onSearchChange={setSearch}
                     searchOptions={products.map((p) => p.product_name)}
                     onToggleActive={handleToggleActive}
+                    fullHeight
                 />
             </Box>
 
@@ -98,65 +103,25 @@ const DesktopView: React.FC<Props> = ({ products, selected, isAdding = false,  a
                 }}
             >
                 <AnimatePresence mode="wait">
-                    {localSelected || isAdding ? (
-                        <motion.div
-                            key={localSelected ? localSelected.product_id : 'create'}
-                            initial={{ opacity: 0, y: 12 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: 12 }}
-                            transition={{ type: 'spring', stiffness: 240, damping: 22, mass: 0.7 }}
-                        >
-                            <ProductCrud
-                                product={localSelected}
-                                availableTypes={availableTypes}
-                                onCancel={() => {
-                                    setLocalSelected(null);
-                                    onAdd();
-                                }}
-                                onSave={onSave}
-                                onDelete={() => onDelete()}
-                                onToggleActive={handleToggleActive}
-                            />
-                        </motion.div>
-                    ) : (
-                        <motion.div
-                            key="empty"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                        >
-                            <Box
-                                sx={{
-                                    border: `1px dashed ${tw.isDark ? '#3a3a3a' : '#d0d7de'}`,
-                                    borderRadius: 2,
-                                    p: 4,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    textAlign: 'center',
-                                    color: 'text.secondary',
-                                    minHeight: 1000,
-                                    flexDirection: 'column',
-                                    gap: 1,
-                                }}
-                            >
-                                <Typography variant="h6" fontWeight={800}>
-                                    Product details will appear here.
-                                </Typography>
-                                <Typography variant="body2" color="text.secondary">
-                                    Add a product below or select one from the list to view, update, or delete.
-                                </Typography>
-                                <Button
-                                  variant="contained"
-                                  onClick={onAdd}
-                                  sx={{ mt: 1, borderRadius: 2 }}
-                                >
-                                  Add Product
-                                </Button>
-                                
-                            </Box>
-                        </motion.div>
-                    )}
+                    <motion.div
+                        key={activeProduct ? activeProduct.product_id : 'create'}
+                        initial={{ opacity: 0, y: 12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 12 }}
+                        transition={{ type: 'spring', stiffness: 240, damping: 22, mass: 0.7 }}
+                    >
+                        <ProductCrud
+                            product={activeProduct}
+                            availableTypes={availableTypes}
+                            onCancel={() => {
+                                setLocalSelected(null);
+                                onAdd();
+                            }}
+                            onSave={onSave}
+                            onDelete={() => onDelete()}
+                            onToggleActive={handleToggleActive}
+                        />
+                    </motion.div>
                 </AnimatePresence>
             </Box>
         </Stack>

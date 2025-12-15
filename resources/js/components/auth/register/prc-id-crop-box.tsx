@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+﻿import React, { useRef, useState } from "react";
 import Cropper, { Area } from "react-easy-crop";
 import { prcIdGetCroppedImg } from "@/utils/prc-id-get-cropped-img";
 import { RotateCcw, RefreshCw, Crop } from "lucide-react";
@@ -20,7 +20,7 @@ function fileToUrl(file: File | null): string | null {
 
 const PrcIdCropBox: React.FC<Props> = ({
   label,
-  aspect = 1.8,
+  aspect = 1.586, // ID-1 ratio (e.g., PH driver's license / PRC ID)
   value,
   onChange,
   onPreviewUpdate = () => {},
@@ -29,6 +29,7 @@ const PrcIdCropBox: React.FC<Props> = ({
   const [imageSrc, setImageSrc] = useState<string | null>(fileToUrl(value));
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
+  const [rotation, setRotation] = useState(0);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -41,12 +42,13 @@ const PrcIdCropBox: React.FC<Props> = ({
       onPreviewUpdate(null);
       setCrop({ x: 0, y: 0 });
       setZoom(1);
+      setRotation(0);
     }
   }
 
   async function confirmCropAndAdvance() {
     if (imageSrc && croppedAreaPixels) {
-      const blob = await prcIdGetCroppedImg(imageSrc, croppedAreaPixels);
+      const blob = await prcIdGetCroppedImg(imageSrc, croppedAreaPixels, rotation);
       const croppedFile = new File([blob], "cropped.jpg", { type: "image/jpeg" });
       const url = URL.createObjectURL(croppedFile);
       onChange(croppedFile);
@@ -58,6 +60,7 @@ const PrcIdCropBox: React.FC<Props> = ({
   function resetCrop() {
     setCrop({ x: 0, y: 0 });
     setZoom(1);
+    setRotation(0);
   }
 
   function changePhoto() {
@@ -78,12 +81,18 @@ const PrcIdCropBox: React.FC<Props> = ({
               image={imageSrc}
               crop={crop}
               zoom={zoom}
+              rotation={rotation}
               aspect={aspect}
               cropShape="rect"
               showGrid={true}
               onCropChange={setCrop}
               onZoomChange={setZoom}
+              onRotationChange={setRotation}
               onCropComplete={(_, pixels) => setCroppedAreaPixels(pixels)}
+              style={{
+                containerStyle: { width: "100%", height: "100%" },
+                mediaStyle: { objectFit: "contain" },
+              }}
             />
           ) : (
             <button
@@ -115,12 +124,34 @@ const PrcIdCropBox: React.FC<Props> = ({
       controlsDisabled ? "opacity-40 cursor-not-allowed" : ""
     }`}
     style={{
-      maxWidth: "220px", // Increase this value for wider slider
-      minWidth: "120px", // Optional for minimum
-      height: "20px", // Makes the slider rail chunkier
-      accentColor: "#F57979", // for Chrome etc.
+      maxWidth: "220px",
+      minWidth: "120px",
+      height: "20px",
+      accentColor: "#F57979",
     }}
   />
+</div>
+
+{/* Rotation Control */}
+<div className="flex items-center gap-3 w-[280px] mx-auto mb-3">
+  <span className="text-xs text-gray-500 font-medium">Rotate</span>
+  <input
+    type="range"
+    min={-180}
+    max={180}
+    step={1}
+    value={rotation}
+    disabled={controlsDisabled}
+    onChange={(e) => setRotation(Number(e.target.value))}
+    className={`flex-1 accent-[#F57979] h-3 ${controlsDisabled ? "opacity-40 cursor-not-allowed" : ""}`}
+    style={{
+      maxWidth: "220px",
+      minWidth: "120px",
+      height: "20px",
+      accentColor: "#F57979",
+    }}
+  />
+  <span className="text-xs text-gray-500 w-10 text-right">{rotation}°</span>
 </div>
 
         {/* ===== SCALED VERTICAL BUTTONS ===== */}
@@ -178,3 +209,8 @@ const PrcIdCropBox: React.FC<Props> = ({
 };
 
 export default PrcIdCropBox;
+
+
+
+
+

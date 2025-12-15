@@ -154,8 +154,8 @@ const PayslipWizard = ({
             transition={{ type: "spring", damping: 30, stiffness: 200 }}
           >
             {/* Main content and step wizard: fill space, vertically center 100% */}
-            <div className="flex-1 min-h-0 flex flex-col px-5 w-full relative overflow-y-auto overflow-x-hidden pb-24">
-              <AnimatePresence custom={direction} mode="wait">
+            <div className="flex-1 min-h-0 flex flex-col px-5 w-full relative overflow-hidden pb-24">
+              <AnimatePresence custom={direction} mode="wait" initial={false}>
                 <motion.div
                   key={step + "|" + mode}
                   custom={direction}
@@ -175,10 +175,12 @@ const PayslipWizard = ({
     <div>
       <StepHeader>Upload your Payslip</StepHeader>
         <div className="m-auto flex flex-col items-center justify-center w-full md:mt-20" style={{ marginTop: '120px' }}>
-      <SamplePreview
-        showFront
-        caption="*Your payslip photo should be clear and all text readable."
-      />
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }}>
+        <SamplePreview
+          showFront
+          caption="*Your payslip photo should be clear and all text readable."
+        />
+      </motion.div>
       <p className="text-sm text-gray-600 mb-3 mt-2 w-[80vw] max-w-[300px] text-center">
         Choose how you'd like to provide your Payslip photos
       </p>

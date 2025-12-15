@@ -3,7 +3,7 @@ import axiosClient from '@/api/axios-client';
 import type { PendingUser, RejectionReasonEntry } from '@/types/user';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-const PAGESIZE = 10;
+const PAGESIZE = 5;
 
 export function useClientManagement() {
     // Device detection
@@ -15,11 +15,18 @@ export function useClientManagement() {
     // Loading spinner
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [success, setSuccess] = useState<string | null>(null);
+    useEffect(() => {
+        if (!success) return;
+        const t = setTimeout(() => setSuccess(null), 4000);
+        return () => clearTimeout(t);
+    }, [success]);
 
     // API: Fetch all users for management table/dashboard
     const fetchUsers = useCallback(async () => {
         setLoading(true);
         setError(null);
+        setSuccess(null);
         try {
             const { data } = await axiosClient.get<PendingUser[]>('clients');
             setAllUsers(data);
@@ -176,6 +183,7 @@ export function useClientManagement() {
     const submitRejection = useCallback(async () => {
         if (!selectedUser || selectedReasons.length === 0) return;
         setProcessing(true);
+        setSuccess(null);
         setShowRejectModal(false); // close modal immediately for UX
         try {
             await axiosClient.post(`clients/${selectedUser.user_id}/reject`, { reasons: selectedReasons });
@@ -190,6 +198,7 @@ export function useClientManagement() {
                     : prev,
             );
             await fetchUsers();
+            setSuccess('Client rejected');
             setSelectedUser(null);
             setSelectedReasons([]);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -211,6 +220,7 @@ export function useClientManagement() {
     const submitApproval = useCallback(async () => {
         if (!approvePopperUser) return;
         setProcessing(true);
+        setSuccess(null);
         try {
             await axiosClient.post(`clients/${approvePopperUser.user_id}/approve`);
             setApprovePopperAnchor(null);
@@ -226,6 +236,7 @@ export function useClientManagement() {
                     : prev,
             );
             await fetchUsers();
+            setSuccess('Client approved');
         } finally {
             setProcessing(false);
         }
@@ -382,6 +393,7 @@ export function useClientManagement() {
         setImageTitle,
         loading,
         error,
+        success,
         fetchUsers,
     };
 }

@@ -47,7 +47,7 @@ class WlnProducts extends Model
     public function types()
     {
         // Keep pivot timestamps in sync when attaching/detaching types
-        return $this->belongsToMany(WlnType::class, 'wln_product_tags', 'product_id', 'typecode', 'product_id', 'typecode')
-            ->withTimestamps();
+        return $this->belongsToMany(WlnType::class, 'wln_product_tags', 'product_id', 'typecode', 'product_id', 'typecode');
+            // ->withTimestamps();
     }
 }

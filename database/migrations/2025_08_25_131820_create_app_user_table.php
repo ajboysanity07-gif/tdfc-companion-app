@@ -21,8 +21,11 @@ return new class extends Migration {
 
             $table->string('payslip_photo_path')->nullable();
             $table->string('role', 20)->default('customer')->index();
-            $table->string('status', 20)->default('pending'); // <--- Add directly here
-            
+            $table->string('status', 20)->default('pending');
+            $table->dateTime('reviewed_at')->nullable();
+            $table->unsignedBigInteger('reviewed_by')->nullable();
+            $table->dateTime('rejected_at')->nullable();
+
             $table->rememberToken();
             $table->timestamps();
 
@@ -31,6 +34,12 @@ return new class extends Migration {
                 ->on('wmaster')
                 ->cascadeOnUpdate()
                 ->noActionOnDelete();
+
+            $table->foreign('reviewed_by')
+                ->references('user_id')
+                ->on('app_user_table')
+                ->onDelete('NO ACTION')
+                ->onUpdate('NO ACTION');
         });
     }
 

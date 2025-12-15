@@ -9,11 +9,11 @@ class CreateAppUserRejectionReasonTable extends Migration
     public function up()
     {
         Schema::create('app_user_rejection_reason', function (Blueprint $table) {
-            $table->id();
             $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('rejection_reason_id');
             $table->timestamps();
 
+            $table->primary(['user_id', 'rejection_reason_id']);
             $table->foreign('user_id')->references('user_id')->on('app_user_table')->onDelete('cascade');
             $table->foreign('rejection_reason_id')->references('id')->on('rejection_reasons')->onDelete('cascade');
         });
@@ -23,4 +23,3 @@ class CreateAppUserRejectionReasonTable extends Migration
         Schema::dropIfExists('app_user_rejection_reason');
     }
 }
-

@@ -7,6 +7,7 @@ use App\Models\WlnProducts;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use Illuminate\Validation\Rule;
 
 class ProductManagementController extends Controller
 {
@@ -35,17 +36,37 @@ class ProductManagementController extends Controller
      */
     public function store(Request $request)
     {
+        $basicFormulaRule = function ($attribute, $value, $fail) use ($request) {
+            if ($request->input('max_amortization_mode') !== 'CUSTOM') {
+                return;
+            }
+
+            if (!preg_match('/\bbasic\b/i', $value ?? '')) {
+                return $fail('Custom formula must include the variable "basic".');
+            }
+
+            // only numbers, whitespace, operators, parentheses, and the word basic
+            if (!preg_match('~^[0-9+\-*\/().\s]*\bbasic\b[0-9+\-*\/().\s]*$~i', $value)) {
+                return $fail('Allowed: numbers, + - * / ( ), and the variable "basic".');
+            }
+        };
         $data = $request->validate([
             'product_name' => 'required|string|max:255',
             'is_active' => 'required|boolean',
             'is_multiple' => 'required|boolean',
             'schemes' => 'nullable|string',
             'mode' => 'nullable|string',
-            'interest_rate' => 'nullable|numeric',
-            'max_term_days' => 'nullable|integer',
+            'interest_rate' => 'required|numeric',
+            'max_term_days' => 'required|integer',
             'is_max_term_editable' => 'nullable|boolean',
             'max_amortization_mode' => 'required|string|in:FIXED,BASIC,CUSTOM',
-            'max_amortization_formula' => 'nullable|string|max:255',
+            'max_amortization_formula' => [
+                'nullable',
+                Rule::requiredIf(fn() => $request->input('max_amortization_mode') === 'CUSTOM'),
+                'string',
+                'max:255',
+                $basicFormulaRule,
+            ],
             'max_amortization' => 'nullable|integer',
             'is_max_amortization_editable' => 'nullable|boolean',
             'service_fee' => 'nullable|numeric',
@@ -53,9 +74,10 @@ class ProductManagementController extends Controller
             'document_stamp' => 'nullable|numeric',
             'mort_plus_notarial' => 'nullable|numeric',
             'terms' => 'nullable|string',
-            'typecodes' => 'nullable|array',
+            'typecodes' => 'required|array|min:1',
             'typecodes.*' => 'string|size:2|exists:wlntype,typecode'
         ]);
+
 
         switch ($data['max_amortization_mode']) {
             case 'FIXED':
@@ -117,18 +139,38 @@ class ProductManagementController extends Controller
      */
     public function update(Request $request, WlnProducts $product)
     {
-        return DB::transaction(function () use ($request, $product) {
+        $basicFormulaRule = function ($attribute, $value, $fail) use ($request) {
+            if ($request->input('max_amortization_mode') !== 'CUSTOM') {
+                return;
+            }
+
+            if (!preg_match('/\bbasic\b/i', $value ?? '')) {
+                return $fail('Custom formula must include the variable "basic".');
+            }
+
+            // only numbers, whitespace, operators, parentheses, and the word basic
+            if (!preg_match('~^[0-9+\-*\/().\s]*\bbasic\b[0-9+\-*\/().\s]*$~i', $value)) {
+                return $fail('Allowed: numbers, + - * / ( ), and the variable "basic".');
+            }
+        };
+        return DB::transaction(function () use ($request, $product, $basicFormulaRule) {
             $data = $request->validate([
                 'product_name' => 'sometimes|required|string|max:255',
                 'is_active' => 'sometimes|required|boolean',
                 'is_multiple' => 'sometimes|required|boolean',
                 'schemes' => 'sometimes|nullable|string',
                 'mode' => 'sometimes|nullable|string',
-                'interest_rate' => 'sometimes|nullable|numeric',
-                'max_term_days' => 'sometimes|nullable|integer',
+                'interest_rate' => 'sometimes|required|numeric',
+                'max_term_days' => 'sometimes|required|integer',
                 'is_max_term_editable' => 'sometimes|nullable|boolean',
                 'max_amortization_mode' => 'required|string|in:FIXED,BASIC,CUSTOM',
-                'max_amortization_formula' => 'nullable|string|max:255',
+                'max_amortization_formula' => [
+                    'nullable',
+                    Rule::requiredIf(fn() => $request->input('max_amortization_mode') === 'CUSTOM'),
+                    'string',
+                    'max:255',
+                    $basicFormulaRule,
+                ],
                 'max_amortization' => 'nullable|integer',
                 'is_max_amortization_editable' => 'sometimes|nullable|boolean',
                 'service_fee' => 'sometimes|nullable|numeric',
@@ -136,9 +178,16 @@ class ProductManagementController extends Controller
                 'document_stamp' => 'sometimes|nullable|numeric',
                 'mort_plus_notarial' => 'sometimes|nullable|numeric',
                 'terms' => 'sometimes|nullable|string',
-                'typecodes' => 'sometimes|nullable|array',
+                'typecodes' => 'sometimes|required|array|min:1',
                 'typecodes.*' => 'string|size:2|exists:wlntype,typecode'
             ]);
+
+            // Only normalize the decimals that were provided; keep others untouched.
+            foreach (['service_fee', 'lrf', 'document_stamp', 'mort_plus_notarial'] as $decimalField) {
+                if (array_key_exists($decimalField, $data)) {
+                    $data[$decimalField] = $data[$decimalField] ?? 0;
+                }
+            }
 
             // Apply mode logic only if client sent a mode
             if (array_key_exists('max_amortization_mode', $data)) {
@@ -195,7 +244,7 @@ class ProductManagementController extends Controller
 
     public function typesIndex()
     {
-        $types = WlnType::select('typecode', 'lntype','lntags')
+        $types = WlnType::select('typecode', 'lntype', 'lntags')
             ->orderBy('lntype')
             ->get();
 

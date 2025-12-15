@@ -18,44 +18,47 @@ class ClientManagementController extends Controller
     public function apiIndex(Request $request)
     {
         try {
-            $clients = AppUser::with(['wmaster', 'rejectionReasons:id,code,label'])
+            $users = AppUser::with(['wmaster', 'rejectionReasons:id,code,label'])
                 ->whereNotNull('prc_id_photo_front')
                 ->whereNotNull('prc_id_photo_back')
                 ->whereNotNull('payslip_photo_path')
                 ->orderBy('created_at', 'asc')
-                ->get()
-                ->map(function ($user) {
-                    $overallClass = $this->determineLoanClass($user);
+                ->get();
 
-                    $latestSalary = WSalaryRecord::where('acctno', $user->acctno)
-                        ->orderBy('created_at', 'desc')
-                        ->first();
+            $loanRowsByAcct = $this->fetchLoanRowsGroupedByAcct($users);
 
-                    return [
-                        'user_id' => $user->user_id,
-                        'name' => $user->name,
-                        'email' => $user->email,
-                        'profile_picture_path' => $user->profile_picture_path,
-                        'phone_no' => $user->phone_no,
-                        'acctno' => $user->acctno,
-                        'status' => $user->status,
-                        'class' => $overallClass,
-                        'prc_id_photo_front' => $user->prc_id_photo_front,
-                        'prc_id_photo_back' => $user->prc_id_photo_back,
-                        'payslip_photo_path' => $user->payslip_photo_path,
-                        'created_at' => $user->created_at->toISOString(),
-                        'reviewed_at' => $user->reviewed_at?->toISOString(),
-                        'reviewed_by' => $user->reviewed_by,
-                        'salary_amount' => $latestSalary?->salary_amount,
-                        'notes' => $latestSalary?->notes,
-                        'rejection_reasons' => $user->isRejected()
-                            ? $user->rejectionReasons->map(fn($r) => [
-                                'code' => $r->code,
-                                'label' => $r->label,
-                            ])->toArray()
-                            : [],
-                    ];
-                });
+            $clients = $users->map(function ($user) use ($loanRowsByAcct) {
+                $overallClass = $this->determineLoanClassFromRows($loanRowsByAcct->get($user->acctno));
+
+                $latestSalary = WSalaryRecord::where('acctno', $user->acctno)
+                    ->orderBy('created_at', 'desc')
+                    ->first();
+
+                return [
+                    'user_id' => $user->user_id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'profile_picture_path' => $user->profile_picture_path,
+                    'phone_no' => $user->phone_no,
+                    'acctno' => $user->acctno,
+                    'status' => $user->status,
+                    'class' => $overallClass,
+                    'prc_id_photo_front' => $user->prc_id_photo_front,
+                    'prc_id_photo_back' => $user->prc_id_photo_back,
+                    'payslip_photo_path' => $user->payslip_photo_path,
+                    'created_at' => $user->created_at->toISOString(),
+                    'reviewed_at' => $user->reviewed_at?->toISOString(),
+                    'reviewed_by' => $user->reviewed_by,
+                    'salary_amount' => $latestSalary?->salary_amount,
+                    'notes' => $latestSalary?->notes,
+                    'rejection_reasons' => $user->isRejected()
+                        ? $user->rejectionReasons->map(fn($r) => [
+                            'code' => $r->code,
+                            'label' => $r->label,
+                        ])->toArray()
+                        : [],
+                ];
+            });
 
             return response()->json($clients);
         } catch (\Exception $e) {
@@ -204,5 +207,71 @@ class ClientManagementController extends Controller
         }
 
         return null;
+    }
+
+    /**
+     * Batch-fetch loan rows grouped by acctno to avoid N+1 queries while loading the client list.
+     */
+    protected function fetchLoanRowsGroupedByAcct($users): \Illuminate\Support\Collection
+    {
+        $acctnos = $users->pluck('acctno')->filter()->unique()->all();
+        if (empty($acctnos)) {
+            return collect();
+        }
+
+        $connectionName = env('LOAN_CLASS_CONNECTION', $users->first()->getConnectionName() ?? config('database.default'));
+        $loanTable = env('LOAN_CLASS_TABLE', 'vloandue');
+
+        try {
+            $rows = DB::connection($connectionName)
+                ->table($loanTable)
+                ->whereIn('acctno', $acctnos)
+                ->get();
+
+            return collect($rows)->groupBy('acctno');
+        } catch (\Throwable $e) {
+            Log::warning('Unable to batch query loan class data', [
+                'connection' => $connectionName,
+                'table' => $loanTable,
+                'error' => $e->getMessage(),
+            ]);
+            return collect();
+        }
+    }
+
+    /**
+     * Determine the highest-priority class from pre-fetched loan rows.
+     */
+    protected function determineLoanClassFromRows($loanRows): ?string
+    {
+        if (!$loanRows || count($loanRows) === 0) {
+            return null;
+        }
+
+        $highest = null;
+        foreach ($loanRows as $loanData) {
+            $loanStatus = $loanData->loan_status ?? null;
+            $dateEnd = isset($loanData->date_end) ? Carbon::parse($loanData->date_end) : null;
+            $diffDays = $dateEnd ? Carbon::parse($loanData->date_end)->diffInDays(now(), false) : null;
+            $prio = null;
+
+            if ($loanStatus !== 'MATURED') {
+                $prio = 1;
+            } elseif ($diffDays !== null && $diffDays > 0) {
+                $prio = $diffDays < 60 ? 2 : ($diffDays < 90 ? 3 : 4);
+            }
+
+            if ($prio !== null && ($highest === null || $prio > $highest)) {
+                $highest = $prio;
+            }
+        }
+        $highest = $highest ?? 4; // fallback to D when rows exist but no priority set
+        return match ($highest) {
+            1 => 'A',
+            2 => 'B',
+            3 => 'C',
+            4 => 'D',
+            default => null, // return null if no priority was set
+        };
     }
 }
