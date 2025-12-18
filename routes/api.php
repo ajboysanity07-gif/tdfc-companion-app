@@ -10,7 +10,7 @@ use App\Http\Controllers\RecentTransactionController;
 use App\Http\Controllers\Api\AdminDashboardController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Api\ProductManagementController;
-use App\Http\Controllers\Admin\ClientManagementController;
+use App\Http\Controllers\Api\ClientManagementController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Customer\RegistrationStatusController;
 use App\Http\Controllers\Api\ProductController;
@@ -51,7 +51,6 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
     // Product Management - fetch all products with tags  
     Route::apiResource('products', ProductManagementController::class)->except(['create', 'edit']);
     Route::get('/product-types', [ProductManagementController::class, 'typesIndex']);
-
 });
 
 // Public & utility APIs (keep as needed)
@@ -69,10 +68,12 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // --- ADMIN Management endpoints (SPA+API) ---
     Route::middleware(['role:admin'])->group(function () {
         // Client Management
-        Route::get('/clients', [ClientManagementController::class, 'apiIndex']);
-        Route::post('/clients/{user}/approve', [ClientManagementController::class, 'apiApprove']);
-        Route::post('/clients/{user}/reject', [ClientManagementController::class, 'apiReject']);
+        Route::get('/clients', [ClientManagementController::class, 'index']);
+        Route::post('/clients/{user}/approve', [ClientManagementController::class, 'approve']);
+        Route::post('/clients/{user}/reject', [ClientManagementController::class, 'reject']);
+        Route::get('/clients/{acctno}/wlnmaster', [ClientManagementController::class, 'wlnmaster']);
         Route::post('/clients/{acctno}/salary', [ClientManagementController::class, 'updateSalary']);
+        Route::get('/clients/loans/{lnnumber}/amortization', [ClientManagementController::class, 'amortizationSchedule']);
 
         // Rejection reasons lookup
         Route::get('/rejection-reasons', [UserRejectionController::class, 'getRejectionReasons']);

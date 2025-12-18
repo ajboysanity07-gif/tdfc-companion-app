@@ -11,14 +11,13 @@ class WSalaryRecord extends Model
 
     // Match the migration table name
     protected $table = 'wsalary_records';
-    protected $primaryKey = 'id';
-    public $incrementing = true;
-    protected $keyType = 'int';
+    protected $primaryKey = 'acctno';
+    public $incrementing = false;
+    protected $keyType = 'string';
 
     protected $fillable = [
         'acctno',
         'salary_amount',
-        'notes',
     ];
 
     protected $casts = [

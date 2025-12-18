@@ -23,4 +23,7 @@ export default defineConfig({
             'ziggy-js': resolve(__dirname, 'vendor/tightenco/ziggy'),
         },
     },
+    build: {
+        chunkSizeWarningLimit: 2500,
+    },
 });

@@ -1,13 +1,223 @@
-import DesktopView from '@/components/product-management/desktop/desktop-view';
-import MobileView from '@/components/product-management/mobile/mobile-view';
+import DesktopViewLayout from '@/components/desktop-view-layout';
+import MobileViewLayout from '@/components/mobile-view-layout';
+import ProductCrud from '@/components/product-management/product-crud';
+import ProductListSkeleton, { PRODUCT_LIST_PAGE_SIZE } from '@/components/product-management/product-list-skeleton';
+import FullScreenModalMobile from '@/components/ui/full-screen-modal-mobile';
+import ProductList from '@/components/product-management/product-list';
 import { useProductManagement } from '@/hooks/use-product-management';
 import AppLayout from '@/layouts/app-layout';
-import { ProductLntype, ProductPayload } from '@/types/product-lntype';
-import { LinearProgress, Slide, useMediaQuery } from '@mui/material';
+import { ProductLntype, ProductPayload, WlnType } from '@/types/product-lntype';
+import { Box, Button, LinearProgress, Slide, Stack, useMediaQuery } from '@mui/material';
+import AddCircleIcon from '@mui/icons-material/AddCircle';
+import { AnimatePresence, motion } from 'framer-motion';
 import { CircleCheckBig, CircleX } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import ManagementHero from '@/components/management/management-hero';
 
 const breadcrumbs = [{ title: 'Product Management', href: '/admin/products' }];
+
+type ProductDesktopProps = {
+    products: ProductLntype[];
+    selected: ProductLntype | null;
+    availableTypes?: WlnType[];
+    isAdding?: boolean;
+    onSelect?: (product_id: number) => void;
+    onAdd: () => void;
+    onSave: (payload: ProductPayload) => Promise<void> | void;
+    onDelete: () => Promise<void> | void;
+    onToggleActive?: (productId: number, value: boolean) => void;
+};
+
+function ProductDesktopLayoutView({
+    products,
+    selected,
+    availableTypes = [],
+    isAdding = false,
+    onSelect,
+    onAdd,
+    onSave,
+    onDelete,
+    onToggleActive,
+}: ProductDesktopProps) {
+    const [search, setSearch] = useState('');
+    const [localSelected, setLocalSelected] = useState<ProductLntype | null>(selected);
+
+    useEffect(() => setLocalSelected(selected), [selected]);
+
+    const activeProduct = useMemo(() => {
+        return isAdding ? null : localSelected;
+    }, [isAdding, localSelected]);
+
+    const syncedProducts = useMemo(
+        () =>
+            products.map((p) =>
+                activeProduct && p.product_id === activeProduct.product_id
+                    ? { ...p, is_active: activeProduct.is_active }
+                    : p,
+            ),
+        [products, activeProduct],
+    );
+
+    const filtered = useMemo(() => {
+        const term = search.toLowerCase();
+        if (!term) return syncedProducts;
+        return syncedProducts.filter(
+            (p) =>
+                p.product_name.toLowerCase().includes(term) ||
+                p.types?.some((t) => t.typecode.toLowerCase().includes(term) || t.lntype.toLowerCase().includes(term)),
+        );
+    }, [syncedProducts, search]);
+
+    const handleSelect = (product_id: number) => {
+        const found = products.find((p) => p.product_id === product_id) ?? null;
+        setLocalSelected(found);
+        onSelect?.(product_id);
+    };
+
+    const handleToggleActive = (productId: number, value: boolean) => {
+        setLocalSelected((prev) => (prev && prev.product_id === productId ? { ...prev, is_active: value } : prev));
+        onToggleActive?.(productId, value);
+    };
+
+    return (
+        <DesktopViewLayout
+            left={
+                <ProductList
+                    products={filtered}
+                    onSelect={handleSelect}
+                    searchValue={search}
+                    onSearchChange={setSearch}
+                    searchOptions={products.map((p) => p.product_name)}
+                    onToggleActive={handleToggleActive}
+                    fullHeight
+                />
+            }
+            right={
+                <AnimatePresence mode="wait">
+                    <motion.div
+                        key={activeProduct ? activeProduct.product_id : 'create'}
+                        initial={{ opacity: 0, y: 12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 12 }}
+                        transition={{ type: 'spring', stiffness: 240, damping: 22, mass: 0.7 }}
+                    >
+                        <ProductCrud
+                            product={activeProduct}
+                            availableTypes={availableTypes}
+                            onCancel={() => {
+                                setLocalSelected(null);
+                                onAdd();
+                            }}
+                            onSave={onSave}
+                            onDelete={() => onDelete()}
+                            onToggleActive={handleToggleActive}
+                        />
+                    </motion.div>
+                </AnimatePresence>
+            }
+            leftSx={{ p: 5, minHeight: 1100 }}
+            rightSx={{ p: 5, minHeight: 1100 }}
+        />
+    );
+}
+
+type ProductMobileProps = {
+    products: ProductLntype[];
+    availableTypes?: WlnType[];
+    onSave: (payload: ProductPayload, productId?: number | null) => Promise<void> | void;
+    onDelete: (productId?: number | null) => Promise<void> | void;
+    onToggleActive?: (productId: number, value: boolean) => void;
+};
+
+function ProductMobileLayoutView({ products, availableTypes = [], onSave, onDelete, onToggleActive }: ProductMobileProps) {
+    const [search, setSearch] = useState('');
+    const [selected, setSelected] = useState<ProductLntype | null>(null);
+    const [modalOpen, setModalOpen] = useState(false);
+
+    const filtered = useMemo(() => {
+        const term = search.toLowerCase();
+        if (!term) return products;
+        return products.filter(
+            (p) =>
+                p.product_name.toLowerCase().includes(term) ||
+                p.types?.some((t) => t.typecode.toLowerCase().includes(term) || t.lntype.toLowerCase().includes(term)),
+        );
+    }, [products, search]);
+
+    const closeModal = () => {
+        setModalOpen(false);
+        setSelected(null);
+    };
+
+    return (
+        <MobileViewLayout
+            footer={
+                <>
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={() => {
+                            setSelected(null);
+                            setModalOpen(true);
+                        }}
+                        startIcon={<AddCircleIcon />}
+                        sx={{
+                            position: 'fixed',
+                            bottom: 84,
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            borderRadius: 999,
+                            px: 2.5,
+                            py: 1,
+                            boxShadow: '0 10px 30px rgba(0,0,0,0.22)',
+                        }}
+                    >
+                        Add New
+                    </Button>
+
+                    <FullScreenModalMobile
+                        open={modalOpen}
+                        title={selected ? selected.product_name : 'Add Product'}
+                        onClose={closeModal}
+                        headerBg="#f57979"
+                        headerColor="#fff"
+                        bodySx={{ pb: { xs: 12, sm: 3 } }}
+                    >
+                        <ProductCrud
+                            product={selected}
+                            availableTypes={availableTypes}
+                            onCancel={closeModal}
+                            onSave={async (payload) => {
+                                await onSave(payload, selected?.product_id);
+                                closeModal();
+                            }}
+                            onDelete={async () => {
+                                await onDelete(selected?.product_id);
+                                closeModal();
+                            }}
+                            onToggleActive={onToggleActive}
+                            hideActionsOnMobile
+                        />
+                    </FullScreenModalMobile>
+                </>
+            }
+        >
+            <ProductList
+                products={filtered}
+                onSelect={(id) => {
+                    const found = products.find((p) => p.product_id === id) ?? null;
+                    setSelected(found);
+                    setModalOpen(true);
+                }}
+                searchValue={search}
+                onSearchChange={setSearch}
+                searchOptions={products.map((p) => p.product_name)}
+                onToggleActive={onToggleActive}
+                fullHeight
+            />
+        </MobileViewLayout>
+    );
+}
 
 export default function ProductsManagementPage() {
     const { products, types, loading, error, success, fetchTypes, fetchProducts, createProduct, updateProduct, deleteProduct } = useProductManagement();
@@ -79,16 +289,65 @@ export default function ProductsManagementPage() {
                     </div>
                 </Slide>
             </div>
-            <div className="flex flex-col gap-5 overflow-x-auto bg-[#FAFAFA] p-4 transition-colors duration-300 dark:bg-neutral-900">
-                <div className="relative h-[180px] overflow-hidden rounded-xl bg-[#F57979] shadow-lg">
-                    <div className="relative z-10 p-6">
-                        <h1 className="mb-2 text-3xl font-extrabold tracking-tight text-[#FFF172]">Product Management</h1>
-                        <div className="text-[1.08rem] font-medium text-white opacity-90">Activate and manage product listings</div>
-                    </div>
-                </div>
+            <div className="flex flex-col gap-5 overflow-x-auto bg-[#FAFAFA] transition-colors duration-300 dark:bg-neutral-900">
+                <ManagementHero title="Product Management" subtitle="Activate and manage product listings" />
 
-                {isMobile ? (
-                    <MobileView
+                {loading ? (
+                    isMobile ? (
+                        <div className="p-4">
+                            <Box
+                                sx={{
+                                    borderRadius: 3,
+                                    p: 3,
+                                    bgcolor: 'background.paper',
+                                    boxShadow: 3,
+                                    minHeight: 500,
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                }}
+                            >
+                                <ProductListSkeleton fullHeight itemCount={Math.max(products.length, PRODUCT_LIST_PAGE_SIZE)} />
+                            </Box>
+                        </div>
+                    ) : (
+                        <div className="p-4">
+                            <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ width: '100%' }}>
+                                <Box
+                                    sx={{
+                                        flex: 1,
+                                        borderRadius: 3,
+                                        p: 3,
+                                        bgcolor: 'background.paper',
+                                        boxShadow: 3,
+                                        minHeight: 500,
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                    }}
+                                >
+                                    <ProductListSkeleton fullHeight itemCount={Math.max(products.length, PRODUCT_LIST_PAGE_SIZE)} />
+                                </Box>
+                                <Box
+                                    sx={{
+                                        flex: 1,
+                                        borderRadius: 3,
+                                        p: 3,
+                                        bgcolor: 'background.paper',
+                                        boxShadow: 3,
+                                        minHeight: 500,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        color: 'text.secondary',
+                                        fontWeight: 700,
+                                    }}
+                                >
+                                    Loading products...
+                                </Box>
+                            </Stack>
+                        </div>
+                    )
+                ) : isMobile ? (
+                    <ProductMobileLayoutView
                         products={products}
                         availableTypes={types}
                         onSave={(payload, id) => handleSave(payload, id)}
@@ -96,7 +355,7 @@ export default function ProductsManagementPage() {
                         onToggleActive={handleToggleActive}
                     />
                 ) : (
-                    <DesktopView
+                    <ProductDesktopLayoutView
                         products={products}
                         availableTypes={types}
                         selected={selected}

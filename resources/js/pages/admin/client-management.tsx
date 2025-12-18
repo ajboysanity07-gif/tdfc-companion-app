@@ -1,198 +1,411 @@
-import React from 'react';
-import { LinearProgress, Slide } from '@mui/material';
-import { CircleCheckBig, CircleX } from 'lucide-react';
-import ApprovePopper from '@/components/client-management/components/approve-popper';
-import DesktopUserColumns from '@/components/client-management/components/desktop-user-columns';
-import FullScreenImageModal from '@/components/client-management/components/fullscreen-image-modal';
-import MobileUserTabs from '@/components/client-management/components/mobile-user-tabs';
-import RejectModal from '@/components/client-management/components/reject-modal';
+import ClientDetailsSkeleton from '@/components/client-management/client-details-skeleton';
+import ClientListSkeleton, { CLIENT_LIST_PAGE_SIZE } from '@/components/client-management/client-list-skeleton';
+import ClientDetails from '@/components/client-management/client-details';
+import ClientList from '@/components/client-management/client-list';
+import RejectModal from '@/components/client-management/reject-modal';
+import FullScreenModalMobile from '@/components/ui/full-screen-modal-mobile';
+import DesktopViewLayout from '@/components/desktop-view-layout';
+import MobileViewLayout from '@/components/mobile-view-layout';
 import { useClientManagement } from '@/hooks/use-client-management';
 import AppLayout from '@/layouts/app-layout';
+import { Box, LinearProgress, Slide, Stack, useMediaQuery } from '@mui/material';
+import { AnimatePresence, motion } from 'framer-motion';
+import { CircleCheckBig, CircleX } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import type { Client, RejectionReasonEntry, WlnMasterRecord, WlnMasterResponse } from '@/types/user';
+import ManagementHero from '@/components/management/management-hero';
 
-const breadcrumbs = [
-  { title: 'Client Management', href: '/admin/client-management' },
-];
+const breadcrumbs = [{ title: 'Client Management', href: '/admin/client-management' }];
 
-// Apple separator style
-const appleSeparator = (): React.CSSProperties => ({
-  margin: 0,
-  padding: 0,
-  width: '92%',
-  height: '1.5px',
-  background: typeof window !== 'undefined'
-    ? window.matchMedia('(prefers-color-scheme: dark)').matches
-      ? 'rgba(84,84,88,0.24)'
-      : 'rgba(60,60,67,0.14)'
-    : 'rgba(60,60,67,0.14)',
-  borderRadius: '2px',
-  alignSelf: 'center',
-  marginTop: '0.5rem',
-});
+type ClientDesktopProps = {
+    clients: Client[];
+    rejectionReasons: RejectionReasonEntry[];
+    selectedId: number | null;
+    onSelect: (userId: number | null) => void;
+    onApprove: (userId: number) => Promise<void> | void;
+    onReject: (userId: number, reasons: string[]) => Promise<void> | void;
+    onSaveSalary: (acctno: string, salary: number) => Promise<void> | void;
+    fetchWlnMaster: (acctno: string) => Promise<WlnMasterResponse | null>;
+    wlnMasterByAcctno: Record<string, WlnMasterRecord[]>;
+    wlnMasterLoading: Record<string, boolean>;
+};
+
+function ClientDesktopLayoutView({
+    clients,
+    rejectionReasons,
+    selectedId,
+    onSelect,
+    onApprove,
+    onReject,
+    onSaveSalary,
+    fetchWlnMaster,
+    wlnMasterByAcctno,
+    wlnMasterLoading,
+}: ClientDesktopProps) {
+    const [search, setSearch] = useState('');
+    const [showRejectModal, setShowRejectModal] = useState(false);
+    const [pendingRejectReasons, setPendingRejectReasons] = useState<string[]>([]);
+
+    const filtered = useMemo(() => {
+        const term = search.toLowerCase();
+        return clients.filter((c) => {
+            if (!term) return true;
+            return (
+                c.name.toLowerCase().includes(term) ||
+                c.email.toLowerCase().includes(term) ||
+                c.acctno.toLowerCase().includes(term)
+            );
+        });
+    }, [clients, search]);
+
+    const activeClient = useMemo(() => clients.find((c) => c.user_id === selectedId) ?? null, [clients, selectedId]);
+    const wlnMasterRecords = activeClient ? wlnMasterByAcctno[activeClient.acctno] : undefined;
+    const wlnLoading = activeClient ? wlnMasterLoading[activeClient.acctno] : false;
+
+    useEffect(() => {
+        if (!activeClient?.acctno) return;
+        const acctno = activeClient.acctno;
+        if (wlnMasterByAcctno[acctno] || wlnMasterLoading[acctno]) return;
+        fetchWlnMaster(acctno);
+    }, [activeClient, fetchWlnMaster, wlnMasterByAcctno, wlnMasterLoading]);
+
+    const openReject = () => {
+        if (!activeClient) return;
+        setPendingRejectReasons(activeClient.rejection_reasons?.map((r) => r.code) ?? []);
+        setShowRejectModal(true);
+    };
+
+    const submitReject = (reasons: string[]) => {
+        if (!activeClient) return;
+        onReject(activeClient.user_id, reasons);
+    };
+
+    return (
+        <DesktopViewLayout
+            left={
+                <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                    <Box sx={{ flex: 1, overflow: 'hidden' }}>
+                        <ClientList
+                            clients={filtered}
+                            onSelect={(id) => onSelect(id)}
+                            searchValue={search}
+                            onSearchChange={setSearch}
+                            searchOptions={clients.map((c) => c.name)}
+                            fullHeight
+                            enableStatusTabs
+                        />
+                    </Box>
+                </Box>
+            }
+            right={
+                <AnimatePresence mode="wait">
+                    <motion.div
+                        key={activeClient ? activeClient.user_id : 'empty'}
+                        initial={{ opacity: 0, y: 12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 12 }}
+                        transition={{ type: 'spring', stiffness: 240, damping: 22, mass: 0.7 }}
+                        style={{ display: 'flex', flex: 1 }}
+                    >
+                        <ClientDetails
+                            client={activeClient}
+                            onApprove={onApprove}
+                            onRejectClick={openReject}
+                            onSaveSalary={onSaveSalary}
+                            wlnMasterRecords={wlnMasterRecords}
+                            loading={!!wlnLoading}
+                        />
+                    </motion.div>
+                </AnimatePresence>
+            }
+            afterStack={
+                <RejectModal
+                    open={showRejectModal}
+                    reasons={rejectionReasons}
+                    selected={pendingRejectReasons}
+                    clientName={activeClient?.name}
+                    onClose={() => setShowRejectModal(false)}
+                    onSubmit={submitReject}
+                />
+            }
+            leftSx={{ p: 4, minHeight: 600, gap: 2 }}
+            rightSx={{ p: 4, minHeight: 1110 }}
+        />
+    );
+}
+
+type ClientMobileProps = {
+    clients: Client[];
+    rejectionReasons: RejectionReasonEntry[];
+    selectedId?: number | null;
+    onSelect?: (userId: number | null) => void;
+    onApprove: (userId: number) => Promise<void> | void;
+    onReject: (userId: number, reasons: string[]) => Promise<void> | void;
+    onSaveSalary: (acctno: string, salary: number) => Promise<void> | void;
+    fetchWlnMaster: (acctno: string) => Promise<WlnMasterResponse | null>;
+    wlnMasterByAcctno: Record<string, WlnMasterRecord[]>;
+    wlnMasterLoading: Record<string, boolean>;
+};
+
+function ClientMobileLayoutView({
+    clients,
+    rejectionReasons,
+    selectedId = null,
+    onSelect,
+    onApprove,
+    onReject,
+    onSaveSalary,
+    fetchWlnMaster,
+    wlnMasterByAcctno,
+    wlnMasterLoading,
+}: ClientMobileProps) {
+    const [search, setSearch] = useState('');
+    const [localSelectedId, setLocalSelectedId] = useState<number | null>(selectedId);
+    const [detailsOpen, setDetailsOpen] = useState(false);
+    const [rejectOpen, setRejectOpen] = useState(false);
+    const [pendingRejectReasons, setPendingRejectReasons] = useState<string[]>([]);
+
+    useEffect(() => {
+        setLocalSelectedId(selectedId);
+        if (selectedId != null) {
+            setDetailsOpen(true);
+        }
+    }, [selectedId]);
+
+    const activeClient = useMemo(
+        () => clients.find((c) => c.user_id === localSelectedId) ?? null,
+        [clients, localSelectedId],
+    );
+    const wlnMasterRecords = activeClient ? wlnMasterByAcctno[activeClient.acctno] : undefined;
+    const wlnLoading = activeClient ? wlnMasterLoading[activeClient.acctno] : false;
+
+    useEffect(() => {
+        if (!activeClient?.acctno) return;
+        const acctno = activeClient.acctno;
+        if (wlnMasterByAcctno[acctno] || wlnMasterLoading[acctno]) return;
+        fetchWlnMaster(acctno);
+    }, [activeClient, fetchWlnMaster, wlnMasterByAcctno, wlnMasterLoading]);
+
+    const filtered = useMemo(() => {
+        const term = search.toLowerCase();
+        return clients.filter((c) => {
+            if (!term) return true;
+            return (
+                c.name.toLowerCase().includes(term) ||
+                c.email.toLowerCase().includes(term) ||
+                c.acctno.toLowerCase().includes(term)
+            );
+        });
+    }, [clients, search]);
+
+    const handleSelect = (userId: number) => {
+        setLocalSelectedId(userId);
+        onSelect?.(userId);
+        const found = clients.find((c) => c.user_id === userId);
+        setPendingRejectReasons(found?.rejection_reasons?.map((r) => r.code) ?? []);
+        setDetailsOpen(true);
+    };
+
+    const closeDetails = () => {
+        setDetailsOpen(false);
+        setLocalSelectedId(null);
+        onSelect?.(null);
+    };
+
+    const openReject = () => {
+        if (!activeClient) return;
+        setPendingRejectReasons(activeClient.rejection_reasons?.map((r) => r.code) ?? []);
+        setRejectOpen(true);
+    };
+
+    const handleSubmitReject = (reasons: string[]) => {
+        if (!activeClient) return;
+        onReject(activeClient.user_id, reasons);
+        setRejectOpen(false);
+        closeDetails();
+    };
+
+    return (
+        <MobileViewLayout
+            footer={
+                <>
+                    <FullScreenModalMobile
+                        open={detailsOpen}
+                        title={activeClient ? activeClient.name : 'Client Details'}
+                        onClose={closeDetails}
+                        bodyClassName="client-details-open"
+                        paperSx={{ pb: 0 }}
+                        bodySx={{ pb: { xs: 10, sm: 6 } }}
+                    >
+                        <ClientDetails
+                            client={activeClient}
+                            onApprove={onApprove}
+                            onRejectClick={openReject}
+                            onSaveSalary={onSaveSalary}
+                            wlnMasterRecords={wlnMasterRecords}
+                            loading={!!wlnLoading}
+                            showName={false}
+                        />
+                    </FullScreenModalMobile>
+
+                    <RejectModal
+                        open={rejectOpen}
+                        reasons={rejectionReasons}
+                        selected={pendingRejectReasons}
+                        onClose={() => setRejectOpen(false)}
+                        onSubmit={handleSubmitReject}
+                        clientName={activeClient?.name}
+                    />
+                </>
+            }
+        >
+            <ClientList
+                clients={filtered}
+                onSelect={handleSelect}
+                searchValue={search}
+                onSearchChange={setSearch}
+                searchOptions={clients.map((c) => c.name)}
+                fullHeight
+                enableStatusTabs
+            />
+        </MobileViewLayout>
+    );
+}
 
 export default function ClientManagementPage() {
-  const {
-    isMobileOrTablet,
-    registeredUsers,
-    forApprovalUsers,
-    rejectedUsers,
-    pagedRegisteredUsers,
-    pagedPendingUsers,
-    pagedRejectedUsers,
-    registeredSearch,
-    setRegisteredSearch,
-    pendingSearch,
-    setPendingSearch,
-    rejectedSearch,
-    setRejectedSearch,
-    registeredTotalPages,
-    pendingTotalPages,
-    rejectedTotalPages,
-    registeredPage,
-    setRegisteredPage,
-    pendingPage,
-    setPendingPage,
-    rejectedPage,
-    setRejectedPage,
-    userAccordionProps,
-    desktopColumns,
-    approvePopperAnchor,
-    setApprovePopperAnchor,
-    approvePopperUser,
-    setApprovePopperUser,
-    processing,
-    loading,
-    error,
-    success,
-    fullScreenImage,
-    imageTitle,
-    modalImagesUser,
-    closeFullScreenImage,
-    showRejectModal,
-    setShowRejectModal,
-    selectedUser,
-    selectedReasons,
-    rejectionReasons,
-    toggleReason,
-    submitRejection,
-    submitApproval,
-  } = useClientManagement();
+    const {
+        clients,
+        rejectionReasons,
+        loading,
+        error,
+        success,
+        wlnMasterByAcctno,
+        wlnMasterLoading,
+        fetchRejectionReasons,
+        fetchClients,
+        approveClient,
+        rejectClient,
+        updateSalary,
+        fetchWlnMaster,
+    } = useClientManagement();
+    const [selectedId, setSelectedId] = useState<number | null>(null);
+    const isMobile = useMediaQuery('(max-width:900px)');
+    const approvedCount = useMemo(() => clients.filter((c) => c.status === 'approved').length, [clients]);
 
-  // Loading state from hook (API fetch)
-  const loadingState = loading;
+    useEffect(() => {
+        fetchClients();
+        fetchRejectionReasons();
+    }, [fetchClients, fetchRejectionReasons]);
 
-  // Optional: For multiple desktop columns, you can make loadingColumns = [loading,...]:
-  const loadingColumns = desktopColumns.map(() => loadingState);
+    useEffect(() => {
+        window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+    }, []);
 
-  return (
-    <AppLayout breadcrumbs={breadcrumbs}>
-      {loading ? (
-        <LinearProgress
-          color="primary"
-          sx={{ position: 'fixed', top: 0, left: 0, width: '100%', zIndex: 60 }}
-        />
-      ) : null}
-      <Slide in={!!(loading || error || success)} direction="down" mountOnEnter unmountOnExit>
-        <div className="fixed left-1/2 top-4 z-50 flex -translate-x-1/2 flex-col items-center gap-2">
-          {success ? (
-            <div className="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-emerald-900/30 flex items-center gap-2">
-              <CircleCheckBig className="h-4 w-4" />
-              <span>{success}</span>
+    useEffect(() => {
+        if (!loading) {
+            window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+        }
+    }, [loading]);
+
+    const handleApprove = async (user_id: number) => {
+        approveClient(user_id).then(() => setSelectedId(null));
+    };
+
+    const handleReject = async (user_id: number, reasons: string[]) => {
+        rejectClient(user_id, reasons).then(() => setSelectedId(null));
+    };
+
+    const handleSaveSalary = async (acctno: string, salary_amount: number) => {
+        updateSalary(acctno, { salary_amount });
+    };
+
+    return (
+        <AppLayout breadcrumbs={breadcrumbs}>
+            {loading ? <LinearProgress color="primary" sx={{ position: 'fixed', top: 0, left: 0, width: '100%', zIndex: 60 }} /> : null}
+            <div className="fixed top-4 left-1/2 z-50 flex -translate-x-1/2 flex-col items-center gap-2">
+                <Slide in={!!success} direction="down" mountOnEnter unmountOnExit>
+                    <div className="flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-emerald-900/30">
+                        <CircleCheckBig className="h-4 w-4" />
+                        <span>{success}</span>
+                    </div>
+                </Slide>
+                <Slide in={!!loading} direction="down" mountOnEnter unmountOnExit>
+                    <div className="rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-sky-900/30">Loading...</div>
+                </Slide>
+                <Slide in={!!error} direction="down" mountOnEnter unmountOnExit>
+                    <div className="flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-red-900/30">
+                        <CircleX className="h-4 w-4" />
+                        <span>{error}</span>
+                    </div>
+                </Slide>
             </div>
-          ) : null}
-          {loading ? (
-            <div className="rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-sky-900/30">
-              Loading...
-            </div>
-          ) : null}
-          {error ? (
-            <div className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-red-900/30 flex items-center gap-2">
-              <CircleX className="h-4 w-4" />
-              <span>{error}</span>
-            </div>
-          ) : null}
-        </div>
-      </Slide>
-      <div
-        className="rounded-2xl flex flex-1 flex-col gap-4 overflow-x-auto bg-[#FAFAFA] p-4 pb-28 transition-colors duration-300 dark:bg-neutral-900"
-      >
-        <div className="relative mb-6 h-[180px] overflow-hidden rounded-xl bg-[#F57979] shadow-lg">
-          <div className="relative z-10 p-6">
-            <h1 className="mb-2 text-3xl font-extrabold tracking-tight text-[#FFF172]">
-              Client Management
-            </h1>
-            <div className="text-[1.08rem] font-medium text-white opacity-90">
-              Review and approve client registrations
-            </div>
-          </div>
-        </div>
+            <div className="flex flex-col gap-5 overflow-x-auto bg-[#FAFAFA] transition-colors duration-300 dark:bg-neutral-900">
+                <ManagementHero title="Client Management" subtitle="Review, approve, and manage clients" />
 
-        {isMobileOrTablet ? (
-          <MobileUserTabs
-            registeredUsers={registeredUsers}
-            pagedRegisteredUsers={pagedRegisteredUsers}
-            registeredSearch={registeredSearch}
-            setRegisteredSearch={setRegisteredSearch}
-            registeredTotalPages={registeredTotalPages}
-            registeredPage={registeredPage}
-            setRegisteredPage={setRegisteredPage}
-            forApprovalUsers={forApprovalUsers}
-            pagedPendingUsers={pagedPendingUsers}
-            pendingSearch={pendingSearch}
-            setPendingSearch={setPendingSearch}
-            pendingTotalPages={pendingTotalPages}
-            pendingPage={pendingPage}
-            setPendingPage={setPendingPage}
-            rejectedUsers={rejectedUsers}
-            pagedRejectedUsers={pagedRejectedUsers}
-            rejectedSearch={rejectedSearch}
-            setRejectedSearch={setRejectedSearch}
-            rejectedTotalPages={rejectedTotalPages}
-            rejectedPage={rejectedPage}
-            setRejectedPage={setRejectedPage}
-            userAccordionProps={userAccordionProps}
-            loading={loadingState}
-          />
-        ) : (
-          <DesktopUserColumns
-            columns={desktopColumns}
-            userAccordionProps={userAccordionProps}
-            appleSeparator={appleSeparator}
-            loadingColumns={loadingColumns}
-          />
-        )}
-
-        {/* Modals */}
-        <ApprovePopper
-          open={!!approvePopperAnchor}
-          anchorEl={approvePopperAnchor}
-          user={approvePopperUser}
-          isMobile={isMobileOrTablet}
-          processing={processing}
-          onCancel={() => {
-            setApprovePopperAnchor(null);
-            setApprovePopperUser(null);
-          }}
-          onApprove={submitApproval}
-        />
-        <FullScreenImageModal
-          open={!!fullScreenImage}
-          imageUrl={fullScreenImage}
-          title={imageTitle}
-          modalImagesUser={modalImagesUser}
-          isMobile={isMobileOrTablet}
-          onClose={closeFullScreenImage}
-        />
-        <RejectModal
-          open={showRejectModal}
-          user={selectedUser}
-          rejectionReasons={rejectionReasons}
-          selectedReasons={selectedReasons}
-          processing={processing}
-          onClose={() => setShowRejectModal(false)}
-          onToggleReason={toggleReason}
-          onSubmit={submitRejection}
-        />
-      </div>
-    </AppLayout>
-  );
+                {loading ? (
+                    <div className="p-4">
+                        <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ width: '100%' }}>
+                            <Box
+                                sx={{
+                                    flex: 1,
+                                    borderRadius: 3,
+                                    p: 3,
+                                    bgcolor: 'background.paper',
+                                    boxShadow: 3,
+                                    minHeight: 500,
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                }}
+                            >
+                                <ClientListSkeleton
+                                    fullHeight
+                                    showTabs
+                                    itemCount={Math.max(approvedCount || clients.length, CLIENT_LIST_PAGE_SIZE)}
+                                />
+                            </Box>
+                            <Box
+                                sx={{
+                                    flex: 1,
+                                    borderRadius: 3,
+                                    p: 3,
+                                    bgcolor: 'background.paper',
+                                    boxShadow: 3,
+                                    minHeight: 500,
+                                    display: 'flex',
+                                }}
+                            >
+                                <ClientDetailsSkeleton />
+                            </Box>
+                        </Stack>
+                    </div>
+                ) : isMobile ? (
+                    <ClientMobileLayoutView
+                        clients={clients}
+                        rejectionReasons={rejectionReasons}
+                        selectedId={selectedId}
+                        onSelect={setSelectedId}
+                        onApprove={handleApprove}
+                        onReject={handleReject}
+                        onSaveSalary={handleSaveSalary}
+                        fetchWlnMaster={fetchWlnMaster}
+                        wlnMasterByAcctno={wlnMasterByAcctno}
+                        wlnMasterLoading={wlnMasterLoading}
+                    />
+                ) : (
+                    <ClientDesktopLayoutView
+                        clients={clients}
+                        rejectionReasons={rejectionReasons}
+                        selectedId={selectedId}
+                        onSelect={setSelectedId}
+                        onApprove={handleApprove}
+                        onReject={handleReject}
+                        onSaveSalary={handleSaveSalary}
+                        fetchWlnMaster={fetchWlnMaster}
+                        wlnMasterByAcctno={wlnMasterByAcctno}
+                        wlnMasterLoading={wlnMasterLoading}
+                    />
+                )}
+            </div>
+        </AppLayout>
+    );
 }

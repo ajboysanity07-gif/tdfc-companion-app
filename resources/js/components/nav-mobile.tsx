@@ -10,8 +10,11 @@ import {
   LogOut,
   Settings,
 } from "lucide-react";
+import CloseIcon from "@mui/icons-material/Close";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import { useTheme } from '@mui/material/styles'; // <-- ADD THIS
 import { useEffect, useState } from "react";
+import { useMyTheme } from "@/hooks/use-mytheme";
 
 type AuthUser = { 
   role?: string,
@@ -51,6 +54,11 @@ export default function NavMobile() {
   const navZIndex = Math.max(theme.zIndex.modal, 3000) + 50;
   const floatingZIndex = navZIndex + 20;
   const [productModalOpen, setProductModalOpen] = useState(false);
+  const [actionsOpen, setActionsOpen] = useState(false);
+  const tw = useMyTheme();
+  const accent = '#F57979';
+  const accentDark = '#e14e4e';
+  const actionBg = tw.isDark ? 'rgba(17,24,39,0.9)' : '#ffffff';
 
   useEffect(() => {
     const sync = () => {
@@ -135,32 +143,65 @@ export default function NavMobile() {
       </nav>
       {/* FLOATING SETTINGS BUTTON */}
       {!productModalOpen && (
-        <Link
-          href={settingsUrl}
-          className="fixed z-50 bottom-36 right-6 rounded-full bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700 shadow-lg p-4 transition-colors flex items-center justify-center md:hidden"
-          style={{
-            boxShadow: "0 3px 16px 0 rgba(80,80,80,0.10)",
-            zIndex: floatingZIndex,
-          }}
-          title="Account Settings"
+        <div
+          className="fixed right-6 bottom-24 md:hidden flex flex-col items-end gap-2"
+          style={{ zIndex: floatingZIndex }}
         >
-          <Settings className="w-6 h-6 text-gray-700 dark:text-neutral-200" />
-        </Link>
-      )}
-      {/* Floating log-out button */}
-      {!isDashboard && !productModalOpen && (
-        <button
-          type="button"
-          onClick={() => router.post('/logout')}
-          className="fixed z-50 bottom-20 right-6 rounded-full bg-[#F57979] hover:bg-[#da4747] shadow-lg p-4 text-white transition-colors flex items-center justify-center md:hidden"
-          style={{
-            boxShadow: "0 3px 16px 0 rgba(245,121,121,0.12)",
-            zIndex: floatingZIndex,
-          }}
-          title="Log out"
-        >
-          <LogOut className="w-6 h-6" />
-        </button>
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 10,
+              opacity: actionsOpen ? 1 : 0,
+              transform: actionsOpen ? 'translateY(0)' : 'translateY(14px)',
+              pointerEvents: actionsOpen ? 'auto' : 'none',
+              transition: 'opacity 140ms ease, transform 180ms ease',
+            }}
+          >
+            <Link
+              href={settingsUrl}
+              className="rounded-full shadow-lg p-4 flex items-center justify-center"
+              style={{
+                boxShadow: "0 3px 16px 0 rgba(80,80,80,0.10)",
+                backgroundColor: accent,
+              }}
+              title="Account Settings"
+            >
+              <Settings className="w-6 h-6 text-white" />
+            </Link>
+            {!isDashboard && (
+              <button
+                type="button"
+                onClick={() => router.post('/logout')}
+                className="rounded-full shadow-lg p-4 text-white flex items-center justify-center"
+                style={{
+                  boxShadow: "0 3px 16px 0 rgba(225,78,78,0.2)",
+                  backgroundColor: accentDark,
+                }}
+                title="Log out"
+              >
+                <LogOut className="w-6 h-6" />
+              </button>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={() => setActionsOpen((v) => !v)}
+            className="rounded-full shadow-lg p-4 transition-transform flex items-center justify-center"
+            style={{
+              width: 60,
+              height: 60,
+              boxShadow: "0 10px 24px rgba(0,0,0,0.22)",
+              transform: actionsOpen ? 'rotate(90deg)' : 'rotate(0deg)',
+              backgroundColor: actionBg,
+              border: tw.isDark ? '1px solid rgba(255,255,255,0.2)' : '1px solid rgba(0,0,0,0.08)',
+              color: tw.isDark ? '#fff' : '#111827',
+            }}
+            aria-label={actionsOpen ? 'Close actions' : 'Open actions'}
+          >
+            {actionsOpen ? <CloseIcon sx={{ fontSize: 24 }} /> : <ExpandLessIcon sx={{ fontSize: 24 }} />}
+          </button>
+        </div>
       )}
     </>
   );

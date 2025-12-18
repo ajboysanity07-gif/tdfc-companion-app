@@ -1,65 +1,72 @@
-// User registration status
+// Registration status values from the API
 export type RegistrationStatus = 'pending' | 'approved' | 'rejected' | 'suspended';
 
-// Reason codes for rejection
-export type RejectionReason =
-    | 'prc_id_blurry'
-    | 'not_prc_id'
-    | 'prc_id_expired'
-    | 'payslip_blurry'
-    | 'payslip_too_old'
-    | 'documents_tampered';
-
-// Rejection reason record from DB
+// Rejection reason entry as returned by /rejection-reasons and the client list
 export interface RejectionReasonEntry {
-    id: number;
-    code: RejectionReason;
+    id?: number; // id is not sent on the client list payload, only on /rejection-reasons
+    code: string;
     label: string;
 }
 
-// Interface for user object returned by API for admin management
-export interface User {
-    id: number;
-    user_id?: number;
-    name: string;
-    email: string;
-    phone_no?: string;
-    acctno?: string;
-    avatar?: string;
-    email_verified_at: string | null;
-    status?: RegistrationStatus;
-    rejection_reasons?: RejectionReason[];
-    prc_id_photo_front?: string;
-    prc_id_photo_back?: string;
-    payslip_photo_path?: string;
-    profile_picture_path?: string;
-    created_at: string;
-    updated_at: string;
-    reviewed_at?: string;
-    reviewed_by?: number;
-    salary_amount?: number;
-    notes?: string;
-    class?: string;
-}
-
-// Shape of user data used by hook/page (admin client review)
-export interface PendingUser {
-    payslip_photo_url: string;
+// Client record returned by GET /api/clients
+export interface Client {
     user_id: number;
     name: string;
     email: string;
-    phone_no: string;
+    phone_no: string | null;
     acctno: string;
     status: RegistrationStatus;
-    class?: string; // loan classification (A, B, C, D)
-    prc_id_photo_front?: string;
-    prc_id_photo_back?: string;
-    payslip_photo_path?: string;
-    profile_picture_path?: string;
-    created_at: string;
-    reviewed_at?: string;
-    reviewed_by?: number;
-    salary_amount?: number;
-    notes?: string;
-    rejection_reasons?: Array<{ code: RejectionReason; label: string }>;
+    class: string | null; // A/B/C/D or null
+    prc_id_photo_front: string | null;
+    prc_id_photo_back: string | null;
+    payslip_photo_path: string | null;
+    profile_picture_path: string | null;
+    profile_picture_url?: string | null; // optional fully-qualified URL from API
+    created_at: string;       // ISO string
+    reviewed_at: string | null;
+    reviewed_by: number | null;
+    salary_amount: number | null;
+    notes: string | null;
+    rejection_reasons: RejectionReasonEntry[]; // empty array when not rejected
+}
+
+// Payload for reject action
+export interface RejectPayload {
+    reasons: string[]; // array of reason codes
+}
+
+// Payload for salary update
+export interface SalaryPayload {
+    salary_amount: number;
+    notes?: string | null;
+}
+
+// WLN Master lookup payloads
+export type WlnMasterRecord = {
+    acctno?: string;
+    lnnumber?: string;
+    balance?: number | string | null;
+    date_end?: string | null;
+    remarks?: string | null;
+    [key: string]: unknown;
+};
+
+export interface WlnMasterResponse {
+    acctno: string;
+    records: WlnMasterRecord[];
+}
+
+// Amortization schedule
+export interface AmortizationEntry {
+    controlno: string;
+    lnnumber: string;
+    date_pay: string | null;
+    amortization: number | null;
+    interest: number | null;
+    balance: number | null;
+}
+
+export interface AmortizationScheduleResponse {
+    lnnumber: string;
+    schedule: AmortizationEntry[];
 }

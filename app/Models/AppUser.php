@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as AuthenticatableUser;
 use Laravel\Sanctum\HasApiTokens;
 
@@ -65,6 +66,11 @@ class AppUser extends AuthenticatableUser
         return $this->belongsTo(Wmaster::class, 'acctno', 'acctno');
     }
 
+    public function wlnmaster(): HasMany
+    {
+        return $this->hasMany(WlnMaster::class, 'acctno', 'acctno');
+    }
+
     public function isAdmin(): bool
     {
         return $this->role === 'admin';
@@ -83,6 +89,10 @@ class AppUser extends AuthenticatableUser
     public function isApproved(): bool
     {
         return $this->status === 'approved';
+    }
+    public function salaryRecords()
+    {
+        return $this->hasMany(WSalaryRecord::class, 'acctno', 'acctno');
     }
 
     public function isRejected(): bool

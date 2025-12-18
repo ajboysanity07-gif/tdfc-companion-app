@@ -1,399 +1,184 @@
-import { useIsMobileTabs } from '@/hooks/use-isMobile-tabs';
-import axiosClient from '@/api/axios-client';
-import type { PendingUser, RejectionReasonEntry } from '@/types/user';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+//resources/js/hooks/use-product-management.ts
+import axiosClient, { getCsrfCookie } from '@/api/axios-client';
+import type { Client, RejectionReasonEntry, RejectPayload, SalaryPayload, WlnMasterRecord, WlnMasterResponse } from '@/types/user';
+import axios, { AxiosResponse } from 'axios';
+import { useCallback, useEffect, useState } from 'react';
 
-const PAGESIZE = 5;
+type ApiListResponse<T> = { data: T[] };
+type ApiErrorPayload = { message?: string };
 
-export function useClientManagement() {
-    // Device detection
-    const isMobileOrTablet = useIsMobileTabs();
-
-    // All users for admin management
-    const [allUsers, setAllUsers] = useState<PendingUser[] | null>(null);
-
-    // Loading spinner
-    const [loading, setLoading] = useState(false);
+export const useClientManagement = () => {
+    const [clients, setClients] = useState<Client[]>([]);
+    const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
+    const [rejectionReasons, setRejectionReasons] = useState<RejectionReasonEntry[]>([]);
     const [success, setSuccess] = useState<string | null>(null);
+    const [wlnMasterByAcctno, setWlnMasterByAcctno] = useState<Record<string, WlnMasterRecord[]>>({});
+    const [wlnMasterLoading, setWlnMasterLoading] = useState<Record<string, boolean>>({});
+
+    // Auto-clear success after a short delay so the banner fades out
     useEffect(() => {
         if (!success) return;
-        const t = setTimeout(() => setSuccess(null), 4000);
+        const t = setTimeout(() => setSuccess(null), 3000);
         return () => clearTimeout(t);
     }, [success]);
 
-    // API: Fetch all users for management table/dashboard
-    const fetchUsers = useCallback(async () => {
+    const errorMessage = (err: unknown) => {
+        if (axios.isAxiosError(err)) {
+            const data = err.response?.data as ApiErrorPayload | undefined;
+            return data?.message ?? 'Request failed';
+        }
+        return 'Request failed';
+    };
+
+    const toList = (res: AxiosResponse<Client[] | ApiListResponse<Client>>) => {
+        const body = res.data;
+        return Array.isArray(body) ? body : (body?.data ?? []);
+    };
+
+    // GET /api/rejection-reasons
+    const fetchRejectionReasons = useCallback(async () => {
         setLoading(true);
         setError(null);
         setSuccess(null);
         try {
-            const { data } = await axiosClient.get<PendingUser[]>('clients');
-            setAllUsers(data);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } catch (err: any) {
-            console.error('Failed to load clients', err);
-            setAllUsers([]);
-            const serverMsg= err?.response?.data?.message || err?.message;
-            setError(serverMsg || 'Failed to load clients');
+            await getCsrfCookie();
+            const res = await axiosClient.get<RejectionReasonEntry[] | ApiListResponse<RejectionReasonEntry> | { reasons: RejectionReasonEntry[] }>('/rejection-reasons');
+            const body = res.data;
+            let list: RejectionReasonEntry[] = [];
+            if (Array.isArray(body)) {
+                list = body;
+            } else if (body && typeof body === 'object') {
+                const maybe = body as { data?: unknown; reasons?: unknown };
+                if (Array.isArray(maybe.reasons)) {
+                    list = maybe.reasons;
+                } else if (Array.isArray(maybe.data)) {
+                    list = maybe.data as RejectionReasonEntry[];
+                } else if (maybe.data && typeof maybe.data === 'object' && Array.isArray((maybe.data as { data?: unknown }).data)) {
+                    list = (maybe.data as { data: RejectionReasonEntry[] }).data;
+                }
+            }
+            setRejectionReasons(list);
+        } catch (err) {
+            setError(errorMessage(err));
         } finally {
             setLoading(false);
         }
     }, []);
 
-    // Fetch users on mount and after update
-    useEffect(() => {
-        fetchUsers();
-    }, [fetchUsers]);
-
-    // Fetch rejection reasons on mount
-    useEffect(() => {
-        const loadRejectionReasons = async () => {
-            try {
-                const { data } = await axiosClient.get('/rejection-reasons');
-                setRejectionReasons(data.reasons ?? []);
-            } catch (err) {
-                console.error('Failed to load rejection reasons', err);
-                setRejectionReasons([]);
-                setError('Failed to load rejection reasons');
-            }
-        };
-        loadRejectionReasons();
+    // Fetch products: GET /api/clients
+    const fetchClients = useCallback(async () => {
+        setLoading(true);
+        setError(null);
+        setSuccess(null);
+        try {
+            await getCsrfCookie();
+            const response = await axiosClient.get<Client[] | ApiListResponse<Client>>('/clients');
+            // Supports both paginated ({ data: [...] }) and plain array responses
+            const list = toList(response);
+            setClients(list);
+        } catch (err) {
+            setError(errorMessage(err));
+        } finally {
+            setLoading(false);
+        }
     }, []);
 
-    // Expanded row for desktop details accordion
-    const [expanded, setExpanded] = useState<number | null>(null);
-
-    // Expanded column for multi-table layout
-    const [expandedColumn, setExpandedColumn] = useState<number | null>(null);
-
-    // Selected user for modals/details
-    const [selectedUser, setSelectedUser] = useState<PendingUser | null>(null);
-
-    // Approve Modal Popper states
-    const [approvePopperAnchor, setApprovePopperAnchor] = useState<HTMLElement | null>(null);
-    const [approvePopperUser, setApprovePopperUser] = useState<PendingUser | null>(null);
-
-    // Fullscreen image modal states
-    const [fullScreenImage, setFullScreenImage] = useState<string | null>(null);
-    const [imageTitle, setImageTitle] = useState<string>('');
-    const [modalImagesUser, setModalImagesUser] = useState<PendingUser | null>(null);
-
-    // Reject modal states
-    const [showRejectModal, setShowRejectModal] = useState(false);
-    const [selectedReasons, setSelectedReasons] = useState<string[]>([]);
-    const [processing, setProcessing] = useState(false);
-    const [rejectionReasons, setRejectionReasons] = useState<RejectionReasonEntry[]>([]);
-
-    // Search/filter states
-    const [rejectedSearch, setRejectedSearch] = useState('');
-    const [pendingSearch, setPendingSearch] = useState('');
-    const [registeredSearch, setRegisteredSearch] = useState('');
-
-    // Filtered lists based on status
-    const rejectedUsers = useMemo(() => (allUsers ? allUsers.filter((u) => u.status === 'rejected') : []), [allUsers]);
-    const forApprovalUsers = useMemo(() => (allUsers ? allUsers.filter((u) => u.status === 'pending') : []), [allUsers]);
-    const registeredUsers = useMemo(() => (allUsers ? allUsers.filter((u) => u.status === 'approved') : []), [allUsers]);
-
-    // Real-time searches
-    const filteredPendingUsers = useMemo(
-        () => (forApprovalUsers ? forApprovalUsers.filter((u) => u.name.toLowerCase().includes(pendingSearch.toLowerCase())) : []),
-        [forApprovalUsers, pendingSearch],
-    );
-    const filteredRejectedUsers = useMemo(
-        () => (rejectedUsers ? rejectedUsers.filter((u) => u.name.toLowerCase().includes(rejectedSearch.toLowerCase())) : []),
-        [rejectedUsers, rejectedSearch],
-    );
-    const filteredRegisteredUsers = useMemo(
-        () => (registeredUsers ? registeredUsers.filter((u) => u.name.toLowerCase().includes(registeredSearch.toLowerCase())) : []),
-        [registeredUsers, registeredSearch],
+    // Approve Clients: POST /clients/${userId}/approve
+    const approveClient = useCallback(
+        async (userId: number) => {
+            setError(null);
+            setSuccess(null);
+            try {
+                await getCsrfCookie();
+                await axiosClient.post(`/clients/${userId}/approve`);
+                await fetchClients();
+                setSuccess('Client approved successfully');
+            } catch (err) {
+                setError(errorMessage(err));
+                throw err;
+            }
+        },
+        [fetchClients],
     );
 
-    // Paging
-    const [pendingPage, setPendingPage] = useState(1);
-    const [rejectedPage, setRejectedPage] = useState(1);
-    const [registeredPage, setRegisteredPage] = useState(1);
-
-    useEffect(() => {
-        setPendingPage(1);
-    }, [pendingSearch, forApprovalUsers.length]);
-    useEffect(() => {
-        setRejectedPage(1);
-    }, [rejectedSearch, rejectedUsers.length]);
-    useEffect(() => {
-        setRegisteredPage(1);
-    }, [registeredSearch, registeredUsers.length]);
-
-    const pendingTotalPages = Math.max(1, Math.ceil(filteredPendingUsers.length / PAGESIZE));
-    const rejectedTotalPages = Math.max(1, Math.ceil(filteredRejectedUsers.length / PAGESIZE));
-    const registeredTotalPages = Math.max(1, Math.ceil(filteredRegisteredUsers.length / PAGESIZE));
-
-    // Pagination
-    const pagedPendingUsers = useMemo(() => {
-        if (allUsers === null) return null;
-        const start = (pendingPage - 1) * PAGESIZE;
-        return filteredPendingUsers.slice(start, start + PAGESIZE);
-    }, [filteredPendingUsers, pendingPage, allUsers]);
-
-    const pagedRejectedUsers = useMemo(() => {
-        if (allUsers === null) return null;
-        const start = (rejectedPage - 1) * PAGESIZE;
-        return filteredRejectedUsers.slice(start, start + PAGESIZE);
-    }, [filteredRejectedUsers, rejectedPage, allUsers]);
-
-    const pagedRegisteredUsers = useMemo(() => {
-        if (allUsers === null) return null;
-        const start = (registeredPage - 1) * PAGESIZE;
-        return filteredRegisteredUsers.slice(start, start + PAGESIZE);
-    }, [filteredRegisteredUsers, registeredPage, allUsers]);
-
-    // Image modal helpers
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    const openFullScreenImage = (img: string, title: string) => {
-        setFullScreenImage(img);
-        setImageTitle(title);
-    };
-    const closeFullScreenImage = () => {
-        setFullScreenImage(null);
-        setImageTitle('');
-        setModalImagesUser(null);
-    };
-
-    // Approve popper/modal
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    const handleApprove = (event: React.MouseEvent<HTMLElement>, user: PendingUser) => {
-        setApprovePopperAnchor(event.currentTarget);
-        setApprovePopperUser(user);
-    };
-
-    // Reject modal
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    const handleRejectClick = (user: PendingUser) => {
-        setSelectedUser(user);
-        setShowRejectModal(true);
-        setSelectedReasons([]);
-    };
-
-    // Select/deselect rejection reasons
-    const toggleReason = (reason: string) => {
-        setSelectedReasons((prev) => (prev.includes(reason) ? prev.filter((r) => r !== reason) : [...prev, reason]));
-    };
-
-    // Submit rejection
-    const submitRejection = useCallback(async () => {
-        if (!selectedUser || selectedReasons.length === 0) return;
-        setProcessing(true);
-        setSuccess(null);
-        setShowRejectModal(false); // close modal immediately for UX
-        try {
-            await axiosClient.post(`clients/${selectedUser.user_id}/reject`, { reasons: selectedReasons });
-            // Optimistically update local state so the user moves columns without a full reload
-            setAllUsers((prev) =>
-                prev
-                    ? prev.map((u) =>
-                        u.user_id === selectedUser.user_id
-                            ? { ...u, status: 'rejected' }
-                            : u,
-                    )
-                    : prev,
-            );
-            await fetchUsers();
-            setSuccess('Client rejected');
-            setSelectedUser(null);
-            setSelectedReasons([]);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } catch (err: any) {
-            console.error('Rejection failed:', err);
-            // Sync data in case the server state changed (e.g., already rejected/approved elsewhere)
-            fetchUsers();
-            // Extract a meaningful message if available
-            const serverMsg = err?.response?.data?.error || err?.response?.data?.message;
-            window.alert(serverMsg || 'Rejection failed. Please try again or check the console for details.');
-            // Re-open the modal so the user can try again and see the reasons
-            setShowRejectModal(true);
-        } finally {
-            setProcessing(false);
-        }
-    }, [selectedUser, selectedReasons, fetchUsers]);
-
-    // Submit approval
-    const submitApproval = useCallback(async () => {
-        if (!approvePopperUser) return;
-        setProcessing(true);
-        setSuccess(null);
-        try {
-            await axiosClient.post(`clients/${approvePopperUser.user_id}/approve`);
-            setApprovePopperAnchor(null);
-            setApprovePopperUser(null);
-            // Optimistically update local state so the user moves columns without a full reload
-            setAllUsers((prev) =>
-                prev
-                    ? prev.map((u) =>
-                        u.user_id === approvePopperUser.user_id
-                            ? { ...u, status: 'approved', rejection_reasons: [] }
-                            : u,
-                    )
-                    : prev,
-            );
-            await fetchUsers();
-            setSuccess('Client approved');
-        } finally {
-            setProcessing(false);
-        }
-    }, [approvePopperUser, fetchUsers]);
-
-    // Helper props for Desktop accordion
-    const userAccordionProps = useCallback(
-        (columnIndex: number) => ({
-            expanded,
-            setExpanded,
-            openFullScreenImage,
-            handleApprove,
-            handleRejectClick,
-            isMobile: isMobileOrTablet,
-            setModalImagesUser,
-            processing,
-            setFullScreenImage,
-            setImageTitle,
-            columnIndex,
-            expandedColumn,
-            setExpandedColumn,
-        }),
-        [expanded, expandedColumn, isMobileOrTablet, openFullScreenImage, handleApprove, handleRejectClick, processing],
+    // POST to /clients/{userId}/reject
+    const rejectClient = useCallback(
+        async (userId: number, reasons: string[]) => {
+            setError(null);
+            setSuccess(null);
+            try {
+                await getCsrfCookie();
+                const payload: RejectPayload = { reasons };
+                await axiosClient.post(`/clients/${userId}/reject`, payload);
+                await fetchClients();
+                setSuccess('Client rejected successfully');
+            } catch (err) {
+                setError(errorMessage(err));
+                throw err;
+            }
+        },
+        [fetchClients],
     );
 
-    // Desktop columns config for tables
-    const desktopColumns = useMemo(
-        () => [
-            {
-                key: 'registered',
-                title: 'REGISTERED USERS',
-                titleColor: '#F57979',
-                userCount: registeredUsers.length,
-                searchOptions: registeredUsers.map((u) => u.name),
-                searchValue: registeredSearch,
-                setSearch: setRegisteredSearch,
-                pagedUsers: pagedRegisteredUsers,
-                totalPages: registeredTotalPages,
-                page: registeredPage,
-                setPage: setRegisteredPage,
-                groupTab: 0,
-                columnIndex: 0,
-            },
-            {
-                key: 'pending',
-                title: 'PENDING APPROVAL',
-                titleColor: '#F57979',
-                userCount: forApprovalUsers.length,
-                searchOptions: forApprovalUsers.map((u) => u.name),
-                searchValue: pendingSearch,
-                setSearch: setPendingSearch,
-                pagedUsers: pagedPendingUsers,
-                totalPages: pendingTotalPages,
-                page: pendingPage,
-                setPage: setPendingPage,
-                groupTab: 1,
-                columnIndex: 1,
-            },
-            {
-                key: 'rejected',
-                title: 'REJECTED USERS',
-                titleColor: '#4C92F1',
-                userCount: rejectedUsers.length,
-                searchOptions: rejectedUsers.map((u) => u.name),
-                searchValue: rejectedSearch,
-                setSearch: setRejectedSearch,
-                pagedUsers: pagedRejectedUsers,
-                totalPages: rejectedTotalPages,
-                page: rejectedPage,
-                setPage: setRejectedPage,
-                groupTab: 2,
-                columnIndex: 2,
-            },
-        ],
-        [
-            registeredUsers,
-            registeredSearch,
-            pagedRegisteredUsers,
-            registeredTotalPages,
-            registeredPage,
-            setRegisteredSearch,
-            setRegisteredPage,
-            forApprovalUsers,
-            pendingSearch,
-            pagedPendingUsers,
-            pendingTotalPages,
-            pendingPage,
-            setPendingSearch,
-            setPendingPage,
-            rejectedUsers,
-            rejectedSearch,
-            pagedRejectedUsers,
-            rejectedTotalPages,
-            rejectedPage,
-            setRejectedSearch,
-            setRejectedPage,
-        ],
+    // Update Salary POST to /clients/${acctno}/salary
+    const updateSalary = useCallback(
+        async (acctno: string, payload: SalaryPayload) => {
+            setError(null);
+            setSuccess(null);
+            try {
+                await getCsrfCookie();
+                await axiosClient.post(`/clients/${acctno}/salary`, payload);
+                await fetchClients();
+                setSuccess('Salary saved successfully');
+            } catch (err) {
+                setError(errorMessage(err));
+                throw err;
+            }
+        },
+        [fetchClients],
     );
 
-    // Expose all states/helpers to your SPA page/components
+    // GET /api/clients/{acctno}/wlnmaster
+    const fetchWlnMaster = useCallback(
+        async (acctno: string): Promise<WlnMasterResponse | null> => {
+            setWlnMasterLoading((prev) => ({ ...prev, [acctno]: true }));
+            setError(null);
+            try {
+                await getCsrfCookie();
+                const res = await axiosClient.get<WlnMasterResponse>(`/clients/${acctno}/wlnmaster`);
+                setWlnMasterByAcctno((prev) => ({
+                    ...prev,
+                    [acctno]: res.data?.records ?? [],
+                }));
+                return res.data;
+            } catch (err) {
+                setError(errorMessage(err));
+                setWlnMasterByAcctno((prev) => ({
+                    ...prev,
+                    [acctno]: prev[acctno] ?? [],
+                }));
+                return null;
+            } finally {
+                setWlnMasterLoading((prev) => ({ ...prev, [acctno]: false }));
+            }
+        },
+        [],
+    );
+
     return {
-        isMobileOrTablet,
-        expanded,
-        setExpanded,
-        expandedColumn,
-        setExpandedColumn,
-        selectedUser,
-        setSelectedUser,
-        approvePopperAnchor,
-        setApprovePopperAnchor,
-        approvePopperUser,
-        setApprovePopperUser,
-        fullScreenImage,
-        imageTitle,
-        modalImagesUser,
-        showRejectModal,
-        setShowRejectModal,
-        selectedReasons,
+        clients,
         rejectionReasons,
-        processing,
-        rejectedUsers,
-        forApprovalUsers,
-        registeredUsers,
-        pagedPendingUsers,
-        pagedRejectedUsers,
-        pagedRegisteredUsers,
-        pendingSearch,
-        setPendingSearch,
-        rejectedSearch,
-        setRejectedSearch,
-        registeredSearch,
-        setRegisteredSearch,
-        pendingTotalPages,
-        rejectedTotalPages,
-        registeredTotalPages,
-        pendingPage,
-        setPendingPage,
-        rejectedPage,
-        setRejectedPage,
-        registeredPage,
-        setRegisteredPage,
-        userAccordionProps,
-        desktopColumns,
-        openFullScreenImage,
-        closeFullScreenImage,
-        handleApprove,
-        handleRejectClick,
-        toggleReason,
-        submitRejection,
-        submitApproval,
-        setProcessing,
-        setModalImagesUser,
-        setFullScreenImage,
-        setImageTitle,
         loading,
         error,
         success,
-        fetchUsers,
+        wlnMasterByAcctno,
+        wlnMasterLoading,
+        fetchRejectionReasons,
+        fetchClients,
+        approveClient,
+        rejectClient,
+        updateSalary,
+        fetchWlnMaster,
     };
-}
+};
