@@ -73,7 +73,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('/clients/{user}/reject', [ClientManagementController::class, 'reject']);
         Route::get('/clients/{acctno}/wlnmaster', [ClientManagementController::class, 'wlnmaster']);
         Route::post('/clients/{acctno}/salary', [ClientManagementController::class, 'updateSalary']);
+        Route::get('/clients/loans/{lnnumber}/wlnled', [ClientManagementController::class, 'wlnled']);
         Route::get('/clients/loans/{lnnumber}/amortization', [ClientManagementController::class, 'amortizationSchedule']);
+        Route::get('/clients/loans/{lnnumber}/amortsched', [ClientManagementController::class, 'amortschedDisplay']);
 
         // Rejection reasons lookup
         Route::get('/rejection-reasons', [UserRejectionController::class, 'getRejectionReasons']);

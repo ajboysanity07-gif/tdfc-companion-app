@@ -54,6 +54,7 @@ export default function NavMobile() {
   const navZIndex = Math.max(theme.zIndex.modal, 3000) + 50;
   const floatingZIndex = navZIndex + 20;
   const [productModalOpen, setProductModalOpen] = useState(false);
+  const [anyModalOpen, setAnyModalOpen] = useState(false);
   const [actionsOpen, setActionsOpen] = useState(false);
   const tw = useMyTheme();
   const accent = '#F57979';
@@ -63,11 +64,19 @@ export default function NavMobile() {
   useEffect(() => {
     const sync = () => {
       if (typeof document === "undefined") return;
-      setProductModalOpen(document.body.classList.contains("product-details-open"));
+      const body = document.body;
+      setProductModalOpen(body.classList.contains("product-details-open"));
+      const modalClasses = ["client-details-open", "app-modal-open", "modal-open", "amort-schedule-open"];
+      setAnyModalOpen(modalClasses.some((cls) => body.classList.contains(cls)));
     };
     sync();
     window.addEventListener("product-details-toggle", sync);
-    return () => window.removeEventListener("product-details-toggle", sync);
+    const observer = typeof MutationObserver !== "undefined" ? new MutationObserver(sync) : null;
+    observer?.observe(document.body, { attributes: true, attributeFilter: ["class"] });
+    return () => {
+      window.removeEventListener("product-details-toggle", sync);
+      observer?.disconnect();
+    };
   }, []);
 
   const customerNav = useMemo(() => [
@@ -142,7 +151,7 @@ export default function NavMobile() {
         </ul>
       </nav>
       {/* FLOATING SETTINGS BUTTON */}
-      {!productModalOpen && (
+      {!productModalOpen && !anyModalOpen && (
         <div
           className="fixed right-6 bottom-24 md:hidden flex flex-col items-end gap-2"
           style={{ zIndex: floatingZIndex }}

@@ -23,6 +23,22 @@ export default function DesktopViewLayout({
 }: DesktopViewLayoutProps) {
     const tw = useMyTheme();
 
+    const resolveSx = (value: SxProps<Theme> | undefined, theme: Theme): Record<string, unknown> => {
+        if (!value) return {};
+        if (Array.isArray(value)) {
+            return value.reduce<Record<string, unknown>>((acc, item) => ({ ...acc, ...resolveSx(item, theme) }), {});
+        }
+        if (typeof value === 'function') {
+            return resolveSx(value(theme), theme);
+        }
+        return value as Record<string, unknown>;
+    };
+
+    const mergeSx = (base: SxProps<Theme>, override?: SxProps<Theme>): SxProps<Theme> => (theme: Theme) => ({
+        ...resolveSx(base, theme),
+        ...resolveSx(override, theme),
+    });
+
     const panelBase = {
         flex: 1,
         borderRadius: 3,
@@ -32,9 +48,9 @@ export default function DesktopViewLayout({
         minHeight: 600,
         display: 'flex',
         flexDirection: 'column',
-    } satisfies BoxProps['sx'];
+    } satisfies SxProps<Theme>;
 
-    const wrapperStyles: SxProps<Theme> = [
+    const wrapperStyles: SxProps<Theme> = mergeSx(
         {
             display: 'flex',
             flex: 1,
@@ -44,11 +60,11 @@ export default function DesktopViewLayout({
             bgcolor: tw.isDark ? '#171717' : '#FAFAFA',
             transition: 'color 300ms, background-color 300ms',
         },
-        ...(wrapperSx ? [wrapperSx] : []),
-    ];
+        wrapperSx,
+    );
 
-    const leftStyles: SxProps<Theme> = [panelBase, ...(leftSx ? [leftSx] : [])];
-    const rightStyles: SxProps<Theme> = [panelBase, ...(rightSx ? [rightSx] : [])];
+    const leftStyles: SxProps<Theme> = mergeSx(panelBase, leftSx);
+    const rightStyles: SxProps<Theme> = mergeSx(panelBase, rightSx);
 
     return (
         <Box

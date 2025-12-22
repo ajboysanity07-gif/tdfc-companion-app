@@ -7,11 +7,13 @@ use App\Models\AppUser;
 use App\Models\Amortsched;
 use App\Models\RejectionReason;
 use App\Models\WSalaryRecord;
+use App\Models\WlnLed;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Log;
 
 class ClientManagementController extends Controller
@@ -130,11 +132,90 @@ class ClientManagementController extends Controller
         ]);
     }
 
+    // GET /api/clients/loans/{lnnumber}/wlnled
+    public function wlnled(string $lnnumber): JsonResponse
+    {
+        try {
+            $connectionName = (new WlnLed())->getConnectionName() ?? config('database.default');
+            $schema = Schema::connection($connectionName);
+            $hasLntype = $schema->hasColumn('wlnled', 'lntype');
+
+            $selectColumns = [
+                'controlno',
+                'lnnumber',
+                'date_in',
+                'mreference',
+                'cs_ck',
+                'principal',
+                'payments',
+                'debit',
+                'credit',
+                'balance',
+                'accruedint',
+            ];
+            if ($hasLntype) {
+                $selectColumns[] = 'lntype';
+            }
+
+            $rows = WlnLed::query()
+                ->where('lnnumber', $lnnumber)
+                ->orderBy('controlno')
+                ->get($selectColumns);
+
+            $ledger = $rows->map(function (WlnLed $row) {
+                return [
+                    'date_in' => $row->date_in?->toISOString(),
+                    'mreference' => $row->mreference,
+                    'lntype' => $row->lntype ?? null,
+                    'transaction_code' => $row->cs_ck,
+                    'principal' => $row->principal,
+                    'payments' => $row->payments,
+                    'debit' => $row->debit,
+                    'credit' => $row->credit,
+                    'balance' => $row->balance,
+                    'accruedint' => $row->accruedint,
+                ];
+            });
+
+            return response()->json([
+                'lnnumber' => $lnnumber,
+                'ledger' => $ledger,
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('Failed to fetch WLN ledger rows', [
+                'lnnumber' => $lnnumber,
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json(['message' => 'Unable to fetch ledger data'], 500);
+        }
+    }
+
+    public function amortschedDisplay(string $lnnumber): JsonResponse
+    {
+        $rows = Amortsched::query()
+            ->where('lnnumber', $lnnumber)
+            ->orderBy('Date_pay', 'desc')
+            ->get(['Date_pay', 'Amortization', 'Interest', 'Balance'])
+            ->map(function (Amortsched $row) {
+                return [
+                    'date_pay' => optional($row->Date_pay)->toISOString(),
+                    'amortization' => $row->Amortization,
+                    'interest' => $row->Interest,
+                    'balance' => $row->Balance,
+                ];
+            });
+
+        return response()->json([
+            'schedule' => $rows,
+        ]);
+    }
+
     public function amortizationSchedule(string $lnnumber): JsonResponse
     {
         $rows = Amortsched::query()
             ->where('lnnumber', $lnnumber)
-            ->orderBy('Date_pay')
+            ->orderBy('Date_pay', 'desc')
             ->get(['controlno', 'lnnumber', 'Date_pay', 'Amortization', 'Interest', 'Balance'])
             ->map(function (Amortsched $row) {
                 return [

@@ -56,6 +56,18 @@ export interface WlnMasterResponse {
     records: WlnMasterRecord[];
 }
 
+// Amortization schedule for admin client management (no identifiers returned)
+export interface AmortschedDisplayEntry {
+    date_pay: string | null;
+    amortization: number | null;
+    interest: number | null;
+    balance: number | null;
+}
+
+export interface AmortschedDisplayResponse {
+    schedule: AmortschedDisplayEntry[];
+}
+
 // Amortization schedule
 export interface AmortizationEntry {
     controlno: string;
@@ -69,4 +81,23 @@ export interface AmortizationEntry {
 export interface AmortizationScheduleResponse {
     lnnumber: string;
     schedule: AmortizationEntry[];
+}
+
+// WLN ledger entries (wlnled table)
+export interface WlnLedEntry {
+    date_in: string | null;
+    mreference: string | null;
+    lntype: string | null;
+    transaction_code: string | null;
+    principal: number | null;
+    payments: number | null;
+    debit: number | null;
+    credit: number | null;
+    balance: number | null;
+    accruedint: number | null;
+}
+
+export interface WlnLedResponse {
+    lnnumber: string;
+    ledger: WlnLedEntry[];
 }

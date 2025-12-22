@@ -169,15 +169,15 @@ const ProductList: React.FC<Props> = ({
                                                       </Typography>
                                                       {typeLabels.length ? (
                                                           typeLabels.map((label) => (
-                                                              <Chip
-                                                                  key={label}
-                                                                  label={label}
-                                                                  size="small"
-                                                                  sx={{
-                                                                      height: isMobile ? 20 : 22,
-                                                                      borderRadius: '999px',
-                                                                      bgcolor: tw.isDark ? 'rgba(255,255,255,0.08)' : '#f1f5f9',
-                                                                      color: 'text.secondary',
+                                                                  <Chip
+                                                                      key={label}
+                                                                      label={label}
+                                                                      size="small"
+                                                                      sx={{
+                                                                          height: isMobile ? 20 : 22,
+                                                                          borderRadius: '999px',
+                                                                      bgcolor: tw.isDark ? 'rgba(255,255,255,0.08)' : '#e2e8f0',
+                                                                      color: tw.isDark ? 'text.secondary' : '#475569',
                                                                       fontWeight: 600,
                                                                       '& .MuiChip-label': { px: isMobile ? 1 : 1.25, fontSize: isMobile ? 11 : 12 },
                                                                   }}
@@ -190,8 +190,8 @@ const ProductList: React.FC<Props> = ({
                                                               sx={{
                                                                   height: isMobile ? 20 : 22,
                                                                   borderRadius: '999px',
-                                                                  bgcolor: tw.isDark ? 'rgba(255,255,255,0.08)' : '#f1f5f9',
-                                                                  color: 'text.secondary',
+                                                                  bgcolor: tw.isDark ? 'rgba(255,255,255,0.08)' : '#e2e8f0',
+                                                                  color: tw.isDark ? 'text.secondary' : '#475569',
                                                                   '& .MuiChip-label': { px: isMobile ? 1 : 1.25, fontSize: isMobile ? 11 : 12 },
                                                               }}
                                                           />

@@ -12,7 +12,14 @@ import { Box, LinearProgress, Slide, Stack, useMediaQuery } from '@mui/material'
 import { AnimatePresence, motion } from 'framer-motion';
 import { CircleCheckBig, CircleX } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
-import type { Client, RejectionReasonEntry, WlnMasterRecord, WlnMasterResponse } from '@/types/user';
+import type {
+    AmortschedDisplayEntry,
+    Client,
+    RejectionReasonEntry,
+    WlnMasterRecord,
+    WlnMasterResponse,
+    WlnLedEntry,
+} from '@/types/user';
 import ManagementHero from '@/components/management/management-hero';
 
 const breadcrumbs = [{ title: 'Client Management', href: '/admin/client-management' }];
@@ -28,6 +35,12 @@ type ClientDesktopProps = {
     fetchWlnMaster: (acctno: string) => Promise<WlnMasterResponse | null>;
     wlnMasterByAcctno: Record<string, WlnMasterRecord[]>;
     wlnMasterLoading: Record<string, boolean>;
+    fetchAmortsched: (lnnumber: string) => Promise<unknown> | void;
+    amortschedByLnnumber: Record<string, AmortschedDisplayEntry[]>;
+    amortschedLoading: Record<string, boolean>;
+    fetchWlnLed: (lnnumber: string) => Promise<unknown> | void;
+    wlnLedByLnnumber: Record<string, WlnLedEntry[]>;
+    wlnLedLoading: Record<string, boolean>;
 };
 
 function ClientDesktopLayoutView({
@@ -41,6 +54,12 @@ function ClientDesktopLayoutView({
     fetchWlnMaster,
     wlnMasterByAcctno,
     wlnMasterLoading,
+    fetchAmortsched,
+    amortschedByLnnumber,
+    amortschedLoading,
+    fetchWlnLed,
+    wlnLedByLnnumber,
+    wlnLedLoading,
 }: ClientDesktopProps) {
     const [search, setSearch] = useState('');
     const [showRejectModal, setShowRejectModal] = useState(false);
@@ -114,6 +133,12 @@ function ClientDesktopLayoutView({
                             onSaveSalary={onSaveSalary}
                             wlnMasterRecords={wlnMasterRecords}
                             loading={!!wlnLoading}
+                            fetchAmortsched={fetchAmortsched}
+                            amortschedByLnnumber={amortschedByLnnumber}
+                            amortschedLoading={amortschedLoading}
+                            fetchWlnLed={fetchWlnLed}
+                            wlnLedByLnnumber={wlnLedByLnnumber}
+                            wlnLedLoading={wlnLedLoading}
                         />
                     </motion.div>
                 </AnimatePresence>
@@ -145,6 +170,12 @@ type ClientMobileProps = {
     fetchWlnMaster: (acctno: string) => Promise<WlnMasterResponse | null>;
     wlnMasterByAcctno: Record<string, WlnMasterRecord[]>;
     wlnMasterLoading: Record<string, boolean>;
+    fetchAmortsched: (lnnumber: string) => Promise<unknown> | void;
+    amortschedByLnnumber: Record<string, AmortschedDisplayEntry[]>;
+    amortschedLoading: Record<string, boolean>;
+    fetchWlnLed: (lnnumber: string) => Promise<unknown> | void;
+    wlnLedByLnnumber: Record<string, WlnLedEntry[]>;
+    wlnLedLoading: Record<string, boolean>;
 };
 
 function ClientMobileLayoutView({
@@ -158,6 +189,12 @@ function ClientMobileLayoutView({
     fetchWlnMaster,
     wlnMasterByAcctno,
     wlnMasterLoading,
+    fetchAmortsched,
+    amortschedByLnnumber,
+    amortschedLoading,
+    fetchWlnLed,
+    wlnLedByLnnumber,
+    wlnLedLoading,
 }: ClientMobileProps) {
     const [search, setSearch] = useState('');
     const [localSelectedId, setLocalSelectedId] = useState<number | null>(selectedId);
@@ -245,6 +282,12 @@ function ClientMobileLayoutView({
                             wlnMasterRecords={wlnMasterRecords}
                             loading={!!wlnLoading}
                             showName={false}
+                            fetchAmortsched={fetchAmortsched}
+                            amortschedByLnnumber={amortschedByLnnumber}
+                            amortschedLoading={amortschedLoading}
+                            fetchWlnLed={fetchWlnLed}
+                            wlnLedByLnnumber={wlnLedByLnnumber}
+                            wlnLedLoading={wlnLedLoading}
                         />
                     </FullScreenModalMobile>
 
@@ -281,12 +324,18 @@ export default function ClientManagementPage() {
         success,
         wlnMasterByAcctno,
         wlnMasterLoading,
+        amortschedByLnnumber,
+        amortschedLoading,
         fetchRejectionReasons,
         fetchClients,
         approveClient,
         rejectClient,
         updateSalary,
         fetchWlnMaster,
+        fetchAmortsched,
+        wlnLedByLnnumber,
+        wlnLedLoading,
+        fetchWlnLed,
     } = useClientManagement();
     const [selectedId, setSelectedId] = useState<number | null>(null);
     const isMobile = useMediaQuery('(max-width:900px)');
@@ -339,7 +388,7 @@ export default function ClientManagementPage() {
                     </div>
                 </Slide>
             </div>
-            <div className="flex flex-col gap-5 overflow-x-auto bg-[#FAFAFA] transition-colors duration-300 dark:bg-neutral-900">
+            <div className="flex flex-col gap-0 overflow-x-auto bg-[#FAFAFA] transition-colors duration-300 dark:bg-neutral-900">
                 <ManagementHero title="Client Management" subtitle="Review, approve, and manage clients" />
 
                 {loading ? (
@@ -390,6 +439,12 @@ export default function ClientManagementPage() {
                         fetchWlnMaster={fetchWlnMaster}
                         wlnMasterByAcctno={wlnMasterByAcctno}
                         wlnMasterLoading={wlnMasterLoading}
+                        fetchAmortsched={fetchAmortsched}
+                        amortschedByLnnumber={amortschedByLnnumber}
+                        amortschedLoading={amortschedLoading}
+                        fetchWlnLed={fetchWlnLed}
+                        wlnLedByLnnumber={wlnLedByLnnumber}
+                        wlnLedLoading={wlnLedLoading}
                     />
                 ) : (
                     <ClientDesktopLayoutView
@@ -403,6 +458,12 @@ export default function ClientManagementPage() {
                         fetchWlnMaster={fetchWlnMaster}
                         wlnMasterByAcctno={wlnMasterByAcctno}
                         wlnMasterLoading={wlnMasterLoading}
+                        fetchAmortsched={fetchAmortsched}
+                        amortschedByLnnumber={amortschedByLnnumber}
+                        amortschedLoading={amortschedLoading}
+                        fetchWlnLed={fetchWlnLed}
+                        wlnLedByLnnumber={wlnLedByLnnumber}
+                        wlnLedLoading={wlnLedLoading}
                     />
                 )}
             </div>

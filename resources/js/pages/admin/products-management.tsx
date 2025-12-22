@@ -181,7 +181,7 @@ function ProductMobileLayoutView({ products, availableTypes = [], onSave, onDele
                         onClose={closeModal}
                         headerBg="#f57979"
                         headerColor="#fff"
-                        bodySx={{ pb: { xs: 12, sm: 3 } }}
+                        bodySx={{ pb: { xs: 4, sm: 4 } }}
                     >
                         <ProductCrud
                             product={selected}
@@ -289,7 +289,7 @@ export default function ProductsManagementPage() {
                     </div>
                 </Slide>
             </div>
-            <div className="flex flex-col gap-5 overflow-x-auto bg-[#FAFAFA] transition-colors duration-300 dark:bg-neutral-900">
+            <div className="flex flex-col  overflow-x-auto bg-[#FAFAFA] transition-colors duration-300 dark:bg-neutral-900">
                 <ManagementHero title="Product Management" subtitle="Activate and manage product listings" />
 
                 {loading ? (

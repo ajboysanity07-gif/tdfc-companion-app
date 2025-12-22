@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { AppBar, Box, Dialog, IconButton, Slide, Toolbar, Typography } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { useTheme } from '@mui/material/styles';
@@ -24,7 +24,7 @@ const Transition = React.forwardRef(function Transition(
     props: TransitionProps & { children: React.ReactElement },
     ref: React.Ref<unknown>,
 ) {
-    return <Slide direction="left" ref={ref} timeout={{ enter: 320, exit: 240 }} {...props} />;
+    return <Slide direction="right" ref={ref} timeout={{ enter: 320, exit: 240 }} {...props} />;
 });
 
 const FullScreenModalMobile: React.FC<Props> = ({
@@ -43,6 +43,14 @@ const FullScreenModalMobile: React.FC<Props> = ({
 }) => {
     const theme = useTheme();
     const layerZ = zIndex ?? theme.zIndex.modal + 10;
+    const [appContentEl, setAppContentEl] = useState<HTMLElement | null>(null);
+
+    useEffect(() => {
+        if (typeof document === 'undefined') return;
+        // Binds the dialog to the main app content area instead of the entire viewport.
+        const target = document.querySelector<HTMLElement>('[data-app-content="true"]');
+        setAppContentEl(target);
+    }, []);
 
     useEffect(() => {
         if (typeof document === 'undefined') return;
@@ -67,19 +75,43 @@ const FullScreenModalMobile: React.FC<Props> = ({
             fullScreen
             open={open}
             onClose={onClose}
+            container={appContentEl ?? undefined}
             TransitionComponent={Transition}
             slotProps={{
+                root: appContentEl
+                    ? {
+                          sx: {
+                              position: 'absolute',
+                              inset: 0,
+                              zIndex: layerZ,
+                          },
+                      }
+                    : undefined,
                 backdrop: {
-                    sx: { zIndex: layerZ, backgroundColor: 'transparent', backdropFilter: 'none' },
+                    sx: {
+                        position: appContentEl ? 'absolute' : 'fixed',
+                        inset: 0,
+                        zIndex: layerZ,
+                        backgroundColor: 'transparent',
+                        backdropFilter: 'none',
+                    },
                 },
             }}
             PaperProps={{
                 sx: {
+                    position: appContentEl ? 'absolute' : undefined,
+                    inset: appContentEl ? 0 : undefined,
+                    width: appContentEl ? '100%' : undefined,
+                    height: appContentEl ? '100%' : undefined,
+                    maxWidth: appContentEl ? '100%' : undefined,
+                    maxHeight: appContentEl ? '100%' : undefined,
+                    m: appContentEl ? 0 : undefined,
                     display: 'flex',
                     flexDirection: 'column',
                     bgcolor: theme.palette.mode === 'dark' ? 'rgba(12,12,14,0.94)' : 'rgba(255,255,255,0.98)',
                     backdropFilter: 'blur(12px)',
                     zIndex: layerZ + 1,
+                    overflow: 'hidden',
                     ...paperSx,
                 },
             }}
@@ -98,7 +130,21 @@ const FullScreenModalMobile: React.FC<Props> = ({
                     <IconButton edge="start" color="inherit" onClick={onClose} aria-label="close">
                         <CloseIcon />
                     </IconButton>
-                    <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div" fontWeight={800}>
+                    <Typography
+                        sx={{
+                            ml: 2,
+                            flex: 1,
+                            minWidth: 0,
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            fontSize: { xs: 16, sm: 20 },
+                            lineHeight: 1.2,
+                        }}
+                        variant="h6"
+                        component="div"
+                        fontWeight={800}
+                    >
                         {title}
                     </Typography>
                     {toolbarContentRight}

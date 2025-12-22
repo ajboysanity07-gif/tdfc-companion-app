@@ -198,10 +198,9 @@ const ClientList: React.FC<Props> = ({
                         disablePadding
                         sx={{
                             width: '100%',
-                            mt: isMobile ? 0.1 : 0.25,
-                            flexGrow: 1,
+                            mt: isMobile ? 0.25 : 0.5,
+                            flexGrow: 0,
                             alignSelf: 'stretch',
-                            overflow: 'auto',
                         }}
                         ref={listScrollRef}
                     >

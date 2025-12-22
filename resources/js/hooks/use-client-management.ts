@@ -1,6 +1,17 @@
 //resources/js/hooks/use-product-management.ts
 import axiosClient, { getCsrfCookie } from '@/api/axios-client';
-import type { Client, RejectionReasonEntry, RejectPayload, SalaryPayload, WlnMasterRecord, WlnMasterResponse } from '@/types/user';
+import type {
+    AmortschedDisplayEntry,
+    AmortschedDisplayResponse,
+    Client,
+    RejectionReasonEntry,
+    RejectPayload,
+    SalaryPayload,
+    WlnMasterRecord,
+    WlnMasterResponse,
+    WlnLedEntry,
+    WlnLedResponse,
+} from '@/types/user';
 import axios, { AxiosResponse } from 'axios';
 import { useCallback, useEffect, useState } from 'react';
 
@@ -15,6 +26,10 @@ export const useClientManagement = () => {
     const [success, setSuccess] = useState<string | null>(null);
     const [wlnMasterByAcctno, setWlnMasterByAcctno] = useState<Record<string, WlnMasterRecord[]>>({});
     const [wlnMasterLoading, setWlnMasterLoading] = useState<Record<string, boolean>>({});
+    const [amortschedByLnnumber, setAmortschedByLnnumber] = useState<Record<string, AmortschedDisplayEntry[]>>({});
+    const [amortschedLoading, setAmortschedLoading] = useState<Record<string, boolean>>({});
+    const [wlnLedByLnnumber, setWlnLedByLnnumber] = useState<Record<string, WlnLedEntry[]>>({});
+    const [wlnLedLoading, setWlnLedLoading] = useState<Record<string, boolean>>({});
 
     // Auto-clear success after a short delay so the banner fades out
     useEffect(() => {
@@ -33,7 +48,7 @@ export const useClientManagement = () => {
 
     const toList = (res: AxiosResponse<Client[] | ApiListResponse<Client>>) => {
         const body = res.data;
-        return Array.isArray(body) ? body : (body?.data ?? []);
+        return Array.isArray(body) ? body : body?.data ?? [];
     };
 
     // GET /api/rejection-reasons
@@ -43,7 +58,9 @@ export const useClientManagement = () => {
         setSuccess(null);
         try {
             await getCsrfCookie();
-            const res = await axiosClient.get<RejectionReasonEntry[] | ApiListResponse<RejectionReasonEntry> | { reasons: RejectionReasonEntry[] }>('/rejection-reasons');
+            const res = await axiosClient.get<
+                RejectionReasonEntry[] | ApiListResponse<RejectionReasonEntry> | { reasons: RejectionReasonEntry[] }
+            >('/rejection-reasons');
             const body = res.data;
             let list: RejectionReasonEntry[] = [];
             if (Array.isArray(body)) {
@@ -166,6 +183,60 @@ export const useClientManagement = () => {
         [],
     );
 
+    // GET /api/clients/loans/{lnnumber}/amortsched
+    const fetchAmortsched = useCallback(
+        async (lnnumber: string): Promise<AmortschedDisplayResponse | null> => {
+            setAmortschedLoading((prev) => ({ ...prev, [lnnumber]: true }));
+            setError(null);
+            try {
+                await getCsrfCookie();
+                const res = await axiosClient.get<AmortschedDisplayResponse>(`/clients/loans/${lnnumber}/amortsched`);
+                setAmortschedByLnnumber((prev) => ({
+                    ...prev,
+                    [lnnumber]: res.data?.schedule ?? [],
+                }));
+                return res.data;
+            } catch (err) {
+                setError(errorMessage(err));
+                setAmortschedByLnnumber((prev) => ({
+                    ...prev,
+                    [lnnumber]: prev[lnnumber] ?? [],
+                }));
+                return null;
+            } finally {
+                setAmortschedLoading((prev) => ({ ...prev, [lnnumber]: false }));
+            }
+        },
+        [],
+    );
+
+    // GET /api/clients/loans/{lnnumber}/wlnled
+    const fetchWlnLed = useCallback(
+        async (lnnumber: string): Promise<WlnLedResponse | null> => {
+            setWlnLedLoading((prev) => ({ ...prev, [lnnumber]: true }));
+            setError(null);
+            try {
+                await getCsrfCookie();
+                const res = await axiosClient.get<WlnLedResponse>(`/clients/loans/${lnnumber}/wlnled`);
+                setWlnLedByLnnumber((prev) => ({
+                    ...prev,
+                    [lnnumber]: res.data?.ledger ?? [],
+                }));
+                return res.data;
+            } catch (err) {
+                setError(errorMessage(err));
+                setWlnLedByLnnumber((prev) => ({
+                    ...prev,
+                    [lnnumber]: prev[lnnumber] ?? [],
+                }));
+                return null;
+            } finally {
+                setWlnLedLoading((prev) => ({ ...prev, [lnnumber]: false }));
+            }
+        },
+        [],
+    );
+
     return {
         clients,
         rejectionReasons,
@@ -174,11 +245,17 @@ export const useClientManagement = () => {
         success,
         wlnMasterByAcctno,
         wlnMasterLoading,
+        amortschedByLnnumber,
+        amortschedLoading,
+        wlnLedByLnnumber,
+        wlnLedLoading,
         fetchRejectionReasons,
         fetchClients,
         approveClient,
         rejectClient,
         updateSalary,
         fetchWlnMaster,
+        fetchAmortsched,
+        fetchWlnLed,
     };
 };

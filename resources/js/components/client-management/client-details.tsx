@@ -1,4 +1,5 @@
 ﻿import type { Client, WlnMasterRecord } from '@/types/user';
+import type { AmortschedDisplayEntry } from '@/types/user';
 import ThumbDownAltIcon from '@mui/icons-material/ThumbDownAlt';
 import ThumbUpAltIcon from '@mui/icons-material/ThumbUpAlt';
 import VisibilityIcon from '@mui/icons-material/Visibility';
@@ -6,7 +7,11 @@ import { Avatar, Box, Button, Divider, IconButton, InputAdornment, Skeleton, Sta
 import React, { useEffect, useMemo, useState } from 'react';
 import BoxHeader from './box-header';
 import ImagePreviewModal from './image-preview-modal';
+import AmortschedTable from './amortsched-table';
+import FullScreenModalMobile from '../ui/full-screen-modal-mobile';
 import { useMyTheme } from '@/hooks/use-mytheme';
+import PaymentLedgerTable from './payment-ledger-table';
+import type { WlnLedEntry } from '@/types/user';
 
 type Props = {
     client?: Client | null;
@@ -17,6 +22,12 @@ type Props = {
     hideBottomActions?: boolean;
     wlnMasterRecords?: WlnMasterRecord[];
     loading?: boolean;
+    fetchAmortsched?: (lnnumber: string) => Promise<unknown> | void;
+    amortschedByLnnumber?: Record<string, AmortschedDisplayEntry[]>;
+    amortschedLoading?: Record<string, boolean>;
+    fetchWlnLed?: (lnnumber: string) => Promise<unknown> | void;
+    wlnLedByLnnumber?: Record<string, WlnLedEntry[]>;
+    wlnLedLoading?: Record<string, boolean>;
 };
 
 type PreviewImage = { src: string; label?: string };
@@ -147,6 +158,12 @@ const ClientDetails: React.FC<Props> = ({
     hideBottomActions = false,
     wlnMasterRecords,
     loading = false,
+    fetchAmortsched,
+    amortschedByLnnumber,
+    amortschedLoading,
+    fetchWlnLed,
+    wlnLedByLnnumber,
+    wlnLedLoading,
 }) => {
     const tw = useMyTheme();
     const borderColor = tw.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.12)';
@@ -156,7 +173,11 @@ const ClientDetails: React.FC<Props> = ({
     const [previewOpen, setPreviewOpen] = useState(false);
     const [previewTitle, setPreviewTitle] = useState('');
     const [previewImages, setPreviewImages] = useState<PreviewImage[]>([]);
-    const wlnRecords = wlnMasterRecords ?? [];
+    const [scheduleOpen, setScheduleOpen] = useState(false);
+    const [activeLoan, setActiveLoan] = useState<WlnMasterRecord | null>(null);
+    const [ledgerOpen, setLedgerOpen] = useState(false);
+    const [ledgerLoan, setLedgerLoan] = useState<WlnMasterRecord | null>(null);
+    const wlnRecords = useMemo(() => wlnMasterRecords ?? [], [wlnMasterRecords]);
     const isWlnLoading = loading || wlnMasterRecords === undefined;
     const formatDate = (raw: unknown) => {
         if (!raw) return 'N/A';
@@ -196,6 +217,13 @@ const ClientDetails: React.FC<Props> = ({
         setError(null);
     }, [client]);
 
+    useEffect(() => {
+        setScheduleOpen(false);
+        setActiveLoan(null);
+        setLedgerOpen(false);
+        setLedgerLoan(null);
+    }, [client?.user_id]);
+
     const prcImages = useMemo(() => {
         const imgs: PreviewImage[] = [];
         const front = imageSrc(client?.prc_id_photo_front);
@@ -209,6 +237,64 @@ const ClientDetails: React.FC<Props> = ({
         const slip = imageSrc(client?.payslip_photo_path);
         return slip ? [{ src: slip, label: 'Payslip' }] : [];
     }, [client]);
+
+    const activeLnnumber = activeLoan?.lnnumber ?? null;
+
+    const scheduleRows = useMemo(
+        () => (activeLnnumber && amortschedByLnnumber ? amortschedByLnnumber[activeLnnumber] ?? [] : []),
+        [activeLnnumber, amortschedByLnnumber],
+    );
+
+    const scheduleLoading = activeLnnumber ? !!amortschedLoading?.[activeLnnumber] : false;
+    const ledgerLnnumber = ledgerLoan?.lnnumber ?? null;
+    const ledgerRows = useMemo(() => (ledgerLnnumber && wlnLedByLnnumber ? wlnLedByLnnumber[ledgerLnnumber] ?? [] : []), [ledgerLnnumber, wlnLedByLnnumber]);
+    const ledgerLoading = ledgerLnnumber ? !!wlnLedLoading?.[ledgerLnnumber] : false;
+
+    // Prefetch amortization schedules for all WLN records so buttons can be disabled upfront when no schedule exists.
+    useEffect(() => {
+        if (!fetchAmortsched || !Array.isArray(wlnRecords) || !wlnRecords.length) return;
+        wlnRecords.forEach((rec) => {
+            const ln = rec.lnnumber;
+            if (!ln) return;
+            const alreadyHasData = amortschedByLnnumber?.[ln] !== undefined;
+            const isLoading = !!amortschedLoading?.[ln];
+            if (!alreadyHasData && !isLoading) {
+                fetchAmortsched(ln);
+            }
+        });
+    }, [fetchAmortsched, wlnRecords, amortschedByLnnumber, amortschedLoading]);
+
+    useEffect(() => {
+        if (!scheduleOpen || !activeLnnumber || !fetchAmortsched) return;
+        if (!amortschedByLnnumber?.[activeLnnumber]) {
+            fetchAmortsched(activeLnnumber);
+        }
+    }, [scheduleOpen, activeLnnumber, fetchAmortsched, amortschedByLnnumber]);
+
+    useEffect(() => {
+        if (!ledgerOpen || !ledgerLnnumber || !fetchWlnLed) return;
+        if (!wlnLedByLnnumber?.[ledgerLnnumber]) {
+            fetchWlnLed(ledgerLnnumber);
+        }
+    }, [ledgerOpen, ledgerLnnumber, fetchWlnLed, wlnLedByLnnumber]);
+
+    const openSchedule = (record: WlnMasterRecord) => {
+        if (!record?.lnnumber) return;
+        setActiveLoan(record);
+        setScheduleOpen(true);
+    };
+
+    const openLedger = (record: WlnMasterRecord) => {
+        if (!record?.lnnumber) return;
+        setLedgerLoan(record);
+        setLedgerOpen(true);
+    };
+
+    const refreshSchedule = () => {
+        if (fetchAmortsched && activeLnnumber) {
+            fetchAmortsched(activeLnnumber);
+        }
+    };
 
     const handleSaveSalary = () => {
         if (!client) return;
@@ -494,7 +580,13 @@ const ClientDetails: React.FC<Props> = ({
                             </Stack>
                         ) : wlnRecords.length ? (
                             <Stack spacing={1.5}>
-                                {wlnRecords.map((rec, idx) => (
+                                {wlnRecords.map((rec, idx) => {
+                                    const scheduleData = rec.lnnumber ? amortschedByLnnumber?.[rec.lnnumber] : undefined;
+                                    const scheduleKnownEmpty = Array.isArray(scheduleData) && scheduleData.length === 0;
+                                    const scheduleLoadingForLn = rec.lnnumber ? !!amortschedLoading?.[rec.lnnumber] : false;
+                                    const scheduleDisabled = !rec.lnnumber || scheduleLoadingForLn || scheduleKnownEmpty;
+
+                                    return (
                                     <Stack
                                         key={`${rec.lnnumber ?? idx}-${rec.remarks ?? idx}`}
                                         direction="row"
@@ -523,15 +615,32 @@ const ClientDetails: React.FC<Props> = ({
                                             </Typography>
                                         </Stack>
                                         <Stack spacing={0.85} sx={{ width: 150 }}>
-                                            <Button variant="contained" color="primary" size="small" fullWidth sx={{ borderRadius: 99, py: { xs: 0.85, sm: 1 } }}>
+                                            <Button
+                                                variant="contained"
+                                                color="primary"
+                                                size="small"
+                                                fullWidth
+                                                sx={{ borderRadius: 99, py: { xs: 0.85, sm: 1 } }}
+                                                onClick={() => openSchedule(rec)}
+                                                disabled={scheduleDisabled}
+                                            >
                                                 Schedule
                                             </Button>
-                                            <Button variant="outlined" color="inherit" size="small" fullWidth sx={{ borderRadius: 99, py: { xs: 0.85, sm: 1 } }}>
+                                            <Button
+                                                variant="outlined"
+                                                color="inherit"
+                                                size="small"
+                                                fullWidth
+                                                sx={{ borderRadius: 99, py: { xs: 0.85, sm: 1 } }}
+                                                onClick={() => openLedger(rec)}
+                                                disabled={!rec.lnnumber}
+                                            >
                                                 Payments
                                             </Button>
                                         </Stack>
                                     </Stack>
-                                    ))}
+                                    );
+                                })}
                                 </Stack>
                             ) : (
                                 <Typography variant="body2" color="text.secondary">
@@ -575,6 +684,48 @@ const ClientDetails: React.FC<Props> = ({
             </Stack>
 
             <ImagePreviewModal open={previewOpen} title={previewTitle} images={previewImages} onClose={() => setPreviewOpen(false)} />
+            <FullScreenModalMobile
+                open={scheduleOpen}
+                title={activeLnnumber ? `Amortization Schedule (${activeLnnumber})` : 'Amortization Schedule'}
+                onClose={() => setScheduleOpen(false)}
+                headerBg="#f57979"
+                headerColor="#fff"
+                bodySx={{ p: { xs: 1.5, sm: 2.5 } }}
+                bodyClassName="app-modal-open"
+            >
+                <AmortschedTable
+                    rows={scheduleRows}
+                    loading={scheduleLoading}
+                    onRefresh={refreshSchedule}
+                    exportMeta={{
+                        clientName: client?.name ?? null,
+                        lnnumber: activeLnnumber,
+                        remarks: activeLoan?.remarks ? String(activeLoan.remarks) : null,
+                        lastPaymentDate: activeLoan?.date_end ? String(activeLoan.date_end) : null,
+                    }}
+                />
+            </FullScreenModalMobile>
+            <FullScreenModalMobile
+                open={ledgerOpen}
+                title={ledgerLnnumber ? `Payment Ledger (${ledgerLnnumber})` : 'Payment Ledger'}
+                onClose={() => setLedgerOpen(false)}
+                headerBg="#f57979"
+                headerColor="#fff"
+                bodySx={{ p: { xs: 1.5, sm: 2.5 } }}
+                bodyClassName="app-modal-open"
+            >
+                <PaymentLedgerTable
+                    rows={ledgerRows}
+                    loading={ledgerLoading}
+                    onRefresh={ledgerLnnumber && fetchWlnLed ? () => fetchWlnLed(ledgerLnnumber) : undefined}
+                    exportMeta={{
+                        clientName: client?.name ?? null,
+                        lnnumber: ledgerLnnumber,
+                        remarks: ledgerLoan?.remarks ? String(ledgerLoan.remarks) : null,
+                        lastPaymentDate: ledgerLoan?.date_end ? String(ledgerLoan.date_end) : null,
+                    }}
+                />
+            </FullScreenModalMobile>
         </Stack>
     );
 };
