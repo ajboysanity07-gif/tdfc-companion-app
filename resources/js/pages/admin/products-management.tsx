@@ -1,9 +1,9 @@
 import DesktopViewLayout from '@/components/desktop-view-layout';
 import MobileViewLayout from '@/components/mobile-view-layout';
-import ProductCrud from '@/components/product-management/product-crud';
-import ProductListSkeleton, { PRODUCT_LIST_PAGE_SIZE } from '@/components/product-management/product-list-skeleton';
+import ProductCrud from '@/components/admin/product-management/product-crud';
+import ProductListSkeleton, { PRODUCT_LIST_PAGE_SIZE } from '@/components/admin/product-management/product-list-skeleton';
 import FullScreenModalMobile from '@/components/ui/full-screen-modal-mobile';
-import ProductList from '@/components/product-management/product-list';
+import ProductList from '@/components/admin/product-management/product-list';
 import { useProductManagement } from '@/hooks/use-product-management';
 import AppLayout from '@/layouts/app-layout';
 import { ProductLntype, ProductPayload, WlnType } from '@/types/product-lntype';
@@ -12,7 +12,7 @@ import AddCircleIcon from '@mui/icons-material/AddCircle';
 import { AnimatePresence, motion } from 'framer-motion';
 import { CircleCheckBig, CircleX } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
-import ManagementHero from '@/components/management/management-hero';
+import HeaderBlock from '@/components/management/header-block';
 
 const breadcrumbs = [{ title: 'Product Management', href: '/admin/products' }];
 
@@ -290,7 +290,7 @@ export default function ProductsManagementPage() {
                 </Slide>
             </div>
             <div className="flex flex-col  overflow-x-auto bg-[#FAFAFA] transition-colors duration-300 dark:bg-neutral-900">
-                <ManagementHero title="Product Management" subtitle="Activate and manage product listings" />
+                <HeaderBlock title="Product Management" subtitle="Activate and manage product listings" />
 
                 {loading ? (
                     isMobile ? (

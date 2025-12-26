@@ -33,8 +33,8 @@ type SharedPageProps = {
 };
 
 const customerNavItems: NavItem[] = [
-  { title: 'Home', href: 'customer/dashboard', icon: LayoutGrid },
-  { title: 'Loan Transactions', href: 'customer/loans/transactions', icon: Briefcase },
+  { title: 'Home', href: 'customer/client-dashboard', icon: LayoutGrid },
+  { title: 'Loan Transactions', href: '/customer/loans', icon: Briefcase },
   { title: 'Loan Calculator', href: 'customer/loans/calculator', icon: Calculator },
   { title: 'Savings', href: 'customer/savings', icon: PiggyBank },
 ];
@@ -43,7 +43,6 @@ const adminNavItems: NavItem[] = [
   { title: 'Dashboard', href: '/admin/dashboard', icon: LayoutGrid },
   { title: 'Products', href: '/admin/products', icon: Package },
   { title: 'Clients', href: '/admin/client-management', icon: Users },
-  { title: 'Registrations', href: '/admin/registrations', icon: Briefcase },
 ];
 
 const footerNavItems: NavItem[] = [
@@ -59,18 +58,28 @@ export function AppSidebar() {
   const customerAcct = props.acctno ?? user?.acctno ?? '';
 
   const adminPath = (suffix: string) => (adminParam ? `/admin/${adminParam}${suffix}` : `/admin${suffix}`);
+  const customerPath = (suffix: string) => (customerAcct ? `/client/${customerAcct}${suffix}` : `/client${suffix}`);
   const adminDashboardHref = adminPath('/dashboard');
   const adminClientManagementHref = adminPath('/client-management');
   const adminProductManagementHref = adminPath('/products');
-  const customerDashboardHref = customerAcct ? `/client/${customerAcct}/dashboard` : '/dashboard';
+  const customerDashboardHref = customerPath('/dashboard');
+  const customerLoansHref = customerPath('/loans');
+  const customerSavingsHref = customerPath('/savings');
 
   const mainNavItems = useMemo(() => {
     if (userRole !== 'admin') {
-      return customerNavItems.map((item) =>
-        item.title === 'Home'
-          ? { ...item, href: customerDashboardHref }
-          : item
-      );
+      return customerNavItems.map((item) => {
+        if (item.title === 'Home') {
+          return { ...item, href: customerDashboardHref };
+        }
+        if (item.title === 'Loan Transactions') {
+          return { ...item, href: customerLoansHref };
+        }
+        if (item.title === 'Savings') {
+          return { ...item, href: customerSavingsHref };
+        }
+        return item;
+      });
     }
 
     return adminNavItems.map((item) => {
@@ -87,7 +96,7 @@ export function AppSidebar() {
 
       return item;
     });
-  }, [adminClientManagementHref, adminDashboardHref, customerDashboardHref, adminProductManagementHref, userRole]);
+  }, [adminClientManagementHref, adminDashboardHref, customerDashboardHref, customerLoansHref, customerSavingsHref, adminProductManagementHref, userRole]);
 
   const homeLink = useMemo(() => {
     return userRole === 'admin' ? adminDashboardHref : customerDashboardHref;

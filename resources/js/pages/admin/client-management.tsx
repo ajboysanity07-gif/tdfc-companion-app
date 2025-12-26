@@ -1,8 +1,8 @@
-import ClientDetailsSkeleton from '@/components/client-management/client-details-skeleton';
-import ClientListSkeleton, { CLIENT_LIST_PAGE_SIZE } from '@/components/client-management/client-list-skeleton';
-import ClientDetails from '@/components/client-management/client-details';
-import ClientList from '@/components/client-management/client-list';
-import RejectModal from '@/components/client-management/reject-modal';
+import ClientDetailsSkeleton from '@/components/admin/client-management/client-details-skeleton';
+import ClientListSkeleton, { CLIENT_LIST_PAGE_SIZE } from '@/components/admin/client-management/client-list-skeleton';
+import ClientDetails from '@/components/admin/client-management/client-details';
+import ClientList from '@/components/admin/client-management/client-list';
+import RejectModal from '@/components/admin/client-management/reject-modal';
 import FullScreenModalMobile from '@/components/ui/full-screen-modal-mobile';
 import DesktopViewLayout from '@/components/desktop-view-layout';
 import MobileViewLayout from '@/components/mobile-view-layout';
@@ -16,11 +16,12 @@ import type {
     AmortschedDisplayEntry,
     Client,
     RejectionReasonEntry,
+    RegistrationStatus,
     WlnMasterRecord,
     WlnMasterResponse,
     WlnLedEntry,
 } from '@/types/user';
-import ManagementHero from '@/components/management/management-hero';
+import HeaderBlock from '@/components/management/header-block';
 
 const breadcrumbs = [{ title: 'Client Management', href: '/admin/client-management' }];
 
@@ -41,6 +42,8 @@ type ClientDesktopProps = {
     fetchWlnLed: (lnnumber: string) => Promise<unknown> | void;
     wlnLedByLnnumber: Record<string, WlnLedEntry[]>;
     wlnLedLoading: Record<string, boolean>;
+    statusTab: RegistrationStatus;
+    onStatusTabChange: (value: RegistrationStatus) => void;
 };
 
 function ClientDesktopLayoutView({
@@ -60,6 +63,8 @@ function ClientDesktopLayoutView({
     fetchWlnLed,
     wlnLedByLnnumber,
     wlnLedLoading,
+    statusTab,
+    onStatusTabChange,
 }: ClientDesktopProps) {
     const [search, setSearch] = useState('');
     const [showRejectModal, setShowRejectModal] = useState(false);
@@ -106,16 +111,18 @@ function ClientDesktopLayoutView({
                     <Box sx={{ flex: 1, overflow: 'hidden' }}>
                         <ClientList
                             clients={filtered}
-                            onSelect={(id) => onSelect(id)}
-                            searchValue={search}
-                            onSearchChange={setSearch}
-                            searchOptions={clients.map((c) => c.name)}
-                            fullHeight
-                            enableStatusTabs
-                        />
-                    </Box>
+                        onSelect={(id) => onSelect(id)}
+                        searchValue={search}
+                        onSearchChange={setSearch}
+                        searchOptions={clients.map((c) => c.name)}
+                        fullHeight
+                        enableStatusTabs
+                        statusTab={statusTab}
+                        onStatusTabChange={onStatusTabChange}
+                    />
                 </Box>
-            }
+            </Box>
+        }
             right={
                 <AnimatePresence mode="wait">
                     <motion.div
@@ -176,6 +183,8 @@ type ClientMobileProps = {
     fetchWlnLed: (lnnumber: string) => Promise<unknown> | void;
     wlnLedByLnnumber: Record<string, WlnLedEntry[]>;
     wlnLedLoading: Record<string, boolean>;
+    statusTab: RegistrationStatus;
+    onStatusTabChange: (value: RegistrationStatus) => void;
 };
 
 function ClientMobileLayoutView({
@@ -195,6 +204,8 @@ function ClientMobileLayoutView({
     fetchWlnLed,
     wlnLedByLnnumber,
     wlnLedLoading,
+    statusTab,
+    onStatusTabChange,
 }: ClientMobileProps) {
     const [search, setSearch] = useState('');
     const [localSelectedId, setLocalSelectedId] = useState<number | null>(selectedId);
@@ -310,6 +321,8 @@ function ClientMobileLayoutView({
                 searchOptions={clients.map((c) => c.name)}
                 fullHeight
                 enableStatusTabs
+                statusTab={statusTab}
+                onStatusTabChange={onStatusTabChange}
             />
         </MobileViewLayout>
     );
@@ -338,6 +351,7 @@ export default function ClientManagementPage() {
         fetchWlnLed,
     } = useClientManagement();
     const [selectedId, setSelectedId] = useState<number | null>(null);
+    const [statusTab, setStatusTab] = useState<RegistrationStatus>('approved');
     const isMobile = useMediaQuery('(max-width:900px)');
     const approvedCount = useMemo(() => clients.filter((c) => c.status === 'approved').length, [clients]);
 
@@ -389,7 +403,7 @@ export default function ClientManagementPage() {
                 </Slide>
             </div>
             <div className="flex flex-col gap-0 overflow-x-auto bg-[#FAFAFA] transition-colors duration-300 dark:bg-neutral-900">
-                <ManagementHero title="Client Management" subtitle="Review, approve, and manage clients" />
+                <HeaderBlock title="Client Management" subtitle="Review, approve, and manage clients" />
 
                 {loading ? (
                     <div className="p-4">
@@ -445,6 +459,8 @@ export default function ClientManagementPage() {
                         fetchWlnLed={fetchWlnLed}
                         wlnLedByLnnumber={wlnLedByLnnumber}
                         wlnLedLoading={wlnLedLoading}
+                        statusTab={statusTab}
+                        onStatusTabChange={setStatusTab}
                     />
                 ) : (
                     <ClientDesktopLayoutView
@@ -464,6 +480,8 @@ export default function ClientManagementPage() {
                         fetchWlnLed={fetchWlnLed}
                         wlnLedByLnnumber={wlnLedByLnnumber}
                         wlnLedLoading={wlnLedLoading}
+                        statusTab={statusTab}
+                        onStatusTabChange={setStatusTab}
                     />
                 )}
             </div>

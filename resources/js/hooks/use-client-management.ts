@@ -139,22 +139,22 @@ export const useClientManagement = () => {
     );
 
     // Update Salary POST to /clients/${acctno}/salary
-    const updateSalary = useCallback(
-        async (acctno: string, payload: SalaryPayload) => {
-            setError(null);
-            setSuccess(null);
-            try {
-                await getCsrfCookie();
-                await axiosClient.post(`/clients/${acctno}/salary`, payload);
-                await fetchClients();
-                setSuccess('Salary saved successfully');
-            } catch (err) {
-                setError(errorMessage(err));
-                throw err;
-            }
-        },
-        [fetchClients],
-    );
+    const updateSalary = useCallback(async (acctno: string, payload: SalaryPayload) => {
+        setError(null);
+        setSuccess(null);
+        try {
+            await getCsrfCookie();
+            const res = await axiosClient.post(`/clients/${acctno}/salary`, payload);
+            const newSalary = (res.data as { record?: { salary_amount?: number } })?.record?.salary_amount ?? payload.salary_amount;
+            setClients((prev) =>
+                prev.map((c) => (c.acctno === acctno ? { ...c, salary_amount: newSalary } : c)),
+            );
+            setSuccess('Salary saved successfully');
+        } catch (err) {
+            setError(errorMessage(err));
+            throw err;
+        }
+    }, []);
 
     // GET /api/clients/{acctno}/wlnmaster
     const fetchWlnMaster = useCallback(

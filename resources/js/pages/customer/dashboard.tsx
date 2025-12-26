@@ -1,554 +1,569 @@
-// resources/js/pages/dashboard.tsx - CORRECTED DROP-IN REPLACEMENT
+import { useMyTheme } from '@/hooks/use-mytheme';
+import { useClientDashboard } from '@/hooks/use-client-dashboard';
 import AppLayout from '@/layouts/app-layout';
 import { Head, usePage } from '@inertiajs/react';
-import { Banknote, CreditCard, PiggyBank, UsersRound } from 'lucide-react';
-import { useEffect, useMemo, useState, memo, useCallback } from 'react';
-import DataTable, { createTheme, type TableColumn } from 'react-data-table-component';
+import { Avatar, Box, Button, Divider, Pagination, Stack, Typography, useMediaQuery } from '@mui/material';
+import { Banknote, LogOut, PiggyBank } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { useRoute } from 'ziggy-js';
+import { createTheme } from 'react-data-table-component';
 
-// Fixed types for Inertia compatibility
-type UserShape = { 
-  name?: string; 
-  email?: string; 
-  avatar?: string | null; 
-  role?: string | null 
+type UserShape = {
+    name?: string;
+    email?: string;
+    avatar?: string | null;
+    role?: string | null;
+    bname?: string | null;
+    class?: string | null;
+    class_name?: string | null;
 };
 
-type PageProps = { 
-  auth?: { user?: UserShape | null };
-  [key: string]: unknown; // ESLint fix: use unknown instead of any
+type PageProps = {
+    auth?: { user?: UserShape | null };
+    [key: string]: unknown;
 };
 
-type RecentRow = {
-  lnnumber: string;
-  description: string;
-  date: string | null;
-  principal: number;
-  raw_balance: number;
-};
-
-// Improved utility functions
 const formatCurrency = (amount: number): string => {
-  if (!Number.isFinite(amount)) {
-    return '₱0.00';
-  }
-  return new Intl.NumberFormat('en-PH', { 
-    style: 'currency', 
-    currency: 'PHP', 
-    maximumFractionDigits: 2 
-  }).format(amount);
+    if (!Number.isFinite(amount)) return 'PHP 0.00';
+    return new Intl.NumberFormat('en-PH', {
+        style: 'currency',
+        currency: 'PHP',
+        maximumFractionDigits: 2,
+    }).format(amount);
 };
 
 const formatDate = (iso: string | null): string => {
-  if (!iso) return '';
-  const date = new Date(iso);
-  if (!Number.isFinite(date.getTime())) {
-    return iso;
-  }
-  return date.toLocaleDateString('en-PH');
+    if (!iso) return '';
+    const date = new Date(iso);
+    if (!Number.isFinite(date.getTime())) return iso;
+    return date.toLocaleDateString('en-PH');
 };
 
-const getFirstName = (fullName: string): string => {
-  if (fullName.includes(',')) {
-    return fullName.split(',')[1]?.trim().split(' ')[0] ?? fullName;
-  }
-  return fullName.split(' ')[0] ?? fullName;
-};
-
-// Improved Loading Component
-const LoadingSpinner = memo(() => (
-  <div className="flex items-center justify-center py-8" role="status" aria-live="polite">
-    <div className="flex items-center gap-3">
-      <div className="animate-spin rounded-full h-6 w-6 border-2 border-[#F57979] border-t-transparent" />
-      <span className="text-gray-600 dark:text-neutral-400">Loading transactions...</span>
-    </div>
-  </div>
-));
-LoadingSpinner.displayName = 'LoadingSpinner';
-
-// Error Message Component
-const ErrorMessage = memo<{ message: string; onRetry?: () => void }>(({ message, onRetry }) => (
-  <div className="py-8 text-center" role="alert">
-    <div className="max-w-md mx-auto">
-      <div className="text-red-600 dark:text-red-400 mb-4">
-        <p className="font-medium">{message}</p>
-      </div>
-      {onRetry && (
-        <button
-          onClick={onRetry}
-          className="px-4 py-2 bg-[#F57979] text-white rounded-lg hover:bg-[#e26d6d] transition-colors focus:outline-none focus:ring-2 focus:ring-[#F57979] focus:ring-offset-2"
-        >
-          Try Again
-        </button>
-      )}
-    </div>
-  </div>
-));
-ErrorMessage.displayName = 'ErrorMessage';
-
-// Dark theme (keep existing)
 createTheme(
-  'rb-dark',
-  {
-    text: { primary: '#e5e7eb', secondary: '#cbd5e1' },
-    background: { default: 'transparent' },
-    context: { background: '#374151', text: '#e5e7eb' },
-    divider: { default: 'rgba(120,120,120,0.25)' },
-    button: { default: '#F57979', hover: '#e26d6d', focus: '#e26d6d' },
-    striped: { default: 'rgba(255,255,255,0.02)', text: '#e5e7eb' },
-  },
-  'dark',
+    'rb-dark',
+    {
+        text: { primary: '#e5e7eb', secondary: '#cbd5e1' },
+        background: { default: 'transparent' },
+        context: { background: '#374151', text: '#e5e7eb' },
+        divider: { default: 'rgba(120,120,120,0.25)' },
+        button: { default: '#F57979', hover: '#e26d6d', focus: '#e26d6d' },
+        striped: { default: 'rgba(255,255,255,0.02)', text: '#e5e7eb' },
+    },
+    'dark',
 );
 
-export default function Dashboard() {
-  const { props } = usePage<PageProps>();
-  const user = props.auth?.user ?? null;
-  const fullName = user?.name ?? 'Customer';
-  const avatar = user?.avatar ?? null;
+export default function CustomerDashboard() {
+    const route = useRoute();
+    const { props } = usePage<PageProps>();
+    const user = props.auth?.user ?? null;
+    const acctno = route().params?.acctno as string | undefined;
+    const fullName = user?.name ?? 'Customer';
+    const avatar = user?.avatar ?? null;
+    const clientName = user?.bname ?? fullName;
+    const clientClass = user?.class ?? user?.class_name ?? user?.role ?? 'Client';
+    const tw = useMyTheme();
+    const accent = '#F57979';
+    const accentHighlight = '#FFF172';
+    const surface = tw.isDark ? '#2f2f2f' : '#ffffff';
+    const borderColor = tw.isDark ? '#3a3a3a' : '#e5e7eb';
+    const isMobile = useMediaQuery('(max-width:900px)');
+    const dummySavingsDisplay = isMobile ? '₱ 1,000.00' : 'Php 1,000.00';
 
-  // State with improved error handling
-  const [rows, setRows] = useState<RecentRow[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-
-  // Improved fetch with proper error handling
-  useEffect(() => {
-    let alive = true;
+    const { transactions, loading, error, fetchRecentTransactions } = useClientDashboard(acctno);
     
-    const fetchData = async () => {
-      if (!alive) return;
-      
-      setLoading(true);
-      setError(null);
-      
-      try {
-        const response = await fetch('/api/transactions/recent', { 
-          headers: { 'X-Requested-With': 'XMLHttpRequest' } 
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize, setPageSize] = useState(5);
+
+    const latestSavingsBalance = useMemo(() => {
+        // Find the first (latest by date_in DESC) savings transaction
+        const savingsTransaction = transactions.find(t => t.source === 'SAV');
+        console.log('All transactions:', transactions);
+        console.log('Savings Transaction:', savingsTransaction);
+        
+        if (savingsTransaction) {
+            // Convert balance to number in case it's a string
+            const balanceValue = typeof savingsTransaction.balance === 'string' 
+                ? parseFloat(savingsTransaction.balance) 
+                : (savingsTransaction.balance ?? 0);
+            
+            console.log('Balance Value:', balanceValue, 'Type:', typeof balanceValue);
+            
+            if (balanceValue > 0) {
+                return formatCurrency(balanceValue);
+            }
+        }
+        return dummySavingsDisplay;
+    }, [dummySavingsDisplay, transactions]);
+
+    const initials = useMemo(
+        () =>
+            fullName
+                .split(' ')
+                .filter(Boolean)
+                .slice(0, 2)
+                .map((p) => p[0]?.toUpperCase() ?? '')
+                .join('') || 'CU',
+        [fullName],
+    );
+
+    const firstName = useMemo(() => {
+        const base = clientName?.trim() ?? '';
+        if (!base) return 'Customer';
+        if (base.includes(',')) {
+            const afterComma = base.split(',')[1]?.trim();
+            if (afterComma) return afterComma.split(/\s+/)[0] || afterComma;
+        }
+        return base.split(/\s+/)[0] || base;
+    }, [clientName]);
+
+    const paginatedTransactions = useMemo(() => {
+        const startIdx = (currentPage - 1) * pageSize;
+        const endIdx = startIdx + pageSize;
+        return transactions.slice(startIdx, endIdx);
+    }, [transactions, currentPage, pageSize]);
+
+    const totalPages = useMemo(() => {
+        return Math.ceil(transactions.length / pageSize);
+    }, [transactions.length, pageSize]);
+
+    const amountValues = useMemo(() => {
+        return paginatedTransactions.map(t => {
+            let displayValue = 0;
+            let prefix = '';
+            let color = '#000000'; // default black
+
+            if (t.deposit && t.deposit > 0) {
+                displayValue = t.deposit;
+                prefix = '+';
+                color = '#1976d2'; // blue
+            } else if (t.withdrawal && t.withdrawal > 0) {
+                displayValue = t.withdrawal;
+                prefix = '-';
+                color = '#d32f2f'; // red
+            } else if (t.principal && t.principal > 0) {
+                displayValue = t.principal;
+                prefix = '';
+                color = '#388e3c'; // green
+            } else if (t.payments && t.payments > 0) {
+                displayValue = t.payments;
+                prefix = '';
+                color = '#000000'; // black
+            } else if(t.amount && t.amount > 0) {
+                displayValue = t.amount ?? 0;
+                prefix = '';
+                color = '#000000';
+            }else{
+                displayValue = t.debit ?? 0;
+                prefix = '';
+                color = '#000000';
+            }
+
+            return { displayValue, prefix, color };
         });
-        
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        
-        if (!alive) return;
-        
-        const items: RecentRow[] = Array.isArray(data?.items) ? data.items : [];
-        setRows(items);
-      } catch (err) {
-        if (!alive) return;
-        
-        console.error('Failed to fetch transactions:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load transactions');
-        setRows([]);
-      }
-      
-      if (alive) {
-        setLoading(false);
-      }
+    }, [paginatedTransactions]);
+
+    const transactionDetails = useMemo(() => {
+        return paginatedTransactions.map(t => {
+            if (t.deposit && t.deposit > 0) {
+                return '- Deposit';
+            } else if (t.withdrawal && t.withdrawal > 0) {
+                return '- Withdrawal';
+            } else if (t.principal && t.principal > 0) {
+                return '- Loan Release';
+            } else if (t.payments && t.payments > 0) {
+                return '- Payment';
+            } else {
+                return '- Penalty';
+            }
+        });
+    }, [paginatedTransactions]);
+
+    const handlePageSizeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const newSize = Math.max(1, parseInt(event.target.value) || 10);
+        setPageSize(newSize);
+        setCurrentPage(1);
     };
-    
-    fetchData();
-    
-    return () => {
-      alive = false;
+
+    const handlePageChange = (newPage: number) => {
+        setCurrentPage(Math.max(1, Math.min(newPage, totalPages)));
     };
-  }, []);
 
-  // Retry function - triggers a re-fetch
-  const handleRetry = useCallback(() => {
-    setError(null);
-    setLoading(true);
-    setRows([]);
-    
-    // Re-trigger the fetch
-    fetch('/api/transactions/recent', { 
-      headers: { 'X-Requested-With': 'XMLHttpRequest' } 
-    })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json();
-      })
-      .then(data => {
-        const items: RecentRow[] = Array.isArray(data?.items) ? data.items : [];
-        setRows(items);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error('Retry failed:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load transactions');
-        setLoading(false);
-      });
-  }, []);
+    useEffect(() => {
+        fetchRecentTransactions().catch(() => {
+            // Error is already handled by the hook
+        });
+    }, [fetchRecentTransactions]);
 
-  // Stats calculation (keep your existing logic)
-  const stats = useMemo(() => {
-    let svPrincipal = 0;
-    let lnBalance = 0;
-    let countLN = 0;
-    const total = rows.length;
+    const handleRetry = () => {
+        fetchRecentTransactions().catch(() => {
+            // Error is already handled by the hook
+        });
+    };
 
-    for (const r of rows) {
-      const code = (r.lnnumber ?? '').toUpperCase();
-      const principal = Number(r.principal ?? 0);
-      const rawBal = Number(r.raw_balance ?? 0);
-
-      if (code.startsWith('SV')) {
-        svPrincipal += principal;
-      }
-      if (code.startsWith('LN')) {
-        lnBalance += rawBal;
-        countLN++;
-      }
-    }
-    const lnPercent = total > 0 ? (countLN / total) * 100 : 0;
-
-    return { svPrincipal, lnBalance, lnPercent };
-  }, [rows]);
-
-  const savings = stats.svPrincipal;
-  const deposits = stats.svPrincipal;
-  const withdrawals = stats.lnBalance;
-  const depositsChange = stats.lnPercent;
-  const withdrawalsChange = stats.lnPercent;
-
-  // Filter loan transactions
-  const allRows = useMemo(() => 
-    rows.filter(r => (r.lnnumber ?? '').toUpperCase().startsWith('LN')), 
-    [rows]
-  );
-
-  // Fixed DataTable columns
-  const columns = useMemo<TableColumn<RecentRow>[]>(() => [
-    {
-      name: 'Date',
-      selector: (r: RecentRow) => formatDate(r.date),
-      sortable: true,
-      grow: 1,
-      cell: (r: RecentRow) => (
-        <time 
-          dateTime={r.date || undefined}
-          className="text-sm text-gray-600 dark:text-neutral-300"
+    const headerBlock = (
+        <Box
+            sx={{
+                borderRadius: 3,
+                p: { xs: 2.5, sm: 3 },
+                background: tw.isDark ? 'linear-gradient(135deg, #F57979, #b85555)' : 'linear-gradient(135deg, #F57979, #ff9b9b)',
+                color: '#ffffff',
+                boxShadow: '0 12px 30px rgba(15,23,42,0.16)',
+            }}
         >
-          {formatDate(r.date)}
-        </time>
-      ),
-    },
-    {
-      name: 'Description',
-      selector: (r: RecentRow) => r.description,
-      sortable: true,
-      grow: 2,
-      cell: (r: RecentRow) => (
-        <span className="font-semibold text-gray-800 dark:text-neutral-100">
-          {r.description}
-        </span>
-      ),
-    },
-    {
-      name: 'Amount',
-      selector: (r: RecentRow) => r.principal,
-      sortable: true,
-      cell: (r: RecentRow) => {
-        const val = Number(r.principal ?? 0);
-        return (
-          <span className="font-semibold text-gray-800 dark:text-neutral-100">
-            {formatCurrency(Math.abs(val))}
-          </span>
-        );
-      },
-    },
-  ], []);
+            <Stack
+                direction={{ xs: 'row', sm: 'row' }}
+                spacing={{ xs: 2, sm: 3 }}
+                alignItems="flex-start"
+                justifyContent="space-between"
+            >
+                <Stack direction="row" spacing={2} alignItems="center" sx={{ minWidth: 0, flex: { xs: '0 0 70%', sm: 1 } }}>
+                    <Box sx={{ minWidth: 0, flex: 1 }}>
+                        <Typography variant="overline" sx={{ fontWeight: 800, letterSpacing: 1.1, color: accentHighlight }}>
+                            Welcome
+                        </Typography>
+                        <Typography
+                            variant="h4"
+                            sx={{
+                                fontWeight: 900,
+                                lineHeight: 1.1,
+                                textTransform: 'capitalize',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap',
+                                maxWidth: { xs: '100%', sm: '28ch' },
+                                mt: -1,
+                            }}
+                        >
+                            {firstName}
+                        </Typography>
+                        <Box
+                            component="span"
+                            sx={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: 0.75,
+                                mt: 0.75,
+                                px: 1.25,
+                                py: 0.5,
+                                borderRadius: 999,
+                                backgroundColor: 'rgba(255,255,255,0.16)',
+                                fontWeight: 700,
+                                fontSize: 13,
+                            }}
+                        >
+                            Class: {clientClass}
+                        </Box>
+                    </Box>
+                </Stack>
 
-  // Theme detection
-  const isDark = typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
-  const tableTheme = isDark ? 'rb-dark' : 'default';
+                <Avatar
+                    src={avatar || undefined}
+                    alt={fullName}
+                    sx={{
+                        width: 68,
+                        height: 68,
+                        bgcolor: 'rgba(255,255,255,0.2)',
+                        fontWeight: 800,
+                        border: '2px solid rgba(255,255,255,0.4)',
+                        boxShadow: '0 8px 16px rgba(0,0,0,0.18)',
+                        display: { xs: 'flex', sm: 'none' },
+                        flexShrink: 0,
+                    }}
+                >
+                    {!avatar ? initials : null}
+                </Avatar>
+            </Stack>
+      <Stack alignItems="center" spacing={0.5} sx={{ width: { xs: '100%', sm: 'auto' }, pt: 2 }}>
+                    <Divider sx={{ width: '90%', mb: 1, borderColor: '#ffffff' }} />
+                </Stack>
+            <Stack
+                direction="row"
+                spacing={2}
+                alignItems="center"
+                justifyContent="center"
+                sx={{ width: '100%', mt: 2 }}
+            >
+          
+                <Stack alignItems="center" spacing={0.5} sx={{ width: { xs: '100%', sm: 'auto' } }}>
+                    <Typography variant="h3" sx={{ fontWeight: 900, lineHeight: 1, letterSpacing: -3 }}>
+                        {latestSavingsBalance}
+                    </Typography>
+                    <Typography variant="overline" sx={{ letterSpacing: 1, color: accentHighlight, fontWeight: 800 }}>
+                        Personal Savings
+                    </Typography>
+                </Stack>
+            </Stack>
+        </Box>
+    );
 
-  const firstName = getFirstName(fullName);
+    const mobileTransactions = (
+        <Box
+            sx={{
+                borderRadius: 2,
+                border: `1px solid ${borderColor}`,
+                backgroundColor: surface,
+                p: { xs: 2, md: 3 },
+                mb: { xs: 8, sm: 0 },
+            }}
+        >
+            <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
+                <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                    Recent Transactions
+                </Typography>
+                <Button size="small" sx={{ color: accent, fontWeight: 700, textTransform: 'none' }}>
+                    View All
+                </Button>
+            </Stack>
+            <Divider sx={{ mb: 2, borderColor }} />
 
-  // Mobile View Component
-  const Mobile = () => (
-    <section className="md:hidden">
-      <div className="relative -mx-4 mb-6 rounded-b-4xl bg-[#F57979] px-6 pt-6 pb-6 text-white">
-        <div className="flex items-start justify-between">
-          <div>
-            <p className="text-lg/5 font-extrabold">Welcome,</p>
-            <h1 className="text-4xl font-extrabold tracking-tight">{firstName}</h1>
-            <p className="mt-2 text-2xl/6 font-medium opacity-90">{(user?.role ?? 'customer').toLowerCase()}</p>
-          </div>
-          <div className="h-16 w-16 overflow-hidden rounded-full ring-2 ring-white/60">
-            {avatar ? (
-              <img src={avatar} alt={`${fullName}'s avatar`} className="h-full w-full object-cover" />
-            ) : (
-              <div className="grid h-full w-full place-items-center bg-white/20 text-white">
-                <span aria-hidden="true">👤</span>
-                <span className="sr-only">{fullName}'s avatar placeholder</span>
-              </div>
+            {loading && (
+                <Box sx={{ py: 4, textAlign: 'center' }}>
+                    <div className="flex items-center justify-center gap-3">
+                        <div className="h-6 w-6 animate-spin rounded-full border-2 border-[rgba(245,121,121,0.7)] border-t-transparent" />
+                        <span className="text-sm text-gray-600 dark:text-neutral-400">Loading transactions...</span>
+                    </div>
+                </Box>
             )}
-          </div>
-        </div>
 
-        <div className="mt-5 text-center">
-          <div className="text-[64px] leading-none tracking-tight">
-            <span>₱</span>
-            <span className="font-extrabold">
-              {savings.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
-            </span>
-          </div>
-          <p className="mt-2 text-2xl font-extrabold uppercase">Personal Savings</p>
-        </div>
+            {error && !loading && (
+                <Box sx={{ py: 3, textAlign: 'center' }}>
+                    <Typography color="error" sx={{ mb: 1, fontWeight: 600 }}>
+                        {error}
+                    </Typography>
+                    <Button variant="contained" size="small" onClick={handleRetry} sx={{ backgroundColor: accent }}>
+                        Try Again
+                    </Button>
+                </Box>
+            )}
 
-        <div className="mt-4 h-0.5 w-full bg-white/80" />
+            {!loading && !error && transactions.length === 0 && (
+                <Typography variant="body2" color="text.secondary" sx={{ py: 3, textAlign: 'center' }}>
+                    No transactions found.
+                </Typography>
+            )}
 
-        <div className="mt-5 rounded-3xl bg-[#FFE57E] px-6 py-5">
-          <div className="grid grid-cols-2 gap-5">
-            <div className="flex flex-col items-center gap-3">
-              <button
-                type="button"
-                className="grid size-20 place-items-center rounded-2xl bg-[#87bfd3] transition-colors hover:bg-[#9cc4d2] focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-[#FFE57E]"
-                aria-label="Apply for loan"
-              >
-                <Banknote className="size-10 text-white" aria-hidden="true" />
-              </button>
-              <span className="text-lg font-bold text-[#1f4d5a]">Loan Apply</span>
-            </div>
+            {!loading && !error && transactions.length > 0 && (
+                <>
+                    <Stack divider={<Divider flexItem sx={{ borderColor }} />}>
+                        {paginatedTransactions.map((t, idx) => {
+                            const uniqueKey = `${t.ln_sv_number}-${t.date_in}-${t.amount}-${idx}`;
+                            return (
+                                <Stack
+                                    key={uniqueKey}
+                                    direction="row"
+                                    alignItems="center"
+                                    justifyContent="space-between"
+                                    spacing={2}
+                                    py={1.5}
+                                >
+                                    <Box>
+                                        <Typography variant="subtitle2" sx={{ fontWeight: 700, fontSize: { xs: '0.875rem', md: '1.125rem' } }}>
+                                            {t.transaction_type} {transactionDetails[idx]}
+                                        </Typography>
+                                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}>
+                                            {formatDate(t.date_in)}
+                                        </Typography>
+                                    </Box>
+                                    <Box textAlign="right">
+                                        <Typography variant="subtitle2" sx={{ fontWeight: 700, fontSize: { xs: '0.875rem', md: '1.125rem' }, color: amountValues[idx]?.color || '#000000' }}>
+                                            {amountValues[idx]?.prefix}{formatCurrency(Math.abs(amountValues[idx]?.displayValue ?? 0))}
+                                        </Typography>
+                                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}>
+                                            {formatCurrency(Math.abs(t.balance ?? 0))}
+                                        </Typography>
+                                    </Box>
+                                </Stack>
+                            );
+                        })}
+                    </Stack>
 
-            <div className="flex flex-col items-center gap-3">
-              <button
-                type="button"
-                className="grid size-20 place-items-center rounded-2xl bg-[#87bfd3] transition-colors hover:bg-[#9cc4d2] focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-[#FFE57E]"
-                aria-label="Manage savings"
-              >
-                <PiggyBank className="size-10 text-white" aria-hidden="true" />
-              </button>
-              <span className="text-lg font-bold text-[#1a3f7a]">Savings</span>
-            </div>
-          </div>
-        </div>
-      </div>
+                    <Stack spacing={2} sx={{ pt: 2, borderTop: `1px solid ${borderColor}`}}>
+                        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems={{ xs: 'flex-start', sm: 'center' }} justifyContent="space-between">
+                            <Stack direction="row" spacing={1} alignItems="center">
+                                <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                                    Items per page:
+                                </Typography>
+                                <input
+                                    type="number"
+                                    min="1"
+                                    value={pageSize}
+                                    onChange={handlePageSizeChange}
+                                    style={{
+                                        width: '60px',
+                                        padding: '6px 8px',
+                                        border: `1px solid ${borderColor}`,
+                                        borderRadius: '4px',
+                                        backgroundColor: surface,
+                                        color: tw.isDark ? '#e5e7eb' : '#000000',
+                                        fontFamily: 'inherit',
+                                    }}
+                                />
+                            </Stack>
+                            <Typography variant="caption" color="text.secondary">
+                                Page {currentPage} of {totalPages} ({transactions.length} total)
+                            </Typography>
+                        </Stack>
 
-      {/* Recent transactions */}
-      <div className="rounded-2xl border border-gray-200 bg-white p-3 dark:border-neutral-700 dark:bg-neutral-900">
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-2xl font-semibold text-gray-800 dark:text-neutral-100">Recent Transactions</h2>
-          <a 
-            href="#" 
-            className="text-sm font-semibold text-[#F57979] hover:underline focus:outline-none focus:ring-2 focus:ring-[#F57979] focus:ring-offset-2 rounded"
-          >
-            View All
-          </a>
-        </div>
+                        <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+                            <Pagination
+                                count={totalPages}
+                                page={currentPage}
+                                onChange={(_, page) => handlePageChange(page)}
+                                color="standard"
+                                siblingCount={0}
+                                boundaryCount={1}
+                                sx={{
+                                    '& .MuiPaginationItem-root': {
+                                        color: tw.isDark ? '#e5e7eb' : '#000000',
+                                        borderColor: borderColor,
+                                    },
+                                    '& .MuiPaginationItem-page.Mui-selected': {
+                                        backgroundColor: accent,
+                                        color: '#ffffff',
+                                        '&:hover': {
+                                            backgroundColor: '#e66767',
+                                        },
+                                    },
+                                    '& .MuiPaginationItem-page:hover': {
+                                        backgroundColor: `${accent}15`,
+                                    },
+                                }}
+                            />
+                        </Box>
+                    </Stack>
+                </>
+            )}
+        </Box>
+    );
 
-        {loading && <LoadingSpinner />}
-        
-        {error && <ErrorMessage message={error} onRetry={handleRetry} />}
-        
-        {!loading && !error && allRows.length === 0 && (
-          <div className="px-2 py-4 text-sm text-gray-500 dark:text-neutral-400 text-center">
-            No transactions found.
-          </div>
-        )}
-
-        {!loading && !error && allRows.length > 0 && (
-          <ul className="divide-y divide-gray-200 dark:divide-neutral-800">
-            {allRows.map((t, idx) => {
-              const principal = Number(t.principal ?? 0);
-              const balanceRow = principal - Number(t.raw_balance ?? 0);
-
-              return (
-                <li key={t.lnnumber || `transaction-${idx}`} className="flex items-start justify-between px-2 py-4">
-                  <div className="pr-4">
-                    <div className="font-semibold text-gray-900 dark:text-neutral-100">{t.description}</div>
-                    <time 
-                      dateTime={t.date || undefined}
-                      className="text-sm text-gray-500 dark:text-neutral-400"
-                    >
-                      {formatDate(t.date)}
-                    </time>
-                  </div>
-
-                  <div className="text-right">
-                    <div className="font-semibold text-gray-800 dark:text-neutral-100">
-                      {formatCurrency(Math.abs(principal))}
-                    </div>
-                    <div className="text-xs text-gray-500 dark:text-neutral-400">
-                      {formatCurrency(Math.abs(balanceRow))}
-                    </div>
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </div>
-    </section>
-  );
-
-  // Desktop View Component
-  const Desktop = () => (
-    <section className="hidden md:block">
-      <div className="w-full px-4 py-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-12 gap-6">
-          {/* Balance */}
-          <div className="col-span-12 rounded-2xl border border-gray-200 bg-[#F7F9FC] p-4 lg:col-span-4 dark:border-neutral-700 dark:bg-neutral-900">
-            <h3 className="mb-3 text-lg font-semibold text-gray-800 dark:text-neutral-100">Balance</h3>
-            <div className="rounded-2xl bg-[#F57979] p-5 text-white shadow-sm">
-              <p className="text-sm/5 opacity-90">Welcome,</p>
-              <h4 className="mt-1 text-2xl font-extrabold tracking-wide">{fullName.toUpperCase()}</h4>
-              <p className="text-sm/5 opacity-90">{(user?.role ?? 'customer').toLowerCase()}</p>
-
-              <div className="mt-6 text-[44px] leading-none font-extrabold">
-                ₱{savings.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
-              </div>
-              <p className="mt-2 text-sm font-semibold uppercase opacity-90">Personal Savings</p>
-            </div>
-          </div>
-
-          {/* Quick Actions */}
-          <div className="col-span-12 rounded-2xl border border-gray-200 bg-[#F7F9FC] p-4 lg:col-span-4 dark:border-neutral-700 dark:bg-neutral-900">
-            <h3 className="mb-3 text-lg font-semibold text-gray-800 dark:text-neutral-100">Quick Actions</h3>
-            <div className="grid grid-cols-2 gap-5">
-              <a 
-                className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white px-3 py-3 hover:bg-gray-50 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:bg-neutral-800/80 transition-colors focus:outline-none focus:ring-2 focus:ring-[#F57979] focus:ring-offset-2" 
-                href="#"
-                aria-label="Apply for loan"
-              >
-                <div className="grid size-9 place-items-center rounded-lg bg-[#86c7ff]/30 text-[#1a3f7a]" aria-hidden="true">
-                  <Banknote className="size-5" />
-                </div>
-                <span className="text-sm font-semibold text-gray-800 dark:text-neutral-100">Loan Apply</span>
-              </a>
-              <a 
-                className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white px-3 py-3 hover:bg-gray-50 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:bg-neutral-800/80 transition-colors focus:outline-none focus:ring-2 focus:ring-[#F57979] focus:ring-offset-2" 
-                href="#"
-                aria-label="Manage savings"
-              >
-                <div className="grid size-9 place-items-center rounded-lg bg-[#86c7ff]/30 text-[#1a3f7a]" aria-hidden="true">
-                  <PiggyBank className="size-5" />
-                </div>
-                <span className="text-sm font-semibold text-gray-800 dark:text-neutral-100">Savings</span>
-              </a>
-              <a 
-                className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white px-3 py-3 hover:bg-gray-50 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:bg-neutral-800/80 transition-colors focus:outline-none focus:ring-2 focus:ring-[#F57979] focus:ring-offset-2" 
-                href="#"
-                aria-label="Manage cards"
-              >
-                <div className="grid size-9 place-items-center rounded-lg bg-[#86c7ff]/30 text-[#1a3f7a]" aria-hidden="true">
-                  <CreditCard className="size-5" />
-                </div>
-                <span className="text-sm font-semibold text-gray-800 dark:text-neutral-100">Cards</span>
-              </a>
-              <a 
-                className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white px-3 py-3 hover:bg-gray-50 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:bg-neutral-800/80 transition-colors focus:outline-none focus:ring-2 focus:ring-[#F57979] focus:ring-offset-2" 
-                href="#"
-                aria-label="Manage beneficiaries"
-              >
-                <div className="grid size-9 place-items-center rounded-lg bg-[#86c7ff]/30 text-[#1a3f7a]" aria-hidden="true">
-                  <UsersRound className="size-5" />
-                </div>
-                <span className="text-sm font-semibold text-gray-800 dark:text-neutral-100">Beneficiaries</span>
-              </a>
-            </div>
-          </div>
-
-          {/* Overview */}
-          <div className="col-span-12 rounded-2xl border border-gray-200 bg-[#F7F9FC] p-4 lg:col-span-4 dark:border-neutral-700 dark:bg-neutral-900">
-            <h3 className="mb-3 text-lg font-semibold text-gray-800 dark:text-neutral-100">Overview</h3>
-
-            <div className="rounded-xl border border-gray-200 bg-white p-4 dark:border-neutral-700 dark:bg-neutral-800">
-              <div className="text-sm font-semibold text-gray-700 dark:text-neutral-200">Deposits</div>
-              <div className="mt-1 text-2xl font-extrabold text-gray-900 dark:text-neutral-50">
-                {formatCurrency(deposits)}
-              </div>
-              <div className="mt-2 h-2 w-full rounded-full bg-gray-200 dark:bg-neutral-700">
-                <div
-                  className="h-2 rounded-full bg-[#22c55e] transition-all duration-300"
-                  style={{ width: `${Math.max(0, Math.min(100, depositsChange))}%` }}
-                />
-              </div>
-              <div className="mt-1 text-xs font-semibold text-[#22c55e]">
-                {depositsChange.toFixed(0)}%
-              </div>
-            </div>
-
-            <div className="mt-3 rounded-xl border border-gray-200 bg-white p-4 dark:border-neutral-700 dark:bg-neutral-800">
-              <div className="text-sm font-semibold text-gray-700 dark:text-neutral-200">Withdrawals</div>
-              <div className="mt-1 text-2xl font-extrabold text-gray-900 dark:text-neutral-50">
-                {formatCurrency(withdrawals)}
-              </div>
-              <div className="mt-2 h-2 w-full rounded-full bg-gray-200 dark:bg-neutral-700">
-                <div
-                  className="h-2 rounded-full bg-[#ef4444] transition-all duration-300"
-                  style={{ width: `${Math.max(0, Math.min(100, withdrawalsChange))}%` }}
-                />
-              </div>
-              <div className="mt-1 text-xs font-semibold text-[#ef4444]">
-                {withdrawalsChange.toFixed(0)}%
-              </div>
-            </div>
-          </div>
-
-          {/* Recent Transactions Table */}
-          <div className="col-span-12 rounded-2xl border border-gray-200 bg-[#F7F9FC] p-4 dark:border-neutral-700 dark:bg-neutral-900">
-            <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-gray-800 dark:text-neutral-100">Recent Transactions</h3>
-              <a 
-                href="#" 
-                className="text-sm font-semibold text-[#F57979] hover:underline focus:outline-none focus:ring-2 focus:ring-[#F57979] focus:ring-offset-2 rounded"
-              >
-                View All
-              </a>
-            </div>
-
-            <div className="overflow-hidden rounded-xl border border-gray-200 bg-white p-2 dark:border-neutral-700 dark:bg-neutral-800">
-              {error ? (
-                <ErrorMessage message={error} onRetry={handleRetry} />
-              ) : (
-                <DataTable
-                  columns={columns}
-                  data={allRows}
-                  progressPending={loading}
-                  striped
-                  highlightOnHover
-                  responsive
-                  theme={tableTheme}
-                  pagination
-                  paginationPerPage={10}
-                  paginationRowsPerPageOptions={[5, 10, 15, 20]}
-                  noDataComponent={
-                    <div className="py-8 text-center text-gray-500 dark:text-neutral-400">
-                      No loan transactions found
-                    </div>
-                  }
-                />
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-
-  return (
-    <AppLayout breadcrumbs={[{ title: 'Dashboard', href: 'customer/dashboard' }]}>
-      <Head title="Dashboard" />
-      
-      {/* Skip links for accessibility */}
-      <div className="sr-only focus-within:not-sr-only">
-        <a 
-          href="#main-content" 
-          className="absolute top-0 left-0 z-50 p-2 bg-[#F57979] text-white rounded-br-md focus:outline-none focus:ring-2 focus:ring-white"
+    const primaryActions = (
+        <Box
+            sx={{
+                // mt: 1,
+                display: 'grid',
+                gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
+                gap: 1.5,
+                justifyContent: 'center',
+            }}
         >
-          Skip to main content
-        </a>
-      </div>
+            {[
+                {
+                    key: 'loan',
+                    title: 'Loan Apply',
+                    description: 'Apply for a loan quickly.',
+                    icon: <Banknote className="h-8 w-8" />,
+                    bg: tw.isDark ? '#2d2d2d' : '#f6f7f9',
+                    iconBg: `${accent}20`,
+                    color: tw.isDark ? '#e5e7eb' : '#111827',
+                },
+                {
+                    key: 'savings',
+                    title: 'Savings',
+                    description: 'Manage and grow your savings.',
+                    icon: <PiggyBank className="h-8 w-8" />,
+                    bg: tw.isDark ? '#2d2d2d' : '#f6f7f9',
+                    iconBg: `${accent}20`,
+                    color: tw.isDark ? '#e5e7eb' : '#111827',
+                },
+                {
+                    key: 'logout',
+                    title: 'Log Out',
+                    description: 'End your current session securely.',
+                    icon: <LogOut className="h-8 w-8" />,
+                    bg: accent,
+                    iconBg: 'rgba(255,255,255,0.28)',
+                    color: '#ffffff',
+                },
+            ].map((action) => (
+                <Button
+                    key={action.key}
+                    fullWidth
+                    variant="contained"
+                    disableElevation
+                    sx={{
+                        height: '100%',
+                        minHeight: 140,
+                        justifyContent: 'center',
+                        textTransform: 'none',
+                        borderRadius: 3,
+                        alignItems: 'center',
+                        p: { xs: 2.5, sm: 3 },
+                        display: action.key === 'logout' ? { xs: 'none', sm: 'flex' } : 'flex',
+                        backgroundColor: action.bg,
+                        color: action.color,
+                        border: `1px solid ${action.key === 'logout' ? accent : borderColor}`,
+                        boxShadow: '0 10px 24px rgba(15,23,42,0.12)',
+                        transition: 'transform 160ms ease, box-shadow 160ms ease, background-color 160ms ease',
+                        '&:hover': {
+                            backgroundColor: action.key === 'logout' ? '#e66767' : tw.isDark ? '#353535' : '#ffffff',
+                            transform: 'translateY(-2px)',
+                            boxShadow: '0 14px 30px rgba(15,23,42,0.16)',
+                            borderColor: accent,
+                        },
+                    }}
+                >
+                    <Stack spacing={1.25} alignItems="center" sx={{ textAlign: 'center', width: '100%' }}>
+                        <Box
+                            sx={{
+                                display: 'grid',
+                                placeItems: 'center',
+                                width: 72,
+                                height: 72,
+                                borderRadius: '50%',
+                                backgroundColor: action.iconBg,
+                                color: action.key === 'logout' ? '#ffffff' : accent,
+                                boxShadow: '0 8px 18px rgba(0,0,0,0.12)',
+                            }}
+                        >
+                            {action.icon}
+                        </Box>
+                        <Typography variant="h6" sx={{ fontWeight: 800 }}>
+                            {action.title}
+                        </Typography>
+                        <Typography
+                            variant="body2"
+                            color={action.key === 'logout' ? 'rgba(255,255,255,0.85)' : 'text.secondary'}
+                            sx={{ display: { xs: 'none', sm: 'block' } }}
+                        >
+                            {action.description}
+                        </Typography>
+                    </Stack>
+                </Button>
+            ))}
+        </Box>
+    );
 
-      <div id="main-content" className="w-full pt-0 px-4 py-4 sm:px-6 lg:px-8">
-        <Mobile />
-        <Desktop />
-      </div>
-    </AppLayout>
-  );
+    const MobileView = () => (
+        <Stack spacing={2} sx={{ bgcolor: tw.isDark ? '#111111' : '#fafafa', pb: { xs: 10, sm: 0 }  }}>
+            {mobileTransactions}
+        </Stack>
+    );
+
+    const DesktopView = () => (
+        <Stack spacing={2} sx={{ bgcolor: tw.isDark ? '#111111' : '#fafafa'}}>
+            {mobileTransactions}
+        </Stack>
+    );
+
+    return (
+        <AppLayout breadcrumbs={[{ title: 'Dashboard', href: '/customer/dashboard' }]}>
+            <Head title="Dashboard" />
+            <Box sx={{ minHeight: '100%', bgcolor: tw.isDark ? '#0b0b0b' : '#f5f5f5', py: 2 }}>
+                <Box className="sr-only focus-within:not-sr-only">
+                    <a
+                        href="#main-content"
+                        className="absolute top-0 left-0 z-50 rounded-br-md bg-[#F57979] p-2 text-white focus:ring-2 focus:ring-white focus:outline-none"
+                    >
+                        Skip to main content
+                    </a>
+                </Box>
+
+                <Box id="main-content" sx={{ display: 'flex', flexDirection: 'column', gap: 2, px: { xs: 2, sm: 3 } }}>
+                    <Box >{headerBlock}</Box>
+                    {primaryActions}
+                    {isMobile ? <MobileView /> : <DesktopView />}
+                </Box>
+            </Box>
+        </AppLayout>
+    );
 }

@@ -1,9 +1,9 @@
-type ManagementHeroProps = {
+type HeaderBlockProps = {
     title: string;
     subtitle: string;
 };
 
-export default function ManagementHero({ title, subtitle }: ManagementHeroProps) {
+export default function HeaderBlock({ title, subtitle }: HeaderBlockProps) {
     return (
         <div className="p-4">
             <div className="relative h-[180px] overflow-hidden rounded-xl bg-[#F57979] shadow-lg">

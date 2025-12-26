@@ -15,6 +15,8 @@ type Props = {
     searchOptions?: string[];
     fullHeight?: boolean;
     enableStatusTabs?: boolean;
+    statusTab?: RegistrationStatus;
+    onStatusTabChange?: (value: RegistrationStatus) => void;
 };
 
 const ClientList: React.FC<Props> = ({
@@ -25,6 +27,8 @@ const ClientList: React.FC<Props> = ({
     searchOptions = [],
     fullHeight = false,
     enableStatusTabs = false,
+    statusTab: controlledStatusTab,
+    onStatusTabChange,
 }) => {
     const tw = useMyTheme();
     const getInitials = useInitials();
@@ -33,13 +37,13 @@ const ClientList: React.FC<Props> = ({
     const cardBg = tw.isDark ? '#2f2f2f' : '#f7f7f7';
     const cardBorder = tw.isDark ? '#3a3a3a' : '#e5e5e5';
 
-    const [statusTab, setStatusTab] = useState<RegistrationStatus>('approved');
+    const [statusTabInternal, setStatusTabInternal] = useState<RegistrationStatus>('approved');
+    const statusTab = controlledStatusTab ?? statusTabInternal;
     const [page, setPage] = useState(1);
     const pageSize = CLIENT_LIST_PAGE_SIZE;
 
     const list = useMemo(() => clients ?? [], [clients]);
     const listScrollRef = useRef<HTMLUListElement | null>(null);
-    const listContainerRef = useRef<HTMLDivElement | null>(null);
 
     const statusCounts = useMemo(() => {
         return list.reduce(
@@ -77,10 +81,15 @@ const ClientList: React.FC<Props> = ({
         if (listScrollRef.current) {
             listScrollRef.current.scrollTop = 0;
         }
-        if (listContainerRef.current) {
-            listContainerRef.current.scrollIntoView({ behavior: 'auto', block: 'start' });
-        }
     }, [statusTab]);
+
+    const handleStatusTabChange = (_: unknown, value: RegistrationStatus) => {
+        if (!value) return;
+        onStatusTabChange?.(value);
+        if (!controlledStatusTab) {
+            setStatusTabInternal(value);
+        }
+    };
 
     const avatarSrc = (c: Client) => {
         const raw = c.profile_picture_url ?? c.profile_picture_path ?? '';
@@ -97,7 +106,7 @@ const ClientList: React.FC<Props> = ({
             {enableStatusTabs ? (
                 <Tabs
                     value={statusTab}
-                    onChange={(_, value) => setStatusTab(value)}
+                    onChange={handleStatusTabChange}
                     variant="fullWidth"
                     textColor="primary"
                     indicatorColor="primary"
@@ -142,7 +151,6 @@ const ClientList: React.FC<Props> = ({
                     flexDirection: 'column',
                     gap: isMobile ? 1 : 1.25,
                 }}
-                ref={listContainerRef}
             >
                 <Autocomplete
                     freeSolo

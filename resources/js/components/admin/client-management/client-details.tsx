@@ -8,7 +8,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import BoxHeader from './box-header';
 import ImagePreviewModal from './image-preview-modal';
 import AmortschedTable from './amortsched-table';
-import FullScreenModalMobile from '../ui/full-screen-modal-mobile';
+import FullScreenModalMobile from '../../ui/full-screen-modal-mobile';
 import { useMyTheme } from '@/hooks/use-mytheme';
 import PaymentLedgerTable from './payment-ledger-table';
 import type { WlnLedEntry } from '@/types/user';

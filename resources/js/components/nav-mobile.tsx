@@ -43,7 +43,9 @@ export default function NavMobile() {
   const adminClientsHref = adminId ? `/admin/${adminId}/client-management` : '/admin/client-management';
   const adminProductsHref = adminId ? `/admin/${adminId}/products` : '/admin/products';
   const customerDashboardHref = customerAcct ? `/client/${customerAcct}/dashboard` : '/dashboard';
-  const customerLoansHref = customerAcct ? `/client/${customerAcct}/loan-transactions` : '/loan-transactions';
+  const customerLoansHref = customerAcct ? `/client/${customerAcct}/loans` : '/loans';
+  // const customerSavingsHref = customerAcct ? `/client/${customerAcct}/savings` : '/savings';
+  const customerAccountHref = customerAcct ? `/client/${customerAcct}/account` : route("profile.edit");
 
   const isDashboard =
     pathname === customerDashboardHref ||
@@ -82,8 +84,8 @@ export default function NavMobile() {
   const customerNav = useMemo(() => [
     { href: customerDashboardHref, label: "Home", icon: Home },
     { href: customerLoansHref, label: "Loans", icon: Briefcase },
-    { href: route("profile.edit"), label: "Account", icon: UserRound },
-  ], [customerDashboardHref, customerLoansHref]);
+    { href: customerAccountHref, label: "Account", icon: UserRound },
+  ], [customerDashboardHref, customerLoansHref, customerAccountHref]);
 
   const adminNav = useMemo(() => [
     { href: adminDashboardHref, label: "Home", icon: Home },
