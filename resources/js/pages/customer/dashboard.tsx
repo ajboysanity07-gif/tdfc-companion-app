@@ -7,6 +7,8 @@ import { Banknote, LogOut, PiggyBank } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useRoute } from 'ziggy-js';
 import { createTheme } from 'react-data-table-component';
+import SavingsTable from '@/components/dashboard/savings-table';
+import FullScreenModalMobile from '@/components/ui/full-screen-modal-mobile';
 
 type UserShape = {
     name?: string;
@@ -69,10 +71,11 @@ export default function CustomerDashboard() {
     const isMobile = useMediaQuery('(max-width:900px)');
     const dummySavingsDisplay = isMobile ? '₱ 1,000.00' : 'Php 1,000.00';
 
-    const { transactions, loading, error, fetchRecentTransactions } = useClientDashboard(acctno);
+    const { transactions, loanClass, savings, loading, error, fetchRecentTransactions } = useClientDashboard(acctno);
     
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(5);
+    const [showSavingsModal, setShowSavingsModal] = useState(false);
 
     const latestSavingsBalance = useMemo(() => {
         // Find the first (latest by date_in DESC) savings transaction
@@ -217,6 +220,22 @@ export default function CustomerDashboard() {
                 justifyContent="space-between"
             >
                 <Stack direction="row" spacing={2} alignItems="center" sx={{ minWidth: 0, flex: { xs: '0 0 70%', sm: 1 } }}>
+                    <Avatar
+                        src={avatar || undefined}
+                        alt={fullName}
+                        sx={{
+                            width: { xs: 68, sm: 72 },
+                            height: { xs: 68, sm: 72 },
+                            bgcolor: 'rgba(255,255,255,0.2)',
+                            fontWeight: 800,
+                            border: '2px solid rgba(255,255,255,0.4)',
+                            boxShadow: '0 8px 16px rgba(0,0,0,0.18)',
+                            display: { xs: 'none', sm: 'flex' },
+                            flexShrink: 0,
+                        }}
+                    >
+                        {!avatar ? initials : null}
+                    </Avatar>
                     <Box sx={{ minWidth: 0, flex: 1 }}>
                         <Typography variant="overline" sx={{ fontWeight: 800, letterSpacing: 1.1, color: accentHighlight }}>
                             Welcome
@@ -251,7 +270,7 @@ export default function CustomerDashboard() {
                                 fontSize: 13,
                             }}
                         >
-                            Class: {clientClass}
+                            Class: {loanClass || clientClass}
                         </Box>
                     </Box>
                 </Stack>
@@ -480,6 +499,11 @@ export default function CustomerDashboard() {
                     fullWidth
                     variant="contained"
                     disableElevation
+                    onClick={() => {
+                        if (action.key === 'savings') {
+                            setShowSavingsModal(true);
+                        }
+                    }}
                     sx={{
                         height: '100%',
                         minHeight: 140,
@@ -564,6 +588,47 @@ export default function CustomerDashboard() {
                     {isMobile ? <MobileView /> : <DesktopView />}
                 </Box>
             </Box>
+
+            {/* Savings Modal */}
+            <FullScreenModalMobile
+                open={showSavingsModal}
+                title="My Savings"
+                onClose={() => setShowSavingsModal(false)}
+                headerBg={accent}
+                headerColor="#ffffff"
+                paperSx={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: { xs: 74, sm: 74, md: 0 }, // leave room for bottom nav on mobile
+                    m: 0,
+                }}
+                bodySx={{
+                    p: { xs: 1.5, md: 2 },
+                    pb: { xs: 1.5, md: 2 },
+                    flex: '1 1 auto',
+                    height: {
+                        xs: 'calc(100vh - 56px - 74px)',
+                        sm: 'calc(100vh - 56px - 74px)',
+                        md: 'calc(100vh - 64px)',
+                    },
+                    maxHeight: {
+                        xs: 'calc(100vh - 56px - 74px)',
+                        sm: 'calc(100vh - 56px - 74px)',
+                        md: 'calc(100vh - 64px)',
+                    },
+                    overflowY: 'auto',
+                }}
+            >
+                <SavingsTable
+                    savings={savings}
+                    loading={loading}
+                    error={error}
+                    onRetry={handleRetry}
+                    isDark={tw.isDark}
+                />
+            </FullScreenModalMobile>
         </AppLayout>
     );
 }
