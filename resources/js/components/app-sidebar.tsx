@@ -6,7 +6,7 @@ import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
 import { BookOpen, Folder, LayoutGrid, Calculator, Briefcase, PiggyBank, Users, Package } from 'lucide-react';
 import AppLogo from './app-logo';
-import { useMemo } from 'react';
+import { useMemo, useCallback } from 'react';
 
 // Properly typed
 type AuthUser = {
@@ -33,10 +33,10 @@ type SharedPageProps = {
 };
 
 const customerNavItems: NavItem[] = [
-  { title: 'Home', href: 'customer/client-dashboard', icon: LayoutGrid },
-  { title: 'Loan Transactions', href: '/customer/loans', icon: Briefcase },
-  { title: 'Loan Calculator', href: 'customer/loans/calculator', icon: Calculator },
-  { title: 'Savings', href: 'customer/savings', icon: PiggyBank },
+  { title: 'Home', href: '/client/dashboard', icon: LayoutGrid },
+  { title: 'Loan Transactions', href: '/client/loans', icon: Briefcase },
+  { title: 'Loan Calculator', href: '/client/loans/calculator', icon: Calculator },
+  { title: 'Savings', href: '/client/savings', icon: PiggyBank },
 ];
 
 const adminNavItems: NavItem[] = [
@@ -51,14 +51,18 @@ const footerNavItems: NavItem[] = [
 ];
 
 export function AppSidebar() {
-  const { props } = usePage<SharedPageProps>();
+  const { props, url } = usePage<SharedPageProps>();
   const user = props.auth?.user;
   const userRole = user?.role || 'customer';
   const adminParam = props.admin ?? user?.acctno ?? user?.user_id ?? user?.id ?? '';
-  const customerAcct = props.acctno ?? user?.acctno ?? '';
+  
+  // Extract acctno from current URL as fallback (e.g., from /client/{acctno}/... routes)
+  const urlMatch = url.match(/\/client\/([^/]+)/);
+  const urlAcctno = urlMatch ? urlMatch[1] : '';
+  const customerAcct = props.acctno ?? user?.acctno ?? urlAcctno ?? '';
 
   const adminPath = (suffix: string) => (adminParam ? `/admin/${adminParam}${suffix}` : `/admin${suffix}`);
-  const customerPath = (suffix: string) => (customerAcct ? `/client/${customerAcct}${suffix}` : `/client${suffix}`);
+  const customerPath = useCallback((suffix: string) => (customerAcct ? `/client/${customerAcct}${suffix}` : `/client${suffix}`), [customerAcct]);
   const adminDashboardHref = adminPath('/dashboard');
   const adminClientManagementHref = adminPath('/client-management');
   const adminProductManagementHref = adminPath('/products');
@@ -69,13 +73,16 @@ export function AppSidebar() {
   const mainNavItems = useMemo(() => {
     if (userRole !== 'admin') {
       return customerNavItems.map((item) => {
-        if (item.title === 'Home') {
+        if (item.href === '/client/dashboard') {
           return { ...item, href: customerDashboardHref };
         }
-        if (item.title === 'Loan Transactions') {
+        if (item.href === '/client/loans') {
           return { ...item, href: customerLoansHref };
         }
-        if (item.title === 'Savings') {
+        if (item.href === '/client/loans/calculator') {
+          return { ...item, href: customerPath('/loans/calculator') };
+        }
+        if (item.href === '/client/savings') {
           return { ...item, href: customerSavingsHref };
         }
         return item;
@@ -96,7 +103,7 @@ export function AppSidebar() {
 
       return item;
     });
-  }, [adminClientManagementHref, adminDashboardHref, customerDashboardHref, customerLoansHref, customerSavingsHref, adminProductManagementHref, userRole]);
+  }, [adminClientManagementHref, adminDashboardHref, customerDashboardHref, customerLoansHref, customerSavingsHref, adminProductManagementHref, userRole, customerPath]);
 
   const homeLink = useMemo(() => {
     return userRole === 'admin' ? adminDashboardHref : customerDashboardHref;
@@ -108,7 +115,7 @@ export function AppSidebar() {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <Link href={homeLink} prefetch>
+              <Link href={homeLink}>
                 <AppLogo />
               </Link>
             </SidebarMenuButton>

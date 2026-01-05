@@ -1,8 +1,8 @@
 import { useMyTheme } from '@/hooks/use-mytheme';
 import { useClientDashboard } from '@/hooks/use-client-dashboard';
 import AppLayout from '@/layouts/app-layout';
-import { Head, usePage } from '@inertiajs/react';
-import { Avatar, Box, Button, Divider, Pagination, Stack, Typography, useMediaQuery } from '@mui/material';
+import { Head, router, usePage } from '@inertiajs/react';
+import { Avatar, Box, Button, Chip, Divider, Pagination, Stack, Typography, useMediaQuery } from '@mui/material';
 import { Banknote, LogOut, PiggyBank } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useRoute } from 'ziggy-js';
@@ -133,50 +133,50 @@ export default function CustomerDashboard() {
         return paginatedTransactions.map(t => {
             let displayValue = 0;
             let prefix = '';
-            let color = '#000000'; // default black
+            let color = tw.isDark ? '#e5e7eb' : '#000000'; // theme-aware default
 
             if (t.deposit && t.deposit > 0) {
                 displayValue = t.deposit;
                 prefix = '+';
-                color = '#1976d2'; // blue
+                color = tw.isDark ? '#64b5f6' : '#1976d2'; // lighter blue for dark mode
             } else if (t.withdrawal && t.withdrawal > 0) {
                 displayValue = t.withdrawal;
                 prefix = '-';
-                color = '#d32f2f'; // red
+                color = tw.isDark ? '#ef5350' : '#d32f2f'; // lighter red for dark mode
             } else if (t.principal && t.principal > 0) {
                 displayValue = t.principal;
                 prefix = '';
-                color = '#388e3c'; // green
+                color = tw.isDark ? '#66bb6a' : '#388e3c'; // lighter green for dark mode
             } else if (t.payments && t.payments > 0) {
                 displayValue = t.payments;
                 prefix = '';
-                color = '#000000'; // black
+                color = tw.isDark ? '#e5e7eb' : '#000000'; // theme-aware
             } else if(t.amount && t.amount > 0) {
                 displayValue = t.amount ?? 0;
                 prefix = '';
-                color = '#000000';
-            }else{
+                color = tw.isDark ? '#e5e7eb' : '#000000'; // theme-aware
+            } else {
                 displayValue = t.debit ?? 0;
                 prefix = '';
-                color = '#000000';
+                color = tw.isDark ? '#ffb74d' : '#f97316'; // lighter orange for dark mode
             }
 
             return { displayValue, prefix, color };
         });
-    }, [paginatedTransactions]);
+    }, [paginatedTransactions, tw.isDark]);
 
     const transactionDetails = useMemo(() => {
         return paginatedTransactions.map(t => {
             if (t.deposit && t.deposit > 0) {
-                return '- Deposit';
+                return 'Deposit';
             } else if (t.withdrawal && t.withdrawal > 0) {
-                return '- Withdrawal';
+                return 'Withdrawal';
             } else if (t.principal && t.principal > 0) {
-                return '- Loan Release';
+                return 'Loan Release';
             } else if (t.payments && t.payments > 0) {
-                return '- Payment';
+                return 'Payment';
             } else {
-                return '- Penalty';
+                return 'Penalty';
             }
         });
     }, [paginatedTransactions]);
@@ -376,15 +376,32 @@ export default function CustomerDashboard() {
                                     py={1.5}
                                 >
                                     <Box>
-                                        <Typography variant="subtitle2" sx={{ fontWeight: 700, fontSize: { xs: '0.875rem', md: '1.125rem' } }}>
-                                            {t.transaction_type} {transactionDetails[idx]}
-                                        </Typography>
+                                        <Stack direction="row" spacing={1} alignItems="center">
+                                            <Typography variant="subtitle2" sx={{ fontWeight: 700, fontSize: { xs: '0.875rem', md: '1.125rem' } }}>
+                                                {t.transaction_type}
+                                            </Typography>
+                                            <Chip 
+                                                label={transactionDetails[idx]} 
+                                                size="small"
+                                                variant="outlined"
+                                                sx={{ 
+                                                    borderColor: amountValues[idx]?.color || (tw.isDark ? '#e5e7eb' : '#000000'),
+                                                    color: amountValues[idx]?.color || (tw.isDark ? '#e5e7eb' : '#000000'),
+                                                    fontWeight: 600,
+                                                    fontSize: { xs: '0.7rem', md: '0.75rem' },
+                                                    height: { xs: 20, md: 22 },
+                                                    '& .MuiChip-label': {
+                                                        px: 1,
+                                                    }
+                                                }}
+                                            />
+                                        </Stack>
                                         <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}>
                                             {formatDate(t.date_in)}
                                         </Typography>
                                     </Box>
                                     <Box textAlign="right">
-                                        <Typography variant="subtitle2" sx={{ fontWeight: 700, fontSize: { xs: '0.875rem', md: '1.125rem' }, color: amountValues[idx]?.color || '#000000' }}>
+                                        <Typography variant="subtitle2" sx={{ fontWeight: 700, fontSize: { xs: '0.875rem', md: '1.125rem' }, color: amountValues[idx]?.color || (tw.isDark ? '#e5e7eb' : '#000000') }}>
                                             {amountValues[idx]?.prefix}{formatCurrency(Math.abs(amountValues[idx]?.displayValue ?? 0))}
                                         </Typography>
                                         <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}>
@@ -500,8 +517,12 @@ export default function CustomerDashboard() {
                     variant="contained"
                     disableElevation
                     onClick={() => {
-                        if (action.key === 'savings') {
+                        if (action.key === 'loan') {
+                            router.get(route('client.loan-apply', { acctno }));
+                        } else if (action.key === 'savings') {
                             setShowSavingsModal(true);
+                        } else if (action.key === 'logout') {
+                            router.post(route('logout'));
                         }
                     }}
                     sx={{
@@ -596,28 +617,10 @@ export default function CustomerDashboard() {
                 onClose={() => setShowSavingsModal(false)}
                 headerBg={accent}
                 headerColor="#ffffff"
-                paperSx={{
-                    position: 'fixed',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: { xs: 74, sm: 74, md: 0 }, // leave room for bottom nav on mobile
-                    m: 0,
-                }}
                 bodySx={{
                     p: { xs: 1.5, md: 2 },
                     pb: { xs: 1.5, md: 2 },
                     flex: '1 1 auto',
-                    height: {
-                        xs: 'calc(100vh - 56px - 74px)',
-                        sm: 'calc(100vh - 56px - 74px)',
-                        md: 'calc(100vh - 64px)',
-                    },
-                    maxHeight: {
-                        xs: 'calc(100vh - 56px - 74px)',
-                        sm: 'calc(100vh - 56px - 74px)',
-                        md: 'calc(100vh - 64px)',
-                    },
                     overflowY: 'auto',
                 }}
             >

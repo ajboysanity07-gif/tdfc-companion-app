@@ -15,6 +15,7 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Customer\RegistrationStatusController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\ClientDashboardController;
+use App\Http\Controllers\Api\LoansApplyController;
 
 // Registration duplicate check if needed (public or auth)
 Route::get('/check-register-duplicate', function (Request $request) {
@@ -95,5 +96,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('/client/{acctno}/savings', [ClientDashboardController::class, 'savings']);
         Route::get('/client/{acctno}/account', [ClientDashboardController::class, 'account']);
         Route::get('/client/{acctno}/transactions', [ClientDashboardController::class, 'transactions']);
+        
+        // Loan apply routes
+        Route::get('/loans/apply', [LoansApplyController::class, 'index']);
     });
 });

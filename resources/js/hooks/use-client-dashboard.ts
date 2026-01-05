@@ -1,10 +1,12 @@
 import axios from 'axios';
 import axiosClient from '@/api/axios-client';
 import { useCallback, useState } from 'react';
-import type { ClientDashboardResponse, VRecentTransactions } from '@/types/client-dashboard';
+import type { ClientDashboardResponse, VRecentTransactions, WSavledRecord } from '@/types/client-dashboard';
 
 export function useClientDashboard(acctno?: string) {
     const [transactions, setTransactions] = useState<VRecentTransactions[]>([]);
+    const [loanClass, setLoanClass] = useState<string | null>(null);
+    const [savings, setSavings] = useState<WSavledRecord[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -16,6 +18,8 @@ export function useClientDashboard(acctno?: string) {
             const { data } = await axiosClient.get<ClientDashboardResponse>(endpoint);
             const list = Array.isArray(data?.items) ? data.items : [];
             setTransactions(list);
+            setLoanClass(data?.loanClass ?? null);
+            setSavings(Array.isArray(data?.savings) ? data.savings : []);
             return list;
         } catch (err) {
             const message = axios.isAxiosError(err)
@@ -28,5 +32,5 @@ export function useClientDashboard(acctno?: string) {
         }
     }, [acctno]);
 
-    return { transactions, loading, error, fetchRecentTransactions, setTransactions };
+    return { transactions, loanClass, savings, loading, error, fetchRecentTransactions, setTransactions };
 }

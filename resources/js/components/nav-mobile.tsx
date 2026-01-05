@@ -33,11 +33,15 @@ export default function NavMobile() {
   const pathname =
     typeof window !== "undefined" ? window.location.pathname : "";
 
-  const { props } = usePage<SharedPageProps>();
+  const { props, url } = usePage<SharedPageProps>();
   const user = props.auth?.user;
   const userRole = user?.role || 'customer';
   const adminId = props.admin ?? user?.acctno ?? user?.user_id ?? user?.id ?? '';
-  const customerAcct = props.acctno ?? user?.acctno ?? '';
+  
+  // Extract acctno from current URL as fallback
+  const urlMatch = url.match(/\/client\/([^\/]+)/);
+  const urlAcctno = urlMatch ? urlMatch[1] : '';
+  const customerAcct = props.acctno ?? user?.acctno ?? urlAcctno ?? '';
 
   const adminDashboardHref = adminId ? `/admin/${adminId}/dashboard` : '/admin/dashboard';
   const adminClientsHref = adminId ? `/admin/${adminId}/client-management` : '/admin/client-management';

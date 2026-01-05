@@ -36,6 +36,11 @@ Route::middleware(['auth', 'role:customer', 'approved'])
     ->get('/client/{acctno}/dashboard', fn($acctno) => Inertia::render('customer/dashboard', ['acctno' => $acctno]))
     ->name('client.dashboard');
 
+// Client loan apply
+Route::middleware(['auth', 'role:customer', 'approved'])
+    ->get('/client/{acctno}/loan-apply', fn($acctno) => Inertia::render('customer/loan-apply', ['acctno' => $acctno]))
+    ->name('client.loan-apply');
+
 // Client registration status
 Route::middleware(['auth', 'role:customer'])
     ->get('/client/{acctno}/registration-status', [RegistrationStatusController::class, 'show'])

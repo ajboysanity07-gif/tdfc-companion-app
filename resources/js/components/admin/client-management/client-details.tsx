@@ -5,7 +5,7 @@ import ThumbUpAltIcon from '@mui/icons-material/ThumbUpAlt';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import { Avatar, Box, Button, Divider, IconButton, InputAdornment, Skeleton, Stack, TextField, Typography } from '@mui/material';
 import React, { useEffect, useMemo, useState } from 'react';
-import BoxHeader from './box-header';
+import BoxHeader from '@/components/box-header';
 import ImagePreviewModal from './image-preview-modal';
 import AmortschedTable from './amortsched-table';
 import FullScreenModalMobile from '../../ui/full-screen-modal-mobile';

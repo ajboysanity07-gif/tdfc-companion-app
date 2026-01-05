@@ -6,7 +6,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import { Autocomplete, Box, Chip, IconButton, List, ListItem, Paper, Stack, TextField, Typography, useMediaQuery, useTheme } from '@mui/material';
 import React, { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import BoxHeader from './box-header';
+import BoxHeader from '@/components/box-header';
 import { PRODUCT_LIST_PAGE_SIZE } from './product-list-skeleton';
 
 type Props = {

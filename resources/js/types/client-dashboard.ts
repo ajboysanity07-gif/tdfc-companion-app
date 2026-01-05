@@ -14,6 +14,23 @@ export type VRecentTransactions = {
     debit: number | null;
 };
 
+export type WSavledRecord = {
+    controlno: string;
+    svstatus: string;
+    acctno: string;
+    svnumber: string;
+    typecode: string;
+    svtype: string;
+    date_in: string | null;
+    mreference: string;
+    cs_ck: string;
+    deposit: number;
+    withdrawal: number;
+    balance: number;
+};
+
 export type ClientDashboardResponse = {
     items: VRecentTransactions[];
+    loanClass?: string | null;
+    savings?: WSavledRecord[];
 };

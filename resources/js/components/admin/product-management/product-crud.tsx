@@ -8,7 +8,7 @@ import { Box, Button, Chip, Divider, FormControl, InputAdornment, InputLabel, Me
 import { AnimatePresence, motion } from 'framer-motion';
 import { isConstantNode, isFunctionNode, isOperatorNode, isParenthesisNode, isSymbolNode, parse, type MathNode } from 'mathjs';
 import React, { useCallback, useEffect, useState } from 'react';
-import BoxHeader from './box-header';
+import BoxHeader from '@/components/box-header';
 
 const sanitizeNumber = (value: string) => value.replace(/[^\d.,-]/g, '');
 const formatNumber = (value: string, options?: Intl.NumberFormatOptions) => {
