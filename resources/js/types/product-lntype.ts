@@ -13,10 +13,12 @@ export interface ProductLntype {
     mode: string | null;
     interest_rate: number | null;
     max_term_days: number | null;
+    max_term_months: number; // Computed from max_term_days
     is_max_term_editable: boolean | null;
     max_amortization_mode: 'FIXED' | 'BASIC' | 'CUSTOM';
     max_amortization_formula: string | null;
     max_amortization: number | null;
+    computed_result: number; // Computed max amortization based on mode
     is_max_amortization_editable: boolean | null;
     service_fee: number | null;
     lrf: number | null;

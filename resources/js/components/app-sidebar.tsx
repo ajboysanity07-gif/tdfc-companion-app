@@ -34,7 +34,7 @@ type SharedPageProps = {
 
 const customerNavItems: NavItem[] = [
   { title: 'Home', href: '/client/dashboard', icon: LayoutGrid },
-  { title: 'Loan Transactions', href: '/client/loans', icon: Briefcase },
+  { title: 'Loan Transactions', href: '/client/loan-apply', icon: Briefcase },
   { title: 'Loan Calculator', href: '/client/loans/calculator', icon: Calculator },
   { title: 'Savings', href: '/client/savings', icon: PiggyBank },
 ];
@@ -67,7 +67,7 @@ export function AppSidebar() {
   const adminClientManagementHref = adminPath('/client-management');
   const adminProductManagementHref = adminPath('/products');
   const customerDashboardHref = customerPath('/dashboard');
-  const customerLoansHref = customerPath('/loans');
+  const customerLoansHref = customerPath('/loan-apply');
   const customerSavingsHref = customerPath('/savings');
 
   const mainNavItems = useMemo(() => {
@@ -76,7 +76,7 @@ export function AppSidebar() {
         if (item.href === '/client/dashboard') {
           return { ...item, href: customerDashboardHref };
         }
-        if (item.href === '/client/loans') {
+        if (item.href === '/client/loan-apply') {
           return { ...item, href: customerLoansHref };
         }
         if (item.href === '/client/loans/calculator') {

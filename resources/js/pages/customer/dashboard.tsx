@@ -26,12 +26,12 @@ type PageProps = {
 };
 
 const formatCurrency = (amount: number): string => {
-    if (!Number.isFinite(amount)) return 'PHP 0.00';
+    if (!Number.isFinite(amount)) return '₱0.00';
     return new Intl.NumberFormat('en-PH', {
         style: 'currency',
         currency: 'PHP',
         maximumFractionDigits: 2,
-    }).format(amount);
+    }).format(amount).replace('PHP', '₱');
 };
 
 const formatDate = (iso: string | null): string => {
@@ -69,7 +69,7 @@ export default function CustomerDashboard() {
     const surface = tw.isDark ? '#2f2f2f' : '#ffffff';
     const borderColor = tw.isDark ? '#3a3a3a' : '#e5e7eb';
     const isMobile = useMediaQuery('(max-width:900px)');
-    const dummySavingsDisplay = isMobile ? '₱ 1,000.00' : 'Php 1,000.00';
+    const dummySavingsDisplay = '₱1,000.00';
 
     const { transactions, loanClass, savings, loading, error, fetchRecentTransactions } = useClientDashboard(acctno);
     
@@ -304,7 +304,16 @@ export default function CustomerDashboard() {
             >
           
                 <Stack alignItems="center" spacing={0.5} sx={{ width: { xs: '100%', sm: 'auto' } }}>
-                    <Typography variant="h3" sx={{ fontWeight: 900, lineHeight: 1, letterSpacing: -3 }}>
+                    <Typography 
+                        variant="h3" 
+                        sx={{ 
+                            fontWeight: 900, 
+                            lineHeight: 1, 
+                            letterSpacing: { xs: -2, sm: -3 },
+                            fontSize: { xs: '2.5rem', sm: '3rem' },
+                            fontFamily: 'system-ui, -apple-system, sans-serif',
+                        }}
+                    >
                         {latestSavingsBalance}
                     </Typography>
                     <Typography variant="overline" sx={{ letterSpacing: 1, color: accentHighlight, fontWeight: 800 }}>

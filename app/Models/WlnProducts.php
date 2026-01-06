@@ -36,6 +36,17 @@ class WlnProducts extends Model
         'is_max_amortization_editable' => 'boolean'
 
     ];
+
+    protected $appends = ['max_term_months'];
+
+    /**
+     * Accessor for max_term_months (computed from max_term_days).
+     */
+    public function getMaxTermMonthsAttribute(): int
+    {
+        return $this->max_term_days ? (int) floor($this->max_term_days / 30) : 0;
+    }
+
     public function tags()
     {
         return $this->hasMany(WlnProductTags::class, 'product_id', 'product_id');

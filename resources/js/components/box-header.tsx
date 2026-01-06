@@ -15,7 +15,11 @@ const BoxHeader: React.FC<Props> = ({ title, subtitle }) => {
       <Typography
         variant="h4"
         fontWeight={800}
-        sx={{ letterSpacing: 0.3, color: accent }}
+        sx={{ 
+          letterSpacing: 0.3, 
+          color: accent,
+          fontSize: { xs: '1.5rem', md: '2.125rem' }
+        }}
       >
         {title}
       </Typography>

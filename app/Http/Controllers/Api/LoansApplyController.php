@@ -246,8 +246,8 @@ class LoansApplyController extends Controller
      */
     private function evaluateMathExpression(string $formula, float $basic): array
     {
-        // Replace {basic} with the numeric value
-        $expression = str_replace('{basic}', (string)$basic, $formula);
+        // Replace both {basic} and 'basic' (without braces) with the numeric value
+        $expression = str_replace(['{basic}', 'basic'], [(string)$basic, (string)$basic], $formula);
 
         // Validate the expression
         $validation = $this->validateMathExpression($expression);
@@ -281,6 +281,44 @@ class LoansApplyController extends Controller
             ->with('types')
             ->orderBy('product_name')
             ->get();
+
+        // Get the authenticated user's account number for BASIC/CUSTOM calculations
+        $acctno = auth()->user()->acctno;
+
+        // Calculate computed_result for each product
+        $products = $products->map(function ($product) use ($acctno) {
+            $computedResult = 0.00;
+
+            if ($product->max_amortization_mode === 'FIXED') {
+                // For FIXED mode: use max_amortization as computed_result
+                if (!empty($product->max_amortization)) {
+                    $cleanedValue = preg_replace('/[,\s]/', '', $product->max_amortization);
+                    $computedResult = (float) $cleanedValue;
+                }
+            } elseif (in_array($product->max_amortization_mode, ['BASIC', 'CUSTOM'])) {
+                // For BASIC/CUSTOM mode: fetch basic salary and evaluate formula
+                $salaryRecord = WSalaryRecord::where('acctno', $acctno)->first();
+                
+                if ($salaryRecord && is_numeric($salaryRecord->salary_amount) && !empty($product->max_amortization_formula)) {
+                    $basic = (float) $salaryRecord->salary_amount;
+                    
+                    // If formula is just "basic", return the salary amount directly
+                    if (trim($product->max_amortization_formula) === 'basic') {
+                        $computedResult = $basic;
+                    } else {
+                        // Replace {basic} placeholder with actual value and evaluate
+                        $evalResult = $this->evaluateMathExpression($product->max_amortization_formula, $basic);
+                        
+                        if ($evalResult['success']) {
+                            $computedResult = (float) $evalResult['result'];
+                        }
+                    }
+                }
+            }
+
+            $product->computed_result = round($computedResult, 2);
+            return $product;
+        });
 
         return response()->json([
             'success' => true,

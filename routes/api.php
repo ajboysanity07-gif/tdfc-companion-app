@@ -99,5 +99,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
         
         // Loan apply routes
         Route::get('/loans/apply', [LoansApplyController::class, 'index']);
+        Route::post('/loans/apply', [LoansApplyController::class, 'store']);
     });
 });

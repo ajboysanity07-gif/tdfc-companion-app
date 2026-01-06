@@ -19,6 +19,7 @@ type Props = {
     bodyClassName?: string;
     onToggle?: (open: boolean) => void;
     zIndex?: number;
+    titleSx?: SxProps<Theme>;
 };
 
 const Transition = React.forwardRef(function Transition(
@@ -41,6 +42,7 @@ const FullScreenModalMobile: React.FC<Props> = ({
     bodyClassName,
     onToggle,
     zIndex,
+    titleSx,
 }) => {
     const theme = useTheme();
     const layerZ = zIndex ?? 5; // Lower than sidebar's z-10
@@ -141,6 +143,7 @@ const FullScreenModalMobile: React.FC<Props> = ({
                             textOverflow: 'ellipsis',
                             fontSize: { xs: 16, sm: 20 },
                             lineHeight: 1.2,
+                            ...titleSx,
                         }}
                         variant="h6"
                         component="div"

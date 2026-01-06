@@ -47,7 +47,7 @@ export default function NavMobile() {
   const adminClientsHref = adminId ? `/admin/${adminId}/client-management` : '/admin/client-management';
   const adminProductsHref = adminId ? `/admin/${adminId}/products` : '/admin/products';
   const customerDashboardHref = customerAcct ? `/client/${customerAcct}/dashboard` : '/dashboard';
-  const customerLoansHref = customerAcct ? `/client/${customerAcct}/loans` : '/loans';
+  const customerLoansHref = customerAcct ? `/client/${customerAcct}/loan-apply` : '/loan-apply';
   // const customerSavingsHref = customerAcct ? `/client/${customerAcct}/savings` : '/savings';
   const customerAccountHref = customerAcct ? `/client/${customerAcct}/account` : route("profile.edit");
 
@@ -72,7 +72,7 @@ export default function NavMobile() {
       if (typeof document === "undefined") return;
       const body = document.body;
       setProductModalOpen(body.classList.contains("product-details-open"));
-      const modalClasses = ["client-details-open", "app-modal-open", "modal-open", "amort-schedule-open"];
+      const modalClasses = ["client-details-open", "app-modal-open", "modal-open", "amort-schedule-open", "calculator-modal-open"];
       setAnyModalOpen(modalClasses.some((cls) => body.classList.contains(cls)));
     };
     sync();
