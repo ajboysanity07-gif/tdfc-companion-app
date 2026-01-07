@@ -3,19 +3,24 @@
 use App\Models\AppUser;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\UserRejectionController;
-use App\Http\Controllers\Api\WmasterLookupController;
-use App\Http\Controllers\Api\LoanTransactionController;
-use App\Http\Controllers\Api\RecentTransactionController;
-use App\Http\Controllers\Api\AdminDashboardController;
+
+// Admin Controllers
+use App\Http\Controllers\Api\Admin\AdminDashboardController;
+use App\Http\Controllers\Api\Admin\ClientManagementController;
+use App\Http\Controllers\Api\Admin\ProductManagementController;
+use App\Http\Controllers\Api\Admin\UserRejectionController;
+
+// Client Controllers
+use App\Http\Controllers\Api\Client\ClientDashboardController;
+use App\Http\Controllers\Api\Client\LoansApplyController;
+use App\Http\Controllers\Api\Client\LoanTransactionController;
+use App\Http\Controllers\Api\Client\RecentTransactionController;
+use App\Http\Controllers\Api\Client\WmasterLookupController;
+
+// Auth Controllers
 use App\Http\Controllers\Auth\RegisteredUserController;
-use App\Http\Controllers\Api\ProductManagementController;
-use App\Http\Controllers\Api\ClientManagementController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Customer\RegistrationStatusController;
-use App\Http\Controllers\Api\ProductController;
-use App\Http\Controllers\Api\ClientDashboardController;
-use App\Http\Controllers\Api\LoansApplyController;
 
 // Registration duplicate check if needed (public or auth)
 Route::get('/check-register-duplicate', function (Request $request) {
