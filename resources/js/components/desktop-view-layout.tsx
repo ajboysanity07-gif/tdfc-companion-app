@@ -57,7 +57,7 @@ export default function DesktopViewLayout({
             flexDirection: 'column',
             gap: 4,
             p: 2,
-            bgcolor: tw.isDark ? '#171717' : '#FAFAFA',
+            bgcolor: tw.isDark ? '#0a0a0a' : '#f5f5f5',
             transition: 'color 300ms, background-color 300ms',
         },
         wrapperSx,

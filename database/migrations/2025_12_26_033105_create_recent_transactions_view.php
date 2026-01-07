@@ -29,6 +29,7 @@ return new class extends Migration
                 debit
                 
             FROM wlnled
+            WHERE (principal <> 0 OR payments <> 0)
 
             UNION ALL
 
@@ -48,6 +49,7 @@ return new class extends Migration
                 NULL AS debit
                 
             FROM wsavled
+            WHERE (withdrawal <> 0 OR deposit <> 0) AND typecode = 4
             ORDER BY date_in DESC
         ");
     }

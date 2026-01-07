@@ -47,7 +47,7 @@ export default function NavMobile() {
   const adminClientsHref = adminId ? `/admin/${adminId}/client-management` : '/admin/client-management';
   const adminProductsHref = adminId ? `/admin/${adminId}/products` : '/admin/products';
   const customerDashboardHref = customerAcct ? `/client/${customerAcct}/dashboard` : '/dashboard';
-  const customerLoansHref = customerAcct ? `/client/${customerAcct}/loan-apply` : '/loan-apply';
+  const customerLoansHref = customerAcct ? `/client/${customerAcct}/loan-calculator` : '/loan-calculator';
   // const customerSavingsHref = customerAcct ? `/client/${customerAcct}/savings` : '/savings';
   const customerAccountHref = customerAcct ? `/client/${customerAcct}/account` : route("profile.edit");
 

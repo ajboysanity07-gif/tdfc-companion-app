@@ -61,8 +61,9 @@
 //     }
 // }
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use App\Models\VWeb_Account;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;

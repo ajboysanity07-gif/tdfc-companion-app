@@ -3,10 +3,10 @@
 use App\Models\AppUser;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\UserRejectionController;
-use App\Http\Controllers\WmasterLookupController;
-use App\Http\Controllers\LoanTransactionController;
-use App\Http\Controllers\RecentTransactionController;
+use App\Http\Controllers\Api\UserRejectionController;
+use App\Http\Controllers\Api\WmasterLookupController;
+use App\Http\Controllers\Api\LoanTransactionController;
+use App\Http\Controllers\Api\RecentTransactionController;
 use App\Http\Controllers\Api\AdminDashboardController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Api\ProductManagementController;

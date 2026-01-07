@@ -11,6 +11,11 @@ use Laravel\Sanctum\HasApiTokens;
 class AppUser extends AuthenticatableUser
 {
     use HasApiTokens;
+
+    public const STATUS_PENDING = 'pending';
+    public const STATUS_APPROVED = 'approved';
+    public const STATUS_REJECTED = 'rejected';
+
     protected $table = 'app_user_table';
     protected $primaryKey = 'user_id';
 

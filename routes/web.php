@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Route;
 // --- Controllers ---
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
-use App\Http\Controllers\LoanTransactionController;
+use App\Http\Controllers\Api\LoanTransactionController;
 use App\Http\Controllers\Customer\RegistrationStatusController;
 // --- Welcome / Landing Page ---
 Route::get('/', function () {

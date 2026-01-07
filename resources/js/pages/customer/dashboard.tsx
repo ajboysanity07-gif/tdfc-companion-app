@@ -133,32 +133,24 @@ export default function CustomerDashboard() {
         return paginatedTransactions.map(t => {
             let displayValue = 0;
             let prefix = '';
-            let color = tw.isDark ? '#e5e7eb' : '#000000'; // theme-aware default
+            let color = tw.isDark ? '#e5e7eb' : '#374151';
 
             if (t.deposit && t.deposit > 0) {
                 displayValue = t.deposit;
                 prefix = '+';
-                color = tw.isDark ? '#64b5f6' : '#1976d2'; // lighter blue for dark mode
+                color = '#4c92f1'; // Blue for additions
             } else if (t.withdrawal && t.withdrawal > 0) {
                 displayValue = t.withdrawal;
                 prefix = '-';
-                color = tw.isDark ? '#ef5350' : '#d32f2f'; // lighter red for dark mode
+                color = '#f57373'; // Red for deductions
             } else if (t.principal && t.principal > 0) {
                 displayValue = t.principal;
                 prefix = '';
-                color = tw.isDark ? '#66bb6a' : '#388e3c'; // lighter green for dark mode
+                color = '#4c92f1'; // Blue for loan release
             } else if (t.payments && t.payments > 0) {
                 displayValue = t.payments;
-                prefix = '';
-                color = tw.isDark ? '#e5e7eb' : '#000000'; // theme-aware
-            } else if(t.amount && t.amount > 0) {
-                displayValue = t.amount ?? 0;
-                prefix = '';
-                color = tw.isDark ? '#e5e7eb' : '#000000'; // theme-aware
-            } else {
-                displayValue = t.debit ?? 0;
-                prefix = '';
-                color = tw.isDark ? '#ffb74d' : '#f97316'; // lighter orange for dark mode
+                prefix = '-';
+                color = '#f57373'; // Red for payments
             }
 
             return { displayValue, prefix, color };
@@ -172,14 +164,20 @@ export default function CustomerDashboard() {
             } else if (t.withdrawal && t.withdrawal > 0) {
                 return 'Withdrawal';
             } else if (t.principal && t.principal > 0) {
-                return 'Loan Release';
+                return 'Principal';
             } else if (t.payments && t.payments > 0) {
                 return 'Payment';
-            } else {
-                return 'Penalty';
             }
+            return '';
         });
     }, [paginatedTransactions]);
+
+    const balanceLabels = useMemo(() => {
+        return paginatedTransactions.map(() => {
+            // Use single neutral color for all balances
+            return tw.isDark ? '#9ca3af' : '#6b7280';
+        });
+    }, [paginatedTransactions, tw.isDark]);
 
     const handlePageSizeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const newSize = Math.max(1, parseInt(event.target.value) || 10);
@@ -331,18 +329,56 @@ export default function CustomerDashboard() {
                 border: `1px solid ${borderColor}`,
                 backgroundColor: surface,
                 p: { xs: 2, md: 3 },
-                mb: { xs: 8, sm: 0 },
+                boxShadow: tw.isDark ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.05)',
             }}
         >
             <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
-                <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                <Typography variant="h6" sx={{ fontWeight: 700, letterSpacing: '-0.01em' }}>
                     Recent Transactions
                 </Typography>
-                <Button size="small" sx={{ color: accent, fontWeight: 700, textTransform: 'none' }}>
+                <Button 
+                    size="small" 
+                    sx={{ 
+                        color: accent, 
+                        fontWeight: 700, 
+                        textTransform: 'none',
+                        '&:hover': {
+                            backgroundColor: `${accent}10`,
+                            transform: 'translateX(2px)',
+                        },
+                        transition: 'all 0.2s ease'
+                    }}
+                >
                     View All
                 </Button>
             </Stack>
-            <Divider sx={{ mb: 2, borderColor }} />
+            <Divider sx={{ mb: 2, borderColor, opacity: 0.6 }} />
+            
+            {/* Color Legend */}
+            <Stack 
+                direction="row" 
+                spacing={2} 
+                sx={{ 
+                    mb: 2, 
+                    pb: 2, 
+                    borderBottom: `1px dashed ${borderColor}`,
+                    flexWrap: 'wrap',
+                    gap: 1
+                }}
+            >
+                <Stack direction="row" spacing={0.5} alignItems="center">
+                    <Box sx={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#4c92f1' }} />
+                    <Typography variant="caption" sx={{ fontSize: '0.7rem', opacity: 0.7 }}>
+                        Deposit / Principal
+                    </Typography>
+                </Stack>
+                <Stack direction="row" spacing={0.5} alignItems="center">
+                    <Box sx={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#f57373' }} />
+                    <Typography variant="caption" sx={{ fontSize: '0.7rem', opacity: 0.7 }}>
+                        Withdrawal / Payment
+                    </Typography>
+                </Stack>
+            </Stack>
 
             {loading && (
                 <Box sx={{ py: 4, textAlign: 'center' }}>
@@ -383,37 +419,79 @@ export default function CustomerDashboard() {
                                     justifyContent="space-between"
                                     spacing={2}
                                     py={1.5}
+                                    px={1}
+                                    sx={{
+                                        borderRadius: 1,
+                                        transition: 'all 0.2s ease',
+                                        cursor: 'pointer',
+                                        '&:hover': {
+                                            backgroundColor: tw.isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
+                                            transform: 'translateX(4px)',
+                                        }
+                                    }}
                                 >
                                     <Box>
                                         <Stack direction="row" spacing={1} alignItems="center">
-                                            <Typography variant="subtitle2" sx={{ fontWeight: 700, fontSize: { xs: '0.875rem', md: '1.125rem' } }}>
+                                            <Typography 
+                                                variant="subtitle2" 
+                                                sx={{ 
+                                                    fontWeight: 700, 
+                                                    fontSize: { xs: '0.875rem', md: '1rem' },
+                                                    letterSpacing: '0.01em'
+                                                }}
+                                            >
                                                 {t.transaction_type}
                                             </Typography>
                                             <Chip 
                                                 label={transactionDetails[idx]} 
                                                 size="small"
-                                                variant="outlined"
                                                 sx={{ 
-                                                    borderColor: amountValues[idx]?.color || (tw.isDark ? '#e5e7eb' : '#000000'),
-                                                    color: amountValues[idx]?.color || (tw.isDark ? '#e5e7eb' : '#000000'),
+                                                    backgroundColor: tw.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)',
+                                                    color: tw.isDark ? '#d1d5db' : '#4b5563',
                                                     fontWeight: 600,
                                                     fontSize: { xs: '0.7rem', md: '0.75rem' },
-                                                    height: { xs: 20, md: 22 },
+                                                    height: { xs: 22, md: 24 },
+                                                    border: 'none',
                                                     '& .MuiChip-label': {
-                                                        px: 1,
+                                                        px: 1.5,
                                                     }
                                                 }}
                                             />
                                         </Stack>
-                                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}>
+                                        <Typography 
+                                            variant="caption" 
+                                            color="text.secondary" 
+                                            sx={{ 
+                                                fontSize: { xs: '0.75rem', md: '0.8125rem' },
+                                                opacity: 0.7,
+                                                fontVariantNumeric: 'tabular-nums'
+                                            }}
+                                        >
                                             {formatDate(t.date_in)}
                                         </Typography>
                                     </Box>
                                     <Box textAlign="right">
-                                        <Typography variant="subtitle2" sx={{ fontWeight: 700, fontSize: { xs: '0.875rem', md: '1.125rem' }, color: amountValues[idx]?.color || (tw.isDark ? '#e5e7eb' : '#000000') }}>
+                                        <Typography 
+                                            variant="subtitle2" 
+                                            sx={{ 
+                                                fontWeight: 700, 
+                                                fontSize: { xs: '0.95rem', md: '1.125rem' }, 
+                                                color: amountValues[idx]?.color || '#000000',
+                                                fontVariantNumeric: 'tabular-nums',
+                                                letterSpacing: '-0.02em'
+                                            }}
+                                        >
                                             {amountValues[idx]?.prefix}{formatCurrency(Math.abs(amountValues[idx]?.displayValue ?? 0))}
                                         </Typography>
-                                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}>
+                                        <Typography 
+                                            variant="caption" 
+                                            sx={{ 
+                                                fontSize: { xs: '0.75rem', md: '0.8125rem' }, 
+                                                color: balanceLabels[idx] || '#000000',
+                                                fontVariantNumeric: 'tabular-nums',
+                                                opacity: 0.9
+                                            }}
+                                        >
                                             {formatCurrency(Math.abs(t.balance ?? 0))}
                                         </Typography>
                                     </Box>
@@ -435,16 +513,20 @@ export default function CustomerDashboard() {
                                     onChange={handlePageSizeChange}
                                     style={{
                                         width: '60px',
-                                        padding: '6px 8px',
+                                        padding: '8px 10px',
                                         border: `1px solid ${borderColor}`,
-                                        borderRadius: '4px',
+                                        borderRadius: '6px',
                                         backgroundColor: surface,
                                         color: tw.isDark ? '#e5e7eb' : '#000000',
                                         fontFamily: 'inherit',
+                                        fontWeight: 600,
+                                        fontSize: '0.875rem',
+                                        textAlign: 'center',
+                                        transition: 'all 0.2s ease',
                                     }}
                                 />
                             </Stack>
-                            <Typography variant="caption" color="text.secondary">
+                            <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500, opacity: 0.8 }}>
                                 Page {currentPage} of {totalPages} ({transactions.length} total)
                             </Typography>
                         </Stack>
@@ -461,16 +543,21 @@ export default function CustomerDashboard() {
                                     '& .MuiPaginationItem-root': {
                                         color: tw.isDark ? '#e5e7eb' : '#000000',
                                         borderColor: borderColor,
+                                        fontWeight: 500,
+                                        transition: 'all 0.2s ease',
                                     },
                                     '& .MuiPaginationItem-page.Mui-selected': {
                                         backgroundColor: accent,
                                         color: '#ffffff',
+                                        fontWeight: 700,
+                                        transform: 'scale(1.05)',
                                         '&:hover': {
                                             backgroundColor: '#e66767',
                                         },
                                     },
                                     '& .MuiPaginationItem-page:hover': {
                                         backgroundColor: `${accent}15`,
+                                        transform: 'scale(1.05)',
                                     },
                                 }}
                             />
@@ -527,7 +614,7 @@ export default function CustomerDashboard() {
                     disableElevation
                     onClick={() => {
                         if (action.key === 'loan') {
-                            router.get(route('client.loan-apply', { acctno }));
+                            router.get(route('client.loan-calculator', { acctno }));
                         } else if (action.key === 'savings') {
                             setShowSavingsModal(true);
                         } else if (action.key === 'logout') {
@@ -588,13 +675,13 @@ export default function CustomerDashboard() {
     );
 
     const MobileView = () => (
-        <Stack spacing={2} sx={{ bgcolor: tw.isDark ? '#111111' : '#fafafa', pb: { xs: 10, sm: 0 }  }}>
+        <Stack spacing={2}>
             {mobileTransactions}
         </Stack>
     );
 
     const DesktopView = () => (
-        <Stack spacing={2} sx={{ bgcolor: tw.isDark ? '#111111' : '#fafafa'}}>
+        <Stack spacing={2}>
             {mobileTransactions}
         </Stack>
     );
@@ -612,7 +699,7 @@ export default function CustomerDashboard() {
                     </a>
                 </Box>
 
-                <Box id="main-content" sx={{ display: 'flex', flexDirection: 'column', gap: 2, px: { xs: 2, sm: 3 } }}>
+                <Box id="main-content" sx={{ display: 'flex', flexDirection: 'column', gap: 2, px: { xs: 2, sm: 3 }, bgcolor: tw.isDark ? '#0b0b0b' : '#f5f5f5' }}>
                     <Box >{headerBlock}</Box>
                     {primaryActions}
                     {isMobile ? <MobileView /> : <DesktopView />}

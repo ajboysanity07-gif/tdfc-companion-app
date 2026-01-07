@@ -34,8 +34,8 @@ type SharedPageProps = {
 
 const customerNavItems: NavItem[] = [
   { title: 'Home', href: '/client/dashboard', icon: LayoutGrid },
-  { title: 'Loan Transactions', href: '/client/loan-apply', icon: Briefcase },
-  { title: 'Loan Calculator', href: '/client/loans/calculator', icon: Calculator },
+  { title: 'Loans', href: '/client/loan-calculator', icon: Briefcase },
+  { title: 'Calculator', href: '/client/loans/calculator', icon: Calculator },
   { title: 'Savings', href: '/client/savings', icon: PiggyBank },
 ];
 
@@ -57,17 +57,24 @@ export function AppSidebar() {
   const adminParam = props.admin ?? user?.acctno ?? user?.user_id ?? user?.id ?? '';
   
   // Extract acctno from current URL as fallback (e.g., from /client/{acctno}/... routes)
-  const urlMatch = url.match(/\/client\/([^/]+)/);
+  const urlMatch = url.match(/\/client\/([^/?]+)/);
   const urlAcctno = urlMatch ? urlMatch[1] : '';
   const customerAcct = props.acctno ?? user?.acctno ?? urlAcctno ?? '';
 
   const adminPath = (suffix: string) => (adminParam ? `/admin/${adminParam}${suffix}` : `/admin${suffix}`);
-  const customerPath = useCallback((suffix: string) => (customerAcct ? `/client/${customerAcct}${suffix}` : `/client${suffix}`), [customerAcct]);
+  const customerPath = useCallback((suffix: string) => {
+    const acctno = customerAcct;
+    if (!acctno) {
+      console.warn('No acctno found for customer path:', suffix);
+      return `/client${suffix}`;
+    }
+    return `/client/${acctno}${suffix}`;
+  }, [customerAcct]);
   const adminDashboardHref = adminPath('/dashboard');
   const adminClientManagementHref = adminPath('/client-management');
   const adminProductManagementHref = adminPath('/products');
   const customerDashboardHref = customerPath('/dashboard');
-  const customerLoansHref = customerPath('/loan-apply');
+  const customerLoansHref = customerPath('/loan-calculator');
   const customerSavingsHref = customerPath('/savings');
 
   const mainNavItems = useMemo(() => {
@@ -76,7 +83,7 @@ export function AppSidebar() {
         if (item.href === '/client/dashboard') {
           return { ...item, href: customerDashboardHref };
         }
-        if (item.href === '/client/loan-apply') {
+        if (item.href === '/client/loan-calculator') {
           return { ...item, href: customerLoansHref };
         }
         if (item.href === '/client/loans/calculator') {

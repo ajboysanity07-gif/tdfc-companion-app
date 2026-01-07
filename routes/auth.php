@@ -38,8 +38,8 @@ Route::middleware(['auth', 'role:customer', 'approved'])
 
 // Client loan apply
 Route::middleware(['auth', 'role:customer', 'approved'])
-    ->get('/client/{acctno}/loan-apply', fn($acctno) => Inertia::render('customer/loan-apply', ['acctno' => $acctno]))
-    ->name('client.loan-apply');
+    ->get('/client/{acctno}/loan-calculator', fn($acctno) => Inertia::render('customer/loans', ['acctno' => $acctno]))
+    ->name('client.loan-calculator');
 
 // Client account settings
 Route::middleware(['auth', 'role:customer', 'approved'])

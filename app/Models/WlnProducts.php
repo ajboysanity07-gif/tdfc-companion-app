@@ -6,6 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class WlnProducts extends Model
 {
+    public const MODE_FIXED = 'FIXED';
+    public const MODE_BASIC = 'BASIC';
+    public const MODE_CUSTOM = 'CUSTOM';
+
     protected $table = 'wln_products';
     protected $primaryKey = 'product_id';
     public $timestamps = true;

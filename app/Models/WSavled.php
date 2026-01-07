@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class WSavled extends Model
 {
+    public const TYPE_PERSONAL_SAVINGS = 'PERSONAL SAVINGS';
+
     protected $table = 'wsavled';
 
     protected $primaryKey = 'controlno';
