@@ -63,7 +63,7 @@ export default function Login() {
 
       if (user.role === 'admin') {
         window.location.href = `/admin/${acct}/dashboard`;
-      } else if (user.role === 'customer') {
+      } else if (user.role === 'client') {
         if (user.status === 'approved') {
           window.location.href = `/client/${user.acctno}/dashboard`;
         } else if (user.status === 'rejected' || user.status === 'pending') {
@@ -130,7 +130,7 @@ export default function Login() {
               className={`${inputBase} ${emailError ? 'border-red-300 focus:border-red-400 focus:ring-red-300' : ''}`}
               autoComplete="email"
             />
-            <div className="min-h-[16px] mt-1 text-xs text-red-500">
+            <div className="min-h-4 mt-1 text-xs text-red-500">
               {emailError || ''}
             </div>
           </div>
@@ -157,7 +157,7 @@ export default function Login() {
                 {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
               </button>
             </div>
-            <div className="min-h-[16px] mt-1 text-xs text-red-500">
+            <div className="min-h-4 mt-1 text-xs text-red-500">
               {passwordError || ''}
             </div>
           </div>

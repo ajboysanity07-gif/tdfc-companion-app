@@ -79,26 +79,8 @@ const PaymentLedgerTable: React.FC<Props> = ({ title = 'Payment Ledger', rows, l
     );
 
     useEffect(() => {
-        let cancelled = false;
-        const loadLogo = async () => {
-            try {
-                const res = await fetch('/images/logo.png');
-                if (!res.ok) return;
-                const blob = await res.blob();
-                const reader = new FileReader();
-                reader.onloadend = () => {
-                    if (!cancelled && typeof reader.result === 'string') {
-                        setLogoDataUrl(reader.result);
-                    }
-                };
-                reader.readAsDataURL(blob);
-            } catch {
-                // ignore
-            }
-        };
-        loadLogo();
+        // Place any side effects here if needed in the future
         return () => {
-            cancelled = true;
         };
     }, []);
 
@@ -167,42 +149,19 @@ const PaymentLedgerTable: React.FC<Props> = ({ title = 'Payment Ledger', rows, l
                 field: 'date_in',
                 headerName: 'Date',
                 flex: 1,
-                minWidth: isMobile ? 110 : 130,
+                minWidth: isMobile ? 80 : 110,
                 valueFormatter: ({ value }) => formatDate((value as string | null) ?? null),
                 renderCell: ({ value }) => (
-                    <span style={{ color: '#111827', fontWeight: 600 }}>{formatDate((value as string | null) ?? null) || '-'}</span>
+                    <span style={{ color: tw.isDark ? '#e5e7eb' : '#111827', fontWeight: 600 }}>{formatDate((value as string | null) ?? null) || '-'}</span>
                 ),
-            },
-            {
-                field: 'mreference',
-                headerName: 'Reference',
-                flex: 1,
-                minWidth: isMobile ? 140 : 160,
-                renderCell: ({ value }) => <span style={{ color: '#111827' }}>{(value as string | null) || '-'}</span>,
-            },
-            {
-                field: 'lntype',
-                headerName: 'Type',
-                flex: 0.8,
-                minWidth: isMobile ? 110 : 120,
-                renderCell: ({ value }) => (
-                    <span style={{ color: '#111827', fontSize: 12 }}>{(value as string | null) || '-'}</span>
-                ),
-            },
-            {
-                field: 'transaction_code',
-                headerName: 'CS/CK',
-                flex: 0.8,
-                minWidth: isMobile ? 110 : 120,
-                renderCell: ({ value }) => <span style={{ color: '#111827' }}>{(value as string | null) || '-'}</span>,
             },
             {
                 field: 'principal',
                 headerName: 'Principal',
                 flex: 1,
-                minWidth: isMobile ? 120 : 130,
+                minWidth: isMobile ? 80 : 110,
                 renderCell: ({ value }) => (
-                    <span style={{ color: '#111827', fontWeight: 600 }}>
+                    <span style={{ color: tw.isDark ? '#e5e7eb' : '#111827', fontWeight: 600 }}>
                         {formatCurrency((value as number | string | null) ?? null) || '-'}
                     </span>
                 ),
@@ -211,59 +170,33 @@ const PaymentLedgerTable: React.FC<Props> = ({ title = 'Payment Ledger', rows, l
                 field: 'payments',
                 headerName: 'Payments',
                 flex: 1,
-                minWidth: isMobile ? 120 : 130,
+                minWidth: isMobile ? 80 : 110,
                 renderCell: ({ value }) => (
-                    <span style={{ color: '#111827', fontWeight: 600 }}>
+                    <span style={{ color: tw.isDark ? '#e5e7eb' : '#111827', fontWeight: 600 }}>
                         {formatCurrency((value as number | string | null) ?? null) || '-'}
                     </span>
                 ),
             },
             {
-                field: 'debit',
-                headerName: 'Debit',
-                flex: 1,
-                minWidth: isMobile ? 120 : 130,
-                renderCell: ({ value }) => (
-                    <span style={{ color: '#111827', fontWeight: 600 }}>
-                        {formatCurrency((value as number | string | null) ?? null) || '-'}
-                    </span>
-                ),
-            },
-            {
-                field: 'credit',
-                headerName: 'Credit',
-                flex: 1,
-                minWidth: isMobile ? 120 : 130,
-                renderCell: ({ value }) => (
-                    <span style={{ color: '#111827', fontWeight: 600 }}>
-                        {formatCurrency((value as number | string | null) ?? null) || '-'}
-                    </span>
-                ),
+                field: 'transaction_code',
+                headerName: 'CS/CK',
+                flex: 0.6,
+                minWidth: isMobile ? 50 : 90,
+                renderCell: ({ value }) => <span style={{ color: tw.isDark ? '#d1d5db' : '#374151' }}>{(value as string | null) || '-'}</span>,
             },
             {
                 field: 'balance',
                 headerName: 'Balance',
                 flex: 1,
-                minWidth: isMobile ? 120 : 140,
+                minWidth: isMobile ? 90 : 120,
                 renderCell: ({ value }) => (
-                    <span style={{ color: '#111827', fontWeight: 700 }}>
-                        {formatCurrency((value as number | string | null) ?? null) || '-'}
-                    </span>
-                ),
-            },
-            {
-                field: 'accruedint',
-                headerName: 'Accrued Int',
-                flex: 1,
-                minWidth: isMobile ? 120 : 140,
-                renderCell: ({ value }) => (
-                    <span style={{ color: '#111827', fontWeight: 600 }}>
+                    <span style={{ color: tw.isDark ? '#e5e7eb' : '#111827', fontWeight: 700 }}>
                         {formatCurrency((value as number | string | null) ?? null) || '-'}
                     </span>
                 ),
             },
         ],
-        [isMobile],
+        [isMobile, tw.isDark],
     );
 
     const sortedRows = useMemo(() => {
@@ -275,18 +208,13 @@ const PaymentLedgerTable: React.FC<Props> = ({ title = 'Payment Ledger', rows, l
     }, [preparedRows]);
 
     const handleExportCsv = () => {
-        const header = ['Date', 'Reference', 'Type', 'CS/CK', 'Principal', 'Payments', 'Debit', 'Credit', 'Balance', 'Accrued Int'];
+        const header = ['Date', 'Principal', 'Payments', 'CS/CK', 'Balance'];
         const data = sortedRows.map((row) => [
             formatDate(row.date_in),
-            row.mreference ?? '',
-            row.lntype ?? '',
-            row.transaction_code ?? '',
             formatCurrency(row.principal),
             formatCurrency(row.payments),
-            formatCurrency(row.debit),
-            formatCurrency(row.credit),
+            row.transaction_code ?? '',
             formatCurrency(row.balance),
-            formatCurrency(row.accruedint),
         ]);
         const infoBlock = [
             ['Triple Diamond Finance Cooperative'],
@@ -481,18 +409,13 @@ const PaymentLedgerTable: React.FC<Props> = ({ title = 'Payment Ledger', rows, l
             });
 
             const tableStartY = y + metaLines.length * 17 + 16;
-            const head = [['Date', 'Reference', 'Type', 'CS/CK', 'Principal', 'Payments', 'Debit', 'Credit', 'Balance', 'Accrued Int']];
+            const head = [['Date', 'Principal', 'Payments', 'CS/CK', 'Balance']];
             const body = sortedRows.map((row) => [
                 formatDate(row.date_in),
-                row.mreference ?? '',
-                row.lntype ?? '',
-                row.transaction_code ?? '',
                 formatCurrency(row.principal),
                 formatCurrency(row.payments),
-                formatCurrency(row.debit),
-                formatCurrency(row.credit),
+                row.transaction_code ?? '',
                 formatCurrency(row.balance),
-                formatCurrency(row.accruedint),
             ]);
 
             autoTable(doc, {
@@ -732,7 +655,7 @@ const PaymentLedgerTable: React.FC<Props> = ({ title = 'Payment Ledger', rows, l
                 <Box
                     sx={{
                         position: 'fixed',
-                        bottom: 88,
+                        bottom: 20,
                         right: 18,
                         zIndex: 1700,
                         display: 'flex',
@@ -891,19 +814,23 @@ const PaymentLedgerTable: React.FC<Props> = ({ title = 'Payment Ledger', rows, l
                                 minWidth: 0,
                                 border: '1px solid',
                                 borderColor: 'divider',
+                                bgcolor: 'background.paper',
                                 '& .MuiDataGrid-columnHeaders': {
-                                    bgcolor: 'action.hover',
+                                    bgcolor: tw.isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.03)',
                                     fontWeight: 800,
                                     borderBottom: '1px solid',
                                     borderColor: 'divider',
                                     fontSize: { xs: 12, sm: 13 },
+                                    color: 'text.primary',
                                 },
                                 '& .MuiDataGrid-columnHeaderTitle': {
                                     fontWeight: 800,
+                                    color: 'text.primary',
                                 },
                                 '& .MuiDataGrid-row': {
                                     borderBottom: '1px solid',
                                     borderColor: 'divider',
+                                    bgcolor: 'background.paper',
                                 },
                                 '& .MuiDataGrid-cell': {
                                     borderColor: 'divider',
@@ -911,7 +838,12 @@ const PaymentLedgerTable: React.FC<Props> = ({ title = 'Payment Ledger', rows, l
                                     py: { xs: 0.75, sm: 1 },
                                 },
                                 '& .MuiDataGrid-row:hover': {
-                                    bgcolor: 'action.hover',
+                                    bgcolor: tw.isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.02)',
+                                },
+                                '& .MuiDataGrid-footerContainer': {
+                                    borderTop: '1px solid',
+                                    borderColor: 'divider',
+                                    bgcolor: tw.isDark ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.02)',
                                 },
                             }}
                         />

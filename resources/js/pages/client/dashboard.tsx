@@ -241,7 +241,7 @@ export default function CustomerDashboard() {
                         <Typography
                             variant="h4"
                             sx={{
-                                fontWeight: 900,
+                                fontWeight: 750,
                                 lineHeight: 1.1,
                                 textTransform: 'capitalize',
                                 overflow: 'hidden',
@@ -249,6 +249,7 @@ export default function CustomerDashboard() {
                                 whiteSpace: 'nowrap',
                                 maxWidth: { xs: '100%', sm: '28ch' },
                                 mt: -1,
+                                fontFamily: 'system-ui, -apple-system, sans-serif',
                             }}
                         >
                             {firstName}
@@ -305,7 +306,7 @@ export default function CustomerDashboard() {
                     <Typography 
                         variant="h3" 
                         sx={{ 
-                            fontWeight: 900, 
+                            fontWeight: 800, 
                             lineHeight: 1, 
                             letterSpacing: { xs: -2, sm: -3 },
                             fontSize: { xs: '2.5rem', sm: '3rem' },
@@ -687,7 +688,7 @@ export default function CustomerDashboard() {
     );
 
     return (
-        <AppLayout breadcrumbs={[{ title: 'Dashboard', href: '/customer/dashboard' }]}>
+        <AppLayout breadcrumbs={[{ title: 'Dashboard', href: '/client/dashboard' }]}>
             <Head title="Dashboard" />
             <Box sx={{ minHeight: '100%', bgcolor: tw.isDark ? '#0b0b0b' : '#f5f5f5', py: 2 }}>
                 <Box className="sr-only focus-within:not-sr-only">

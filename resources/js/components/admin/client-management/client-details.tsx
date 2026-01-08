@@ -3,7 +3,8 @@ import type { AmortschedDisplayEntry } from '@/types/user';
 import ThumbDownAltIcon from '@mui/icons-material/ThumbDownAlt';
 import ThumbUpAltIcon from '@mui/icons-material/ThumbUpAlt';
 import VisibilityIcon from '@mui/icons-material/Visibility';
-import { Avatar, Box, Button, Divider, IconButton, InputAdornment, Skeleton, Stack, TextField, Typography } from '@mui/material';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import { Avatar, Box, Button, Divider, IconButton, InputAdornment, Skeleton, Stack, TextField, Typography, Tooltip } from '@mui/material';
 import React, { useEffect, useMemo, useState } from 'react';
 import BoxHeader from '@/components/box-header';
 import ImagePreviewModal from './image-preview-modal';
@@ -552,28 +553,27 @@ const ClientDetails: React.FC<Props> = ({
                                 {[1, 2].map((idx) => (
                                     <Stack
                                         key={idx}
-                                        direction="row"
-                                        spacing={2.5}
-                                        alignItems="center"
+                                        direction={{ xs: 'column', sm: 'row' }}
+                                        spacing={{ xs: 2.5, sm: 3 }}
+                                        alignItems={{ xs: 'flex-start', sm: 'center' }}
+                                        justifyContent="space-between"
                                         sx={{
                                             width: '100%',
-                                            borderRadius: 5,
+                                            borderRadius: 3,
                                             border: `1px solid ${borderColor}`,
                                             bgcolor: panelBg,
-                                            p: { xs: 2, sm: 2.5 },
+                                            p: { xs: 2.5, sm: 3 },
                                         }}
                                     >
-                                        <Stack spacing={0.9} sx={{ flex: 1 }}>
-                                            <Typography variant="h6" fontWeight={900} sx={{ letterSpacing: 0.2, fontSize: { xs: 16, sm: 'inherit' } }}>
-                                                <Skeleton width="50%" height={24} />
-                                            </Typography>
-                                            <Skeleton width="60%" height={18} />
-                                            <Skeleton width="40%" height={18} />
-                                            <Skeleton width="30%" height={18} />
+                                        <Stack spacing={1.5} sx={{ flex: 1 }}>
+                                            <Skeleton width="60%" height={28} sx={{ borderRadius: 1 }} />
+                                            <Skeleton width="50%" height={20} sx={{ borderRadius: 1 }} />
+                                            <Skeleton width="55%" height={24} sx={{ borderRadius: 1 }} />
+                                            <Skeleton width="35%" height={20} sx={{ borderRadius: 1 }} />
                                         </Stack>
-                                        <Stack spacing={0.85} sx={{ width: { xs: '100%', sm: 150 } }}>
-                                            <Skeleton variant="rounded" width="100%" height={36} />
-                                            <Skeleton variant="rounded" width="100%" height={36} />
+                                        <Stack direction="column" spacing={1.5} sx={{ width: { xs: '100%', sm: 180 } }}>
+                                            <Skeleton variant="rounded" width="100%" height={42} sx={{ borderRadius: 2 }} />
+                                            <Skeleton variant="rounded" width="100%" height={42} sx={{ borderRadius: 2 }} />
                                         </Stack>
                                     </Stack>
                                 ))}
@@ -589,51 +589,153 @@ const ClientDetails: React.FC<Props> = ({
                                     return (
                                     <Stack
                                         key={`${rec.lnnumber ?? idx}-${rec.remarks ?? idx}`}
-                                        direction="row"
-                                        spacing={2.5}
-                                        alignItems="center"
+                                        direction={{ xs: 'column', sm: 'row' }}
+                                        spacing={{ xs: 2.5, sm: 3 }}
+                                        alignItems={{ xs: 'flex-start', sm: 'center' }}
+                                        justifyContent="space-between"
                                         sx={{
                                             width: '100%',
-                                            borderRadius: 5,
+                                            borderRadius: 3,
                                             border: `1px solid ${borderColor}`,
                                             bgcolor: panelBg,
-                                            p: { xs: 2, sm: 2.5 },
+                                            p: { xs: 2.5, sm: 3 },
+                                            transition: 'all 0.2s ease',
+                                            '&:hover': {
+                                                bgcolor: tw.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)',
+                                                transform: 'translateY(-2px)',
+                                                boxShadow: tw.isDark ? '0 8px 24px rgba(0,0,0,0.4)' : '0 8px 24px rgba(0,0,0,0.1)',
+                                            },
                                         }}
                                     >
-                                        <Stack spacing={0.9} sx={{ flex: 1 }}>
-                                            <Typography variant="h6" fontWeight={900} sx={{ letterSpacing: 0.2 }}>
-                                               {rec.remarks ? String(rec.remarks) : 'No remarks'} 
+                                        <Stack spacing={1.5} sx={{ flex: 1 }}>
+                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                <Typography 
+                                                    variant="h6" 
+                                                    fontWeight={800} 
+                                                    sx={{ 
+                                                        textTransform: 'uppercase', 
+                                                        letterSpacing: 0.8,
+                                                        fontSize: '1.25rem',
+                                                        lineHeight: 1.2,
+                                                    }}
+                                                >
+                                                   {rec.remarks ? String(rec.remarks) : 'LOAN'} 
+                                                </Typography>
+                                                {scheduleKnownEmpty && !scheduleLoadingForLn && (
+                                                    <Tooltip 
+                                                        title="No amortization schedule available for this loan" 
+                                                        arrow 
+                                                        placement="top"
+                                                        enterTouchDelay={0}
+                                                        leaveTouchDelay={3000}
+                                                    >
+                                                        <InfoOutlinedIcon 
+                                                            fontSize="small" 
+                                                            sx={{ 
+                                                                color: 'text.secondary',
+                                                                cursor: 'help',
+                                                            }} 
+                                                        />
+                                                    </Tooltip>
+                                                )}
+                                            </Box>
+                                            <Typography 
+                                                variant="body2" 
+                                                sx={{ 
+                                                    color: 'text.secondary', 
+                                                    fontWeight: 500,
+                                                    fontSize: '0.875rem',
+                                                    fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif',
+                                                    fontVariantNumeric: 'tabular-nums',
+                                                }}
+                                            >
+                                                {rec.lnnumber ? `Loan no.: ${rec.lnnumber}` : 'Loan no.: N/A'}
                                             </Typography>
-                                            <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: 13, sm: 'inherit' } }}>
-                                                {rec.lnnumber ? `Loan no.: ${rec.lnnumber}` : 'Loan'}
+                                            <Typography 
+                                                variant="h6" 
+                                                fontWeight={800} 
+                                                sx={{ 
+                                                    color: 'text.primary', 
+                                                    fontSize: '1.125rem',
+                                                    fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", system-ui, sans-serif',
+                                                    fontVariantNumeric: 'tabular-nums',
+                                                    lineHeight: 1.3,
+                                                }}
+                                            >
+                                                Balance: <Box component="span" sx={{ color: '#F57979' }}>
+                                                    {rec.balance !== undefined ? `₱${formatBalance(rec.balance)}` : '₱0.00'}
+                                                </Box>
                                             </Typography>
-                                            <Typography variant="body2" color="text.secondary"  fontWeight={700}>
-                                                {rec.balance !== undefined ? `Balance: ₱${formatBalance(rec.balance)}` : 'Balance: N/A'}
-                                            </Typography>
-                                            <Typography variant="body2" color="text.secondary">
+                                            <Typography 
+                                                variant="body2" 
+                                                sx={{ 
+                                                    color: 'text.secondary', 
+                                                    fontWeight: 600,
+                                                    fontSize: '0.875rem',
+                                                    fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif',
+                                                    fontVariantNumeric: 'tabular-nums',
+                                                }}
+                                            >
                                                 {formatDate(rec.date_end)}
                                             </Typography>
                                         </Stack>
-                                        <Stack spacing={0.85} sx={{ width: 150 }}>
+                                        <Stack direction="column" spacing={1.5} sx={{ width: { xs: '100%', sm: 180 }, minWidth: { xs: '100%', sm: 180 } }}>
                                             <Button
                                                 variant="contained"
-                                                color="primary"
-                                                size="small"
+                                                size="medium"
                                                 fullWidth
-                                                sx={{ borderRadius: 99, py: { xs: 0.85, sm: 1 } }}
                                                 onClick={() => openSchedule(rec)}
                                                 disabled={scheduleDisabled}
+                                                sx={{
+                                                    bgcolor: '#F57979',
+                                                    color: 'white',
+                                                    fontWeight: 700,
+                                                    fontSize: '0.875rem',
+                                                    textTransform: 'uppercase',
+                                                    letterSpacing: 0.8,
+                                                    borderRadius: 8,
+                                                    py: 1.25,
+                                                    boxShadow: '0 4px 12px rgba(245, 121, 121, 0.3)',
+                                                    '&:hover': {
+                                                        bgcolor: '#e14e4e',
+                                                        boxShadow: '0 6px 16px rgba(245, 121, 121, 0.4)',
+                                                        transform: 'translateY(-1px)',
+                                                    },
+                                                    '&:disabled': {
+                                                        bgcolor: 'rgba(245, 121, 121, 0.3)',
+                                                        color: 'rgba(255, 255, 255, 0.5)',
+                                                        boxShadow: 'none',
+                                                    },
+                                                }}
                                             >
-                                                Schedule
+                                                {scheduleLoadingForLn ? 'Loading...' : 'Schedule'}
                                             </Button>
                                             <Button
                                                 variant="outlined"
-                                                color="inherit"
-                                                size="small"
+                                                size="medium"
                                                 fullWidth
-                                                sx={{ borderRadius: 99, py: { xs: 0.85, sm: 1 } }}
                                                 onClick={() => openLedger(rec)}
                                                 disabled={!rec.lnnumber}
+                                                sx={{
+                                                    borderWidth: 2,
+                                                    borderColor: tw.isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.25)',
+                                                    color: 'text.primary',
+                                                    fontWeight: 700,
+                                                    fontSize: '0.875rem',
+                                                    textTransform: 'uppercase',
+                                                    letterSpacing: 0.8,
+                                                    borderRadius: 8,
+                                                    py: 1.25,
+                                                    '&:hover': {
+                                                        borderWidth: 2,
+                                                        borderColor: tw.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
+                                                        bgcolor: tw.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)',
+                                                        transform: 'translateY(-1px)',
+                                                    },
+                                                    '&:disabled': {
+                                                        opacity: 0.5,
+                                                    },
+                                                }}
                                             >
                                                 Payments
                                             </Button>

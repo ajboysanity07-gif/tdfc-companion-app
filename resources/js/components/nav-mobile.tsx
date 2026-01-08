@@ -7,6 +7,7 @@ import {
   Users,
   Package,
   Briefcase,
+  Calculator,
   LogOut,
   Settings,
 } from "lucide-react";
@@ -35,7 +36,7 @@ export default function NavMobile() {
 
   const { props, url } = usePage<SharedPageProps>();
   const user = props.auth?.user;
-  const userRole = user?.role || 'customer';
+  const userRole = user?.role || 'client';
   const adminId = props.admin ?? user?.acctno ?? user?.user_id ?? user?.id ?? '';
   
   // Extract acctno from current URL as fallback
@@ -85,16 +86,20 @@ export default function NavMobile() {
     };
   }, []);
 
+  const customerCalculatorHref = customerAcct ? `/client/${customerAcct}/loan-calculator` : '/loan-calculator';
+  const customerLoansPageHref = customerAcct ? `/client/${customerAcct}/loans` : '/loans';
+  
   const customerNav = useMemo(() => [
-    { href: customerDashboardHref, label: "Home", icon: Home },
-    { href: customerLoansHref, label: "Loans", icon: Briefcase },
-    { href: customerAccountHref, label: "Account", icon: UserRound },
-  ], [customerDashboardHref, customerLoansHref, customerAccountHref]);
+    { key: 'home', href: customerDashboardHref, label: "Home", icon: Home },
+    { key: 'loans', href: customerLoansPageHref, label: "Loans", icon: Briefcase },
+    { key: 'calculator', href: customerCalculatorHref, label: "Calculator", icon: Calculator },
+    { key: 'account', href: customerAccountHref, label: "Account", icon: UserRound },
+  ], [customerDashboardHref, customerLoansPageHref, customerCalculatorHref, customerAccountHref]);
 
   const adminNav = useMemo(() => [
-    { href: adminDashboardHref, label: "Home", icon: Home },
-    { href: adminProductsHref, label: "Products", icon: Package },
-    { href: adminClientsHref, label: "Clients", icon: Users },
+    { key: 'admin-home', href: adminDashboardHref, label: "Home", icon: Home },
+    { key: 'admin-products', href: adminProductsHref, label: "Products", icon: Package },
+    { key: 'admin-clients', href: adminClientsHref, label: "Clients", icon: Users },
   ], [adminDashboardHref, adminClientsHref, adminProductsHref]);
 
   const items = useMemo(() => {
@@ -124,7 +129,7 @@ export default function NavMobile() {
             const active = pathname === it.href;
             const Icon = it.icon;
             return (
-              <li key={it.href} className="flex items-center justify-center">
+              <li key={it.key || it.href} className="flex items-center justify-center">
                 <Link
                   href={it.href}
                   className="flex flex-col items-center"

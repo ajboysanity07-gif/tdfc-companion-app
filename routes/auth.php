@@ -31,23 +31,28 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('{admin}/client-management', fn($admin) => Inertia::render('admin/client-management', ['admin' => $admin]))->name('client-management');
 });
 
-// Client dashboard (approved customers only)
-Route::middleware(['auth', 'role:customer', 'approved'])
-    ->get('/client/{acctno}/dashboard', fn($acctno) => Inertia::render('customer/dashboard', ['acctno' => $acctno]))
+// Client dashboard (approved clients only)
+Route::middleware(['auth', 'role:client', 'approved'])
+    ->get('/client/{acctno}/dashboard', fn($acctno) => Inertia::render('client/dashboard', ['acctno' => $acctno]))
     ->name('client.dashboard');
 
-// Client loan apply
-Route::middleware(['auth', 'role:customer', 'approved'])
-    ->get('/client/{acctno}/loan-calculator', fn($acctno) => Inertia::render('customer/loans', ['acctno' => $acctno]))
+// Client loans page
+Route::middleware(['auth', 'role:client', 'approved'])
+    ->get('/client/{acctno}/loans', fn($acctno) => Inertia::render('client/loans', ['acctno' => $acctno]))
+    ->name('client.loans');
+
+// Client loan calculator
+Route::middleware(['auth', 'role:client', 'approved'])
+    ->get('/client/{acctno}/loan-calculator', fn($acctno) => Inertia::render('client/calculator', ['acctno' => $acctno]))
     ->name('client.loan-calculator');
 
 // Client account settings
-Route::middleware(['auth', 'role:customer', 'approved'])
+Route::middleware(['auth', 'role:client', 'approved'])
     ->get('/client/{acctno}/account', fn($acctno) => Inertia::render('settings/profile', ['acctno' => $acctno]))
     ->name('client.account');
 
 // Client registration status
-Route::middleware(['auth', 'role:customer'])
+Route::middleware(['auth', 'role:client'])
     ->get('/client/{acctno}/registration-status', [RegistrationStatusController::class, 'show'])
     ->name('client.registration-status');
 

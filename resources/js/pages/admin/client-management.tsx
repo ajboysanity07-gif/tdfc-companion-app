@@ -403,7 +403,9 @@ export default function ClientManagementPage() {
                 </Slide>
             </div>
             <div className="flex flex-col gap-0 overflow-x-auto bg-[#FAFAFA] transition-colors duration-300 dark:bg-neutral-900">
-                <HeaderBlock title="Client Management" subtitle="Review, approve, and manage clients" />
+                {!isMobile || !selectedId ? (
+                    <HeaderBlock title="Client Management" subtitle="Review, approve, and manage clients" />
+                ) : null}
 
                 {loading ? (
                     <div className="p-4">

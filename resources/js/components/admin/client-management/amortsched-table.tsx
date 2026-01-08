@@ -141,7 +141,11 @@ const AmortschedTable: React.FC<Props> = ({ title = 'Amortization Schedule', row
                 minWidth: isMobile ? 120 : 140,
                 resizable: true,
                 valueFormatter: ({ value }) => formatDate((value as string | null) ?? null),
-                renderCell: ({ row }) => <span style={{ color: '#111827', fontWeight: 700 }}>{row.date_pay ? formatDate(row.date_pay) : '-'}</span>,
+                renderCell: ({ row }) => (
+                    <span style={{ color: tw.isDark ? '#e5e7eb' : '#111827', fontWeight: 700 }}>
+                        {row.date_pay ? formatDate(row.date_pay) : '-'}
+                    </span>
+                ),
             },
             {
                 field: 'amortization',
@@ -151,18 +155,9 @@ const AmortschedTable: React.FC<Props> = ({ title = 'Amortization Schedule', row
                 resizable: true,
                 valueFormatter: ({ value }) => formatCurrency((value as number | null) ?? null),
                 renderCell: ({ row }) => (
-                    <span style={{ color: '#111827', fontWeight: 500 }}>{row.amortization != null ? formatCurrency(row.amortization) : '-'}</span>
-                ),
-            },
-            {
-                field: 'interest',
-                headerName: 'Interest',
-                flex: 1,
-                minWidth: isMobile ? 110 : 120,
-                resizable: true,
-                valueFormatter: ({ value }) => formatCurrency((value as number | null) ?? null),
-                renderCell: ({ row }) => (
-                    <span style={{ color: '#111827', fontWeight: 500 }}>{row.interest != null ? formatCurrency(row.interest) : '-'}</span>
+                    <span style={{ color: tw.isDark ? '#d1d5db' : '#374151', fontWeight: 500 }}>
+                        {row.amortization != null ? formatCurrency(row.amortization) : '-'}
+                    </span>
                 ),
             },
             {
@@ -173,7 +168,9 @@ const AmortschedTable: React.FC<Props> = ({ title = 'Amortization Schedule', row
                 resizable: true,
                 valueFormatter: ({ value }) => formatCurrency((value as number | null) ?? null),
                 renderCell: ({ row }) => (
-                    <span style={{ color: '#111827', fontWeight: 600 }}>{row.balance != null ? formatCurrency(row.balance) : '-'}</span>
+                    <span style={{ color: tw.isDark ? '#e5e7eb' : '#111827', fontWeight: 600 }}>
+                        {row.balance != null ? formatCurrency(row.balance) : '-'}
+                    </span>
                 ),
             },
         ],
@@ -190,10 +187,11 @@ const AmortschedTable: React.FC<Props> = ({ title = 'Amortization Schedule', row
                 : rows?.[0]?.date_pay
                   ? formatDate(rows[0].date_pay)
                   : '',
+            totalInterest: sortedRows.reduce((sum, row) => sum + (row.interest ?? 0), 0),
         };
 
-        const header = ['Payment Dates', 'Amortization', 'Interest', 'Balance'];
-        const data = sortedRows.map((row) => [formatDate(row.date_pay ?? null), row.amortization ?? '', row.interest ?? '', row.balance ?? '']);
+        const header = ['Payment Dates', 'Amortization', 'Balance'];
+        const data = sortedRows.map((row) => [formatDate(row.date_pay ?? null), row.amortization ?? '', row.balance ?? '']);
 
         const infoBlock = [
             ['Triple Diamond Finance Cooperative'],
@@ -206,6 +204,7 @@ const AmortschedTable: React.FC<Props> = ({ title = 'Amortization Schedule', row
             ['Loan Number', details.lnnumber],
             ['Client Name', details.client],
             ['Last Payment', details.lastPayment],
+            ['Monthly Interest', formatCurrency(details.monthlyInterest)],
         ];
 
         const csv = [...infoBlock, header, ...data]
@@ -230,7 +229,6 @@ const AmortschedTable: React.FC<Props> = ({ title = 'Amortization Schedule', row
             worksheet.columns = [
                 { key: 'date', width: 18 },
                 { key: 'amort', width: 16 },
-                { key: 'interest', width: 14 },
                 { key: 'balance', width: 16 },
             ];
 
@@ -248,6 +246,7 @@ const AmortschedTable: React.FC<Props> = ({ title = 'Amortization Schedule', row
                     : rows?.[0]?.date_pay
                       ? formatDate(rows[0].date_pay)
                       : '',
+                monthlyInterest: sortedRows[0]?.interest ?? 0,
             };
 
             const thin: Border = { style: 'thin', color: { argb: 'FFD9D9D9' } };
@@ -259,7 +258,7 @@ const AmortschedTable: React.FC<Props> = ({ title = 'Amortization Schedule', row
                 right: { ...thin },
             };
 
-            const mergeAcross = (rowNumber: number) => worksheet.mergeCells(`A${rowNumber}:D${rowNumber}`);
+            const mergeAcross = (rowNumber: number) => worksheet.mergeCells(`A${rowNumber}:C${rowNumber}`);
 
             const coopRow = worksheet.addRow(['Triple Diamond Finance Cooperative']);
             coopRow.height = 24;
@@ -299,6 +298,7 @@ const AmortschedTable: React.FC<Props> = ({ title = 'Amortization Schedule', row
                 ['Loan Number', details.lnnumber],
                 ['Client Name', details.client],
                 ['Last Payment', details.lastPayment],
+                ['Monthly Interest', formatCurrency(details.monthlyInterest)],
             ];
  
             metaRows.forEach((vals) => {
@@ -314,7 +314,7 @@ const AmortschedTable: React.FC<Props> = ({ title = 'Amortization Schedule', row
             metaSpacer.height = 8;
             mergeAcross(metaSpacer.number);
 
-            const headerRow = worksheet.addRow(['Payment Dates', 'Amortization', 'Interest', 'Balance']);
+            const headerRow = worksheet.addRow(['Payment Dates', 'Amortization', 'Balance']);
             headerRow.height = 20;
             headerRow.eachCell((cell) => {
                 cell.font = { bold: true, size: 9 };
@@ -327,7 +327,6 @@ const AmortschedTable: React.FC<Props> = ({ title = 'Amortization Schedule', row
                 const excelRow = worksheet.addRow([
                     row.date_pay ? new Date(row.date_pay) : '',
                     row.amortization ?? null,
-                    row.interest ?? null,
                     row.balance ?? null,
                 ]);
                 excelRow.height = 18;
@@ -379,19 +378,18 @@ const AmortschedTable: React.FC<Props> = ({ title = 'Amortization Schedule', row
                 : rows?.[0]?.date_pay
                   ? formatDate(rows[0].date_pay)
                   : '',
+            monthlyInterest: sortedRows[0]?.interest ?? 0,
         };
 
         const rowsHtml = sortedRows
             .map((row) => {
                 const date = formatDate(row.date_pay ?? null);
                 const amort = row.amortization != null ? formatCurrency(row.amortization) : '';
-                const int = row.interest != null ? formatCurrency(row.interest) : '';
                 const bal = row.balance != null ? formatCurrency(row.balance) : '';
                 return `
                     <tr>
                         <td class="cell">${date}</td>
                         <td class="cell">${amort}</td>
-                        <td class="cell">${int}</td>
                         <td class="cell">${bal}</td>
                     </tr>`;
             })
@@ -413,13 +411,13 @@ const AmortschedTable: React.FC<Props> = ({ title = 'Amortization Schedule', row
                     <div style="margin: 2px 0;"><strong>Loan Number:</strong> ${details.lnnumber || '-'}</div>
                     <div style="margin: 2px 0;"><strong>Client Name:</strong> ${details.client || '-'}</div>
                     <div style="margin: 2px 0;"><strong>Last Payment:</strong> ${details.lastPayment || '-'}</div>
+                    <div style="margin: 2px 0;"><strong>Monthly Interest:</strong> ${formatCurrency(details.monthlyInterest)}</div>
                 </div>
                 <table class="amort-table">
                     <thead>
                         <tr>
                             <th class="header">Payment Dates</th>
                             <th class="header">Amortization</th>
-                            <th class="header">Interest</th>
                             <th class="header">Balance</th>
                         </tr>
                     </thead>
@@ -541,6 +539,7 @@ const AmortschedTable: React.FC<Props> = ({ title = 'Amortization Schedule', row
                     : rows?.[0]?.date_pay
                       ? formatDate(rows[0].date_pay)
                       : '-',
+                monthlyInterest: sortedRows[0]?.interest ?? 0,
             };
 
             const metaLines = [
@@ -548,6 +547,7 @@ const AmortschedTable: React.FC<Props> = ({ title = 'Amortization Schedule', row
                 { label: 'Loan Number:', value: details.lnnumber },
                 { label: 'Client Name:', value: details.client },
                 { label: 'Last Payment:', value: details.lastPayment },
+                { label: 'Monthly Interest:', value: formatCurrency(details.monthlyInterest) },
             ].filter(Boolean) as Array<{ label: string; value: string; bold?: boolean }>;
 
             metaLines.forEach((line, idx) => {
@@ -568,11 +568,10 @@ const AmortschedTable: React.FC<Props> = ({ title = 'Amortization Schedule', row
             });
 
             const tableStartY = y + metaLines.length * 17 + 14;
-            const head = [['Payment Dates', 'Amortization', 'Interest', 'Balance']];
+            const head = [['Payment Dates', 'Amortization', 'Balance']];
             const body = sortedRows.map((row) => [
                 formatDate(row.date_pay ?? null) || '-',
                 row.amortization != null ? formatCurrency(row.amortization) : '',
-                row.interest != null ? formatCurrency(row.interest) : '',
                 row.balance != null ? formatCurrency(row.balance) : '',
             ]);
 
@@ -793,7 +792,7 @@ const AmortschedTable: React.FC<Props> = ({ title = 'Amortization Schedule', row
                         <Box
                             sx={{
                                 display: 'grid',
-                                gridTemplateColumns: '1.2fr 1fr 1fr 1fr',
+                                gridTemplateColumns: '1.2fr 1fr 1fr',
                                 alignItems: 'center',
                                 p: { xs: 1.25, sm: 1.5 },
                                 bgcolor: 'action.hover',
@@ -802,7 +801,7 @@ const AmortschedTable: React.FC<Props> = ({ title = 'Amortization Schedule', row
                                 gap: { xs: 1.5, sm: 2.5 },
                             }}
                         >
-                            {['Payment Dates', 'Amortization', 'Interest', 'Balance'].map((text) => (
+                            {['Payment Dates', 'Amortization', 'Balance'].map((text) => (
                                 <Skeleton
                                     key={text}
                                     variant="rounded"
@@ -818,7 +817,7 @@ const AmortschedTable: React.FC<Props> = ({ title = 'Amortization Schedule', row
                                     key={idx}
                                     sx={{
                                         display: 'grid',
-                                        gridTemplateColumns: '1.2fr 1fr 1fr 1fr',
+                                        gridTemplateColumns: '1.2fr 1fr 1fr',
                                         alignItems: 'center',
                                         p: { xs: 1.1, sm: 1.35 },
                                         gap: { xs: 1.5, sm: 2.5 },
@@ -826,7 +825,7 @@ const AmortschedTable: React.FC<Props> = ({ title = 'Amortization Schedule', row
                                         borderColor: 'divider',
                                     }}
                                 >
-                                    {[50, 60, 60, 60].map((width, colIdx) => (
+                                    {[50, 60, 60].map((width, colIdx) => (
                                         <Skeleton
                                             key={colIdx}
                                             variant="rounded"
@@ -877,19 +876,23 @@ const AmortschedTable: React.FC<Props> = ({ title = 'Amortization Schedule', row
                                 minWidth: 0,
                                 border: '1px solid',
                                 borderColor: 'divider',
+                                bgcolor: 'background.paper',
                                 '& .MuiDataGrid-columnHeaders': {
-                                    bgcolor: 'action.hover',
+                                    bgcolor: tw.isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.03)',
                                     fontWeight: 800,
                                     borderBottom: '1px solid',
                                     borderColor: 'divider',
                                     fontSize: { xs: 12, sm: 13 },
+                                    color: 'text.primary',
                                 },
                                 '& .MuiDataGrid-columnHeaderTitle': {
                                     fontWeight: 800,
+                                    color: 'text.primary',
                                 },
                                 '& .MuiDataGrid-row': {
                                     borderBottom: '1px solid',
                                     borderColor: 'divider',
+                                    bgcolor: 'background.paper',
                                 },
                                 '& .MuiDataGrid-cell': {
                                     borderColor: 'divider',
@@ -897,7 +900,12 @@ const AmortschedTable: React.FC<Props> = ({ title = 'Amortization Schedule', row
                                     py: { xs: 0.75, sm: 1 },
                                 },
                                 '& .MuiDataGrid-row:hover': {
-                                    bgcolor: 'action.hover',
+                                    bgcolor: tw.isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.02)',
+                                },
+                                '& .MuiDataGrid-footerContainer': {
+                                    borderTop: '1px solid',
+                                    borderColor: 'divider',
+                                    bgcolor: tw.isDark ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.02)',
                                 },
                             }}
                         />

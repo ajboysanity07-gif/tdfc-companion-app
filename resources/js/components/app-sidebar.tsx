@@ -32,10 +32,10 @@ type SharedPageProps = {
   };
 };
 
-const customerNavItems: NavItem[] = [
+const clientNavItems: NavItem[] = [
   { title: 'Home', href: '/client/dashboard', icon: LayoutGrid },
-  { title: 'Loans', href: '/client/loan-calculator', icon: Briefcase },
-  { title: 'Calculator', href: '/client/loans/calculator', icon: Calculator },
+  { title: 'Loans', href: '/client/loans', icon: Briefcase },
+  { title: 'Calculator', href: '/client/loan-calculator', icon: Calculator },
   { title: 'Savings', href: '/client/savings', icon: PiggyBank },
 ];
 
@@ -53,44 +53,45 @@ const footerNavItems: NavItem[] = [
 export function AppSidebar() {
   const { props, url } = usePage<SharedPageProps>();
   const user = props.auth?.user;
-  const userRole = user?.role || 'customer';
+  const userRole = user?.role || 'client';
   const adminParam = props.admin ?? user?.acctno ?? user?.user_id ?? user?.id ?? '';
   
   // Extract acctno from current URL as fallback (e.g., from /client/{acctno}/... routes)
   const urlMatch = url.match(/\/client\/([^/?]+)/);
   const urlAcctno = urlMatch ? urlMatch[1] : '';
-  const customerAcct = props.acctno ?? user?.acctno ?? urlAcctno ?? '';
+  const clientAcct = props.acctno ?? user?.acctno ?? urlAcctno ?? '';
 
   const adminPath = (suffix: string) => (adminParam ? `/admin/${adminParam}${suffix}` : `/admin${suffix}`);
-  const customerPath = useCallback((suffix: string) => {
-    const acctno = customerAcct;
+  const clientPath = useCallback((suffix: string) => {
+    const acctno = clientAcct;
     if (!acctno) {
-      console.warn('No acctno found for customer path:', suffix);
+      console.warn('No acctno found for client path:', suffix);
       return `/client${suffix}`;
     }
     return `/client/${acctno}${suffix}`;
-  }, [customerAcct]);
+  }, [clientAcct]);
   const adminDashboardHref = adminPath('/dashboard');
   const adminClientManagementHref = adminPath('/client-management');
   const adminProductManagementHref = adminPath('/products');
-  const customerDashboardHref = customerPath('/dashboard');
-  const customerLoansHref = customerPath('/loan-calculator');
-  const customerSavingsHref = customerPath('/savings');
+  const clientDashboardHref = clientPath('/dashboard');
+  const clientLoansPageHref = clientPath('/loans');
+  const clientCalculatorHref = clientPath('/loan-calculator');
+  const clientSavingsHref = clientPath('/savings');
 
   const mainNavItems = useMemo(() => {
     if (userRole !== 'admin') {
-      return customerNavItems.map((item) => {
+      return clientNavItems.map((item) => {
         if (item.href === '/client/dashboard') {
-          return { ...item, href: customerDashboardHref };
+          return { ...item, href: clientDashboardHref };
+        }
+        if (item.href === '/client/loans') {
+          return { ...item, href: clientLoansPageHref };
         }
         if (item.href === '/client/loan-calculator') {
-          return { ...item, href: customerLoansHref };
-        }
-        if (item.href === '/client/loans/calculator') {
-          return { ...item, href: customerPath('/loans/calculator') };
+          return { ...item, href: clientCalculatorHref };
         }
         if (item.href === '/client/savings') {
-          return { ...item, href: customerSavingsHref };
+          return { ...item, href: clientSavingsHref };
         }
         return item;
       });
@@ -110,11 +111,11 @@ export function AppSidebar() {
 
       return item;
     });
-  }, [adminClientManagementHref, adminDashboardHref, customerDashboardHref, customerLoansHref, customerSavingsHref, adminProductManagementHref, userRole, customerPath]);
+  }, [adminClientManagementHref, adminDashboardHref, clientDashboardHref, clientLoansPageHref, clientCalculatorHref, clientSavingsHref, adminProductManagementHref, userRole, clientPath]);
 
   const homeLink = useMemo(() => {
-    return userRole === 'admin' ? adminDashboardHref : customerDashboardHref;
-  }, [adminDashboardHref, customerDashboardHref, userRole]);
+    return userRole === 'admin' ? adminDashboardHref : clientDashboardHref;
+  }, [adminDashboardHref, clientDashboardHref, userRole]);
 
   return (
     <Sidebar collapsible="icon" variant="inset">

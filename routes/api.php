@@ -91,8 +91,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('/users/{user}/rejection-reasons', [UserRejectionController::class, 'getRejectionReasons']);
     });
 
-    // --- CUSTOMER registration resubmit (SPA+API) ---
-    Route::middleware(['role:customer'])->group(function () {
+    // --- CLIENT registration resubmit (SPA+API) ---
+    Route::middleware(['role:client'])->group(function () {
         Route::post('/customer/register-resubmit', [RegistrationStatusController::class, 'resubmitApi']);
         
         // Customer page routes with account number parameter
@@ -105,5 +105,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
         // Loan apply routes
         Route::get('/loans/apply', [LoansApplyController::class, 'index']);
         Route::post('/loans/apply', [LoansApplyController::class, 'store']);
+        
+        // Loans management routes
+        Route::get('/loans', [\App\Http\Controllers\Api\Client\LoansController::class, 'index']);
+        Route::get('/loans/{lnnumber}/amortization', [\App\Http\Controllers\Api\Client\LoansController::class, 'getAmortizationSchedule']);
+        Route::get('/loans/{lnnumber}/ledger', [\App\Http\Controllers\Api\Client\LoansController::class, 'getLedger']);
     });
 });
