@@ -1,3 +1,3 @@
-import AmortschedTable from './admin/client-management/amortsched-table';
+import AmortschedTable from './common/amortsched-table';
 
 export default AmortschedTable;

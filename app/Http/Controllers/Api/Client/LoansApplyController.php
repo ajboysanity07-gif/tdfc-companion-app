@@ -16,16 +16,40 @@ class LoansApplyController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $products = WlnProducts::where('is_active', true)
-            ->with('types')
-            ->orderBy('product_name')
-            ->get();
-
         $acctno = auth()->user()->acctno;
+        
+        // Check if include_hidden parameter is set
+        $includeHidden = $request->query('include_hidden', false);
 
-        $products = $products->map(function ($product) use ($acctno) {
+        // Query products with SQL-based filtering
+        $query = WlnProducts::with('types', 'tags')
+            ->orderBy('product_name');
+        
+        // Apply is_active filter unless include_hidden is true
+        if (!$includeHidden) {
+            $query->where('is_active', true);
+            
+            // SQL-based filtering: Exclude products with tags matching user's active loan typecodes
+            $query->whereDoesntHave('tags', function ($q) use ($acctno) {
+                $q->whereIn('typecode', function ($subQuery) use ($acctno) {
+                    $subQuery->select('typecode')
+                        ->from('wlnmaster')
+                        ->where('acctno', $acctno)
+                        ->whereNotNull('typecode');
+                });
+            });
+
+            
+            // Debug: Check user's loan typecodes
+            $userTypecodes = \App\Models\WlnMaster::where('acctno', $acctno)
+                ->whereNotNull('typecode')
+                ->pluck('typecode')
+                ->unique();
+        }
+        
+        $products = $query->get()->map(function ($product) use ($acctno) {
             $computedResult = $this->loanService->calculateMaxAmortization($product, $acctno);
             $product->computed_result = round($computedResult, 2);
             return $product;
@@ -33,7 +57,7 @@ class LoansApplyController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $products
+            'data' => $products->values()
         ]);
     }
 

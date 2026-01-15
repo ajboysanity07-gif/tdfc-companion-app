@@ -1,7 +1,7 @@
 import DesktopViewLayout from '@/components/desktop-view-layout';
 import MobileViewLayout from '@/components/mobile-view-layout';
 import ProductCrud from '@/components/admin/product-management/product-crud';
-import ProductListSkeleton, { PRODUCT_LIST_PAGE_SIZE } from '@/components/admin/product-management/product-list-skeleton';
+import { ProductListSkeleton, PRODUCT_LIST_PAGE_SIZE } from '@/components/admin/product-management/skeletons';
 import FullScreenModalMobile from '@/components/ui/full-screen-modal-mobile';
 import ProductList from '@/components/admin/product-management/product-list';
 import { useProductManagement } from '@/hooks/use-product-management';

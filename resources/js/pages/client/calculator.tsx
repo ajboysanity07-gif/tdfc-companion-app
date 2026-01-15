@@ -8,10 +8,20 @@ import { useLoanApply } from '@/hooks/use-loan-apply';
 import type { LoanApplicationRequest } from '@/types/loan-application';
 import AppLayout from '@/layouts/app-layout';
 import { Head } from '@inertiajs/react';
-import { Box, useMediaQuery, Snackbar, Alert } from '@mui/material';
+import { Box, LinearProgress, Slide, useMediaQuery, Snackbar, Alert } from '@mui/material';
+import { CircleCheckBig, CircleX } from 'lucide-react';
 import FullScreenModalMobile from '@/components/ui/full-screen-modal-mobile';
 import { useEffect, useState } from 'react';
 import type { ProductLntype } from '@/types/product-lntype';
+import axiosClient from '@/api/axios-client';
+import type { WlnMasterRecord } from '@/types/user';
+
+interface LoanDefaults {
+    productName: string;
+    typecode: string | null | undefined;
+    termMonths: number | null;
+    oldBalance: number | null;
+}
 
 export default function LoanTransactions() {
     const isMobile = useMediaQuery('(max-width:900px)');
@@ -19,10 +29,109 @@ export default function LoanTransactions() {
     const [selectedProduct, setSelectedProduct] = useState<ProductLntype | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
     const [calculatorModalOpen, setCalculatorModalOpen] = useState<boolean>(false);
+    const [userLoans, setUserLoans] = useState<WlnMasterRecord[]>([]);
+    const [loanDefaults, setLoanDefaults] = useState<LoanDefaults | null>(null);
+    const [productWithComputed, setProductWithComputed] = useState<ProductLntype | null>(null);
+
+    const toNumber = (value: unknown) => {
+        if (value === null || value === undefined || value === '') {
+            return null;
+        }
+        if (typeof value === 'string') {
+            const cleaned = value.trim().replace(/,/g, '');
+            if (cleaned === '') return null;
+            const num = Number(cleaned);
+            return Number.isFinite(num) ? num : null;
+        }
+        const num = Number(value);
+        return Number.isFinite(num) ? num : null;
+    };
 
     useEffect(() => {
-        fetchProducts();
+        // Fetch products WITHOUT include_hidden so filtering applies
+        fetchProducts(false);
+        // Fetch user's active loans
+        axiosClient.get('/loans').then(response => {
+            const loans = response.data.wlnMasterRecords || [];
+            setUserLoans(loans);
+        }).catch(err => console.error('Failed to fetch user loans:', err));
     }, [fetchProducts]);
+
+    // Update loanDefaults when product is selected
+    useEffect(() => {
+        if (!selectedProduct) {
+            setLoanDefaults(null);
+            setProductWithComputed(null);
+            return;
+        }
+
+        // Find matching loan by typecode
+        const matchingLoan = userLoans.find(loan => 
+            selectedProduct.tags?.some(tag => tag.typecode === loan.typecode) ||
+            selectedProduct.types?.some(type => type.typecode === loan.typecode)
+        );
+
+        if (matchingLoan) {
+            console.log('Found matching loan for product:', matchingLoan);
+            
+            let computedAmortization = selectedProduct.computed_result;
+            
+            // Recalculate formula if available
+            if (selectedProduct.max_amortization_formula && matchingLoan.balance) {
+                try {
+                    const balance = toNumber(matchingLoan.balance) ?? 0;
+                    const termMonths = toNumber(matchingLoan.term_mons) ?? selectedProduct.max_term_months ?? 0;
+                    const interestRate = selectedProduct.interest_rate ?? 0;
+                    
+                    console.log('Calculating amortization with:', { balance, termMonths, interestRate });
+                    console.log('Formula:', selectedProduct.max_amortization_formula);
+                    
+                    const formula = selectedProduct.max_amortization_formula
+                        .replace(/balance/gi, balance.toString())
+                        .replace(/term_mons/gi, termMonths.toString())
+                        .replace(/term/gi, termMonths.toString())
+                        .replace(/interest_rate/gi, interestRate.toString())
+                        .replace(/interest/gi, interestRate.toString());
+                    
+                    console.log('Processed formula:', formula);
+                    
+                    const computed = eval(formula);
+                    console.log('Raw computed result:', computed);
+                    
+                    if (typeof computed === 'number' && Number.isFinite(computed) && computed > 0) {
+                        computedAmortization = computed;
+                        console.log('✓ Using computed result:', computedAmortization);
+                    } else if (selectedProduct.max_amortization && selectedProduct.max_amortization > 0) {
+                        computedAmortization = selectedProduct.max_amortization;
+                        console.log('⚠ Using max_amortization:', computedAmortization);
+                    } else {
+                        computedAmortization = balance;
+                        console.log('⚠ Using balance as fallback:', computedAmortization);
+                    }
+                } catch (error) {
+                    console.error('Formula evaluation error:', error);
+                    computedAmortization = selectedProduct.max_amortization || toNumber(matchingLoan.balance) || 0;
+                }
+            }
+            
+            // Set product with computed result
+            setProductWithComputed({
+                ...selectedProduct,
+                computed_result: computedAmortization,
+            });
+            
+            setLoanDefaults({
+                productName: matchingLoan.remarks?.trim() || selectedProduct.product_name,
+                typecode: matchingLoan.typecode,
+                termMonths: toNumber(matchingLoan.term_mons),
+                oldBalance: toNumber(matchingLoan.balance),
+            });
+        } else {
+            // No matching loan, use product as-is
+            setProductWithComputed(selectedProduct);
+            setLoanDefaults(null);
+        }
+    }, [selectedProduct, userLoans]);
 
     useEffect(() => {
         // Open modal when product is selected on mobile
@@ -84,10 +193,12 @@ export default function LoanTransactions() {
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <BoxHeader title="Loan Calculator" />
             <LoanCalculator
-                selectedProduct={selectedProduct}
+                selectedProduct={productWithComputed || selectedProduct}
                 onSubmit={handleSubmit}
                 submitting={submitting}
                 submitError={submitError}
+                loading={loading}
+                loanDefaults={loanDefaults}
             />
         </Box>
     );
@@ -116,6 +227,7 @@ export default function LoanTransactions() {
                         onSubmit={handleSubmit}
                         submitting={submitting}
                         submitError={submitError}
+                        loading={loading}
                     />
                 </FullScreenModalMobile>
 
@@ -131,6 +243,26 @@ export default function LoanTransactions() {
     return (
         <AppLayout>
             <Head title="Available Transactions" />
+            {loading ? <LinearProgress color="primary" sx={{ position: 'fixed', top: 0, left: 0, width: '100%', zIndex: 60 }} /> : null}
+            <div className="fixed top-4 left-1/2 z-50 flex -translate-x-1/2 flex-col items-center gap-2">
+                <Slide in={!!successMessage} direction="down" mountOnEnter unmountOnExit>
+                    <div className="flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-emerald-900/30">
+                        <CircleCheckBig className="h-4 w-4" />
+                        <span>{successMessage}</span>
+                    </div>
+                </Slide>
+                <Slide in={!!loading} direction="down" mountOnEnter unmountOnExit>
+                    <div className="rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-sky-900/30">
+                        Loading...
+                    </div>
+                </Slide>
+                <Slide in={!!error && !loading} direction="down" mountOnEnter unmountOnExit>
+                    <div className="flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-red-900/30">
+                        <CircleX className="h-4 w-4" />
+                        <span>{error || 'An error occurred'}</span>
+                    </div>
+                </Slide>
+            </div>
             {header}
             <DesktopViewLayout
                 left={leftSection}

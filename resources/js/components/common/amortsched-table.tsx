@@ -50,6 +50,23 @@ const formatCurrency = (value: number | null) => {
     return new Intl.NumberFormat('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(value));
 };
 
+const parseNumber = (value: unknown): number | null => {
+    if (value === null || value === undefined || value === '') return null;
+    const cleaned = Number(String(value).replace(/,/g, ''));
+    return Number.isFinite(cleaned) ? cleaned : null;
+};
+
+const normalizeDateValue = (value: unknown): string | null => {
+    if (value === null || value === undefined || value === '') return null;
+    if (value instanceof Date) return value.toISOString();
+    if (typeof value === 'string' || typeof value === 'number') return String(value);
+    if (typeof value === 'object' && value && 'date' in value) {
+        const nested = (value as { date?: unknown }).date;
+        if (typeof nested === 'string' || typeof nested === 'number') return String(nested);
+    }
+    return String(value);
+};
+
 const AmortschedTable: React.FC<Props> = ({ title = 'Amortization Schedule', rows, loading = false, onRefresh, exportMeta }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [actionsOpen, setActionsOpen] = useState(false);
@@ -106,13 +123,22 @@ const AmortschedTable: React.FC<Props> = ({ title = 'Amortization Schedule', row
         const list = Array.isArray(rows) ? rows : [];
         return list
             .filter((row) => row != null)
-            .map((row, idx) => ({
-                id: idx + 1,
-                date_pay: row?.date_pay ?? '',
-                amortization: row?.amortization != null ? Number(row.amortization) : null,
-                interest: row?.interest != null ? Number(row.interest) : null,
-                balance: row?.balance != null ? Number(row.balance) : null,
-            }));
+            .map((row, idx) => {
+                const record = row as unknown as Record<string, unknown>;
+                const datePay = normalizeDateValue(
+                    record.date_pay ?? record.Date_pay ?? record.DatePay ?? record.date ?? record.Date,
+                );
+                const amortization = parseNumber(record.amortization ?? record.Amortization ?? record.Amort);
+                const interest = parseNumber(record.interest ?? record.Interest ?? record.Interestm);
+                const balance = parseNumber(record.balance ?? record.Balance);
+                return {
+                    id: idx + 1,
+                    date_pay: datePay ?? '',
+                    amortization,
+                    interest,
+                    balance,
+                };
+            });
     }, [rows]);
 
     const sortedRows = useMemo(() => {
@@ -140,7 +166,7 @@ const AmortschedTable: React.FC<Props> = ({ title = 'Amortization Schedule', row
                 flex: 1.2,
                 minWidth: isMobile ? 120 : 140,
                 resizable: true,
-                valueFormatter: ({ value }) => formatDate((value as string | null) ?? null),
+                valueFormatter: (value) => formatDate((value as string | null) ?? null),
                 renderCell: ({ row }) => (
                     <span style={{ color: tw.isDark ? '#e5e7eb' : '#111827', fontWeight: 700 }}>
                         {row.date_pay ? formatDate(row.date_pay) : '-'}
@@ -153,7 +179,7 @@ const AmortschedTable: React.FC<Props> = ({ title = 'Amortization Schedule', row
                 flex: 1,
                 minWidth: isMobile ? 110 : 130,
                 resizable: true,
-                valueFormatter: ({ value }) => formatCurrency((value as number | null) ?? null),
+                valueFormatter: (value) => formatCurrency((value as number | null) ?? null),
                 renderCell: ({ row }) => (
                     <span style={{ color: tw.isDark ? '#d1d5db' : '#374151', fontWeight: 500 }}>
                         {row.amortization != null ? formatCurrency(row.amortization) : '-'}
@@ -166,7 +192,7 @@ const AmortschedTable: React.FC<Props> = ({ title = 'Amortization Schedule', row
                 flex: 1,
                 minWidth: isMobile ? 120 : 140,
                 resizable: true,
-                valueFormatter: ({ value }) => formatCurrency((value as number | null) ?? null),
+                valueFormatter: (value) => formatCurrency((value as number | null) ?? null),
                 renderCell: ({ row }) => (
                     <span style={{ color: tw.isDark ? '#e5e7eb' : '#111827', fontWeight: 600 }}>
                         {row.balance != null ? formatCurrency(row.balance) : '-'}
@@ -174,7 +200,7 @@ const AmortschedTable: React.FC<Props> = ({ title = 'Amortization Schedule', row
                 ),
             },
         ],
-        [isMobile],
+        [isMobile, tw.isDark],
     );
 
     const handleExportCsv = () => {
@@ -187,7 +213,7 @@ const AmortschedTable: React.FC<Props> = ({ title = 'Amortization Schedule', row
                 : rows?.[0]?.date_pay
                   ? formatDate(rows[0].date_pay)
                   : '',
-            totalInterest: sortedRows.reduce((sum, row) => sum + (row.interest ?? 0), 0),
+            monthlyInterest: sortedRows[0]?.interest ?? 0,
         };
 
         const header = ['Payment Dates', 'Amortization', 'Balance'];
@@ -702,7 +728,7 @@ const AmortschedTable: React.FC<Props> = ({ title = 'Amortization Schedule', row
                 <Box
                     sx={{
                         position: 'fixed',
-                        bottom: 88,
+                        bottom: 20,
                         right: 18,
                         zIndex: 1700,
                         display: 'flex',
@@ -868,9 +894,9 @@ const AmortschedTable: React.FC<Props> = ({ title = 'Amortization Schedule', row
                             rowHeight={isMobile ? 44 : 52}
                             initialState={{
                                 sorting: { sortModel: [{ field: 'date_pay', sort: 'desc' }] },
-                                pagination: { paginationModel: { page: 0, pageSize: 10 } },
+                                pagination: { paginationModel: { page: 0, pageSize: isMobile ? 20 : 8 } },
                             }}
-                            pageSizeOptions={[10, 15, 20, 50]}
+                            pageSizeOptions={[8, 10, 15, 20, 50]}
                             sx={{
                                 width: '100%',
                                 minWidth: 0,

@@ -1,10 +1,14 @@
 import { useEffect, useState } from 'react';
-import { Box, Stack, Typography, Button, CircularProgress, Tooltip } from '@mui/material';
+import { Box, Stack, Typography, Button, Tooltip, TextField, InputAdornment, Pagination } from '@mui/material';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import SearchIcon from '@mui/icons-material/Search';
+import CalculateIcon from '@mui/icons-material/Calculate';
+import { router, usePage } from '@inertiajs/react';
 import { useMyTheme } from '@/hooks/use-mytheme';
-import AmortschedTable from '@/components/admin/client-management/amortsched-table';
-import PaymentLedgerTable from '@/components/admin/client-management/payment-ledger-table';
+import AmortschedTable from '@/components/common/amortsched-table';
+import PaymentLedgerTable from '@/components/common/payment-ledger-table';
 import FullScreenModalMobile from '@/components/ui/full-screen-modal-mobile';
+import { LoanListSkeleton } from './skeletons';
 import type { WlnMasterRecord, AmortschedDisplayEntry, WlnLedEntry } from '@/types/user';
 import axiosClient from '@/api/axios-client';
 
@@ -14,14 +18,38 @@ declare global {
     }
 }
 
-export default function LoanList() {
+type AuthUser = {
+    acctno?: string | null;
+};
+
+type PageProps = {
+    auth?: { user?: AuthUser | null };
+    acctno?: string | null;
+};
+
+type Props = {
+    onOpenCalculator: (loan: WlnMasterRecord) => void;
+    onScheduleClick?: (loan: WlnMasterRecord) => void;
+    onLedgerClick?: (loan: WlnMasterRecord) => void;
+    desktopMode?: boolean;
+};
+
+export default function LoanList({ onOpenCalculator, onScheduleClick, onLedgerClick, desktopMode = false }: Props) {
     const tw = useMyTheme();
+    const { props, url } = usePage<PageProps>();
+    const urlMatch = url.match(/\/client\/([^/]+)/);
+    const urlAcctno = urlMatch ? urlMatch[1] : '';
+    const customerAcct = props.acctno ?? props.auth?.user?.acctno ?? urlAcctno ?? '';
+    const calculatorUrl = customerAcct ? `/client/${customerAcct}/loan-calculator` : '/loan-calculator';
     const borderColor = tw.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)';
     const panelBg = tw.isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)';
 
     const [wlnRecords, setWlnRecords] = useState<WlnMasterRecord[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage] = useState(4);
 
     // DEBUG: Show if component is rendering and how many loans are loaded
     if (process.env.NODE_ENV !== 'production') {
@@ -132,14 +160,22 @@ export default function LoanList() {
 
     const openSchedule = (record: WlnMasterRecord) => {
         if (!record?.lnnumber) return;
-        setActiveLoan(record);
-        setScheduleOpen(true);
+        if (desktopMode && onScheduleClick) {
+            onScheduleClick(record);
+        } else {
+            setActiveLoan(record);
+            setScheduleOpen(true);
+        }
     };
 
     const openLedger = (record: WlnMasterRecord) => {
         if (!record?.lnnumber) return;
-        setLedgerLoan(record);
-        setLedgerOpen(true);
+        if (desktopMode && onLedgerClick) {
+            onLedgerClick(record);
+        } else {
+            setLedgerLoan(record);
+            setLedgerOpen(true);
+        }
     };
 
     const refreshSchedule = () => {
@@ -148,12 +184,34 @@ export default function LoanList() {
         }
     };
 
-    if (loading) {
+    // Filter loans based on search query
+    const filteredRecords = wlnRecords.filter(rec => {
+        if (!searchQuery) return true;
+        const search = searchQuery.toLowerCase();
         return (
-            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 300 }}>
-                <CircularProgress />
-            </Box>
+            String(rec.lntype || '').toLowerCase().includes(search) ||
+            String(rec.lnnumber || '').toLowerCase().includes(search) ||
+            rec.balance?.toString().includes(search)
         );
+    });
+
+    // Pagination calculations
+    const totalPages = Math.ceil(filteredRecords.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const paginatedRecords = filteredRecords.slice(startIndex, endIndex);
+
+    // Reset to page 1 when search changes
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchQuery]);
+
+    const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
+        setCurrentPage(value);
+    };
+
+    if (loading) {
+        return <LoanListSkeleton desktopMode={desktopMode} />;
     }
 
     if (error) {
@@ -188,12 +246,59 @@ export default function LoanList() {
 
     return (
         <>
-            {/* DEBUG: Visible message for blank page troubleshooting */}
-            <Box sx={{ p: 2, bgcolor: '#ffe0e0', color: '#b71c1c', mb: 2, borderRadius: 2 }}>
-                LoanList component rendered. Loans loaded: {wlnRecords.length}
+            {/* Header */}
+            <Box sx={{ mb: 4 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+                    <Typography variant="h5" fontWeight={700} sx={{ color: '#F57979' }}>
+                        Active Loans
+                    </Typography>
+                    <Button
+                        variant="contained"
+                        size="medium"
+                        startIcon={<CalculateIcon />}
+                        onClick={() => router.visit(calculatorUrl)}
+                        sx={{
+                            bgcolor: '#F57979',
+                            color: 'white',
+                            fontWeight: 600,
+                            textTransform: 'none',
+                            borderRadius: 3,
+                            px: 3,
+                            py: 1.2,
+                            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.2)',
+                            transition: 'all 0.2s ease',
+                            '&:hover': {
+                                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)',
+                                transform: 'translateY(-2px)',
+                            },
+                        }}
+                    >
+                        New Transaction
+                    </Button>
+                </Box>
+                <TextField
+                    fullWidth
+                    size="small"
+                    placeholder="Search loans"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    InputProps={{
+                        startAdornment: (
+                            <InputAdornment position="start">
+                                <SearchIcon sx={{ color: 'text.secondary' }} />
+                            </InputAdornment>
+                        ),
+                    }}
+                    sx={{
+                        '& .MuiOutlinedInput-root': {
+                            bgcolor: tw.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
+                            borderRadius: 2,
+                        }
+                    }}
+                />
             </Box>
-            <Stack spacing={2} width="100%">
-                {wlnRecords.map((rec, idx) => {
+            <Stack spacing={3} width="100%">
+                {paginatedRecords.map((rec, idx) => {
                     const hasSchedule = amortschedByLnnumber[rec.lnnumber ?? '']?.length > 0;
                     const schedLoadingThis = amortschedLoading[rec.lnnumber ?? ''];
 
@@ -202,33 +307,32 @@ export default function LoanList() {
                             key={rec.lnnumber || idx}
                             sx={{
                                 width: '100%',
-                                borderRadius: 3,
-                                bgcolor: tw.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)',
-                                border: `1px solid ${borderColor}`,
-                                p: { xs: 2.5, sm: 3 },
+                                borderRadius: 2,
+                                bgcolor: '#3a3a3a',
+                                border: 'none',
+                                p: 2.5,
                                 transition: 'all 0.2s ease',
                                 '&:hover': {
-                                    bgcolor: tw.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)',
-                                    transform: 'translateY(-2px)',
-                                    boxShadow: tw.isDark ? '0 8px 24px rgba(0,0,0,0.4)' : '0 8px 24px rgba(0,0,0,0.1)',
+                                    transform: 'translateY(-1px)',
+                                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
                                 },
                             }}
                         >
-                            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 2.5, sm: 3 }} alignItems={{ xs: 'flex-start', sm: 'center' }} justifyContent="space-between">
-                                {/* Left side - Loan info */}
-                                <Stack spacing={1.5} flex={1}>
+                            <Stack direction="row" spacing={3} alignItems="center" justifyContent="space-between">
+                                {/* Loan info */}
+                                <Stack spacing={0.5} flex={1}>
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                         <Typography 
                                             variant="h6" 
-                                            fontWeight={800} 
+                                            fontWeight={700} 
                                             sx={{ 
-                                                textTransform: 'uppercase', 
-                                                letterSpacing: 0.8,
-                                                fontSize: '1.25rem',
+                                                textTransform: 'uppercase',
+                                                fontSize: '0.95rem',
                                                 lineHeight: 1.2,
+                                                color: 'white',
                                             }}
                                         >
-                                            {rec.lntype ? String(rec.lntype) : 'LOAN'}
+                                            {rec.remarks ? String(rec.remarks).trim() : 'LOAN'}
                                         </Typography>
                                         {!hasSchedule && !schedLoadingThis && (
                                             <Tooltip 
@@ -252,11 +356,9 @@ export default function LoanList() {
                                     <Typography 
                                         variant="body2" 
                                         sx={{ 
-                                            color: 'text.secondary', 
-                                            fontWeight: 500,
-                                            fontSize: '0.875rem',
-                                            fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif',
-                                            fontVariantNumeric: 'tabular-nums',
+                                            color: 'rgba(255,255,255,0.6)', 
+                                            fontWeight: 400,
+                                            fontSize: '0.8rem',
                                         }}
                                     >
                                         Loan no.: {rec.lnnumber || 'N/A'}
@@ -264,13 +366,11 @@ export default function LoanList() {
                                     
                                     <Typography 
                                         variant="h6" 
-                                        fontWeight={800} 
+                                        fontWeight={700} 
                                         sx={{ 
-                                            color: 'text.primary', 
-                                            fontSize: '1.125rem',
-                                            fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", system-ui, sans-serif',
-                                            fontVariantNumeric: 'tabular-nums',
-                                            lineHeight: 1.3,
+                                            color: 'white', 
+                                            fontSize: '0.9rem',
+                                            mt: 1,
                                         }}
                                     >
                                         Balance: <Box component="span" sx={{ color: '#F57979' }}>₱{rec.balance ? Number(rec.balance).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}</Box>
@@ -280,11 +380,9 @@ export default function LoanList() {
                                         <Typography 
                                             variant="body2" 
                                             sx={{ 
-                                                color: 'text.secondary', 
-                                                fontWeight: 600,
-                                                fontSize: '0.875rem',
-                                                fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif',
-                                                fontVariantNumeric: 'tabular-nums',
+                                                color: 'rgba(255,255,255,0.7)', 
+                                                fontWeight: 400,
+                                                fontSize: '0.8rem',
                                             }}
                                         >
                                             {new Date(rec.date_end).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })}
@@ -292,11 +390,11 @@ export default function LoanList() {
                                     )}
                                 </Stack>
 
-                                {/* Right side - Action buttons */}
-                                <Stack direction="column" spacing={1.5} minWidth={{ xs: '100%', sm: 180 }}>
+                                {/* Action buttons - stacked vertically */}
+                                <Stack direction="column" spacing={1} sx={{ minWidth: 120 }}>
                                     <Button
                                         variant="contained"
-                                        size="medium"
+                                        size="small"
                                         fullWidth
                                         onClick={() => openSchedule(rec)}
                                         disabled={schedLoadingThis || !hasSchedule}
@@ -304,21 +402,19 @@ export default function LoanList() {
                                             bgcolor: '#F57979',
                                             color: 'white',
                                             fontWeight: 700,
-                                            fontSize: '0.875rem',
+                                            fontSize: '0.7rem',
                                             textTransform: 'uppercase',
-                                            letterSpacing: 0.8,
-                                            borderRadius: 8,
-                                            py: 1.25,
-                                            boxShadow: '0 4px 12px rgba(245, 121, 121, 0.3)',
+                                            borderRadius: 6,
+                                            px: 3,
+                                            py: 0.75,
+                                            boxShadow: 'none',
                                             '&:hover': {
                                                 bgcolor: '#e14e4e',
-                                                boxShadow: '0 6px 16px rgba(245, 121, 121, 0.4)',
-                                                transform: 'translateY(-1px)',
+                                                boxShadow: 'none',
                                             },
                                             '&:disabled': {
                                                 bgcolor: 'rgba(245, 121, 121, 0.3)',
                                                 color: 'rgba(255, 255, 255, 0.5)',
-                                                boxShadow: 'none',
                                             },
                                         }}
                                     >
@@ -326,28 +422,52 @@ export default function LoanList() {
                                     </Button>
                                     <Button
                                         variant="outlined"
-                                        size="medium"
+                                        size="small"
                                         fullWidth
                                         onClick={() => openLedger(rec)}
                                         sx={{
-                                            borderWidth: 2,
-                                            borderColor: tw.isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.25)',
-                                            color: 'text.primary',
+                                            borderWidth: 1,
+                                            borderColor: 'rgba(255,255,255,0.3)',
+                                            color: 'white',
                                             fontWeight: 700,
-                                            fontSize: '0.875rem',
+                                            fontSize: '0.7rem',
                                             textTransform: 'uppercase',
-                                            letterSpacing: 0.8,
-                                            borderRadius: 8,
-                                            py: 1.25,
+                                            borderRadius: 6,
+                                            px: 3,
+                                            py: 0.75,
                                             '&:hover': {
-                                                borderWidth: 2,
-                                                borderColor: tw.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
-                                                bgcolor: tw.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)',
-                                                transform: 'translateY(-1px)',
+                                                borderWidth: 1,
+                                                borderColor: 'rgba(255,255,255,0.5)',
+                                                bgcolor: 'rgba(255,255,255,0.05)',
                                             },
                                         }}
                                     >
                                         Payments
+                                    </Button>
+                                    <Button
+                                        variant="outlined"
+                                        size="small"
+                                        fullWidth
+                                        onClick={() => onOpenCalculator(rec)}
+                                        data-loan-action
+                                        sx={{
+                                            borderWidth: 1,
+                                            borderColor: 'rgba(255,255,255,0.3)',
+                                            color: 'white',
+                                            fontWeight: 700,
+                                            fontSize: '0.7rem',
+                                            textTransform: 'uppercase',
+                                            borderRadius: 6,
+                                            px: 3,
+                                            py: 0.75,
+                                            '&:hover': {
+                                                borderWidth: 1,
+                                                borderColor: 'rgba(255,255,255,0.5)',
+                                                bgcolor: 'rgba(255,255,255,0.05)',
+                                            },
+                                        }}
+                                    >
+                                        Renew
                                     </Button>
                                 </Stack>
                             </Stack>
@@ -356,56 +476,60 @@ export default function LoanList() {
                 })}
             </Stack>
 
-            {/* Amortization Schedule Modal */}
-            <FullScreenModalMobile
-                open={scheduleOpen}
-                onClose={() => setScheduleOpen(false)}
-                title={`Amortization - ${activeLoan?.lnnumber || ''}`}
-                bodyClassName="amort-schedule-open"
-            >
-                <AmortschedTable rows={scheduleRows} loading={scheduleLoading} onRefresh={refreshSchedule} />
-            </FullScreenModalMobile>
-
-            {/* Payment Ledger Modal */}
-            <FullScreenModalMobile
-                open={ledgerOpen}
-                onClose={() => setLedgerOpen(false)}
-                title={`Ledger - ${ledgerLoan?.lnnumber || ''}`}
-                bodyClassName="payment-ledger-open"
-            >
-                <PaymentLedgerTable rows={ledgerRows} loading={ledgerLoading} />
-            </FullScreenModalMobile>
-
-            {/* Floating Action Button - adjust position above nav bar */}
-            <Box
-                sx={{
-                    position: 'fixed',
-                    bottom: { xs: 10, sm: 40 }, // 80px for mobile nav bar, 40px for desktop
-                    right: 24,
-                    zIndex: 1201,
-                }}
-            >
-                {/* Replace with your actual FAB component if needed */}
-                <Box
-                    sx={{
-                        width: 56,
-                        height: 56,
-                        bgcolor: '#ff7b7b',
-                        color: '#fff',
-                        borderRadius: '50%',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        boxShadow: '0 4px 16px rgba(0,0,0,0.18)',
-                        fontSize: 32,
-                        cursor: 'pointer',
-                        transition: 'box-shadow 0.2s',
-                        '&:hover': { boxShadow: '0 6px 24px rgba(0,0,0,0.22)' },
-                    }}
-                >
-                    <span style={{ lineHeight: 1 }}>&uarr;</span>
+            {/* Pagination */}
+            {totalPages > 1 && (
+                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+                    <Pagination 
+                        count={totalPages} 
+                        page={currentPage} 
+                        onChange={handlePageChange}
+                        color="primary"
+                        size="large"
+                        sx={{
+                            '& .MuiPaginationItem-root': {
+                                color: tw.isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)',
+                                '&.Mui-selected': {
+                                    bgcolor: '#F57979',
+                                    color: 'white',
+                                    '&:hover': {
+                                        bgcolor: '#e14e4e',
+                                    },
+                                },
+                                '&:hover': {
+                                    bgcolor: tw.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
+                                },
+                            },
+                        }}
+                    />
                 </Box>
-            </Box>
+            )}
+
+            {/* Modals for Mobile Only */}
+            {!desktopMode && (
+                <>
+                    {/* Amortization Schedule Modal */}
+                    <FullScreenModalMobile
+                        open={scheduleOpen}
+                        onClose={() => setScheduleOpen(false)}
+                        title={`Amortization - ${activeLoan?.lnnumber || ''}`}
+                        bodyClassName="amort-schedule-open"
+                    >
+                        <AmortschedTable rows={scheduleRows} loading={scheduleLoading} onRefresh={refreshSchedule} />
+                    </FullScreenModalMobile>
+
+                    {/* Payment Ledger Modal */}
+                    <FullScreenModalMobile
+                        open={ledgerOpen}
+                        onClose={() => setLedgerOpen(false)}
+                        title={`Ledger - ${ledgerLoan?.lnnumber || ''}`}
+                        bodyClassName="payment-ledger-open"
+                    >
+                        <PaymentLedgerTable rows={ledgerRows} loading={ledgerLoading} />
+                    </FullScreenModalMobile>
+                </>
+            )}
+
+
         </>
     );
 }

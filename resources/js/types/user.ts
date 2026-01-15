@@ -48,6 +48,9 @@ export type WlnMasterRecord = {
     balance?: number | string | null;
     date_end?: string | null;
     remarks?: string | null;
+    term_mons?: number | string | null;
+    amortization?: number | string | null;
+    typecode?: string | null;
     [key: string]: unknown;
 };
 

@@ -45,7 +45,7 @@ export default function DesktopViewLayout({
         boxShadow: '0 12px 30px rgba(15,23,42,0.12)',
         backgroundColor: tw.isDark ? '#2f2f2f' : 'background.paper',
         p: 4,
-        minHeight: 600,
+        minHeight: 850,
         display: 'flex',
         flexDirection: 'column',
     } satisfies SxProps<Theme>;

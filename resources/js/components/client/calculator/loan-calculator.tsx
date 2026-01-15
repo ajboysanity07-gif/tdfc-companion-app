@@ -2,17 +2,28 @@ import FullScreenModalMobile from '@/components/ui/full-screen-modal-mobile';
 import { useMyTheme } from '@/hooks/use-mytheme';
 import type { LoanApplicationRequest } from '@/types/loan-application';
 import type { ProductLntype } from '@/types/product-lntype';
+import { LoanCalculatorSkeleton } from './skeletons';
 import CloseIcon from '@mui/icons-material/Close';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-import { Box, IconButton, Stack, TextField, Tooltip, Typography, useMediaQuery } from '@mui/material';
+import { Box, Dialog, DialogContent, DialogTitle, IconButton, Stack, TextField, Tooltip, Typography, useMediaQuery } from '@mui/material';
 import { useEffect, useRef, useState } from 'react';
 import CurrencyInput from 'react-currency-input-field';
+import { createPortal } from 'react-dom';
 
 type Props = {
     selectedProduct: ProductLntype | null;
     onSubmit?: (request: LoanApplicationRequest) => Promise<void>;
     submitting?: boolean;
     submitError?: string | null;
+    loading?: boolean;
+    forceModalTerms?: boolean; // Force terms to show in modal (for right panel view)
+    loanDefaults?: {
+        productName?: string | null;
+        typecode?: string | null;
+        termMonths?: number | null;
+        amortization?: number | null;
+        oldBalance?: number | null;
+    } | null;
 };
 
 const formatCurrency = (amount: number): string => {
@@ -24,7 +35,7 @@ const formatCurrency = (amount: number): string => {
     }).format(amount);
 };
 
-export default function LoanCalculator({ selectedProduct }: Props) {
+export default function LoanCalculator({ selectedProduct, loanDefaults, loading = false, forceModalTerms = false }: Props) {
     const tw = useMyTheme();
     const isMobile = useMediaQuery('(max-width:900px)');
     const [termMonths, setTermMonths] = useState<number>(0);
@@ -34,16 +45,68 @@ export default function LoanCalculator({ selectedProduct }: Props) {
     const [showFloatingButton, setShowFloatingButton] = useState<boolean>(true);
     const containerRef = useRef<HTMLDivElement>(null);
     const disclaimerRef = useRef<HTMLDivElement>(null);
+    const [appContentElement, setAppContentElement] = useState<HTMLElement | null>(null);
 
-    // Update termMonths and amortization when selectedProduct changes
+    // Find the app-content element for modal portal
     useEffect(() => {
-        if (selectedProduct?.max_term_months) {
+        if (forceModalTerms) {
+            const appContent = document.querySelector('[data-app-content="true"]') as HTMLElement;
+            setAppContentElement(appContent);
+        }
+    }, [forceModalTerms]);
+
+    // Update termMonths and amortization when selectedProduct or loanDefaults changes
+    useEffect(() => {
+        console.log('=== Calculator useEffect ===');
+        console.log('selectedProduct:', selectedProduct);
+        console.log('loanDefaults:', loanDefaults);
+        
+        // Use loanDefaults values if provided (from wlnmaster), otherwise use product defaults
+        if (typeof loanDefaults?.termMonths === 'number' && Number.isFinite(loanDefaults.termMonths)) {
+            console.log('✓ Setting term from wlnmaster.term_mons:', loanDefaults.termMonths);
+            setTermMonths(loanDefaults.termMonths);
+        } else if (selectedProduct?.max_term_months) {
+            console.log('✓ Setting term from product.max_term_months:', selectedProduct.max_term_months);
             setTermMonths(selectedProduct.max_term_months);
         }
-        if (selectedProduct?.computed_result) {
+
+        // CRITICAL: Always prioritize computed_result (from max_amortization_formula evaluation)
+        // This is the amortization calculated using the loan's balance and term from wlnmaster
+        // computed_result should NEVER be overridden by the raw amortization from wlnmaster
+        if (selectedProduct?.computed_result != null && Number.isFinite(selectedProduct.computed_result) && selectedProduct.computed_result > 0) {
+            console.log('✓✓✓ Using computed_result from formula evaluation:', selectedProduct.computed_result);
             setAmortization(selectedProduct.computed_result);
+            console.log('  (Ignoring wlnmaster.amortization:', loanDefaults?.amortization, ')');
+        } else if (selectedProduct?.max_amortization && selectedProduct.max_amortization > 0) {
+            console.log('✓ Using product.max_amortization:', selectedProduct.max_amortization);
+            setAmortization(selectedProduct.max_amortization);
+        } else if (!loanDefaults && typeof selectedProduct?.max_amortization === 'number') {
+            // Only use product amortization if no loan defaults
+            console.log('✓ Using product.max_amortization (no loan):', selectedProduct.max_amortization);
+            setAmortization(selectedProduct.max_amortization);
+        } else if (selectedProduct) {
+            console.log('⚠ No valid amortization found, computed_result:', selectedProduct.computed_result, 'max_amortization:', selectedProduct.max_amortization);
         }
-    }, [selectedProduct]);
+        // DO NOT fallback to loanDefaults.amortization when coming from loans page
+        // The raw amortization from wlnmaster should NEVER be used directly
+    }, [selectedProduct, loanDefaults]);
+
+    // Update oldBalance when loanDefaults changes
+    useEffect(() => {
+        console.log('=== Old Balance Update ===');
+        console.log('loanDefaults:', loanDefaults);
+        console.log('loanDefaults.oldBalance:', loanDefaults?.oldBalance, 'Type:', typeof loanDefaults?.oldBalance);
+        
+        if (typeof loanDefaults?.oldBalance === 'number' && Number.isFinite(loanDefaults.oldBalance)) {
+            console.log('✓ Setting oldBalance to:', loanDefaults.oldBalance);
+            setOldBalance(loanDefaults.oldBalance);
+        } else if (!loanDefaults) {
+            console.log('✓ No loanDefaults, setting oldBalance to 0');
+            setOldBalance(0);
+        } else {
+            console.log('⚠ oldBalance is invalid, keeping current value');
+        }
+    }, [loanDefaults?.oldBalance, loanDefaults]);
 
     // Handle scroll to hide/show floating button on mobile
     useEffect(() => {
@@ -112,6 +175,10 @@ export default function LoanCalculator({ selectedProduct }: Props) {
 
     const monthlyPayment = calculateMonthlyPayment();
 
+    if (loading && !selectedProduct) {
+        return <LoanCalculatorSkeleton />;
+    }
+
     return (
         <Box ref={containerRef}>
             <Stack spacing={isMobile ? 2.5 : 3}>
@@ -128,7 +195,7 @@ export default function LoanCalculator({ selectedProduct }: Props) {
                     <TextField
                         fullWidth
                         variant="outlined"
-                        value={selectedProduct?.product_name || ''}
+                        value={(loanDefaults?.productName || selectedProduct?.product_name || '').trim()}
                         placeholder="Select a product from the list"
                         InputProps={{
                             readOnly: true,
@@ -140,7 +207,7 @@ export default function LoanCalculator({ selectedProduct }: Props) {
                                 borderRadius: 3,
                             },
                             '& .MuiOutlinedInput-input': {
-                                textAlign: 'center',
+                                textAlign: 'center !important',
                                 cursor: 'default',
                                 padding: isMobile ? '12px 14px' : '16.5px 14px',
                             },
@@ -252,6 +319,7 @@ export default function LoanCalculator({ selectedProduct }: Props) {
                         }}
                     />
                     {selectedProduct &&
+                        !loanDefaults &&
                         ['BASIC', 'CUSTOM'].includes(selectedProduct.max_amortization_mode) &&
                         selectedProduct.computed_result === 0 && (
                             <Typography variant="caption" color="error" sx={{ display: 'block', textAlign: 'center', mt: 0.5 }}>
@@ -399,8 +467,8 @@ export default function LoanCalculator({ selectedProduct }: Props) {
                     <br />
                     Estimated values may vary based on actual processing.
                 </Typography>
-                {/* Terms and Conditions - Desktop View */}
-                {!isMobile && selectedProduct?.terms && (
+                {/* Terms and Conditions - Desktop View (only when not in modal mode) */}
+                {!isMobile && !forceModalTerms && selectedProduct?.terms && (
                     <Box>
                         <Typography
                             variant="caption"
@@ -437,8 +505,8 @@ export default function LoanCalculator({ selectedProduct }: Props) {
                 )}
             </Stack>
 
-            {/* Floating Info Action Button - Mobile Only */}
-            {isMobile && (
+            {/* Floating Info Action Button - Mobile or Modal Mode */}
+            {(isMobile || forceModalTerms) && selectedProduct?.terms && (
                 <IconButton
                     size="large"
                     onClick={() => setTermsModalOpen(true)}
@@ -469,8 +537,8 @@ export default function LoanCalculator({ selectedProduct }: Props) {
                 </IconButton>
             )}
 
-            {/* Terms and Conditions Modal - Mobile Only */}
-            {isMobile && (
+            {/* Terms and Conditions Modal - Mobile uses fullscreen, Desktop uses Dialog */}
+            {isMobile ? (
                 <FullScreenModalMobile
                     open={termsModalOpen}
                     onClose={() => setTermsModalOpen(false)}
@@ -517,7 +585,70 @@ export default function LoanCalculator({ selectedProduct }: Props) {
                         </Typography>
                     </Box>
                 </FullScreenModalMobile>
-            )}
+            ) : forceModalTerms && appContentElement ? createPortal(
+                <Dialog
+                    open={termsModalOpen}
+                    onClose={() => setTermsModalOpen(false)}
+                    maxWidth="md"
+                    fullWidth
+                    container={appContentElement}
+                    disablePortal
+                    BackdropProps={{
+                        sx: {
+                            position: 'absolute',
+                        }
+                    }}
+                    PaperProps={{
+                        sx: {
+                            borderRadius: 2,
+                            maxHeight: '80vh',
+                            position: 'absolute',
+                        }
+                    }}
+                    sx={{
+                        position: 'absolute',
+                        zIndex: 1300,
+                    }}
+                >
+                    <DialogTitle sx={{ 
+                        bgcolor: '#F57979', 
+                        color: 'white',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        py: 2,
+                    }}>
+                        <Typography variant="h6" component="span">
+                            {selectedProduct?.product_name ? `${selectedProduct.product_name} Terms` : 'Terms and Conditions'}
+                        </Typography>
+                        <IconButton
+                            onClick={() => setTermsModalOpen(false)}
+                            sx={{ color: 'white' }}
+                            size="small"
+                        >
+                            <CloseIcon />
+                        </IconButton>
+                    </DialogTitle>
+                    <DialogContent sx={{ p: 3, mt: 2 }}>
+                        <TextField
+                            fullWidth
+                            multiline
+                            rows={15}
+                            value={selectedProduct?.terms || 'No terms and conditions available.'}
+                            InputProps={{
+                                readOnly: true,
+                            }}
+                            sx={{
+                                '& .MuiOutlinedInput-root': {
+                                    fontSize: '0.95rem',
+                                    lineHeight: 1.6,
+                                },
+                            }}
+                        />
+                    </DialogContent>
+                </Dialog>,
+                appContentElement
+            ) : null}
         </Box>
     );
 }

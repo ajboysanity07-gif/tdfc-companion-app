@@ -73,7 +73,7 @@ export default function NavMobile() {
       if (typeof document === "undefined") return;
       const body = document.body;
       setProductModalOpen(body.classList.contains("product-details-open"));
-      const modalClasses = ["client-details-open", "app-modal-open", "modal-open", "amort-schedule-open", "calculator-modal-open"];
+      const modalClasses = ["client-details-open", "app-modal-open", "modal-open", "amort-schedule-open", "payment-ledger-open", "calculator-modal-open"];
       setAnyModalOpen(modalClasses.some((cls) => body.classList.contains(cls)));
     };
     sync();
@@ -108,9 +108,23 @@ export default function NavMobile() {
   }, [userRole, adminNav, customerNav]);
 
   const settingsUrl = route("profile.edit");
+  const isProfilePage = pathname === settingsUrl || 
+                        pathname.includes('/settings/profile') || 
+                        pathname.includes('/account') ||
+                        pathname === customerAccountHref;
 
   return (
     <>
+      <style>{`
+        @keyframes floating-glow {
+          0%, 100% {
+            box-shadow: 0 10px 24px rgba(0,0,0,0.22);
+          }
+          50% {
+            box-shadow: 0 14px 28px rgba(0,0,0,0.32);
+          }
+        }
+      `}</style>
       {/* Responsive bottom nav using theme palette, no opacity */}
       <nav
         className="fixed inset-x-0 bottom-0 z-40 border-t px-6 py-3 md:hidden"
@@ -162,7 +176,7 @@ export default function NavMobile() {
         </ul>
       </nav>
       {/* FLOATING SETTINGS BUTTON */}
-      {!productModalOpen && !anyModalOpen && (
+      {!productModalOpen && !anyModalOpen && !isProfilePage && (
         <div
           className="fixed right-6 bottom-24 md:hidden flex flex-col items-end gap-2"
           style={{ zIndex: floatingZIndex }}
@@ -189,7 +203,7 @@ export default function NavMobile() {
             >
               <Settings className="w-6 h-6 text-white" />
             </Link>
-            {!isDashboard && (
+            {userRole === 'client' && (
               <button
                 type="button"
                 onClick={() => router.post('/logout')}
@@ -212,6 +226,7 @@ export default function NavMobile() {
               width: 60,
               height: 60,
               boxShadow: "0 10px 24px rgba(0,0,0,0.22)",
+              animation: actionsOpen ? 'none' : 'floating-glow 2.6s ease-in-out infinite',
               transform: actionsOpen ? 'rotate(90deg)' : 'rotate(0deg)',
               backgroundColor: actionBg,
               border: tw.isDark ? '1px solid rgba(255,255,255,0.2)' : '1px solid rgba(0,0,0,0.08)',

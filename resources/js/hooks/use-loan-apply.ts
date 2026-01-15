@@ -16,6 +16,7 @@ type ApiErrorPayload = {
     message?: string;
 };
 
+
 export const useLoanApply = () => {
     const [products, setProducts] = useState<ProductLntype[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
@@ -39,12 +40,13 @@ export const useLoanApply = () => {
         return Array.isArray(body) ? body : [];
     };
 
-    const fetchProducts = useCallback(async () => {
+    const fetchProducts = useCallback(async (includeHidden: boolean = false) => {
         setLoading(true);
         setError(null);
         try {
             await getCsrfCookie();
-            const response = await axiosClient.get<ProductLntype[] | ApiListResponse<ProductLntype>>('/loans/apply');
+            const endpoint = includeHidden ? '/loans/apply?include_hidden=1' : '/loans/apply';
+            const response = await axiosClient.get<ProductLntype[] | ApiListResponse<ProductLntype>>(endpoint);
             const list = toList(response);
             setProducts(list);
         } catch (err) {

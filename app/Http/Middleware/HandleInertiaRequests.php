@@ -6,6 +6,8 @@ use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 use Tighten\Ziggy\Ziggy;
+use App\Services\Client\LoanClassificationService;
+use App\Repositories\Client\LoanRepository;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -22,14 +24,31 @@ class HandleInertiaRequests extends Middleware
 
         $user = $request->user(); // App\Models\AppUser|null
 
-        $authUser = $user ? [
-            'id'     => $user->user_id ?? $user->id ?? null,
-            'name'   => $user->name,
-            'email'  => $user->email,
-            'role'   => $user->role ?? 'customer',
-            'acctno' => $user->acctno ?? null,
-            'avatar' => $user->profile_picture_path ? asset('storage/'.$user->profile_picture_path) : null,
-        ] : null;
+        $authUser = null;
+        if ($user) {
+            // Fetch salary record
+            $salaryRecord = $user->acctno ? \App\Models\WSalaryRecord::where('acctno', $user->acctno)->first() : null;
+            
+            // Calculate loan class using LoanClassificationService
+            $loanClass = null;
+            if ($user->acctno) {
+                $loanRepository = app(LoanRepository::class);
+                $loanClassificationService = app(LoanClassificationService::class);
+                $loanRows = $loanRepository->getLoanRowsGroupedByAccounts([$user->acctno]);
+                $loanClass = $loanClassificationService->classify($loanRows->get($user->acctno));
+            }
+            
+            $authUser = [
+                'id'            => $user->user_id ?? $user->id ?? null,
+                'name'          => $user->name,
+                'email'         => $user->email,
+                'role'          => $user->role ?? 'customer',
+                'acctno'        => $user->acctno ?? null,
+                'avatar'        => $user->profile_picture_path ? asset('storage/'.$user->profile_picture_path) : null,
+                'salary_amount' => $salaryRecord ? (float) $salaryRecord->salary_amount : null,
+                'class'         => $loanClass,
+            ];
+        }
 
         return [
             ...parent::share($request),

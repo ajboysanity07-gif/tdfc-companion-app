@@ -4,7 +4,7 @@ import PayslipWizard from '@/components/auth/register/payslip-wizard';
 import PrcWizard from '@/components/auth/register/prc-wizard';
 import MinimalLayout from '@/layouts/minimal-layout';
 import { Head } from '@inertiajs/react';
-import { alpha, useTheme, useMediaQuery } from '@mui/material';
+import { alpha, Skeleton, useTheme, useMediaQuery } from '@mui/material';
 import { motion } from 'framer-motion';
 import React, { useState } from 'react';
 import axiosClient from '@/api/axios-client';
@@ -48,6 +48,7 @@ export default function RegistrationStatus({
   const [payName, setPayName] = useState<string | undefined>();
   const [processing, setProcessing] = useState(false);
   const [errors, setErrors] = useState<Record<string, string | string[]>>({});
+  const [fallbackLoading, setFallbackLoading] = useState(false);
   const normalizeStatus = (s: string | null | undefined) =>
     s && s.trim().toLowerCase() === 'rejected' ? 'rejected' : 'pending';
   const [currentStatus, setCurrentStatus] = useState<'pending' | 'rejected'>(normalizeStatus(status));
@@ -80,6 +81,7 @@ export default function RegistrationStatus({
       return;
     }
 
+    setFallbackLoading(true);
     axiosClient
       .get('/user')
       .then((res) => {
@@ -94,7 +96,8 @@ export default function RegistrationStatus({
       })
       .catch(() => {
         /* swallow */
-      });
+      })
+      .finally(() => setFallbackLoading(false));
   }, [name, bname]);
 
   const canSubmit = (needsPRC ? prcFront && prcBack : true) && (needsPayslip ? payslipFile : true);
@@ -151,6 +154,8 @@ export default function RegistrationStatus({
   const nameFontSize = isMobile
     ? (theme.typography.h5?.fontSize ?? '1.5rem')
     : (theme.typography.h6?.fontSize ?? '1.125rem');
+  const showFallbackSkeleton = fallbackLoading && !(bname?.trim() || name?.trim() || acctno);
+  const showSubmittedSkeleton = fallbackLoading && !submitted_at;
 
   const getPrcStatusDisplay = () => {
     if (prcFront && prcBack) return 'Front & Back completed ✓';
@@ -201,7 +206,11 @@ export default function RegistrationStatus({
                 display: 'block',
               }}
             >
-              {displayName}
+              {showFallbackSkeleton ? (
+                <Skeleton variant="text" width={isMobile ? 140 : 200} height={isMobile ? 28 : 32} sx={{ mx: 'auto' }} />
+              ) : (
+                displayName
+              )}
             </div>
           </div>
 
@@ -230,7 +239,11 @@ export default function RegistrationStatus({
             <div className="mb-2 flex items-center justify-between">
               <span className="text-sm text-gray-600 dark:text-neutral-400">Submitted</span>
               <span className="text-sm font-medium text-gray-900 dark:text-neutral-100">
-                {formattedSubmittedAt || '—'}
+                {showSubmittedSkeleton ? (
+                  <Skeleton variant="text" width={90} height={16} />
+                ) : (
+                  formattedSubmittedAt || '--'
+                )}
               </span>
             </div>
             <div className="flex items-center justify-between">
@@ -384,3 +397,5 @@ export default function RegistrationStatus({
     </MinimalLayout>
   );
 }
+
+

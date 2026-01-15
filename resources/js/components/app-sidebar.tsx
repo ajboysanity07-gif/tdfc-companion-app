@@ -36,7 +36,6 @@ const clientNavItems: NavItem[] = [
   { title: 'Home', href: '/client/dashboard', icon: LayoutGrid },
   { title: 'Loans', href: '/client/loans', icon: Briefcase },
   { title: 'Calculator', href: '/client/loan-calculator', icon: Calculator },
-  { title: 'Savings', href: '/client/savings', icon: PiggyBank },
 ];
 
 const adminNavItems: NavItem[] = [
@@ -76,7 +75,6 @@ export function AppSidebar() {
   const clientDashboardHref = clientPath('/dashboard');
   const clientLoansPageHref = clientPath('/loans');
   const clientCalculatorHref = clientPath('/loan-calculator');
-  const clientSavingsHref = clientPath('/savings');
 
   const mainNavItems = useMemo(() => {
     if (userRole !== 'admin') {
@@ -89,9 +87,6 @@ export function AppSidebar() {
         }
         if (item.href === '/client/loan-calculator') {
           return { ...item, href: clientCalculatorHref };
-        }
-        if (item.href === '/client/savings') {
-          return { ...item, href: clientSavingsHref };
         }
         return item;
       });
@@ -111,7 +106,7 @@ export function AppSidebar() {
 
       return item;
     });
-  }, [adminClientManagementHref, adminDashboardHref, clientDashboardHref, clientLoansPageHref, clientCalculatorHref, clientSavingsHref, adminProductManagementHref, userRole, clientPath]);
+  }, [adminClientManagementHref, adminDashboardHref, clientDashboardHref, clientLoansPageHref, clientCalculatorHref, adminProductManagementHref, userRole, clientPath]);
 
   const homeLink = useMemo(() => {
     return userRole === 'admin' ? adminDashboardHref : clientDashboardHref;

@@ -8,10 +8,10 @@ import { Avatar, Box, Button, Divider, IconButton, InputAdornment, Skeleton, Sta
 import React, { useEffect, useMemo, useState } from 'react';
 import BoxHeader from '@/components/box-header';
 import ImagePreviewModal from './image-preview-modal';
-import AmortschedTable from './amortsched-table';
+import AmortschedTable from '@/components/common/amortsched-table';
 import FullScreenModalMobile from '../../ui/full-screen-modal-mobile';
 import { useMyTheme } from '@/hooks/use-mytheme';
-import PaymentLedgerTable from './payment-ledger-table';
+import PaymentLedgerTable from '@/components/common/payment-ledger-table';
 import type { WlnLedEntry } from '@/types/user';
 
 type Props = {
@@ -80,13 +80,13 @@ const Thumb: React.FC<{
                 maxWidth: 220,
                 borderRadius: 8,
                 overflow: 'hidden',
-                boxShadow: '0 12px 30px rgba(0,0,0,0.25)',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.4), 0 2px 6px rgba(0,0,0,0.3)',
                 bgcolor: 'background.paper',
                 cursor: 'pointer',
                 transition: 'transform 140ms ease, box-shadow 140ms ease',
                 '&:hover': {
                     transform: 'translateY(-2px)',
-                    boxShadow: '0 14px 36px rgba(0,0,0,0.32)',
+                    boxShadow: '0 8px 20px rgba(0,0,0,0.5), 0 4px 10px rgba(0,0,0,0.4)',
                 },
             }}
             onClick={() => onOpen(label, images)}

@@ -1,7 +1,8 @@
 import { useMyTheme } from '@/hooks/use-mytheme';
 import type { ProductLntype } from '@/types/product-lntype';
-import { Box, Chip, LinearProgress, List, ListItem, Paper, Stack, Typography, useMediaQuery } from '@mui/material';
+import { Box, Chip, List, ListItem, Paper, Stack, Typography, useMediaQuery } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ProductListSkeleton } from './skeletons';
 
 type Props = {
     products: ProductLntype[];
@@ -19,7 +20,7 @@ export default function ProductList({ products, loading, error, selectedProduct,
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            {loading && <LinearProgress sx={{ borderRadius: 1 }} />}
+            {loading && <ProductListSkeleton />}
             
             {error && !loading && (
                 <Box sx={{ p: 3, textAlign: 'center' }}>

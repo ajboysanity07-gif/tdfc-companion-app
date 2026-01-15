@@ -4,7 +4,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import { useTheme } from '@mui/material/styles';
 import type { TransitionProps } from '@mui/material/transitions';
 import type { SxProps, Theme } from '@mui/material/styles';
-import { useSidebar } from '@/components/ui/sidebar';
+import { useOptionalSidebar } from '@/components/ui/sidebar';
 
 type Props = {
     open: boolean;
@@ -45,8 +45,10 @@ const FullScreenModalMobile: React.FC<Props> = ({
     titleSx,
 }) => {
     const theme = useTheme();
-    const layerZ = zIndex ?? 5; // Lower than sidebar's z-10
-    const { state: sidebarState, isMobile: isSidebarMobile } = useSidebar();
+    const layerZ = zIndex ?? theme.zIndex.modal; // Keep modal above page content (nav still sits higher)
+    const sidebar = useOptionalSidebar();
+    const isSidebarMobile = sidebar?.isMobile ?? true;
+    const sidebarState = sidebar?.state ?? 'expanded';
     const sidebarWidth = isSidebarMobile ? '0px' : (sidebarState === 'expanded' ? '16rem' : '4rem');
     const isCollapsed = !isSidebarMobile && sidebarState === 'collapsed';
 

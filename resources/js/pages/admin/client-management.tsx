@@ -1,5 +1,4 @@
-import ClientDetailsSkeleton from '@/components/admin/client-management/client-details-skeleton';
-import ClientListSkeleton, { CLIENT_LIST_PAGE_SIZE } from '@/components/admin/client-management/client-list-skeleton';
+import { ClientDetailsSkeleton, ClientListSkeleton, CLIENT_LIST_PAGE_SIZE } from '@/components/admin/client-management/skeletons';
 import ClientDetails from '@/components/admin/client-management/client-details';
 import ClientList from '@/components/admin/client-management/client-list';
 import RejectModal from '@/components/admin/client-management/reject-modal';

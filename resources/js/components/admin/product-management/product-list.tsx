@@ -7,7 +7,7 @@ import { Autocomplete, Box, Chip, IconButton, List, ListItem, Paper, Stack, Text
 import React, { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import BoxHeader from '@/components/box-header';
-import { PRODUCT_LIST_PAGE_SIZE } from './product-list-skeleton';
+import { PRODUCT_LIST_PAGE_SIZE } from './skeletons';
 
 type Props = {
     products: ProductLntype[];

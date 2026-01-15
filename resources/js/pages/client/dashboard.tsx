@@ -2,13 +2,14 @@ import { useMyTheme } from '@/hooks/use-mytheme';
 import { useClientDashboard } from '@/hooks/use-client-dashboard';
 import AppLayout from '@/layouts/app-layout';
 import { Head, router, usePage } from '@inertiajs/react';
-import { Avatar, Box, Button, Chip, Divider, Pagination, Stack, Typography, useMediaQuery } from '@mui/material';
-import { Banknote, LogOut, PiggyBank } from 'lucide-react';
+import { Avatar, Box, Button, Chip, Divider, LinearProgress, Pagination, Skeleton, Slide, Stack, Typography, useMediaQuery } from '@mui/material';
+import { Banknote, CircleX, LogOut, PiggyBank } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useRoute } from 'ziggy-js';
 import { createTheme } from 'react-data-table-component';
 import SavingsTable from '@/components/dashboard/savings-table';
 import FullScreenModalMobile from '@/components/ui/full-screen-modal-mobile';
+import { ClientDashboardSkeleton } from '@/components/client/dashboard/skeletons';
 
 type UserShape = {
     name?: string;
@@ -76,6 +77,7 @@ export default function CustomerDashboard() {
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(5);
     const [showSavingsModal, setShowSavingsModal] = useState(false);
+    const showDashboardSkeleton = loading && transactions.length === 0 && savings.length === 0;
 
     const latestSavingsBalance = useMemo(() => {
         // Find the first (latest by date_in DESC) savings transaction
@@ -382,12 +384,28 @@ export default function CustomerDashboard() {
             </Stack>
 
             {loading && (
-                <Box sx={{ py: 4, textAlign: 'center' }}>
-                    <div className="flex items-center justify-center gap-3">
-                        <div className="h-6 w-6 animate-spin rounded-full border-2 border-[rgba(245,121,121,0.7)] border-t-transparent" />
-                        <span className="text-sm text-gray-600 dark:text-neutral-400">Loading transactions...</span>
-                    </div>
-                </Box>
+                <Stack spacing={1.5} sx={{ py: 1 }}>
+                    {Array.from({ length: isMobile ? 4 : 5 }).map((_, idx) => (
+                        <Stack
+                            key={idx}
+                            direction="row"
+                            alignItems="center"
+                            justifyContent="space-between"
+                            spacing={2}
+                            py={1.5}
+                            px={1}
+                        >
+                            <Stack spacing={0.6}>
+                                <Skeleton variant="text" width={140} height={20} />
+                                <Skeleton variant="text" width={90} height={16} />
+                            </Stack>
+                            <Stack spacing={0.6} alignItems="flex-end">
+                                <Skeleton variant="text" width={90} height={20} />
+                                <Skeleton variant="text" width={80} height={16} />
+                            </Stack>
+                        </Stack>
+                    ))}
+                </Stack>
             )}
 
             {error && !loading && (
@@ -690,6 +708,20 @@ export default function CustomerDashboard() {
     return (
         <AppLayout breadcrumbs={[{ title: 'Dashboard', href: '/client/dashboard' }]}>
             <Head title="Dashboard" />
+            {loading ? <LinearProgress color="primary" sx={{ position: 'fixed', top: 0, left: 0, width: '100%', zIndex: 60 }} /> : null}
+            <div className="fixed top-4 left-1/2 z-50 flex -translate-x-1/2 flex-col items-center gap-2">
+                <Slide in={!!loading} direction="down" mountOnEnter unmountOnExit>
+                    <div className="rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-sky-900/30">
+                        Loading...
+                    </div>
+                </Slide>
+                <Slide in={!!error && !loading} direction="down" mountOnEnter unmountOnExit>
+                    <div className="flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-red-900/30">
+                        <CircleX className="h-4 w-4" />
+                        <span>{error || 'An error occurred'}</span>
+                    </div>
+                </Slide>
+            </div>
             <Box sx={{ minHeight: '100%', bgcolor: tw.isDark ? '#0b0b0b' : '#f5f5f5', py: 2 }}>
                 <Box className="sr-only focus-within:not-sr-only">
                     <a
@@ -701,9 +733,15 @@ export default function CustomerDashboard() {
                 </Box>
 
                 <Box id="main-content" sx={{ display: 'flex', flexDirection: 'column', gap: 2, px: { xs: 2, sm: 3 }, bgcolor: tw.isDark ? '#0b0b0b' : '#f5f5f5' }}>
-                    <Box >{headerBlock}</Box>
-                    {primaryActions}
-                    {isMobile ? <MobileView /> : <DesktopView />}
+                    {showDashboardSkeleton ? (
+                        <ClientDashboardSkeleton />
+                    ) : (
+                        <>
+                            <Box>{headerBlock}</Box>
+                            {primaryActions}
+                            {isMobile ? <MobileView /> : <DesktopView />}
+                        </>
+                    )}
                 </Box>
             </Box>
 

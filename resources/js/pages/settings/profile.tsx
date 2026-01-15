@@ -21,6 +21,15 @@ const breadcrumbs: BreadcrumbItem[] = [
   },
 ];
 
+const formatCurrency = (amount: number): string => {
+  return new Intl.NumberFormat('en-PH', {
+    style: 'currency',
+    currency: 'PHP',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(amount);
+};
+
 export default function Profile() {
   const { auth } = usePage<SharedData>().props;
 
@@ -31,7 +40,7 @@ export default function Profile() {
   const [showEmailModal, setShowEmailModal] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   
-  const email: string = auth.user.email;
+  const email: string = auth.user.email ?? '';
 
   const handleAvatarSelect = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -60,18 +69,53 @@ export default function Profile() {
   const formatName = (name: string): string => {
     if (!name) return '';
     let normalized = name;
+    
+    // Handle comma-separated names (Last, First format)
     if (name.includes(',')) {
       const parts = name.split(',').map((p) => p.trim());
       normalized = parts.reverse().join(' ');
     }
-    return normalized
+    
+    // Handle suffix (Jr., Sr., II, III, etc.)
+    const suffixPattern = /\b(Jr\.?|Sr\.?|II|III|IV|V)\b/gi;
+    const suffixMatch = normalized.match(suffixPattern);
+    
+    if (suffixMatch) {
+      // Remove suffix from current position
+      normalized = normalized.replace(suffixPattern, '').trim();
+    }
+    
+    // Clean up extra spaces and standalone periods
+    normalized = normalized
+      .replace(/\s+/g, ' ')  // Replace multiple spaces with single space
+      .replace(/\s*\.\s*\.\s*/g, '. ')  // Replace multiple periods with single period and space
+      .replace(/\s+\./g, '.')  // Remove space before period
+      .trim();
+    
+    // Split, filter, and capitalize
+    const formattedParts = normalized
       .split(' ')
-      .filter(Boolean)
-      .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
-      .join(' ');
+      .filter(part => part && part !== '.')  // Remove empty strings and standalone periods
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
+    
+    // Add suffix back if it exists with proper casing
+    if (suffixMatch) {
+      const suffix = suffixMatch[0].toUpperCase();
+      // Normalize common suffixes to proper case
+      if (suffix === 'JR' || suffix === 'JR.') {
+        formattedParts.push('Jr.');
+      } else if (suffix === 'SR' || suffix === 'SR.') {
+        formattedParts.push('Sr.');
+      } else {
+        // Roman numerals stay uppercase (II, III, IV, V)
+        formattedParts.push(suffix);
+      }
+    }
+    
+    return formattedParts.join(' ');
   };
 
-  const fullName = formatName(auth.user.name);
+  const fullName = formatName(auth.user.name ?? '');
 
   return (
     <AppLayout breadcrumbs={breadcrumbs}>
@@ -155,11 +199,15 @@ export default function Profile() {
               </div>
               <div>
                 <p className="font-semibold text-gray-900 dark:text-white">Class:</p>
-                <p className="font-bold text-gray-900 dark:text-muted-foreground">A</p>
+                <p className="font-bold text-gray-900 dark:text-muted-foreground">{auth.user.class || 'N/A'}</p>
               </div>
               <div>
                 <p className="font-semibold text-gray-900 dark:text-white">Basic Salary*:</p>
-                <p className="text-2xl font-extrabold text-gray-900 dark:text-muted-foreground">₱30,000.00</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-muted-foreground" style={{ fontVariantNumeric: 'tabular-nums' }}>
+                  {auth.user.salary_amount != null 
+                    ? formatCurrency(auth.user.salary_amount)
+                    : 'Not configured'}
+                </p>
               </div>
             </div>
 
@@ -201,7 +249,7 @@ export default function Profile() {
           >
             <div className="p-8">
               <div className="flex items-center space-x-8">
-                <div className="relative flex-shrink-0">
+                <div className="relative shrink-0">
                   {/* Wrapper for positioning badge outside */}
                   <div className="relative">
                     <button
@@ -294,7 +342,7 @@ export default function Profile() {
                 <h3 className="text-sm font-semibold tracking-wider text-gray-500 uppercase dark:text-gray-400">Class</h3>
                 <div className="h-2 w-2 rounded-full" style={{ backgroundColor: '#87bfd3' }}></div>
               </div>
-              <p className="text-lg font-bold text-gray-900 dark:text-white">A</p>
+              <p className="text-lg font-bold text-gray-900 dark:text-white">{auth.user.class || 'N/A'}</p>
             </div>
 
             <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition-shadow duration-200 hover:shadow-md dark:border-neutral-700 dark:bg-neutral-800">
@@ -302,14 +350,18 @@ export default function Profile() {
                 <h3 className="text-sm font-semibold tracking-wider text-gray-500 uppercase dark:text-gray-400">Basic Salary</h3>
                 <div className="h-2 w-2 rounded-full bg-amber-500"></div>
               </div>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">₱30,000.00</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white" style={{ fontVariantNumeric: 'tabular-nums' }}>
+                {auth.user.salary_amount != null 
+                  ? formatCurrency(auth.user.salary_amount)
+                  : 'Not configured'}
+              </p>
               <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Monthly</p>
             </div>
           </div>
 
           <div className="rounded-2xl border border-[#4c92f1] bg-[#87bfd3]/10 p-6">
             <div className="flex items-start space-x-3">
-              <div className="flex-shrink-0">
+              <div className="shrink-0">
                 <svg className="h-5 w-5 text-[#4c92f1]" fill="currentColor" viewBox="0 0 20 20">
                   <path
                     fillRule="evenodd"

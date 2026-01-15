@@ -21,6 +21,8 @@ export type User = {
     role?: string;
     avatar?: string | null;
     status?: string;
+    salary_amount?: number | null;
+    class?: string | null;
 };
 
 export type SharedData = {

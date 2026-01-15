@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Box, Button, Divider, Pagination, Stack, Typography } from '@mui/material';
+import { Box, Button, Divider, Pagination, Skeleton, Stack, Typography } from '@mui/material';
 import type { WSavledRecord } from '@/types/client-dashboard';
 
 const SavingsTransactionTypeMap: Record<string, string> = {
@@ -32,6 +32,7 @@ export default function SavingsTable({
 }: SavingsTableProps) {
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
+    const showSkeleton = loading && !error;
 
     const accent = '#F57979';
     const surface = isDark ? '#2f2f2f' : '#ffffff';
@@ -118,13 +119,31 @@ export default function SavingsTable({
             </Stack>
             <Divider sx={{ mb: 2, borderColor }} />
 
-            {loading && (
-                <Box sx={{ py: 4, textAlign: 'center' }}>
-                    <div className="flex items-center justify-center gap-3">
-                        <div className="h-6 w-6 animate-spin rounded-full border-2 border-[rgba(245,121,121,0.7)] border-t-transparent" />
-                        <span className="text-sm text-gray-600 dark:text-neutral-400">Loading savings...</span>
-                    </div>
-                </Box>
+            {showSkeleton && (
+                <Stack spacing={1.5}>
+                    {Array.from({ length: 5 }).map((_, idx) => (
+                        <Stack key={idx} direction="row" alignItems="center" justifyContent="space-between" spacing={2} py={1.5}>
+                            <Stack spacing={0.6}>
+                                <Skeleton variant="text" width={140} height={20} />
+                                <Skeleton variant="text" width={100} height={16} />
+                            </Stack>
+                            <Stack spacing={0.6} alignItems="flex-end">
+                                <Skeleton variant="text" width={90} height={20} />
+                                <Skeleton variant="text" width={80} height={16} />
+                            </Stack>
+                        </Stack>
+                    ))}
+
+                    <Stack spacing={1} sx={{ pt: 1, borderTop: `1px solid ${borderColor}` }}>
+                        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} alignItems={{ xs: 'flex-start', sm: 'center' }} justifyContent="space-between">
+                            <Skeleton variant="rounded" width={120} height={28} sx={{ borderRadius: 1 }} />
+                            <Skeleton variant="text" width={140} height={16} />
+                        </Stack>
+                        <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+                            <Skeleton variant="rounded" width={180} height={28} sx={{ borderRadius: 999 }} />
+                        </Box>
+                    </Stack>
+                </Stack>
             )}
 
             {error && !loading && (

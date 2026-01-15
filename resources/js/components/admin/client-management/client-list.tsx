@@ -5,7 +5,7 @@ import type { Client, RegistrationStatus } from '@/types/user';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import SearchIcon from '@mui/icons-material/Search';
 import { Autocomplete, Avatar, Box, IconButton, List, ListItem, Paper, Stack, Tab, Tabs, TextField, Typography, useMediaQuery, useTheme } from '@mui/material';
-import { CLIENT_LIST_PAGE_SIZE } from './client-list-skeleton';
+import { CLIENT_LIST_PAGE_SIZE } from './skeletons';
 
 type Props = {
     clients: Client[];
