@@ -52,8 +52,12 @@ RUN npm install && npm run build
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Enable Apache mod_rewrite and disable conflicting MPM modules
-RUN a2dismod mpm_event mpm_worker && a2enmod mpm_prefork rewrite
+# Enable Apache mod_rewrite
+RUN a2enmod rewrite
+
+# Disable any conflicting MPM modules if loaded
+RUN if a2query -m mpm_event; then a2dismod mpm_event; fi && \
+    if a2query -m mpm_worker; then a2dismod mpm_worker; fi
 
 # Configure Apache document root
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
