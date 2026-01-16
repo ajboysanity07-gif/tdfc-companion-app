@@ -14,6 +14,23 @@ Route::get('/', function () {
     return Inertia::render('welcome'); // or your SPA root component
 })->name('welcome');
 
+// Test database connection (remove after testing)
+Route::get('/test-db', function () {
+    try {
+        $users = \DB::connection('sqlsrv')->select('SELECT TOP 5 email FROM app_user_table');
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Database connected!',
+            'users' => $users
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => $e->getMessage()
+        ], 500);
+    }
+});
+
 
 // --- Auth / Registration: Public (Guest) ---
 Route::middleware('guest')->group(function () {
