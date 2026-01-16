@@ -94,8 +94,10 @@ const ClientList: React.FC<Props> = ({
     const avatarSrc = (c: Client) => {
         const raw = c.profile_picture_url ?? c.profile_picture_path ?? '';
         if (!raw) return undefined;
-        // If backend returns relative storage path, prefix /storage/
-        return raw.startsWith('http') || raw.startsWith('data:') ? raw : `/storage/${raw.replace(/^\/+/, '')}`;
+        // If already absolute or has storage prefix, use as-is
+        if (raw.startsWith('http') || raw.startsWith('data:') || raw.startsWith('/storage')) return raw;
+        // Otherwise add /storage/ prefix
+        return `/storage/${raw.replace(/^\/+/, '')}`;
     };
 
     return (

@@ -35,12 +35,14 @@ type PreviewImage = { src: string; label?: string };
 const toAvatarSrc = (client?: Client | null) => {
     const raw = client?.profile_picture_url ?? client?.profile_picture_path ?? '';
     if (!raw) return undefined;
-    return raw.startsWith('http') || raw.startsWith('data:') ? raw : `/storage/${raw.replace(/^\/+/, '')}`;
+    if (raw.startsWith('http') || raw.startsWith('data:') || raw.startsWith('/storage')) return raw;
+    return `/storage/${raw.replace(/^\/+/, '')}`;
 };
 
 const imageSrc = (path?: string | null) => {
     if (!path) return undefined;
-    return path.startsWith('http') || path.startsWith('data:') ? path : `/storage/${path.replace(/^\/+/, '')}`;
+    if (path.startsWith('http') || path.startsWith('data:') || path.startsWith('/storage')) return path;
+    return `/storage/${path.replace(/^\/+/, '')}`;
 };
 
 const Thumb: React.FC<{

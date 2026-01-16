@@ -3,6 +3,8 @@
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 // --- Controllers ---
 use App\Http\Controllers\Auth\NewPasswordController;
@@ -13,10 +15,10 @@ use App\Http\Controllers\Customer\RegistrationStatusController;
 Route::get('/', function () {
     // Test database connection inline
     try {
-        $dbTest = \DB::connection('sqlsrv')->select('SELECT TOP 1 email FROM app_user_table');
-        \Log::info('Database test successful', ['result' => $dbTest]);
+        $dbTest = DB::connection('sqlsrv')->select('SELECT TOP 1 email FROM app_user_table');
+        Log::info('Database test successful', ['result' => $dbTest]);
     } catch (\Exception $e) {
-        \Log::error('Database test failed', ['error' => $e->getMessage()]);
+        Log::error('Database test failed', ['error' => $e->getMessage()]);
     }
     
     return Inertia::render('welcome'); // or your SPA root component
