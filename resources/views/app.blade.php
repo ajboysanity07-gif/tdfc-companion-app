@@ -34,9 +34,22 @@
 
     <title inertia>{{ config('app.name', 'Laravel') }}</title>
 
- <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+    {{-- PWA Meta Tags --}}
+    <meta name="application-name" content="TDFC Companion App">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="TDFC">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#ef5350">
+    
+    {{-- Web App Manifest --}}
+    <link rel="manifest" href="{{ asset('manifest.json') }}">
+    
+    {{-- Icons --}}
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
     <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon-32x32.png') }}">
     <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('favicon-16x16.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('images/tdfc-icon.png') }}">
 
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
@@ -51,6 +64,17 @@
 
 <body class="m-0 font-sans antialiased">
     @inertia
+    
+    {{-- PWA Service Worker Registration --}}
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then(reg => console.log('Service Worker registered'))
+                    .catch(err => console.log('Service Worker registration failed:', err));
+            });
+        }
+    </script>
 </body>
 
 </html>
