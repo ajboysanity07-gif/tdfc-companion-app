@@ -59,7 +59,7 @@ RUN a2enmod rewrite
 RUN if a2query -m mpm_event; then a2dismod mpm_event; fi && \
     if a2query -m mpm_worker; then a2dismod mpm_worker; fi
 
-# Configure Apache document root
+# Configure Apache document root and listen on Railway's PORT
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
 RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
@@ -72,4 +72,6 @@ CMD php artisan config:cache && \
     php artisan route:cache && \
     php artisan view:cache && \
     a2dismod mpm_event mpm_worker 2>/dev/null || true && \
+    sed -i "s/Listen 80/Listen ${PORT:-80}/g" /etc/apache2/ports.conf && \
+    sed -i "s/:80/:${PORT:-80}/g" /etc/apache2/sites-available/*.conf && \
     apache2-foreground
