@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 
+# Create storage link for public file access
+php artisan storage:link
+
 # Cache Laravel configs
 php artisan config:cache
 php artisan route:cache
