@@ -6,23 +6,23 @@ export default function Welcome() {
             <Head title="Welcome" />
 
             {/* MOBILE (unchanged, smaller image) */}
-            <div className="mx-auto grid min-h-screen place-items-center bg-white px-8 py-8 md:hidden">
-                <div className="w-full max-w-[720px]">
+            <div className="mx-auto grid min-h-screen place-items-center bg-white px-10 py-8 md:hidden">
+                <div className="w-full max-w-[420px]">
                     <div className="mb-6 grid place-items-center">
-                        <img src="/images/tdfc-icon.png" alt="TDFC Logo" className="w-full max-w-[180px] select-none" />
+                        <img src="/images/tdfc-icon.png" alt="TDFC Logo" className="w-full max-w-[160px] select-none" />
                     </div>
 
-                    <div className="rounded-4xl bg-[#FFE57E] p-4 shadow">
-                        <div className="grid gap-4">
+                    <div className="rounded-4xl bg-[#FFE57E] p-3 shadow">
+                        <div className="grid gap-3">
                             <a
                                 href="/register"
-                                className="grid place-items-center rounded-card bg-[#F57979] py-3 text-xl font-extrabold text-white shadow"
+                                className="grid place-items-center rounded-card bg-[#F57979] py-2.5 text-lg font-extrabold text-white shadow"
                             >
                                 REGISTER
                             </a>
                             <a
                                 href="/login"
-                                className="grid place-items-center rounded-card border-2 border-black/10 bg-white py-3 text-xl font-extrabold text-[#3B82F6] shadow"
+                                className="grid place-items-center rounded-card border-2 border-black/10 bg-white py-2.5 text-lg font-extrabold text-[#3B82F6] shadow"
                             >
                                 LOGIN
                             </a>
