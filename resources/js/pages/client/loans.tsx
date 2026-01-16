@@ -61,8 +61,10 @@ export default function LoansPage() {
         try {
             const response = await axiosClient.get(`/loans/${lnnumber}/amortization`);
             setAmortschedRows(response.data.schedule || []);
-        } catch (err) {
-            console.error('Failed to fetch amortization schedule:', err);
+        } catch (err: unknown) {
+            if (import.meta.env.DEV && err instanceof Error) {
+                console.error('[Loans] Failed to fetch amortization schedule:', err.message);
+            }
             setAmortschedRows([]);
         } finally {
             setAmortschedLoading(false);
@@ -75,8 +77,10 @@ export default function LoansPage() {
         try {
             const response = await axiosClient.get(`/loans/${lnnumber}/ledger`);
             setLedgerRows(response.data.ledger || []);
-        } catch (err) {
-            console.error('Failed to fetch ledger:', err);
+        } catch (err: unknown) {
+            if (import.meta.env.DEV && err instanceof Error) {
+                console.error('[Loans] Failed to fetch ledger:', err.message);
+            }
             setLedgerRows([]);
         } finally {
             setLedgerLoading(false);
@@ -177,7 +181,9 @@ export default function LoansPage() {
         const isCalculatorOpen = calculatorModalOpen || activeView === 'calculator';
         if (!isCalculatorOpen) return;
         if (!products.length && !productsLoading) {
-            console.log('Fetching products (including hidden)...');
+            if (import.meta.env.DEV) {
+                console.log('[Loans] Fetching products (including hidden)');
+            }
             // Fetch all products including hidden ones for loan renewal
             fetchProducts(true);
         }
@@ -203,9 +209,9 @@ export default function LoansPage() {
         const isCalculatorOpen = calculatorModalOpen || activeView === 'calculator';
         if (!isCalculatorOpen || !products.length) return;
         
-        console.log('=== Calculator Modal Data Setup ===');
-        console.log('Products available:', products.length);
-        console.log('Selected loan:', selectedLoan);
+        if (import.meta.env.DEV) {
+            console.log('[Loans] Calculator data setup - Products:', products.length, 'Loan:', selectedLoan);
+        }
         
         // If we have a loan with typecode, find matching product
         if (selectedLoan?.typecode) {
@@ -215,26 +221,12 @@ export default function LoansPage() {
             );
             
             if (matchingProduct) {
-                console.log('✓ Matching product found:', matchingProduct.product_name);
-                console.log('  Product data:', {
-                    max_amortization_formula: matchingProduct.max_amortization_formula,
-                    max_term_months: matchingProduct.max_term_months,
-                    interest_rate: matchingProduct.interest_rate,
-                });
-                console.log('  Loan data from wlnmaster:', {
-                    remarks: selectedLoan.remarks,
-                    typecode: selectedLoan.typecode,
-                    balance: selectedLoan.balance,
-                    term_mons: selectedLoan.term_mons,
-                    amortization: selectedLoan.amortization,
-                });
+                if (import.meta.env.DEV) {
+                    console.log('[Loans] Matching product found:', matchingProduct.product_name);
+                }
                 
                 // Use the backend's computed_result which is already calculated based on user's salary
                 if (matchingProduct.max_amortization_formula) {
-                    console.log('  Product has formula, checking backend computed value...');
-                    console.log('    - Product computed_result from backend:', matchingProduct.computed_result);
-                    console.log('    - Product max_amortization:', matchingProduct.max_amortization);
-                    
                     // The backend already calculates computed_result based on the user's salary
                     // We should use that value directly for loan renewal
                     let finalComputed: number;
@@ -242,43 +234,40 @@ export default function LoansPage() {
                     if (matchingProduct.computed_result != null && matchingProduct.computed_result > 0) {
                         // Use the backend's computed result (already calculated with user's salary)
                         finalComputed = matchingProduct.computed_result;
-                        console.log('    ✓✓✓ Using backend computed_result (based on salary):', finalComputed);
                     } else if (matchingProduct.max_amortization && matchingProduct.max_amortization > 0) {
                         finalComputed = matchingProduct.max_amortization;
-                        console.log('    ✓ Using product.max_amortization:', finalComputed);
                     } else {
                         // No valid computed result - this means salary is not configured
                         finalComputed = 0;
-                        console.log('    ⚠⚠ No valid amortization - salary likely not configured');
+                        if (import.meta.env.DEV) {
+                            console.warn('[Loans] No valid amortization - salary likely not configured');
+                        }
                     }
-                    
-                    console.log('    (NOT using wlnmaster.amortization:', selectedLoan.amortization, ')');
                     
                     const productWithComputed = {
                         ...matchingProduct,
                         computed_result: finalComputed,
                     };
-                    console.log('  Setting selectedProduct with computed_result:', productWithComputed.computed_result);
                     setSelectedProduct(productWithComputed);
                 } else {
-                    console.log('  No formula to evaluate');
                     // If no formula, use the backend's computed_result or max_amortization
                     const amountToUse = matchingProduct.computed_result || matchingProduct.max_amortization || 0;
-                    console.log('  Using computed_result or max_amortization:', amountToUse);
                     setSelectedProduct({
                         ...matchingProduct,
                         computed_result: amountToUse,
                     });
                 }
                 return;
-            } else {
-                console.log('✗ No matching product found for typecode:', selectedLoan.typecode);
+            } else if (import.meta.env.DEV) {
+                console.warn('[Loans] No matching product found for typecode:', selectedLoan.typecode);
             }
         }
         
         // Fallback: if no product selected and no loan, select first product
         if (!selectedProduct && !selectedLoan && products.length > 0) {
-            console.log('No loan selected, using first product');
+            if (import.meta.env.DEV) {
+                console.log('[Loans] No loan selected, using first product');
+            }
             setSelectedProduct(products[0]);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps

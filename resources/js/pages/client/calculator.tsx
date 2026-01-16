@@ -15,6 +15,7 @@ import { useEffect, useState } from 'react';
 import type { ProductLntype } from '@/types/product-lntype';
 import axiosClient from '@/api/axios-client';
 import type { WlnMasterRecord } from '@/types/user';
+import { evaluate } from 'mathjs';
 
 interface LoanDefaults {
     productName: string;
@@ -48,13 +49,26 @@ export default function LoanTransactions() {
     };
 
     useEffect(() => {
+        const controller = new AbortController();
+        
         // Fetch products WITHOUT include_hidden so filtering applies
         fetchProducts(false);
+        
         // Fetch user's active loans
-        axiosClient.get('/loans').then(response => {
-            const loans = response.data.wlnMasterRecords || [];
-            setUserLoans(loans);
-        }).catch(err => console.error('Failed to fetch user loans:', err));
+        axiosClient.get('/loans', { signal: controller.signal })
+            .then(response => {
+                const loans = response.data.wlnMasterRecords || [];
+                setUserLoans(loans);
+            })
+            .catch((err: unknown) => {
+                if (err instanceof Error && err.name !== 'CanceledError') {
+                    if (import.meta.env.DEV) {
+                        console.error('Failed to fetch user loans:', err);
+                    }
+                }
+            });
+
+        return () => controller.abort();
     }, [fetchProducts]);
 
     // Update loanDefaults when product is selected
@@ -72,7 +86,9 @@ export default function LoanTransactions() {
         );
 
         if (matchingLoan) {
-            console.log('Found matching loan for product:', matchingLoan);
+            if (import.meta.env.DEV) {
+                console.log('[Calculator] Found matching loan for product:', matchingLoan);
+            }
             
             let computedAmortization = selectedProduct.computed_result;
             
@@ -83,9 +99,6 @@ export default function LoanTransactions() {
                     const termMonths = toNumber(matchingLoan.term_mons) ?? selectedProduct.max_term_months ?? 0;
                     const interestRate = selectedProduct.interest_rate ?? 0;
                     
-                    console.log('Calculating amortization with:', { balance, termMonths, interestRate });
-                    console.log('Formula:', selectedProduct.max_amortization_formula);
-                    
                     const formula = selectedProduct.max_amortization_formula
                         .replace(/balance/gi, balance.toString())
                         .replace(/term_mons/gi, termMonths.toString())
@@ -93,23 +106,24 @@ export default function LoanTransactions() {
                         .replace(/interest_rate/gi, interestRate.toString())
                         .replace(/interest/gi, interestRate.toString());
                     
-                    console.log('Processed formula:', formula);
-                    
-                    const computed = eval(formula);
-                    console.log('Raw computed result:', computed);
+                    // Use mathjs for safe mathematical expression evaluation
+                    const computed = evaluate(formula);
                     
                     if (typeof computed === 'number' && Number.isFinite(computed) && computed > 0) {
                         computedAmortization = computed;
-                        console.log('✓ Using computed result:', computedAmortization);
                     } else if (selectedProduct.max_amortization && selectedProduct.max_amortization > 0) {
                         computedAmortization = selectedProduct.max_amortization;
-                        console.log('⚠ Using max_amortization:', computedAmortization);
                     } else {
                         computedAmortization = balance;
-                        console.log('⚠ Using balance as fallback:', computedAmortization);
+                    }
+                    
+                    if (import.meta.env.DEV) {
+                        console.log('[Calculator] Computed amortization:', computedAmortization);
                     }
                 } catch (error) {
-                    console.error('Formula evaluation error:', error);
+                    if (import.meta.env.DEV) {
+                        console.error('[Calculator] Formula evaluation error:', error);
+                    }
                     computedAmortization = selectedProduct.max_amortization || toNumber(matchingLoan.balance) || 0;
                 }
             }
@@ -156,11 +170,13 @@ export default function LoanTransactions() {
         try {
             const result = await submitLoanApplication(request);
             setSuccessMessage(result.message || 'Loan application submitted successfully!');
-            // Optionally: You can also show the computed_result or other data from result.data
-            console.log('Loan application response:', result);
-        } catch (err) {
-            // Error is already handled by the hook and shown in the calculator
-            console.error('Submission failed:', err);
+            if (import.meta.env.DEV) {
+                console.log('[Calculator] Loan application response:', result);
+            }
+        } catch (err: unknown) {
+            if (import.meta.env.DEV && err instanceof Error) {
+                console.error('[Calculator] Submission failed:', err.message);
+            }
         }
     };
 

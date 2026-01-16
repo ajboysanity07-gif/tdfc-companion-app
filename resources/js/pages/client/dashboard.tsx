@@ -10,6 +10,7 @@ import { createTheme } from 'react-data-table-component';
 import SavingsTable from '@/components/dashboard/savings-table';
 import FullScreenModalMobile from '@/components/ui/full-screen-modal-mobile';
 import { ClientDashboardSkeleton } from '@/components/client/dashboard/skeletons';
+import { PAGINATION, DUMMY_VALUES } from '@/lib/constants';
 
 type UserShape = {
     name?: string;
@@ -70,20 +71,17 @@ export default function CustomerDashboard() {
     const surface = tw.isDark ? '#2f2f2f' : '#ffffff';
     const borderColor = tw.isDark ? '#3a3a3a' : '#e5e7eb';
     const isMobile = useMediaQuery('(max-width:900px)');
-    const dummySavingsDisplay = '₱1,000.00';
 
     const { transactions, loanClass, savings, loading, error, fetchRecentTransactions } = useClientDashboard(acctno);
     
     const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize, setPageSize] = useState(5);
+    const [pageSize, setPageSize] = useState(PAGINATION.DASHBOARD_PAGE_SIZE);
     const [showSavingsModal, setShowSavingsModal] = useState(false);
     const showDashboardSkeleton = loading && transactions.length === 0 && savings.length === 0;
 
     const latestSavingsBalance = useMemo(() => {
         // Find the first (latest by date_in DESC) savings transaction
         const savingsTransaction = transactions.find(t => t.source === 'SAV');
-        console.log('All transactions:', transactions);
-        console.log('Savings Transaction:', savingsTransaction);
         
         if (savingsTransaction) {
             // Convert balance to number in case it's a string
@@ -91,14 +89,12 @@ export default function CustomerDashboard() {
                 ? parseFloat(savingsTransaction.balance) 
                 : (savingsTransaction.balance ?? 0);
             
-            console.log('Balance Value:', balanceValue, 'Type:', typeof balanceValue);
-            
             if (balanceValue > 0) {
                 return formatCurrency(balanceValue);
             }
         }
-        return dummySavingsDisplay;
-    }, [dummySavingsDisplay, transactions]);
+        return DUMMY_VALUES.SAVINGS_DISPLAY;
+    }, [transactions]);
 
     const initials = useMemo(
         () =>
@@ -192,14 +188,18 @@ export default function CustomerDashboard() {
     };
 
     useEffect(() => {
-        fetchRecentTransactions().catch(() => {
-            // Error is already handled by the hook
+        fetchRecentTransactions().catch((err: unknown) => {
+            if (import.meta.env.DEV && err instanceof Error) {
+                console.error('[Dashboard] Failed to fetch transactions:', err.message);
+            }
         });
     }, [fetchRecentTransactions]);
 
     const handleRetry = () => {
-        fetchRecentTransactions().catch(() => {
-            // Error is already handled by the hook
+        fetchRecentTransactions().catch((err: unknown) => {
+            if (import.meta.env.DEV && err instanceof Error) {
+                console.error('[Dashboard] Failed to retry transactions:', err.message);
+            }
         });
     };
 

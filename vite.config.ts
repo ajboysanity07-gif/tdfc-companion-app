@@ -25,5 +25,21 @@ export default defineConfig({
     },
     build: {
         chunkSizeWarningLimit: 2500,
+        rollupOptions: {
+            output: {
+                manualChunks: {
+                    // Split MUI into separate chunks
+                    'mui-core': ['@mui/material', '@mui/system', '@emotion/react', '@emotion/styled'],
+                    'mui-icons': ['@mui/icons-material'],
+                    'mui-datagrid': ['@mui/x-data-grid'],
+                    // Split large libraries
+                    'excel': ['exceljs'],
+                    'pdf': ['jspdf', 'jspdf-autotable'],
+                    // React and core dependencies
+                    'react-vendor': ['react', 'react-dom', 'react/jsx-runtime'],
+                    'router': ['@inertiajs/react'],
+                },
+            },
+        },
     },
 });

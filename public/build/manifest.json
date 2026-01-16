@@ -1,0 +1,123 @@
+{
+  "_excel-CqsJTHyW.js": {
+    "file": "assets/excel-CqsJTHyW.js",
+    "name": "excel",
+    "imports": [
+      "_mui-core-BEej5w8S.js"
+    ]
+  },
+  "_exceljs.min-Bv0bx5Y5.js": {
+    "file": "assets/exceljs.min-Bv0bx5Y5.js",
+    "name": "exceljs.min",
+    "isDynamicEntry": true,
+    "imports": [
+      "_mui-core-BEej5w8S.js",
+      "_excel-CqsJTHyW.js"
+    ]
+  },
+  "_mui-core-BEej5w8S.js": {
+    "file": "assets/mui-core-BEej5w8S.js",
+    "name": "mui-core"
+  },
+  "_mui-datagrid-BU3nLhQd.css": {
+    "file": "assets/mui-datagrid-BU3nLhQd.css",
+    "src": "_mui-datagrid-BU3nLhQd.css"
+  },
+  "_mui-datagrid-CyperaU5.js": {
+    "file": "assets/mui-datagrid-CyperaU5.js",
+    "name": "mui-datagrid",
+    "imports": [
+      "_mui-core-BEej5w8S.js"
+    ],
+    "css": [
+      "assets/mui-datagrid-BU3nLhQd.css"
+    ]
+  },
+  "_mui-icons-CQXQQZIJ.js": {
+    "file": "assets/mui-icons-CQXQQZIJ.js",
+    "name": "mui-icons",
+    "imports": [
+      "_mui-core-BEej5w8S.js"
+    ]
+  },
+  "_pdf-CKxS_PIE.js": {
+    "file": "assets/pdf-CKxS_PIE.js",
+    "name": "pdf",
+    "imports": [
+      "_mui-datagrid-CyperaU5.js"
+    ],
+    "dynamicImports": [
+      "node_modules/html2canvas/dist/html2canvas.esm.js",
+      "node_modules/dompurify/dist/purify.es.mjs",
+      "node_modules/canvg/lib/index.es.js"
+    ]
+  },
+  "_react-vendor-l0sNRNKZ.js": {
+    "file": "assets/react-vendor-l0sNRNKZ.js",
+    "name": "react-vendor"
+  },
+  "_router-DX3eEGyc.js": {
+    "file": "assets/router-DX3eEGyc.js",
+    "name": "router",
+    "imports": [
+      "_mui-core-BEej5w8S.js"
+    ]
+  },
+  "node_modules/canvg/lib/index.es.js": {
+    "file": "assets/index.es-DuRMGHgK.js",
+    "name": "index.es",
+    "src": "node_modules/canvg/lib/index.es.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "_mui-core-BEej5w8S.js",
+      "resources/js/app.tsx",
+      "_mui-icons-CQXQQZIJ.js",
+      "_pdf-CKxS_PIE.js",
+      "_mui-datagrid-CyperaU5.js",
+      "_router-DX3eEGyc.js"
+    ],
+    "css": [
+      "assets/app-DL-GbFhz.css"
+    ]
+  },
+  "node_modules/dompurify/dist/purify.es.mjs": {
+    "file": "assets/purify.es-B9ZVCkUG.js",
+    "name": "purify.es",
+    "src": "node_modules/dompurify/dist/purify.es.mjs",
+    "isDynamicEntry": true
+  },
+  "node_modules/html2canvas/dist/html2canvas.esm.js": {
+    "file": "assets/html2canvas.esm-B0tyYwQk.js",
+    "name": "html2canvas.esm",
+    "src": "node_modules/html2canvas/dist/html2canvas.esm.js",
+    "isDynamicEntry": true
+  },
+  "resources/css/app.css": {
+    "file": "assets/app-DL-GbFhz.css",
+    "src": "resources/css/app.css",
+    "isEntry": true,
+    "names": [
+      "app.css"
+    ]
+  },
+  "resources/js/app.tsx": {
+    "file": "assets/app-BNZNkR6J.js",
+    "name": "app",
+    "src": "resources/js/app.tsx",
+    "isEntry": true,
+    "imports": [
+      "_mui-core-BEej5w8S.js",
+      "_mui-icons-CQXQQZIJ.js",
+      "_pdf-CKxS_PIE.js",
+      "_mui-datagrid-CyperaU5.js",
+      "_router-DX3eEGyc.js"
+    ],
+    "dynamicImports": [
+      "_exceljs.min-Bv0bx5Y5.js",
+      "_exceljs.min-Bv0bx5Y5.js"
+    ],
+    "css": [
+      "assets/app-DL-GbFhz.css"
+    ]
+  }
+}

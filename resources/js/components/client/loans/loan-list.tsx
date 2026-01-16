@@ -11,6 +11,7 @@ import FullScreenModalMobile from '@/components/ui/full-screen-modal-mobile';
 import { LoanListSkeleton } from './skeletons';
 import type { WlnMasterRecord, AmortschedDisplayEntry, WlnLedEntry } from '@/types/user';
 import axiosClient from '@/api/axios-client';
+import { PAGINATION } from '@/lib/constants';
 
 declare global {
     interface Window {
@@ -49,7 +50,7 @@ export default function LoanList({ onOpenCalculator, onScheduleClick, onLedgerCl
     const [error, setError] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage] = useState(4);
+    const [itemsPerPage] = useState(PAGINATION.LOANS_PAGE_SIZE);
 
     // DEBUG: Show if component is rendering and how many loans are loaded
     if (process.env.NODE_ENV !== 'production') {
@@ -75,28 +76,31 @@ export default function LoanList({ onOpenCalculator, onScheduleClick, onLedgerCl
 
     // Fetch loans
     useEffect(() => {
-        // DEBUG: Show a visible message on the page
-        if (typeof window !== 'undefined') {
-            window.__LOANLIST_RENDERED = true;
-        }
+        const controller = new AbortController();
+        
         const fetchLoans = async () => {
             try {
                 setLoading(true);
                 setError(null);
-                console.log('Fetching loans from /loans...');
-                const response = await axiosClient.get('/loans');
-                console.log('Loans response:', response.data);
+                const response = await axiosClient.get('/loans', { signal: controller.signal });
                 setWlnRecords(response.data.wlnMasterRecords || []);
             } catch (err: unknown) {
-                const error = err as { response?: { data?: { message?: string } } };
-                console.error('Failed to fetch loans:', err);
-                setError(error?.response?.data?.message || 'Failed to load loans');
+                if (err instanceof Error && err.name === 'CanceledError') return;
+                
+                const axiosError = err as { response?: { data?: { message?: string } } };
+                const message = axiosError?.response?.data?.message || 'Failed to load loans';
+                setError(message);
+                
+                if (import.meta.env.DEV) {
+                    console.error('[LoanList] Failed to fetch loans:', err);
+                }
             } finally {
                 setLoading(false);
             }
         };
 
         fetchLoans();
+        return () => controller.abort();
     }, []);
 
     // Fetch amortization schedule
@@ -105,8 +109,10 @@ export default function LoanList({ onOpenCalculator, onScheduleClick, onLedgerCl
         try {
             const response = await axiosClient.get(`/loans/${lnnumber}/amortization`);
             setAmortschedByLnnumber((prev) => ({ ...prev, [lnnumber]: response.data.schedule || [] }));
-        } catch (err) {
-            console.error('Failed to fetch amortization schedule:', err);
+        } catch (err: unknown) {
+            if (import.meta.env.DEV && err instanceof Error) {
+                console.error('[LoanList] Failed to fetch amortization schedule:', err.message);
+            }
             setAmortschedByLnnumber((prev) => ({ ...prev, [lnnumber]: [] }));
         } finally {
             setAmortschedLoading((prev) => ({ ...prev, [lnnumber]: false }));
@@ -119,8 +125,10 @@ export default function LoanList({ onOpenCalculator, onScheduleClick, onLedgerCl
         try {
             const response = await axiosClient.get(`/loans/${lnnumber}/ledger`);
             setWlnLedByLnnumber((prev) => ({ ...prev, [lnnumber]: response.data.ledger || [] }));
-        } catch (err) {
-            console.error('Failed to fetch ledger:', err);
+        } catch (err: unknown) {
+            if (import.meta.env.DEV && err instanceof Error) {
+                console.error('[LoanList] Failed to fetch ledger:', err.message);
+            }
             setWlnLedByLnnumber((prev) => ({ ...prev, [lnnumber]: [] }));
         } finally {
             setWlnLedLoading((prev) => ({ ...prev, [lnnumber]: false }));

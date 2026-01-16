@@ -127,8 +127,9 @@ export default function RegistrationStatus({
       setPrcBack(null);
       setPayslipFile(null);
       setPayName(undefined);
-    } catch (err: any) {
-      const respErrors = err?.response?.data?.errors;
+    } catch (err: unknown) {
+      const axiosError = err as { response?: { data?: { errors?: Record<string, string> } } };
+      const respErrors = axiosError?.response?.data?.errors;
       if (respErrors) {
         setErrors(respErrors);
       } else {
