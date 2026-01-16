@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 # Cache Laravel configs
 php artisan config:cache
@@ -13,10 +14,15 @@ PORT=${PORT:-80}
 echo "Configuring Apache to listen on port $PORT"
 
 # Update Apache ports configuration
-sed -i "s/Listen 80/Listen $PORT/" /etc/apache2/ports.conf
+sed -i "s/Listen 80/Listen 0.0.0.0:$PORT/" /etc/apache2/ports.conf
 
-# Update VirtualHost configuration
+# Update VirtualHost configuration to listen on all interfaces
 sed -i "s/<VirtualHost \*:80>/<VirtualHost *:$PORT>/" /etc/apache2/sites-available/*.conf
+
+# Verify configuration
+echo "Apache will listen on 0.0.0.0:$PORT"
+cat /etc/apache2/ports.conf | grep Listen
+cat /etc/apache2/sites-available/000-default.conf | grep VirtualHost
 
 # Start Apache
 exec apache2-foreground
