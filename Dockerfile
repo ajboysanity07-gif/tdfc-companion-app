@@ -52,6 +52,10 @@ RUN npm install && npm run build
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
+# Copy startup script
+COPY start-container.sh /usr/local/bin/start-container
+RUN chmod +x /usr/local/bin/start-container
+
 # Enable Apache mod_rewrite
 RUN a2enmod rewrite
 
@@ -68,10 +72,4 @@ RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf
 EXPOSE 80
 
 # Start Apache
-CMD php artisan config:cache && \
-    php artisan route:cache && \
-    php artisan view:cache && \
-    a2dismod mpm_event mpm_worker 2>/dev/null || true && \
-    sed -i "s/Listen 80/Listen ${PORT:-80}/g" /etc/apache2/ports.conf && \
-    sed -i "s/:80/:${PORT:-80}/g" /etc/apache2/sites-available/*.conf && \
-    apache2-foreground
+CMD ["/usr/local/bin/start-container"]
