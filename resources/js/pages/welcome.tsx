@@ -9,20 +9,20 @@ export default function Welcome() {
             <div className="mx-auto grid min-h-screen place-items-center bg-white px-4 py-8 md:hidden">
                 <div className="w-full max-w-[720px]">
                     <div className="mb-6 grid place-items-center">
-                        <img src="/images/tdfc-icon.png" alt="TDFC Logo" className="w-full max-w-[220px] select-none" />
+                        <img src="/images/tdfc-icon.png" alt="TDFC Logo" className="w-full max-w-[180px] select-none" />
                     </div>
 
-                    <div className="rounded-4xl bg-[#FFE57E] p-6 shadow">
-                        <div className="grid gap-6">
+                    <div className="rounded-4xl bg-[#FFE57E] p-4 shadow">
+                        <div className="grid gap-4">
                             <a
                                 href="/register"
-                                className="grid place-items-center rounded-card bg-[#F57979] py-4 text-2xl font-extrabold text-white shadow"
+                                className="grid place-items-center rounded-card bg-[#F57979] py-3 text-xl font-extrabold text-white shadow"
                             >
                                 REGISTER
                             </a>
                             <a
                                 href="/login"
-                                className="grid place-items-center rounded-card border-2 border-black/10 bg-white py-4 text-2xl font-extrabold text-[#3B82F6] shadow"
+                                className="grid place-items-center rounded-card border-2 border-black/10 bg-white py-3 text-xl font-extrabold text-[#3B82F6] shadow"
                             >
                                 LOGIN
                             </a>
