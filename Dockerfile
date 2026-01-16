@@ -71,4 +71,5 @@ EXPOSE 80
 CMD php artisan config:cache && \
     php artisan route:cache && \
     php artisan view:cache && \
+    a2dismod mpm_event mpm_worker 2>/dev/null || true && \
     apache2-foreground
