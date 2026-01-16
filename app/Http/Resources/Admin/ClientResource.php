@@ -13,14 +13,24 @@ class ClientResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $profileUrl = $this->profile_picture_path
+            ? Storage::url($this->profile_picture_path)
+            : null;
+        
+        // Debug logging
+        \Log::info('ClientResource avatar', [
+            'user_id' => $this->user_id,
+            'path' => $this->profile_picture_path,
+            'url' => $profileUrl,
+            'app_url' => config('app.url')
+        ]);
+        
         return [
             'user_id' => $this->user_id,
             'name' => $this->name,
             'email' => $this->email,
             'profile_picture_path' => $this->profile_picture_path,
-            'profile_picture_url' => $this->profile_picture_path
-                ? Storage::url($this->profile_picture_path)
-                : null,
+            'profile_picture_url' => $profileUrl,
             'phone_no' => $this->phone_no,
             'acctno' => $this->acctno,
             'status' => $this->status,
