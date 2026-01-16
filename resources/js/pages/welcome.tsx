@@ -6,7 +6,7 @@ export default function Welcome() {
             <Head title="Welcome" />
 
             {/* MOBILE (unchanged, smaller image) */}
-            <div className="mx-auto grid min-h-screen place-items-center bg-white px-4 py-8 md:hidden">
+            <div className="mx-auto grid min-h-screen place-items-center bg-white px-8 py-8 md:hidden">
                 <div className="w-full max-w-[720px]">
                     <div className="mb-6 grid place-items-center">
                         <img src="/images/tdfc-icon.png" alt="TDFC Logo" className="w-full max-w-[180px] select-none" />
