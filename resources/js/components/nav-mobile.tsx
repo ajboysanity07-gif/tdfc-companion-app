@@ -89,12 +89,19 @@ export default function NavMobile() {
   const customerCalculatorHref = customerAcct ? `/client/${customerAcct}/loan-calculator` : '/loan-calculator';
   const customerLoansPageHref = customerAcct ? `/client/${customerAcct}/loans` : '/loans';
   
-  const customerNav = useMemo(() => [
-    { key: 'home', href: customerDashboardHref, label: "Home", icon: Home },
-    { key: 'loans', href: customerLoansPageHref, label: "Loans", icon: Briefcase },
-    { key: 'calculator', href: customerCalculatorHref, label: "Calculator", icon: Calculator },
-    { key: 'account', href: customerAccountHref, label: "Account", icon: UserRound },
-  ], [customerDashboardHref, customerLoansPageHref, customerCalculatorHref, customerAccountHref]);
+  const customerNav = useMemo(() => {
+    const nav = [];
+    // Only show Home if we have customerAcct
+    if (customerAcct) {
+      nav.push({ key: 'home', href: customerDashboardHref, label: "Home", icon: Home });
+    }
+    nav.push(
+      { key: 'loans', href: customerLoansPageHref, label: "Loans", icon: Briefcase },
+      { key: 'calculator', href: customerCalculatorHref, label: "Calculator", icon: Calculator },
+      { key: 'account', href: customerAccountHref, label: "Account", icon: UserRound }
+    );
+    return nav;
+  }, [customerDashboardHref, customerLoansPageHref, customerCalculatorHref, customerAccountHref, customerAcct]);
 
   const adminNav = useMemo(() => [
     { key: 'admin-home', href: adminDashboardHref, label: "Home", icon: Home },
