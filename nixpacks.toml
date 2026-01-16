@@ -1,9 +1,11 @@
 [phases.setup]
 nixPkgs = ["php83", "php83Extensions.pdo", "php83Extensions.pdo_sqlsrv", "php83Extensions.sqlsrv", "nodejs", "unixODBC"]
+aptPkgs = ["..."]
 
 [phases.install]
+dependsOn = ["setup"]
 cmds = [
-    "composer install --optimize-autoloader --no-dev --ignore-platform-reqs",
+    "composer install --optimize-autoloader --no-dev --ignore-platform-reqs --no-scripts",
     "npm install",
     "npm run build"
 ]
