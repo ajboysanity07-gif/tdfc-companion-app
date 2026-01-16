@@ -11,25 +11,16 @@ use App\Http\Controllers\Api\LoanTransactionController;
 use App\Http\Controllers\Customer\RegistrationStatusController;
 // --- Welcome / Landing Page ---
 Route::get('/', function () {
+    // Test database connection inline
+    try {
+        $dbTest = \DB::connection('sqlsrv')->select('SELECT TOP 1 email FROM app_user_table');
+        \Log::info('Database test successful', ['result' => $dbTest]);
+    } catch (\Exception $e) {
+        \Log::error('Database test failed', ['error' => $e->getMessage()]);
+    }
+    
     return Inertia::render('welcome'); // or your SPA root component
 })->name('welcome');
-
-// Test database connection (remove after testing)
-Route::get('/test-db', function () {
-    try {
-        $users = \DB::connection('sqlsrv')->select('SELECT TOP 5 email FROM app_user_table');
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Database connected!',
-            'users' => $users
-        ]);
-    } catch (\Exception $e) {
-        return response()->json([
-            'status' => 'error',
-            'message' => $e->getMessage()
-        ], 500);
-    }
-});
 
 
 // --- Auth / Registration: Public (Guest) ---
