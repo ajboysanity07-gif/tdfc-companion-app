@@ -97,11 +97,11 @@ const FullScreenModalMobile: React.FC<Props> = ({
                 sx: {
                     position: 'fixed',
                     top: 0,
-                    bottom: { xs: 74, md: 0 }, // Leave room for bottom nav on mobile
+                    bottom: { xs: 68, md: 0 }, // Leave room for bottom nav on mobile (nav height ~68px)
                     left: { xs: 0, md: sidebarWidth }, // Offset for sidebar on desktop
                     right: 0,
                     width: { xs: '100%', md: `calc(100% - ${sidebarWidth})` },
-                    height: { xs: 'calc(100% - 74px)', md: '100%' },
+                    height: { xs: 'calc(100% - 68px)', md: '100%' },
                     maxWidth: '100%',
                     maxHeight: '100%',
                     m: 0,
