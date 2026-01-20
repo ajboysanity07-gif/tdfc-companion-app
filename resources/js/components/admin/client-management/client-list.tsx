@@ -178,24 +178,18 @@ const ClientList: React.FC<Props> = ({
                         sx={{
                             border: `1px dashed ${tw.isDark ? '#3a3a3a' : '#e5e5e5'}`,
                             borderRadius: 2,
-                            p: isMobile ? 2.5 : 4,
-                            minHeight: fullHeight ? '100%' : isMobile ? '75%' : 360,
-                            height: fullHeight ? '100%' : 'auto',
-                            flexGrow: fullHeight ? 1 : 0,
-                            width: '100%',
-                            alignSelf: 'stretch',
-                            maxWidth: '100%',
-                            mx: 'auto',
+                            p: isMobile ? 3 : 4,
+                            minHeight: isMobile ? 200 : 300,
                             display: 'flex',
                             flexDirection: 'column',
                             alignItems: 'center',
                             justifyContent: 'center',
                             textAlign: 'center',
                             color: 'text.secondary',
-                            gap: isMobile ? 0.5 : 0.75,
+                            gap: isMobile ? 0.5 : 1,
                         }}
                     >
-                        <Typography variant={isMobile ? 'subtitle1' : 'h6'} fontWeight={800}>
+                        <Typography variant={isMobile ? 'subtitle1' : 'h6'} fontWeight={700}>
                             No clients found
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
