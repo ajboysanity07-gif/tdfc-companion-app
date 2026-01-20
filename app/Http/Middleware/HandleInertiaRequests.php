@@ -39,6 +39,7 @@ class HandleInertiaRequests extends Middleware
             }
             
             // Extract filename from profile_picture_path and use public/images/ directory
+            // This ensures avatars are loaded from git-tracked location for both admin and client users
             $avatarUrl = null;
             if ($user->profile_picture_path) {
                 $filename = basename($user->profile_picture_path);
