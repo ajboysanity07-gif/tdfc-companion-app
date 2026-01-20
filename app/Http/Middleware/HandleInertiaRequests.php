@@ -38,13 +38,20 @@ class HandleInertiaRequests extends Middleware
                 $loanClass = $loanClassificationService->classify($loanRows->get($user->acctno));
             }
             
+            // Extract filename from profile_picture_path and use public/images/ directory
+            $avatarUrl = null;
+            if ($user->profile_picture_path) {
+                $filename = basename($user->profile_picture_path);
+                $avatarUrl = asset('images/' . $filename);
+            }
+            
             $authUser = [
                 'id'            => $user->user_id ?? $user->id ?? null,
                 'name'          => $user->name,
                 'email'         => $user->email,
                 'role'          => $user->role ?? 'customer',
                 'acctno'        => $user->acctno ?? null,
-                'avatar'        => $user->profile_picture_path ? asset('storage/'.$user->profile_picture_path) : null,
+                'avatar'        => $avatarUrl,
                 'salary_amount' => $salaryRecord ? (float) $salaryRecord->salary_amount : null,
                 'class'         => $loanClass,
             ];
