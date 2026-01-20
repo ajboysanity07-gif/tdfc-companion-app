@@ -10,12 +10,15 @@ import {
   Calculator,
   LogOut,
   Settings,
+  Sun,
+  Moon,
 } from "lucide-react";
 import CloseIcon from "@mui/icons-material/Close";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import { useTheme } from '@mui/material/styles'; // <-- ADD THIS
 import { useEffect, useState } from "react";
 import { useMyTheme } from "@/hooks/use-mytheme";
+import { useAppearance } from "@/hooks/use-appearance";
 
 type AuthUser = { 
   role?: string,
@@ -40,7 +43,7 @@ export default function NavMobile() {
   const adminId = props.admin ?? user?.acctno ?? user?.user_id ?? user?.id ?? '';
   
   // Extract acctno from current URL as fallback
-  const urlMatch = url.match(/\/client\/([^\/]+)/);
+  const urlMatch = url.match(/\/client\/([^/]+)/);
   const urlAcctno = urlMatch ? urlMatch[1] : '';
   const customerAcct = props.acctno ?? user?.acctno ?? urlAcctno ?? '';
 
@@ -48,13 +51,13 @@ export default function NavMobile() {
   const adminClientsHref = adminId ? `/admin/${adminId}/client-management` : '/admin/client-management';
   const adminProductsHref = adminId ? `/admin/${adminId}/products` : '/admin/products';
   const customerDashboardHref = customerAcct ? `/client/${customerAcct}/dashboard` : '/dashboard';
-  const customerLoansHref = customerAcct ? `/client/${customerAcct}/loan-calculator` : '/loan-calculator';
+  // const customerLoansHref = customerAcct ? `/client/${customerAcct}/loan-calculator` : '/loan-calculator';
   // const customerSavingsHref = customerAcct ? `/client/${customerAcct}/savings` : '/savings';
   const customerAccountHref = customerAcct ? `/client/${customerAcct}/account` : route("profile.edit");
 
-  const isDashboard =
-    pathname === customerDashboardHref ||
-    pathname === adminDashboardHref;
+  // const isDashboard =
+  //   pathname === customerDashboardHref ||
+  //   pathname === adminDashboardHref;
 
   // MUI theme hook
   const theme = useTheme();
@@ -64,9 +67,15 @@ export default function NavMobile() {
   const [anyModalOpen, setAnyModalOpen] = useState(false);
   const [actionsOpen, setActionsOpen] = useState(false);
   const tw = useMyTheme();
+  const { updateAppearance } = useAppearance();
   const accent = '#F57979';
   const accentDark = '#e14e4e';
   const actionBg = tw.isDark ? 'rgba(17,24,39,0.9)' : '#ffffff';
+
+  const toggleTheme = () => {
+    const newMode = tw.isDark ? 'light' : 'dark';
+    updateAppearance(newMode);
+  };
 
   useEffect(() => {
     const sync = () => {
@@ -134,7 +143,7 @@ export default function NavMobile() {
       `}</style>
       {/* Responsive bottom nav using theme palette, no opacity */}
       <nav
-        className="fixed inset-x-0 bottom-0 z-40 border-t px-6 py-3 md:hidden"
+        className="fixed inset-x-0 bottom-0 z-40 border-t px-3 py-3 md:hidden"
         style={{
           background: theme.palette.background.paper, // <--- USE THEME!
           borderColor: theme.palette.divider,
@@ -144,7 +153,7 @@ export default function NavMobile() {
         <ul
           className={`grid ${
             items.length === 4 ? "grid-cols-4" : "grid-cols-3"
-          } gap-6`}
+          } gap-2`}
         >
           {items.map((it) => {
             const active = pathname === it.href;
@@ -157,7 +166,7 @@ export default function NavMobile() {
                   prefetch
                 >
                   <Icon
-                    className={`size-7 ${
+                    className={`size-6 ${
                       active
                         ? "text-[#F57979]"
                         : theme.palette.mode === "dark"
@@ -166,7 +175,7 @@ export default function NavMobile() {
                     }`}
                   />
                   <span
-                    className={`mt-1 text-sm font-semibold ${
+                    className={`mt-1 text-xs font-semibold ${
                       active
                         ? "text-[#F57979]"
                         : theme.palette.mode === "dark"
@@ -185,53 +194,63 @@ export default function NavMobile() {
       {/* FLOATING SETTINGS BUTTON */}
       {!productModalOpen && !anyModalOpen && !isProfilePage && (
         <div
-          className="fixed right-6 bottom-24 md:hidden flex flex-col items-end gap-2"
+          className="fixed right-4 bottom-20 md:hidden flex flex-col items-end gap-1.5"
           style={{ zIndex: floatingZIndex }}
         >
           <div
             style={{
               display: 'flex',
               flexDirection: 'column',
-              gap: 10,
+              gap: 7,
               opacity: actionsOpen ? 1 : 0,
-              transform: actionsOpen ? 'translateY(0)' : 'translateY(14px)',
+              transform: actionsOpen ? 'translateY(0)' : 'translateY(12px)',
               pointerEvents: actionsOpen ? 'auto' : 'none',
               transition: 'opacity 140ms ease, transform 180ms ease',
             }}
           >
             <Link
               href={settingsUrl}
-              className="rounded-full shadow-lg p-4 flex items-center justify-center"
+              className="rounded-full shadow-lg p-3 flex items-center justify-center"
               style={{
                 boxShadow: "0 3px 16px 0 rgba(80,80,80,0.10)",
                 backgroundColor: accent,
               }}
               title="Account Settings"
             >
-              <Settings className="w-6 h-6 text-white" />
+              <Settings className="w-5 h-5 text-white" />
             </Link>
-            {userRole === 'client' && (
-              <button
-                type="button"
-                onClick={() => router.post('/logout')}
-                className="rounded-full shadow-lg p-4 text-white flex items-center justify-center"
-                style={{
-                  boxShadow: "0 3px 16px 0 rgba(225,78,78,0.2)",
-                  backgroundColor: accentDark,
-                }}
-                title="Log out"
-              >
-                <LogOut className="w-6 h-6" />
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className="rounded-full shadow-lg p-3 flex items-center justify-center"
+              style={{
+                boxShadow: "0 3px 16px 0 rgba(80,80,80,0.10)",
+                backgroundColor: tw.isDark ? '#FFFFFF' : '#0a0a0a',
+              }}
+              title={tw.isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+            >
+              {tw.isDark ? <Sun className="w-5 h-5 text-gray-900" /> : <Moon className="w-5 h-5 text-white" />}
+            </button>
+            <button
+              type="button"
+              onClick={() => router.post('/logout')}
+              className="rounded-full shadow-lg p-3 text-white flex items-center justify-center"
+              style={{
+                boxShadow: "0 3px 16px 0 rgba(225,78,78,0.2)",
+                backgroundColor: accentDark,
+              }}
+              title="Log out"
+            >
+              <LogOut className="w-5 h-5" />
+            </button>
           </div>
           <button
             type="button"
             onClick={() => setActionsOpen((v) => !v)}
-            className="rounded-full shadow-lg p-4 transition-transform flex items-center justify-center"
+            className="rounded-full shadow-lg p-3 transition-transform flex items-center justify-center"
             style={{
-              width: 60,
-              height: 60,
+              width: 44,
+              height: 44,
               boxShadow: "0 10px 24px rgba(0,0,0,0.22)",
               animation: actionsOpen ? 'none' : 'floating-glow 2.6s ease-in-out infinite',
               transform: actionsOpen ? 'rotate(90deg)' : 'rotate(0deg)',
@@ -241,7 +260,7 @@ export default function NavMobile() {
             }}
             aria-label={actionsOpen ? 'Close actions' : 'Open actions'}
           >
-            {actionsOpen ? <CloseIcon sx={{ fontSize: 24 }} /> : <ExpandLessIcon sx={{ fontSize: 24 }} />}
+            {actionsOpen ? <CloseIcon sx={{ fontSize: 18 }} /> : <ExpandLessIcon sx={{ fontSize: 18 }} />}
           </button>
         </div>
       )}

@@ -32,27 +32,29 @@ export default function MobileViewLayout({ children, footer, wrapperSx, stackSx 
         display: 'flex',
         flex: 1,
         flexDirection: 'column',
-        gap: 3,
+        gap: 0,
         p: 2,
-        pb: 2,
+        pt: 0,
+        pb: { xs: 10, sm: 2 },
         minHeight: 'auto',
-        bgcolor: tw.isDark ? '#0a0a0a' : '#f5f5f5',
+        bgcolor: tw.isDark ? '#0a0a0a' : '#FFFFFF',
     };
 
     const stackBase: SxProps<Theme> = {
-        borderRadius: 3,
-        boxShadow: '0 12px 30px rgba(15,23,42,0.12)',
-        backgroundColor: tw.isDark ? '#2f2f2f' : 'background.paper',
-        p: 3,
+        borderRadius: 6,
+        border: '1px solid',
+        borderColor: tw.isDark ? 'rgba(64, 64, 64, 0.7)' : 'rgba(229, 231, 235, 1)',
+        boxShadow: tw.isDark 
+            ? '0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24)' 
+            : '0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24)',
+        backgroundColor: tw.isDark ? '#171717' : '#FAFAFA',
+        p: 2,
         display: 'flex',
         flexDirection: 'column',
-        flex: 1,
-        minHeight: 'calc(100vh - 320px)',
         justifyContent: 'flex-start',
         width: '100%',
         maxWidth: 720,
         alignSelf: 'center',
-        pb: { xs: 8, sm: 3 },
     };
 
     const wrapperStyles = mergeSx(wrapperBase, wrapperSx);

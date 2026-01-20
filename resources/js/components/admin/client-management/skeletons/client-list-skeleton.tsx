@@ -19,7 +19,7 @@ const ClientListSkeleton: React.FC<Props> = ({ itemCount = CLIENT_LIST_PAGE_SIZE
     const containerStyles = {
         p: isMobile ? 1 : 1.5,
         borderRadius: 2,
-        bgcolor: tw.isDark ? '#262626' : 'rgba(0,0,0,0.04)',
+        bgcolor: tw.isDark ? '#171717' : '#FAFAFA',
         border: tw.isDark ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(0,0,0,0.08)',
         boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.02)',
         flex: fullHeight ? 1 : 'unset',
@@ -55,7 +55,7 @@ const ClientListSkeleton: React.FC<Props> = ({ itemCount = CLIENT_LIST_PAGE_SIZE
                             spacing={isMobile ? 1.1 : 1.25}
                             alignItems="center"
                             sx={{
-                                bgcolor: tw.isDark ? '#2f2f2f' : '#f7f7f7',
+                                bgcolor: tw.isDark ? '#262626' : '#FFFFFF',
                                 border: tw.isDark ? '1px solid #3a3a3a' : '1px solid #e5e5e5',
                                 borderRadius: isMobile ? 2 : 2.5,
                                 px: isMobile ? 1.25 : 1.5,

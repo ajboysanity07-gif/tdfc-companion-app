@@ -11,7 +11,7 @@ const BoxHeader: React.FC<Props> = ({ title, subtitle }) => {
   const accent = theme.palette.primary.main;
 
   return (
-    <Stack spacing={0.5} sx={{ pb: 1, mb: 2 }}>
+    <Stack spacing={0.5} sx={{ p: 1, mb: 2 }}>
       <Typography
         variant="h4"
         fontWeight={800}

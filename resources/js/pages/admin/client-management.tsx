@@ -1,4 +1,5 @@
-import { ClientDetailsSkeleton, ClientListSkeleton, CLIENT_LIST_PAGE_SIZE } from '@/components/admin/client-management/skeletons';
+import { CLIENT_LIST_PAGE_SIZE } from '@/components/admin/client-management/skeletons';
+import ClientManagementSkeleton from '@/components/admin/client-management/client-management-skeleton';
 import ClientDetails from '@/components/admin/client-management/client-details';
 import ClientList from '@/components/admin/client-management/client-list';
 import RejectModal from '@/components/admin/client-management/reject-modal';
@@ -7,7 +8,7 @@ import DesktopViewLayout from '@/components/desktop-view-layout';
 import MobileViewLayout from '@/components/mobile-view-layout';
 import { useClientManagement } from '@/hooks/use-client-management';
 import AppLayout from '@/layouts/app-layout';
-import { Box, LinearProgress, Slide, Stack, useMediaQuery } from '@mui/material';
+import { LinearProgress, Slide, useMediaQuery, Box } from '@mui/material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { CircleCheckBig, CircleX } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
@@ -407,41 +408,7 @@ export default function ClientManagementPage() {
                 ) : null}
 
                 {loading ? (
-                    <div className="p-4">
-                        <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ width: '100%' }}>
-                            <Box
-                                sx={{
-                                    flex: 1,
-                                    borderRadius: 3,
-                                    p: 3,
-                                    bgcolor: 'background.paper',
-                                    boxShadow: 3,
-                                    minHeight: 500,
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                }}
-                            >
-                                <ClientListSkeleton
-                                    fullHeight
-                                    showTabs
-                                    itemCount={Math.max(approvedCount || clients.length, CLIENT_LIST_PAGE_SIZE)}
-                                />
-                            </Box>
-                            <Box
-                                sx={{
-                                    flex: 1,
-                                    borderRadius: 3,
-                                    p: 3,
-                                    bgcolor: 'background.paper',
-                                    boxShadow: 3,
-                                    minHeight: 500,
-                                    display: 'flex',
-                                }}
-                            >
-                                <ClientDetailsSkeleton />
-                            </Box>
-                        </Stack>
-                    </div>
+                    <ClientManagementSkeleton itemCount={Math.max(approvedCount || clients.length, CLIENT_LIST_PAGE_SIZE)} isMobile={isMobile} selectedId={selectedId} />
                 ) : isMobile ? (
                     <ClientMobileLayoutView
                         clients={clients}

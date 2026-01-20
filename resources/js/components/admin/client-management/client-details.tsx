@@ -50,7 +50,8 @@ const Thumb: React.FC<{
     images: PreviewImage[];
     onOpen: (title: string, images: PreviewImage[]) => void;
     split?: boolean;
-}> = ({ label, images, onOpen, split = false }) => {
+    isDark: boolean;
+}> = ({ label, images, onOpen, split = false, isDark }) => {
     if (!images.length) {
         return (
             <Box
@@ -60,7 +61,7 @@ const Thumb: React.FC<{
                     maxWidth: 220,
                     borderRadius: 8,
                     border: '1px dashed rgba(255,255,255,0.16)',
-                    bgcolor: 'action.hover',
+                    bgcolor: isDark ? '#262626' : '#F5F5F5',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -83,7 +84,7 @@ const Thumb: React.FC<{
                 borderRadius: 8,
                 overflow: 'hidden',
                 boxShadow: '0 4px 12px rgba(0,0,0,0.4), 0 2px 6px rgba(0,0,0,0.3)',
-                bgcolor: 'background.paper',
+                bgcolor: isDark ? '#262626' : '#FFFFFF',
                 cursor: 'pointer',
                 transition: 'transform 140ms ease, box-shadow 140ms ease',
                 '&:hover': {
@@ -170,7 +171,7 @@ const ClientDetails: React.FC<Props> = ({
 }) => {
     const tw = useMyTheme();
     const borderColor = tw.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.12)';
-    const panelBg = tw.isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)';
+    const panelBg = tw.isDark ? '#262626' : '#FFFFFF';
     const [salary, setSalary] = useState<string>('');
     const [error, setError] = useState<string | null>(null);
     const [previewOpen, setPreviewOpen] = useState(false);
@@ -335,7 +336,7 @@ const ClientDetails: React.FC<Props> = ({
                     p: { xs: 3, sm: 4 },
                     borderRadius: 2,
                     border: `1px dashed ${borderColor}`,
-                    bgcolor: tw.isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)',
+                    bgcolor: tw.isDark ? '#262626' : '#F5F5F5',
                     color: 'text.secondary',
                     textAlign: 'center',
                     display: 'flex',
@@ -528,14 +529,14 @@ const ClientDetails: React.FC<Props> = ({
                                 <Typography variant="subtitle2" sx={{ fontWeight: 800, letterSpacing: 0.5, color: 'text.secondary' }}>
                                     PRC ID
                                 </Typography>
-                                <Thumb label="PRC ID" images={prcImages} onOpen={openPreview} split />
+                                <Thumb label="PRC ID" images={prcImages} onOpen={openPreview} split isDark={tw.isDark} />
                             </Stack>
 
                             <Stack spacing={0.75} width="100%" maxWidth={480} alignItems="center">
                                 <Typography variant="subtitle2" sx={{ fontWeight: 800, letterSpacing: 0.5, color: 'text.secondary' }}>
                                     Payslip
                                 </Typography>
-                                <Thumb label="Payslip" images={payslipImages} onOpen={openPreview} />
+                                <Thumb label="Payslip" images={payslipImages} onOpen={openPreview} isDark={tw.isDark} />
                             </Stack>
                         </Stack>
                     </>

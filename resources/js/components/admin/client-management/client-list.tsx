@@ -4,8 +4,9 @@ import { useInitials } from '@/hooks/use-initials';
 import type { Client, RegistrationStatus } from '@/types/user';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import SearchIcon from '@mui/icons-material/Search';
-import { Autocomplete, Avatar, Box, IconButton, List, ListItem, Paper, Stack, Tab, Tabs, TextField, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { Autocomplete, Avatar, Box, IconButton, List, ListItem, Stack, Tab, Tabs, TextField, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { CLIENT_LIST_PAGE_SIZE } from './skeletons';
+import BoxHeader from '@/components/box-header';
 
 type Props = {
     clients: Client[];
@@ -34,8 +35,6 @@ const ClientList: React.FC<Props> = ({
     const getInitials = useInitials();
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-    const cardBg = tw.isDark ? '#2f2f2f' : '#f7f7f7';
-    const cardBorder = tw.isDark ? '#3a3a3a' : '#e5e5e5';
 
     const [statusTabInternal, setStatusTabInternal] = useState<RegistrationStatus>('approved');
     const statusTab = controlledStatusTab ?? statusTabInternal;
@@ -105,55 +104,54 @@ const ClientList: React.FC<Props> = ({
             spacing={isMobile ? 1.1 : 1.6}
             sx={fullHeight ? { flex: 1, minHeight: '100%', alignItems: 'stretch', justifyContent: 'flex-start' } : undefined}
         >
-            {enableStatusTabs ? (
-                <Tabs
-                    value={statusTab}
-                    onChange={handleStatusTabChange}
-                    variant="fullWidth"
-                    textColor="primary"
-                    indicatorColor="primary"
-                    sx={{ mb: isMobile ? 0.5 : 1 }}
-                >
-                    <Tab
-                        value="approved"
-                        label={
-                            isMobile
-                                ? 'Approved'
-                                : `Approved (${statusCounts.approved})`
-                        }
-                    />
-                    <Tab
-                        value="pending"
-                        label={
-                            isMobile
-                                ? 'Pending'
-                                : `Pending (${statusCounts.pending})`
-                        }
-                    />
-                    <Tab
-                        value="rejected"
-                        label={
-                            isMobile
-                                ? 'Rejected'
-                                : `Rejected (${statusCounts.rejected})`
-                        }
-                    />
-                </Tabs>
-            ) : null}
-
             <Box
                 sx={{
-                    p: isMobile ? 1 : 1.5,
-                    borderRadius: 2,
-                    bgcolor: tw.isDark ? '#262626' : 'rgba(0,0,0,0.04)',
-                    border: tw.isDark ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(0,0,0,0.08)',
-                    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.02)',
+                    borderRadius: 6,
+                    bgcolor: tw.isDark ? '#171717' : '#FAFAFA',
+                    p: 0,
                     flex: fullHeight ? 1 : 'unset',
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: isMobile ? 1 : 1.25,
+                    gap: isMobile ? 1.5 : 2,
                 }}
             >
+                {enableStatusTabs ? (
+                    <Tabs
+                        value={statusTab}
+                        onChange={handleStatusTabChange}
+                        variant="fullWidth"
+                        textColor="primary"
+                        indicatorColor="primary"
+                        sx={{ mb: isMobile ? 0.5 : 1 }}
+                    >
+                        <Tab
+                            value="approved"
+                            label={
+                                isMobile
+                                    ? 'Approved'
+                                    : `Approved (${statusCounts.approved})`
+                            }
+                        />
+                        <Tab
+                            value="pending"
+                            label={
+                                isMobile
+                                    ? 'Pending'
+                                    : `Pending (${statusCounts.pending})`
+                            }
+                        />
+                        <Tab
+                            value="rejected"
+                            label={
+                                isMobile
+                                    ? 'Rejected'
+                                    : `Rejected (${statusCounts.rejected})`
+                            }
+                        />
+                    </Tabs>
+                ) : null}
+
+                {/* Search bar */}
                 <Autocomplete
                     freeSolo
                     options={searchOptions.length ? searchOptions : list.map((c) => c.name)}
@@ -171,13 +169,14 @@ const ClientList: React.FC<Props> = ({
                             size="small"
                         />
                     )}
-                    sx={{ minWidth: 220 }}
+                    sx={{ width: '100%' }}
                 />
 
+                {/* Client list */}
                 {paginated.length === 0 ? (
                     <Box
                         sx={{
-                            border: `1px dashed ${cardBorder}`,
+                            border: `1px dashed ${tw.isDark ? '#3a3a3a' : '#e5e5e5'}`,
                             borderRadius: 2,
                             p: isMobile ? 2.5 : 4,
                             minHeight: fullHeight ? '100%' : isMobile ? '75%' : 360,
@@ -204,132 +203,134 @@ const ClientList: React.FC<Props> = ({
                         </Typography>
                     </Box>
                 ) : (
-                    <List
-                        disablePadding
-                        sx={{
-                            width: '100%',
-                            mt: isMobile ? 0.25 : 0.5,
-                            flexGrow: 0,
-                            alignSelf: 'stretch',
-                        }}
-                        ref={listScrollRef}
-                    >
+                    <List sx={{ flex: fullHeight ? 1 : 'auto', display: 'flex', flexDirection: 'column', gap: 1, overflow: 'auto', p: 0 }} ref={listScrollRef}>
                         {paginated.map((client) => (
-                            <Paper
+                            <ListItem
                                 key={client.user_id}
-                                elevation={2}
                                 sx={{
-                                    mb: isMobile ? 1 : 1.25,
-                                    borderRadius: isMobile ? 2 : 2.5,
-                                    overflow: 'hidden',
-                                    bgcolor: cardBg,
-                                    border: `1px solid ${cardBorder}`,
+                                    borderRadius: 2,
+                                    border: '1px solid',
+                                    borderColor: 'divider',
+                                    p: 2,
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                    bgcolor: tw.isDark ? '#262626' : '#FFFFFF',
+                                    '&:hover': {
+                                        bgcolor: tw.isDark ? '#2f2f2f' : '#F5F5F5'
+                                    }
                                 }}
                             >
-                                <ListItem disableGutters sx={{ px: isMobile ? 1.5 : 2, py: isMobile ? 1 : 1.5 }}>
-                                    <Stack direction="row" alignItems="center" spacing={isMobile ? 1.25 : 1.5} sx={{ width: '100%' }}>
-                                        <Avatar
-                                            src={avatarSrc(client)}
-                                            alt={client.name}
-                                            sx={{
-                                                width: isMobile ? 44 : 52,
-                                                height: isMobile ? 44 : 52,
-                                                bgcolor: tw.isDark ? '#3c3c3c' : '#e0e7ff',
-                                                fontWeight: 700,
-                                                color: tw.isDark ? 'white' : '#1e293b',
-                                            }}
-                                        >
-                                            {getInitials(client.name)}
-                                        </Avatar>
+                                <Stack direction="row" spacing={2} sx={{ flex: 1, alignItems: 'center' }}>
+                                    {/* Avatar */}
+                                    <Avatar
+                                        src={avatarSrc(client)}
+                                        alt={client.name}
+                                        sx={{
+                                            width: 48,
+                                            height: 48,
+                                            bgcolor: tw.isDark ? '#3c3c3c' : '#e0e7ff',
+                                            fontWeight: 700,
+                                            color: tw.isDark ? 'white' : '#1e293b',
+                                        }}
+                                    >
+                                        {getInitials(client.name)}
+                                    </Avatar>
 
-                                        <Typography
-                                            variant={isMobile ? 'subtitle1' : 'h6'}
-                                            fontWeight={800}
-                                            noWrap
-                                            sx={{ flex: 1, minWidth: 0 }}
-                                        >
+                                    {/* Client info */}
+                                    <Stack sx={{ flex: 1 }}>
+                                        <Typography variant={isMobile ? 'subtitle1' : 'h6'} fontWeight={700} noWrap>
                                             {client.name}
                                         </Typography>
-
-                                        <IconButton
-                                            size="small"
-                                            onClick={() => onSelect?.(client.user_id)}
-                                            sx={{
-                                                width: isMobile ? 32 : 36,
-                                                height: isMobile ? 32 : 36,
-                                                borderRadius: '50%',
-                                                border: '1px solid rgba(245,121,121,0.25)',
-                                                bgcolor: 'rgba(245,121,121,0.12)',
-                                                color: '#f57979',
-                                                transition: 'all 120ms ease',
-                                                '&:hover': {
-                                                    transform: 'scale(1.08)',
-                                                    bgcolor: 'rgba(245,121,121,0.2)',
-                                                },
-                                            }}
-                                        >
-                                            <ArrowForwardIosIcon fontSize="inherit" />
-                                        </IconButton>
+                                        <Typography variant="body2" color="text.secondary" noWrap>
+                                            {client.email}
+                                        </Typography>
                                     </Stack>
-                                </ListItem>
-                            </Paper>
+                                </Stack>
+
+                                {/* Arrow icon */}
+                                <IconButton
+                                    size="small"
+                                    onClick={() => onSelect?.(client.user_id)}
+                                    sx={{
+                                        width: isMobile ? 32 : 36,
+                                        height: isMobile ? 32 : 36,
+                                        borderRadius: '50%',
+                                        border: '1px solid rgba(245,121,121,0.25)',
+                                        bgcolor: 'rgba(245,121,121,0.12)',
+                                        color: '#f57979',
+                                        transition: 'all 120ms ease',
+                                        '&:hover': {
+                                            transform: 'scale(1.08)',
+                                            bgcolor: 'rgba(245,121,121,0.2)',
+                                        },
+                                    }}
+                                >
+                                    <ArrowForwardIosIcon fontSize="inherit" />
+                                </IconButton>
+                            </ListItem>
                         ))}
                     </List>
                 )}
+
+                {/* Pagination */}
+                {displayList.length > 0 && (
+                    <Stack direction="row" justifyContent="center" spacing={1} sx={{ mt: 3 }}>
+                        <Box
+                            component="button"
+                            onClick={() => setPage((p) => Math.max(p - 1, 1))}
+                            disabled={clampedPage <= 1}
+                            style={{ cursor: clampedPage <= 1 ? 'not-allowed' : 'pointer' }}
+                            sx={{
+                                px: 2,
+                                py: 0.6,
+                                borderRadius: 1,
+                                border: `1px solid ${tw.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)'}`,
+                                bgcolor: tw.isDark ? '#2f2f2f' : 'rgba(0,0,0,0.04)',
+                                color: 'text.secondary',
+                                fontWeight: 700,
+                                opacity: clampedPage <= 1 ? 0.6 : 1,
+                                fontSize: '0.875rem',
+                            }}
+                        >
+                            Prev
+                        </Box>
+                        <Box
+                            sx={{
+                                px: 2,
+                                py: 0.6,
+                                borderRadius: 1,
+                                border: `1px solid ${tw.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)'}`,
+                                bgcolor: tw.isDark ? '#2f2f2f' : 'rgba(0,0,0,0.04)',
+                                color: 'text.secondary',
+                                fontWeight: 700,
+                                fontSize: '0.875rem',
+                            }}
+                        >
+                            {clampedPage} / {totalPages}
+                        </Box>
+                        <Box
+                            component="button"
+                            onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
+                            disabled={clampedPage >= totalPages}
+                            style={{ cursor: clampedPage >= totalPages ? 'not-allowed' : 'pointer' }}
+                            sx={{
+                                px: 2,
+                                py: 0.6,
+                                borderRadius: 1,
+                                border: `1px solid ${tw.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)'}`,
+                                bgcolor: tw.isDark ? '#2f2f2f' : 'rgba(0,0,0,0.04)',
+                                color: 'text.secondary',
+                                fontWeight: 700,
+                                opacity: clampedPage >= totalPages ? 0.6 : 1,
+                                fontSize: '0.875rem',
+                            }}
+                        >
+                            Next
+                        </Box>
+                    </Stack>
+                )}
             </Box>
-            {displayList.length > 0 ? (
-                <Stack direction="row" spacing={1} justifyContent="center" alignItems="center" sx={{ pt: isMobile ? 0.75 : 1 }}>
-                    <Box
-                        component="button"
-                        onClick={() => setPage((p) => Math.max(p - 1, 1))}
-                        disabled={clampedPage <= 1}
-                        style={{ cursor: clampedPage <= 1 ? 'not-allowed' : 'pointer' }}
-                        sx={{
-                            px: 2,
-                            py: 0.6,
-                            borderRadius: 1,
-                            border: `1px solid ${tw.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)'}`,
-                            bgcolor: tw.isDark ? '#2f2f2f' : 'rgba(0,0,0,0.04)',
-                            color: 'text.secondary',
-                            fontWeight: 700,
-                            opacity: clampedPage <= 1 ? 0.6 : 1,
-                        }}
-                    >
-                        Prev
-                    </Box>
-                    <Box
-                        sx={{
-                            px: 2,
-                            py: 0.6,
-                            borderRadius: 1,
-                            border: `1px solid ${tw.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)'}`,
-                            bgcolor: tw.isDark ? '#2f2f2f' : 'rgba(0,0,0,0.04)',
-                            color: 'text.secondary',
-                            fontWeight: 700,
-                        }}
-                    >
-                        {clampedPage} / {totalPages}
-                    </Box>
-                    <Box
-                        component="button"
-                        onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
-                        disabled={clampedPage >= totalPages}
-                        style={{ cursor: clampedPage >= totalPages ? 'not-allowed' : 'pointer' }}
-                        sx={{
-                            px: 2,
-                            py: 0.6,
-                            borderRadius: 1,
-                            border: `1px solid ${tw.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)'}`,
-                            bgcolor: tw.isDark ? '#2f2f2f' : 'rgba(0,0,0,0.04)',
-                            color: 'text.secondary',
-                            fontWeight: 700,
-                            opacity: clampedPage >= totalPages ? 0.6 : 1,
-                        }}
-                    >
-                        Next
-                    </Box>
-                </Stack>
-            ) : null}
         </Stack>
     );
 };

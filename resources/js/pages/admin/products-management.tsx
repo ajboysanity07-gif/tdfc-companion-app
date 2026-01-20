@@ -1,13 +1,14 @@
 import DesktopViewLayout from '@/components/desktop-view-layout';
 import MobileViewLayout from '@/components/mobile-view-layout';
 import ProductCrud from '@/components/admin/product-management/product-crud';
-import { ProductListSkeleton, PRODUCT_LIST_PAGE_SIZE } from '@/components/admin/product-management/skeletons';
+import { PRODUCT_LIST_PAGE_SIZE } from '@/components/admin/product-management/skeletons';
+import ProductManagementSkeleton from '@/components/admin/product-management/product-management-skeleton';
 import FullScreenModalMobile from '@/components/ui/full-screen-modal-mobile';
 import ProductList from '@/components/admin/product-management/product-list';
 import { useProductManagement } from '@/hooks/use-product-management';
 import AppLayout from '@/layouts/app-layout';
 import { ProductLntype, ProductPayload, WlnType } from '@/types/product-lntype';
-import { Box, Button, LinearProgress, Slide, Stack, useMediaQuery } from '@mui/material';
+import { Button, LinearProgress, Slide, useMediaQuery } from '@mui/material';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import { AnimatePresence, motion } from 'framer-motion';
 import { CircleCheckBig, CircleX } from 'lucide-react';
@@ -293,59 +294,7 @@ export default function ProductsManagementPage() {
                 <HeaderBlock title="Product Management" subtitle="Activate and manage product listings" />
 
                 {loading ? (
-                    isMobile ? (
-                        <div className="p-4">
-                            <Box
-                                sx={{
-                                    borderRadius: 3,
-                                    p: 3,
-                                    bgcolor: 'background.paper',
-                                    boxShadow: 3,
-                                    minHeight: 500,
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                }}
-                            >
-                                <ProductListSkeleton fullHeight itemCount={Math.max(products.length, PRODUCT_LIST_PAGE_SIZE)} />
-                            </Box>
-                        </div>
-                    ) : (
-                        <div className="p-4">
-                            <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ width: '100%' }}>
-                                <Box
-                                    sx={{
-                                        flex: 1,
-                                        borderRadius: 3,
-                                        p: 3,
-                                        bgcolor: 'background.paper',
-                                        boxShadow: 3,
-                                        minHeight: 500,
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                    }}
-                                >
-                                    <ProductListSkeleton fullHeight itemCount={Math.max(products.length, PRODUCT_LIST_PAGE_SIZE)} />
-                                </Box>
-                                <Box
-                                    sx={{
-                                        flex: 1,
-                                        borderRadius: 3,
-                                        p: 3,
-                                        bgcolor: 'background.paper',
-                                        boxShadow: 3,
-                                        minHeight: 500,
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        color: 'text.secondary',
-                                        fontWeight: 700,
-                                    }}
-                                >
-                                    Loading products...
-                                </Box>
-                            </Stack>
-                        </div>
-                    )
+                    <ProductManagementSkeleton itemCount={Math.max(products.length, PRODUCT_LIST_PAGE_SIZE)} />
                 ) : isMobile ? (
                     <ProductMobileLayoutView
                         products={products}

@@ -42,35 +42,37 @@ export default function DesktopViewLayout({
     const panelBase = {
         flex: 1,
         borderRadius: 3,
-        boxShadow: '0 12px 30px rgba(15,23,42,0.12)',
-        backgroundColor: tw.isDark ? '#2f2f2f' : 'background.paper',
+        border: '1px solid',
+        borderColor: tw.isDark ? 'rgba(64, 64, 64, 0.7)' : 'rgba(229, 231, 235, 1)',
+        boxShadow: tw.isDark 
+            ? '0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24)' 
+            : '0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24)',
+        backgroundColor: tw.isDark ? '#171717' : '#FAFAFA',
         p: 4,
         minHeight: 850,
         display: 'flex',
         flexDirection: 'column',
     } satisfies SxProps<Theme>;
 
-    const wrapperStyles: SxProps<Theme> = mergeSx(
-        {
-            display: 'flex',
-            flex: 1,
-            flexDirection: 'column',
-            gap: 4,
-            p: 2,
-            bgcolor: tw.isDark ? '#0a0a0a' : '#f5f5f5',
-            transition: 'color 300ms, background-color 300ms',
-        },
-        wrapperSx,
-    );
 
     const leftStyles: SxProps<Theme> = mergeSx(panelBase, leftSx);
     const rightStyles: SxProps<Theme> = mergeSx(panelBase, rightSx);
 
     return (
         <Box
-            sx={wrapperStyles}
+            sx={{
+                display: 'flex',
+                flex: 1,
+                flexDirection: 'column',
+                gap: 0,
+                p: 2,
+                pt: 0,
+                bgcolor: tw.isDark ? '#0a0a0a' : '#f5f5f5',
+                transition: 'color 300ms, background-color 300ms',
+                ...wrapperSx,
+            }}
         >
-            <Stack direction="row" spacing={3} alignItems="stretch" {...stackProps}>
+            <Stack direction="row" spacing={2} alignItems="stretch" {...stackProps}>
                 <Box sx={leftStyles}>{left}</Box>
                 <Box sx={rightStyles}>{right}</Box>
             </Stack>

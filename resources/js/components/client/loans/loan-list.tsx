@@ -257,13 +257,13 @@ export default function LoanList({ onOpenCalculator, onScheduleClick, onLedgerCl
             {/* Header */}
             <Box sx={{ mb: 4 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
-                    <Typography variant="h5" fontWeight={700} sx={{ color: '#F57979' }}>
+                    <Typography variant="h5" fontWeight={700} sx={{ color: '#F57979', fontSize: { xs: '1.25rem', sm: '1.5rem' } }}>
                         Active Loans
                     </Typography>
                     <Button
                         variant="contained"
                         size="medium"
-                        startIcon={<CalculateIcon />}
+                        startIcon={<CalculateIcon sx={{ fontSize: { xs: '18px', sm: '20px' } }} />}
                         onClick={() => router.visit(calculatorUrl)}
                         sx={{
                             bgcolor: '#F57979',
@@ -271,8 +271,9 @@ export default function LoanList({ onOpenCalculator, onScheduleClick, onLedgerCl
                             fontWeight: 600,
                             textTransform: 'none',
                             borderRadius: 3,
-                            px: 3,
-                            py: 1.2,
+                            px: { xs: 2, sm: 3 },
+                            py: { xs: 0.8, sm: 1.2 },
+                            fontSize: { xs: '0.813rem', sm: '0.875rem' },
                             boxShadow: '0 1px 3px rgba(0, 0, 0, 0.2)',
                             transition: 'all 0.2s ease',
                             '&:hover': {
@@ -305,7 +306,7 @@ export default function LoanList({ onOpenCalculator, onScheduleClick, onLedgerCl
                     }}
                 />
             </Box>
-            <Stack spacing={3} width="100%">
+            <Stack spacing={1.5} width="100%">
                 {paginatedRecords.map((rec, idx) => {
                     const hasSchedule = amortschedByLnnumber[rec.lnnumber ?? '']?.length > 0;
                     const schedLoadingThis = amortschedLoading[rec.lnnumber ?? ''];
@@ -316,13 +317,14 @@ export default function LoanList({ onOpenCalculator, onScheduleClick, onLedgerCl
                             sx={{
                                 width: '100%',
                                 borderRadius: 2,
-                                bgcolor: '#3a3a3a',
-                                border: 'none',
+                                bgcolor: tw.isDark ? '#262626' : '#FFFFFF',
+                                border: '1px solid',
+                                borderColor: tw.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
                                 p: 2.5,
                                 transition: 'all 0.2s ease',
                                 '&:hover': {
                                     transform: 'translateY(-1px)',
-                                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+                                    boxShadow: tw.isDark ? '0 4px 12px rgba(0, 0, 0, 0.3)' : '0 4px 12px rgba(0, 0, 0, 0.1)',
                                 },
                             }}
                         >
@@ -337,7 +339,6 @@ export default function LoanList({ onOpenCalculator, onScheduleClick, onLedgerCl
                                                 textTransform: 'uppercase',
                                                 fontSize: '0.95rem',
                                                 lineHeight: 1.2,
-                                                color: 'white',
                                             }}
                                         >
                                             {rec.remarks ? String(rec.remarks).trim() : 'LOAN'}
@@ -364,7 +365,7 @@ export default function LoanList({ onOpenCalculator, onScheduleClick, onLedgerCl
                                     <Typography 
                                         variant="body2" 
                                         sx={{ 
-                                            color: 'rgba(255,255,255,0.6)', 
+                                            color: 'text.secondary',
                                             fontWeight: 400,
                                             fontSize: '0.8rem',
                                         }}
@@ -376,7 +377,6 @@ export default function LoanList({ onOpenCalculator, onScheduleClick, onLedgerCl
                                         variant="h6" 
                                         fontWeight={700} 
                                         sx={{ 
-                                            color: 'white', 
                                             fontSize: '0.9rem',
                                             mt: 1,
                                         }}
@@ -388,7 +388,7 @@ export default function LoanList({ onOpenCalculator, onScheduleClick, onLedgerCl
                                         <Typography 
                                             variant="body2" 
                                             sx={{ 
-                                                color: 'rgba(255,255,255,0.7)', 
+                                                color: 'text.secondary',
                                                 fontWeight: 400,
                                                 fontSize: '0.8rem',
                                             }}
@@ -404,8 +404,8 @@ export default function LoanList({ onOpenCalculator, onScheduleClick, onLedgerCl
                                         variant="contained"
                                         size="small"
                                         fullWidth
-                                        onClick={() => openSchedule(rec)}
-                                        disabled={schedLoadingThis || !hasSchedule}
+                                        onClick={() => onOpenCalculator(rec)}
+                                        data-loan-action
                                         sx={{
                                             bgcolor: '#F57979',
                                             color: 'white',
@@ -420,9 +420,33 @@ export default function LoanList({ onOpenCalculator, onScheduleClick, onLedgerCl
                                                 bgcolor: '#e14e4e',
                                                 boxShadow: 'none',
                                             },
+                                        }}
+                                    >
+                                        Renew
+                                    </Button>
+                                    <Button
+                                        variant="outlined"
+                                        size="small"
+                                        fullWidth
+                                        onClick={() => openSchedule(rec)}
+                                        disabled={schedLoadingThis || !hasSchedule}
+                                        sx={{
+                                            borderWidth: 1,
+                                            borderColor: tw.isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.2)',
+                                            fontWeight: 700,
+                                            fontSize: '0.7rem',
+                                            textTransform: 'uppercase',
+                                            borderRadius: 6,
+                                            px: 3,
+                                            py: 0.75,
+                                            '&:hover': {
+                                                borderWidth: 1,
+                                                borderColor: tw.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.3)',
+                                                bgcolor: tw.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
+                                            },
                                             '&:disabled': {
-                                                bgcolor: 'rgba(245, 121, 121, 0.3)',
-                                                color: 'rgba(255, 255, 255, 0.5)',
+                                                borderColor: 'rgba(245, 121, 121, 0.2)',
+                                                color: 'rgba(255, 255, 255, 0.3)',
                                             },
                                         }}
                                     >
@@ -435,8 +459,7 @@ export default function LoanList({ onOpenCalculator, onScheduleClick, onLedgerCl
                                         onClick={() => openLedger(rec)}
                                         sx={{
                                             borderWidth: 1,
-                                            borderColor: 'rgba(255,255,255,0.3)',
-                                            color: 'white',
+                                            borderColor: tw.isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.2)',
                                             fontWeight: 700,
                                             fontSize: '0.7rem',
                                             textTransform: 'uppercase',
@@ -445,37 +468,12 @@ export default function LoanList({ onOpenCalculator, onScheduleClick, onLedgerCl
                                             py: 0.75,
                                             '&:hover': {
                                                 borderWidth: 1,
-                                                borderColor: 'rgba(255,255,255,0.5)',
-                                                bgcolor: 'rgba(255,255,255,0.05)',
+                                                borderColor: tw.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.3)',
+                                                bgcolor: tw.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
                                             },
                                         }}
                                     >
                                         Payments
-                                    </Button>
-                                    <Button
-                                        variant="outlined"
-                                        size="small"
-                                        fullWidth
-                                        onClick={() => onOpenCalculator(rec)}
-                                        data-loan-action
-                                        sx={{
-                                            borderWidth: 1,
-                                            borderColor: 'rgba(255,255,255,0.3)',
-                                            color: 'white',
-                                            fontWeight: 700,
-                                            fontSize: '0.7rem',
-                                            textTransform: 'uppercase',
-                                            borderRadius: 6,
-                                            px: 3,
-                                            py: 0.75,
-                                            '&:hover': {
-                                                borderWidth: 1,
-                                                borderColor: 'rgba(255,255,255,0.5)',
-                                                bgcolor: 'rgba(255,255,255,0.05)',
-                                            },
-                                        }}
-                                    >
-                                        Renew
                                     </Button>
                                 </Stack>
                             </Stack>

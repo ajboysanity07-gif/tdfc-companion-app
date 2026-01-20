@@ -6,7 +6,7 @@ const ProductDetailsSkeleton: React.FC = () => {
     const theme = useTheme();
     const tw = useMyTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-    const panelBg = tw.isDark ? '#262626' : 'rgba(0,0,0,0.04)';
+    const panelBg = tw.isDark ? '#262626' : '#FAFAFA';
 
     return (
         <Box
@@ -14,7 +14,7 @@ const ProductDetailsSkeleton: React.FC = () => {
                 flex: 1,
                 borderRadius: 3,
                 p: isMobile ? 2.5 : 3,
-                bgcolor: 'background.paper',
+                bgcolor: tw.isDark ? '#171717' : '#FAFAFA',
                 boxShadow: 3,
                 display: 'flex',
                 flexDirection: 'column',

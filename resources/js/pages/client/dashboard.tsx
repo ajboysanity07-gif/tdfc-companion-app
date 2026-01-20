@@ -75,7 +75,7 @@ export default function CustomerDashboard() {
     const { transactions, loanClass, savings, loading, error, fetchRecentTransactions } = useClientDashboard(acctno);
     
     const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize, setPageSize] = useState(PAGINATION.DASHBOARD_PAGE_SIZE);
+    const [pageSize, setPageSize] = useState<number>(PAGINATION.DASHBOARD_PAGE_SIZE);
     const [showSavingsModal, setShowSavingsModal] = useState(false);
     const showDashboardSkeleton = loading && transactions.length === 0 && savings.length === 0;
 
@@ -732,7 +732,7 @@ export default function CustomerDashboard() {
                     </a>
                 </Box>
 
-                <Box id="main-content" sx={{ display: 'flex', flexDirection: 'column', gap: 2, px: { xs: 2, sm: 3 }, bgcolor: tw.isDark ? '#0b0b0b' : '#f5f5f5' }}>
+                <Box id="main-content" sx={{ display: 'flex', flexDirection: 'column', gap: 2, px: { xs: 2, sm: 3 }, pb: { xs: 9, sm: 2 }, bgcolor: tw.isDark ? '#0b0b0b' : '#f5f5f5' }}>
                     {showDashboardSkeleton ? (
                         <ClientDashboardSkeleton />
                     ) : (

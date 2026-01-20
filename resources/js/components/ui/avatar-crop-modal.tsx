@@ -101,13 +101,14 @@ export default function AvatarCropModal({
             URL.revokeObjectURL(internalUrlToRevoke);
             setInternalUrlToRevoke(null);
           }
-          window.location.reload();
+          onCancel();
         },
         onError: (errors) => {
           console.error('Avatar upload failed:', errors);
           alert('Failed to upload avatar. Please try again.');
         },
-        forceFormData: true
+        forceFormData: true,
+        preserveScroll: true,
       });
     } catch (error) {
       console.error('Error uploading avatar:', error);
