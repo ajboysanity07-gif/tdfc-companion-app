@@ -413,11 +413,23 @@ export default function LoansPage() {
                     rows={amortschedRows} 
                     loading={amortschedLoading} 
                     onRefresh={refreshSchedule}
+                    exportMeta={{
+                        clientName: customerAcct,
+                        lnnumber: activeLoan?.lnnumber ?? null,
+                        remarks: activeLoan?.remarks ?? null,
+                        lastPaymentDate: activeLoan?.date_end ?? null,
+                    }}
                 />
             ) : (
                 <PaymentLedgerTable 
                     rows={ledgerRows} 
                     loading={ledgerLoading}
+                    exportMeta={{
+                        clientName: customerAcct,
+                        lnnumber: activeLoan?.lnnumber ?? null,
+                        remarks: activeLoan?.remarks ?? null,
+                        lastPaymentDate: activeLoan?.date_end ?? null,
+                    }}
                 />
             )}
         </Box>
