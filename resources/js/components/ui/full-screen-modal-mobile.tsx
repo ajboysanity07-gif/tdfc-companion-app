@@ -26,7 +26,7 @@ const Transition = React.forwardRef(function Transition(
     props: TransitionProps & { children: React.ReactElement },
     ref: React.Ref<unknown>,
 ) {
-    return <Slide direction="right" ref={ref} timeout={{ enter: 320, exit: 240 }} {...props} />;
+    return <Slide direction="up" ref={ref} timeout={{ enter: 320, exit: 240 }} {...props} />;
 });
 
 const FullScreenModalMobile: React.FC<Props> = ({
