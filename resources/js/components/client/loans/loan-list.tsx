@@ -520,7 +520,17 @@ export default function LoanList({ onOpenCalculator, onScheduleClick, onLedgerCl
                         title={`Amortization - ${activeLoan?.lnnumber || ''}`}
                         bodyClassName="amort-schedule-open"
                     >
-                        <AmortschedTable rows={scheduleRows} loading={scheduleLoading} onRefresh={refreshSchedule} />
+                        <AmortschedTable 
+                            rows={scheduleRows} 
+                            loading={scheduleLoading} 
+                            onRefresh={refreshSchedule}
+                            exportMeta={{
+                                clientName: customerAcct,
+                                lnnumber: activeLoan?.lnnumber ?? null,
+                                remarks: activeLoan?.remarks ?? null,
+                                lastPaymentDate: activeLoan?.date_end ?? null,
+                            }}
+                        />
                     </FullScreenModalMobile>
 
                     {/* Payment Ledger Modal */}
@@ -530,7 +540,16 @@ export default function LoanList({ onOpenCalculator, onScheduleClick, onLedgerCl
                         title={`Ledger - ${ledgerLoan?.lnnumber || ''}`}
                         bodyClassName="payment-ledger-open"
                     >
-                        <PaymentLedgerTable rows={ledgerRows} loading={ledgerLoading} />
+                        <PaymentLedgerTable 
+                            rows={ledgerRows} 
+                            loading={ledgerLoading}
+                            exportMeta={{
+                                clientName: customerAcct,
+                                lnnumber: ledgerLoan?.lnnumber ?? null,
+                                remarks: ledgerLoan?.remarks ?? null,
+                                lastPaymentDate: ledgerLoan?.date_end ?? null,
+                            }}
+                        />
                     </FullScreenModalMobile>
                 </>
             )}
