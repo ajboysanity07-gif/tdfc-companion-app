@@ -173,12 +173,11 @@ export default function RegistrationStatus({
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
     className={`
-      w-full 
-      ${isMobile ? "max-w-full" : "max-w-xl"}
+      ${isMobile ? "max-w-sm" : "max-w-xl"}
       ${isMobile ? "rounded-2xl" : "rounded-3xl"}
       border border-gray-200 bg-white text-center shadow-xl
       dark:border-neutral-700 dark:bg-neutral-800
-      ${isMobile ? "py-4 px-3 max-h-screen overflow-y-auto" : "py-10 px-10"}
+      ${isMobile ? "py-4 px-3 max-h-screen overflow-y-auto mx-6" : "py-10 px-10"}
       ${isMobile ? "" : "h-fit max-h-[90vh] flex flex-col justify-center"}
     `}
   >
