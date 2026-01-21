@@ -72,6 +72,14 @@ export default function CustomerDashboard() {
     const borderColor = tw.isDark ? '#3a3a3a' : '#e5e7eb';
     const isMobile = useMediaQuery('(max-width:900px)');
 
+    // Redirect if user status is not approved
+    useEffect(() => {
+        const userStatus = (props.auth?.user as any)?.status;
+        if (userStatus && userStatus !== 'approved') {
+            router.visit(`/client/${acctno}/registration-status`);
+        }
+    }, [props.auth?.user]);
+
     const { transactions, loanClass, savings, loading, error, fetchRecentTransactions } = useClientDashboard(acctno);
     
     const [currentPage, setCurrentPage] = useState(1);
