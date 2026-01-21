@@ -39,7 +39,7 @@ class RegistrationStatusController extends Controller
         }
 
         // Show status page for pending or rejected users
-        return Inertia::render('customer/registration-status', [
+        return Inertia::render('client/registration-status', [
             'name' => $user->wmaster?->bname ?? $user->name,
             'bname' => $user->wmaster?->bname,
             'acctno' => $user->acctno,
