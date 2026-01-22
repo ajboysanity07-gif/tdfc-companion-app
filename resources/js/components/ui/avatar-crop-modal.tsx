@@ -151,7 +151,7 @@ export default function AvatarCropModal({
             </button>
           </div>
         </div>
-        <div ref={containerRef} className="relative h-[50vh] sm:h-[55vh] md:h-[60vh] flex-1 min-h-0">
+        <div ref={containerRef} className="relative h-[50vh] sm:h-[55vh] md:h-[60vh]">
           <Cropper
             image={localSrc}
             crop={crop}
