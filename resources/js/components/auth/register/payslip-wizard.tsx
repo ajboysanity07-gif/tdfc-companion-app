@@ -144,10 +144,10 @@ const PayslipWizard = ({
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3 }}
         >
-          {/* Modal body with responsive height and proper scrolling */}
+          {/* Modal body with consistent height and proper scrolling */}
           <motion.div
             className="bg-white shadow-2xl w-full mx-auto flex flex-col relative
-                      h-screen md:h-auto md:max-h-[90vh] md:rounded-2xl md:max-w-lg
+                      h-screen md:h-[85vh] md:rounded-2xl md:max-w-lg
                       overflow-hidden"
             initial={{ y: "100%", opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
