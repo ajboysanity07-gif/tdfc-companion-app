@@ -20,6 +20,7 @@ type UserShape = {
     bname?: string | null;
     class?: string | null;
     class_name?: string | null;
+    status?: string | null;
 };
 
 type PageProps = {
@@ -71,14 +72,6 @@ export default function CustomerDashboard() {
     const surface = tw.isDark ? '#2f2f2f' : '#ffffff';
     const borderColor = tw.isDark ? '#3a3a3a' : '#e5e7eb';
     const isMobile = useMediaQuery('(max-width:900px)');
-
-    // Redirect if user status is not approved
-    useEffect(() => {
-        const userStatus = (props.auth?.user as any)?.status;
-        if (userStatus && userStatus !== 'approved') {
-            router.visit(`/client/${acctno}/registration-status`);
-        }
-    }, [props.auth?.user]);
 
     const { transactions, loanClass, savings, loading, error, fetchRecentTransactions } = useClientDashboard(acctno);
     
