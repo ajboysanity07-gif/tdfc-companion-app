@@ -168,15 +168,16 @@ const PRCIDWizard = ({
           transition={{ duration: 0.3 }}
         >
           <motion.div
-            className="bg-white shadow-2xl w-full mx-auto flex flex-col relative overflow-hidden
-                      h-screen md:h-[950px] md:max-h-[90vh] md:rounded-2xl md:max-w-lg"
+            className="bg-white shadow-2xl w-full mx-auto flex flex-col relative
+                      h-screen md:h-auto md:max-h-[90vh] md:rounded-2xl md:max-w-lg
+                      overflow-hidden"
             initial={{ y: "100%", opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: "100%", opacity: 0 }}
             transition={{ type: "spring", damping: 30, stiffness: 200 }}
           >
             <div
-              className="overflow-hidden h-screen flex items-center justify-center px-5 py-5 w-full flex-1"
+              className="overflow-y-auto overflow-x-hidden flex items-start px-5 py-5 w-full flex-1 min-h-0"
             >
               <AnimatePresence custom={direction} mode="wait" initial={false}>
                 <motion.div
@@ -425,7 +426,7 @@ const PRCIDWizard = ({
                 </motion.div>
               </AnimatePresence>
             </div>
-            <div className="sticky bottom-0 left-0 w-full py-5 flex flex-row gap-4 justify-center items-center bg-white border-t border-gray-200 shadow-lg">
+            <div className="sticky bottom-0 left-0 w-full py-4 px-5 flex flex-row gap-4 justify-center items-center bg-white border-t border-gray-200 shadow-lg shrink-0">
               <button
                 type="button"
                 className="w-32 py-3 border rounded-full border-gray-300 bg-white text-black font-semibold transition hover:bg-gray-50"

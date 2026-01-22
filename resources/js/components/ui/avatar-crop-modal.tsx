@@ -137,8 +137,8 @@ export default function AvatarCropModal({
 
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 backdrop-blur-xl p-3 sm:p-4">
-      <div className="w-full max-w-2xl overflow-hidden rounded-2xl bg-white shadow-2xl">
-        <div className="flex items-center justify-between px-4 pt-3 pb-2">
+      <div className="w-full max-w-2xl flex flex-col overflow-hidden rounded-2xl bg-white shadow-2xl max-h-[90vh]">
+        <div className="flex items-center justify-between px-4 pt-3 pb-2 shrink-0">
           <div className="text-left text-[15px] font-semibold text-black/40">Crop your photo</div>
           <div className="flex items-center gap-2">
             <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
@@ -151,7 +151,7 @@ export default function AvatarCropModal({
             </button>
           </div>
         </div>
-        <div ref={containerRef} className="relative h-[58vh] sm:h-[62vh]">
+        <div ref={containerRef} className="relative h-[50vh] sm:h-[55vh] md:h-[60vh] flex-1 min-h-0">
           <Cropper
             image={localSrc}
             crop={crop}
@@ -171,7 +171,7 @@ export default function AvatarCropModal({
             zoomWithScroll
           />
         </div>
-        <div className="flex flex-col gap-4 px-4 pb-4 pt-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-4 px-4 pb-4 pt-3 sm:flex-row sm:items-center sm:justify-between shrink-0">
           <div className="flex w-full items-center gap-3 sm:max-w-md">
             <label htmlFor="avatar-zoom" className="whitespace-nowrap text-sm font-medium text-black/70">
               Zoom

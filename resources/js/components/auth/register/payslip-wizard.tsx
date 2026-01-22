@@ -144,17 +144,18 @@ const PayslipWizard = ({
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3 }}
         >
-          {/* Modal body with fixed height (desktop) and scrollable main area */}
+          {/* Modal body with responsive height and proper scrolling */}
           <motion.div
-            className="bg-white shadow-2xl w-full mx-auto flex flex-col relative overflow-hidden
-                      h-screen  md:h-[950px] md:max-h-[80vh]  md:rounded-2xl md:max-w-lg"
+            className="bg-white shadow-2xl w-full mx-auto flex flex-col relative
+                      h-screen md:h-auto md:max-h-[90vh] md:rounded-2xl md:max-w-lg
+                      overflow-hidden"
             initial={{ y: "100%", opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: "100%", opacity: 0 }}
             transition={{ type: "spring", damping: 30, stiffness: 200 }}
           >
-            {/* Main content and step wizard: fill space, vertically center 100% */}
-            <div className="flex-1 min-h-0 flex flex-col px-5 w-full relative overflow-hidden pb-24">
+            {/* Main content and step wizard: scrollable area */}
+            <div className="flex-1 min-h-0 flex flex-col px-5 w-full relative overflow-y-auto overflow-x-hidden pb-4">
               <AnimatePresence custom={direction} mode="wait" initial={false}>
                 <motion.div
                   key={step + "|" + mode}
@@ -168,13 +169,13 @@ const PayslipWizard = ({
                     ease: "easeInOut",
                     duration: 0.3,
                   }}
-                  className="w-full h-full"
+                  className="w-full"
                 >
 {step === 1 && (
 
-    <div>
+    <div className="py-2">
       <StepHeader>Upload your Payslip</StepHeader>
-        <div className="m-auto flex flex-col items-center justify-center w-full md:mt-20" style={{ marginTop: '120px' }}>
+        <div className="m-auto flex flex-col items-center justify-center w-full md:mt-8" style={{ marginTop: '60px' }}>
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }}>
         <SamplePreview
           showFront
@@ -212,9 +213,9 @@ const PayslipWizard = ({
   </div>
 )}
                   {step === 2 && mode === "upload" && (
-                    <>
+                    <div className="py-2">
                       <StepHeader>Upload Your Payslip</StepHeader>
-                      <div className="m-auto flex flex-col items-center justify-center w-full md:mt-20" style={{ marginTop: '45px' }}></div>
+                      <div className="m-auto flex flex-col items-center justify-center w-full md:mt-4" style={{ marginTop: '20px' }}></div>
                       <SamplePreview
                         showFront
                         caption="Upload a photo of your payslip. Make sure it's clear, legible, and no corners are cut off."
@@ -229,11 +230,11 @@ const PayslipWizard = ({
                         onPreviewUpdate={setUploadFrontPreview}
                         onDone={() => goToStep(3)}
                       />
-                    </>
+                    </div>
                   )}
 
                   {step === 2 && mode === "camera" && (
-                    <>
+                    <div className="py-2">
                       <StepHeader>Take Payslip Photo</StepHeader>
                       <SamplePreview
                         showFront
@@ -249,13 +250,13 @@ const PayslipWizard = ({
                           goToStep(3);
                         }}
                       />
-                    </>
+                    </div>
                   )}
 
                   {step === 3 && (
-                    <>
+                    <div className="py-2">
                       <StepHeader>Review Your Payslip</StepHeader>
-                      <div className="m-auto flex flex-col items-center justify-center w-full md:mt-20" style={{ marginTop: '45px' }}></div>
+                      <div className="m-auto flex flex-col items-center justify-center w-full md:mt-4" style={{ marginTop: '20px' }}></div>
                       <SamplePreview
                         showFront
                         caption="Compare your submitted payslip to this sample. Only proceed if your upload matches the clarity and alignment."
@@ -331,14 +332,14 @@ const PayslipWizard = ({
                           </button>
                         </div>
                       </div>
-                    </>
+                    </div>
                   )}
                 </motion.div>
               </AnimatePresence>
             </div>
 
             {/* Fixed bottom navigation / footer */}
-            <div className="sticky bottom-0 left-0 w-full py-5 flex flex-row gap-4 justify-center items-center bg-white border-t border-gray-200 shadow-lg">
+            <div className="sticky bottom-0 left-0 w-full py-4 px-5 flex flex-row gap-4 justify-center items-center bg-white border-t border-gray-200 shadow-lg shrink-0">
               <button
                 type="button"
                 className="w-32 py-3 border rounded-full border-gray-300 bg-white text-black font-semibold transition hover:bg-gray-50"
