@@ -32,7 +32,7 @@ class RegisteredUserController extends Controller
             'prc_id_photo_front'   => $paths['prc_id_photo_front'],
             'prc_id_photo_back'    => $paths['prc_id_photo_back'],
             'payslip_photo_path'   => $paths['payslip_photo_path'],
-            'role'               => 'customer',
+            'role'               => 'client',
             'status'             => 'pending',
         ];
 

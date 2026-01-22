@@ -61,17 +61,26 @@ export default function Login() {
       const user = response.data.user;
       const acct = user.acctno ?? user.user_id ?? user.id;
 
+      console.log('[Login] User object:', user);
+      console.log('[Login] User status:', user.status);
+      console.log('[Login] User role:', user.role);
+
       if (user.role === 'admin') {
+        console.log('[Login] Redirecting to admin dashboard');
         window.location.href = `/admin/${acct}/dashboard`;
-      } else if (user.role === 'client') {
+      } else if (user.role === 'client' || user.role === 'customer') {
         if (user.status === 'approved') {
+          console.log('[Login] User approved, redirecting to client dashboard');
           window.location.href = `/client/${user.acctno}/dashboard`;
         } else if (user.status === 'rejected' || user.status === 'pending') {
+          console.log('[Login] User pending/rejected, redirecting to registration-status');
           window.location.href = `/client/${user.acctno}/registration-status`;
         } else {
+          console.log('[Login] Unknown status, redirecting to home');
           window.location.href = '/';
         }
       } else {
+        console.log('[Login] Unknown role, redirecting to home');
         window.location.href = '/';
       }
     } catch (err) {
