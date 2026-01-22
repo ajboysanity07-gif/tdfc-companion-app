@@ -35,7 +35,7 @@ class WmasterLookupController extends Controller
 
         // Optionally add role hint if available.
         if (array_key_exists('Userrights', $wm->getAttributes())) {
-            $payload['roleHint'] = ((int) $wm->getAttribute('Userrights')) === 1 ? 'admin' : 'customer';
+            $payload['roleHint'] = ((int) $wm->getAttribute('Userrights')) === 1 ? 'admin' : 'client';
         }
 
         return response()->json($payload);

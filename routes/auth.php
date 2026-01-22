@@ -7,7 +7,7 @@ use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
-use App\Http\Controllers\Customer\RegistrationStatusController;
+use App\Http\Controllers\Client\RegistrationStatusController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -52,7 +52,7 @@ Route::middleware(['auth', 'role:client', 'approved'])
     ->name('client.account');
 
 // Client registration status
-Route::middleware(['auth', 'role:client'])
+Route::middleware(['auth'])
     ->get('/client/{acctno}/registration-status', [RegistrationStatusController::class, 'show'])
     ->name('client.registration-status');
 

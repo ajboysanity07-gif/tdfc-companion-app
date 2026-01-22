@@ -15,8 +15,8 @@ class EnsureUserIsApproved
     {
         $user = $request->user();
         
-        // Check if user exists and is a customer
-        if ($user && $user->role === 'customer') {
+        // Check if user exists and is a client
+        if ($user && $user->role === 'client') {
             // If status is not approved, redirect to status page
             if ($user->status !== 'approved') {
                 $acctno = $user->acctno ?? $request->route('acctno');

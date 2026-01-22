@@ -20,7 +20,7 @@ return new class extends Migration {
             $table->string('prc_id_photo_back')->nullable();
 
             $table->string('payslip_photo_path')->nullable();
-            $table->string('role', 20)->default('customer')->index();
+            $table->string('role', 20)->default('client')->index();
             $table->string('status', 20)->default('pending');
             $table->dateTime('reviewed_at')->nullable();
             $table->unsignedBigInteger('reviewed_by')->nullable();

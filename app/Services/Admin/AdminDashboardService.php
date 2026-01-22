@@ -18,7 +18,7 @@ class AdminDashboardService
         return [
             'totalUsers' => $this->dashboardRepository->getTotalUserCount(),
             'admins' => $this->dashboardRepository->getUserCountByRole('admin'),
-            'customers' => $this->dashboardRepository->getUserCountByRole('customer'),
+            'customers' => $this->dashboardRepository->getUserCountByRole('client'),
             'pendingApprovals' => $this->dashboardRepository->getPendingApprovalCount(),
             'activeProducts' => $this->dashboardRepository->getActiveProductsCount(),
             'inactiveProducts' => $this->dashboardRepository->getInactiveProductsCount(),

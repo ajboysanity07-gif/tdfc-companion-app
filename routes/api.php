@@ -20,7 +20,7 @@ use App\Http\Controllers\Api\Client\WmasterLookupController;
 // Auth Controllers
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
-use App\Http\Controllers\Customer\RegistrationStatusController;
+use App\Http\Controllers\Client\RegistrationStatusController;
 
 // Registration duplicate check if needed (public or auth)
 Route::get('/check-register-duplicate', function (Request $request) {
@@ -93,7 +93,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     // --- CLIENT registration resubmit (SPA+API) ---
     Route::middleware(['role:client'])->group(function () {
-        Route::post('/customer/register-resubmit', [RegistrationStatusController::class, 'resubmitApi']);
+        Route::post('/client/register-resubmit', [RegistrationStatusController::class, 'resubmitApi']);
         
         // Customer page routes with account number parameter
         Route::get('/client/{acctno}/dashboard', [ClientDashboardController::class, 'index']);

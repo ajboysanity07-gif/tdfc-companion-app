@@ -68,7 +68,7 @@ export default function Login() {
       if (user.role === 'admin') {
         console.log('[Login] Redirecting to admin dashboard');
         window.location.href = `/admin/${acct}/dashboard`;
-      } else if (user.role === 'client' || user.role === 'customer') {
+      } else if (user.role === 'client' || user.role === 'client') {
         if (user.status === 'approved') {
           console.log('[Login] User approved, redirecting to client dashboard');
           window.location.href = `/client/${user.acctno}/dashboard`;

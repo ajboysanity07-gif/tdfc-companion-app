@@ -74,7 +74,7 @@ class AdminDashboardRepository
         return [
             'total_users' => $this->getTotalUserCount(),
             'admins' => $this->getUserCountByRole('admin'),
-            'customers' => $this->getUserCountByRole('customer'),
+            'customers' => $this->getUserCountByRole('client'),
             'pending_approvals' => $this->getPendingApprovalCount(),
             'active_products' => $this->getActiveProductsCount(),
             'inactive_products' => $this->getInactiveProductsCount(),

@@ -50,7 +50,7 @@ class HandleInertiaRequests extends Middleware
                 'id'            => $user->user_id ?? $user->id ?? null,
                 'name'          => $user->name,
                 'email'         => $user->email,
-                'role'          => $user->role ?? 'customer',
+                'role'          => $user->role ?? 'client',
                 'acctno'        => $user->acctno ?? null,
                 'avatar'        => $avatarUrl,
                 'salary_amount' => $salaryRecord ? (float) $salaryRecord->salary_amount : null,

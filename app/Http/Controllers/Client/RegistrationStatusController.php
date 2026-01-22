@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Customer;
+namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -10,7 +10,7 @@ use Inertia\Response;
 class RegistrationStatusController extends Controller
 {
     /**
-     * Show the customer's registration status page
+     * Show the client's registration status page
      * Displays different views based on status: pending, approved, or rejected
      * 
      * @param Request $request
@@ -67,7 +67,7 @@ class RegistrationStatusController extends Controller
 
         // Redirect WITH FLASH MESSAGE
         return redirect()
-            ->route('customer.registration.status')
+            ->route('client.registration.status')
             ->with('success', 'Resubmission successful! Your application is under review again.');
     }
 

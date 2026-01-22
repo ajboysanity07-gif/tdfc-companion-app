@@ -117,7 +117,7 @@ export default function RegistrationStatus({
     }
 
     try {
-      await axiosClient.post('/customer/register-resubmit', fd, {
+      await axiosClient.post('/client/register-resubmit', fd, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       // On success, assume back to pending review

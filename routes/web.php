@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Api\LoanTransactionController;
-use App\Http\Controllers\Customer\RegistrationStatusController;
+use App\Http\Controllers\Client\RegistrationStatusController;
 // --- Welcome / Landing Page ---
 Route::get('/', function () {
     // Test database connection inline
@@ -35,7 +35,7 @@ Route::middleware('guest')->group(function () {
 });
 
 // // --- Customer (Authenticated) ---
-// Route::middleware(['auth'])->prefix('customer')->name('customer.')->group(function () {
+// Route::middleware(['auth'])->prefix('client')->name('client.')->group(function () {
 //     Route::get('/registration-status', [RegistrationStatusController::class, 'show'])
 //         ->name('registration.status');
 //     Route::post('/register-resubmit', [RegistrationStatusController::class, 'resubmit'])
@@ -43,8 +43,8 @@ Route::middleware('guest')->group(function () {
 // });
 
 // // --- Customer Dashboard, API, Loans (Approved) ---
-// Route::middleware(['auth', 'approved', 'role:customer'])->group(function () {
-//     Route::get('/dashboard', fn() => Inertia::render('customer/dashboard'))->name('dashboard');
+// Route::middleware(['auth', 'approved', 'role:client'])->group(function () {
+//     Route::get('/dashboard', fn() => Inertia::render('client/dashboard'))->name('dashboard');
 
 //     Route::get('/loans/transactions', [LoanTransactionController::class, 'index'])
 //         ->name('loans.transactions');
