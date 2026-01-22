@@ -177,7 +177,7 @@ const PRCIDWizard = ({
             transition={{ type: "spring", damping: 30, stiffness: 200 }}
           >
             <div
-              className="overflow-y-auto overflow-x-hidden flex items-start px-5 py-5 w-full flex-1 min-h-0"
+              className="overflow-y-auto overflow-x-hidden flex items-start px-5 py-5 w-full flex-1 min-h-0 scrollbar-thin"
             >
               <AnimatePresence custom={direction} mode="wait" initial={false}>
                 <motion.div

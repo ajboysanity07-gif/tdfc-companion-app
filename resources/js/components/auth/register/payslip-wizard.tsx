@@ -155,7 +155,7 @@ const PayslipWizard = ({
             transition={{ type: "spring", damping: 30, stiffness: 200 }}
           >
             {/* Main content and step wizard: scrollable area */}
-            <div className="flex-1 min-h-0 flex flex-col px-5 w-full relative overflow-y-auto overflow-x-hidden pb-4">
+            <div className="flex-1 min-h-0 flex flex-col px-5 w-full relative overflow-y-auto overflow-x-hidden pb-4 scrollbar-thin">
               <AnimatePresence custom={direction} mode="wait" initial={false}>
                 <motion.div
                   key={step + "|" + mode}
