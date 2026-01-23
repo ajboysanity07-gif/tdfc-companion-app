@@ -15,8 +15,8 @@ type Props = {
 export default function ProductList({ products, loading, error, selectedProduct, onSelectProduct }: Props) {
     const isMobile = useMediaQuery('(max-width:900px)');
     const tw = useMyTheme();
-    const cardBg = tw.isDark ? '#2f2f2f' : '#f7f7f7';
-    const cardBorder = tw.isDark ? '#3a3a3a' : '#e5e5e5';
+    const cardBg = tw.isDark ? '#2f2f2f' : '#ffffff';
+    const cardBorder = tw.isDark ? '#3a3a3a' : '#d4d4d4';
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -69,7 +69,7 @@ export default function ProductList({ products, loading, error, selectedProduct,
                                     transition={{ type: 'spring', stiffness: 220, damping: 20, mass: 0.6 }}
                                 >
                                     <Paper
-                                        elevation={2}
+                                        elevation={0}
                                         onClick={() => onSelectProduct(product)}
                                         sx={{
                                             mb: isMobile ? 1 : 1.25,
@@ -80,12 +80,13 @@ export default function ProductList({ products, loading, error, selectedProduct,
                                                 : cardBg,
                                             border: `2px solid ${selectedProduct?.product_id === product.product_id 
                                                 ? '#F57979' 
-                                                : cardBorder}`,
+                                                : (tw.isDark ? '#3a3a3a' : '#d4d4d4')}`,
                                             cursor: 'pointer',
                                             transition: 'all 0.2s ease',
                                             '&:hover': {
-                                                transform: 'translateY(-2px)',
-                                                boxShadow: `0 4px 12px ${tw.isDark ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.1)'}`,
+                                                borderColor: selectedProduct?.product_id === product.product_id 
+                                                    ? '#F57979' 
+                                                    : (tw.isDark ? 'rgba(255,255,255,0.3)' : '#a3a3a3'),
                                             },
                                         }}
                                     >

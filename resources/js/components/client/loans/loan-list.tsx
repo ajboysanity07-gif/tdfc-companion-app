@@ -321,13 +321,12 @@ export default function LoanList({ onOpenCalculator, onScheduleClick, onLedgerCl
                                 width: '100%',
                                 borderRadius: 2,
                                 bgcolor: tw.isDark ? '#262626' : '#FFFFFF',
-                                border: '1px solid',
-                                borderColor: tw.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
+                                border: '2px solid',
+                                borderColor: tw.isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.15)',
                                 p: 2.5,
                                 transition: 'all 0.2s ease',
                                 '&:hover': {
-                                    transform: 'translateY(-1px)',
-                                    boxShadow: tw.isDark ? '0 4px 12px rgba(0, 0, 0, 0.3)' : '0 4px 12px rgba(0, 0, 0, 0.1)',
+                                    borderColor: tw.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.25)',
                                 },
                             }}
                         >
