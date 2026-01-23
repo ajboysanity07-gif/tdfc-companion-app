@@ -13,10 +13,10 @@ export const lightTheme = createTheme({
       paper: '#ffffff',                  // Card/paper white
     },
     text: {
-      primary: '#1a1a1a',                // Darker for better contrast
-      secondary: '#525252',              // Darker gray for better readability (WCAG AA compliant)
+      primary: '#0a0a0a',                // Near black for maximum contrast
+      secondary: '#3a3a3a',              // Much darker gray for strong readability
     },
-    divider: '#d4d4d4',                  // Slightly darker for better visibility
+    divider: '#bdbdbd',                  // Darker for clear visibility
   },
 });
 

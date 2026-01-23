@@ -108,7 +108,7 @@ export default function ProductList({ products, loading, error, selectedProduct,
                                                                     height: isMobile ? 20 : 22,
                                                                     borderRadius: '999px',
                                                                     bgcolor: tw.isDark ? 'rgba(255,255,255,0.08)' : '#e2e8f0',
-                                                                    color: tw.isDark ? 'text.secondary' : '#334155',
+                                                                    color: tw.isDark ? 'text.secondary' : '#1e293b',
                                                                     fontWeight: 600,
                                                                     '& .MuiChip-label': { px: isMobile ? 1 : 1.25, fontSize: isMobile ? 11 : 12 },
                                                                 }}
@@ -122,7 +122,7 @@ export default function ProductList({ products, loading, error, selectedProduct,
                                                                 height: isMobile ? 20 : 22,
                                                                 borderRadius: '999px',
                                                                 bgcolor: tw.isDark ? 'rgba(255,255,255,0.08)' : '#e2e8f0',
-                                                                color: tw.isDark ? 'text.secondary' : '#334155',
+                                                                color: tw.isDark ? 'text.secondary' : '#1e293b',
                                                                 '& .MuiChip-label': { px: isMobile ? 1 : 1.25, fontSize: isMobile ? 11 : 12 },
                                                             }}
                                                         />
