@@ -3,6 +3,7 @@ import { AppShell } from '@/components/app-shell';
 import { AppSidebar } from '@/components/app-sidebar';
 import { AppSidebarHeader } from '@/components/app-sidebar-header';
 import NavMobile from '@/components/nav-mobile';
+import PWAInstallPrompt from '@/components/pwa-install-prompt';
 import { type BreadcrumbItem } from '@/types';
 import { type PropsWithChildren } from 'react';
 
@@ -29,6 +30,9 @@ export default function AppSidebarLayout({ children, breadcrumbs = [] }: PropsWi
                 {/* Mobile bottom nav */}
                 <NavMobile />
             </div>
+
+            {/* PWA Install Prompt */}
+            <PWAInstallPrompt />
         </AppShell>
     );
 }
