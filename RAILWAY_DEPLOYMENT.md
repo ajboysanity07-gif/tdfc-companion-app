@@ -1,7 +1,7 @@
-# Railway Deployment Guide (Hybrid Setup)
-## Laravel + React on Railway + Local SQL Server
+# Railway Deployment Guide (Actual Setup)
+## Laravel + React on Railway + Local SQL Server via ngrok
 
-This guide shows how to deploy your Laravel + React app to Railway (free) while keeping your SQL Server database running locally.
+This guide documents the **actual deployment steps** used to deploy TDFCapp to Railway using Docker and ngrok tunnel.
 
 ---
 
@@ -9,8 +9,8 @@ This guide shows how to deploy your Laravel + React app to Railway (free) while 
 
 ```
 ┌─────────────────┐     ┌──────────────────┐     ┌─────────────────┐
-│  Desktop App    │────▶│  SQL Server      │◀────│ Cloudflare      │
-│  (Local)        │     │  (Local Machine) │     │ Tunnel          │
+│  Desktop App    │────▶│  SQL Server      │◀────│     ngrok       │
+│  (Local)        │     │  (Local Machine) │     │    Tunnel       │
 └─────────────────┘     └──────────────────┘     └─────────────────┘
                                ▲                           ▲
                                │                           │
@@ -20,6 +20,7 @@ This guide shows how to deploy your Laravel + React app to Railway (free) while 
                                                   ┌─────────────────┐
                                                   │  Laravel App    │
                                                   │  (Railway.app)  │
+                                                  │  Using Docker   │
                                                   └─────────────────┘
                                                            ▲
                                                            │
@@ -34,57 +35,37 @@ This guide shows how to deploy your Laravel + React app to Railway (free) while 
 ## Prerequisites
 
 - [x] GitHub account (free)
+- [x] Railway account (free)
 - [x] SQL Server running locally (SSMS)
+- [x] ngrok account (free tier is sufficient)
 - [x] Your TDFCapp Laravel project
 - [x] Node.js installed locally
 
 ---
 
-## Part 1: Setup Cloudflare Tunnel (Expose Local SQL Server)
+## Part 1: Setup ngrok Tunnel (Expose Local SQL Server)
 
-### Step 1.1: Install Cloudflare Tunnel (cloudflared)
+## Part 1: Setup ngrok Tunnel (Expose Local SQL Server)
+
+### Step 1.1: Install ngrok
 
 **Windows:**
-```powershell
-# Download cloudflared
-Invoke-WebRequest -Uri "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe" -OutFile "cloudflared.exe"
+1. Go to https://ngrok.com/download
+2. Download the Windows version
+3. Extract to a folder (e.g., `C:\ngrok`)
+4. Add to PATH or run from that directory
 
-# Create directory and move to permanent location
-New-Item -Path "C:\cloudflared" -ItemType Directory -Force
-Move-Item -Path ".\cloudflared.exe" -Destination "C:\cloudflared\cloudflared.exe" -Force
+### Step 1.2: Sign Up and Get Auth Token
 
-# Add to PATH
-$currentPath = [Environment]::GetEnvironmentVariable("Path", [EnvironmentVariableTarget]::User)
-if ($currentPath -notlike "*C:\cloudflared*") {
-    [Environment]::SetEnvironmentVariable("Path", "$currentPath;C:\cloudflared", [EnvironmentVariableTarget]::User)
-}
-
-# Refresh PATH in current session
-$env:Path = [System.Environment]::GetEnvironmentVariable("Path","User") + ";" + [System.Environment]::GetEnvironmentVariable("Path","Machine")
-
-# Verify installation
-cloudflared --version
-```
-
-### Step 1.2: Authenticate Cloudflare
+1. Create free account at https://ngrok.com/signup
+2. Copy your authtoken from https://dashboard.ngrok.com/get-started/your-authtoken
+3. Authenticate ngrok:
 
 ```powershell
-cloudflared tunnel login
-```
-- Browser will open
-- Login to Cloudflare (create free account if needed)
-- Select a domain (or use cloudflare temporary domain)
-
-### Step 1.3: Create Tunnel
-
-```powershell
-# Create tunnel named "tdfc-companion-app"
-cloudflared tunnel create tdfc-companion-app
-
-# Note the Tunnel ID shown (looks like: 12345678-1234-1234-1234-123456789abc)
+ngrok config add-authtoken YOUR_AUTH_TOKEN_HERE
 ```
 
-### Step 1.4: Configure SQL Server to Accept Remote Connections
+### Step 1.3: Configure SQL Server for Remote Connections
 
 **Enable TCP/IP:**
 1. Open **SQL Server Configuration Manager**
@@ -92,13 +73,13 @@ cloudflared tunnel create tdfc-companion-app
 3. Right-click **TCP/IP** → **Enable**
 4. Right-click **TCP/IP** → **Properties** → **IP Addresses** tab
 5. Scroll to **IPALL** → Set **TCP Port: 1433**
-6. Click **OK** and restart SQL Server service
+6. Click **OK** and **restart SQL Server service**
 
 **Enable SQL Server Authentication:**
 1. Open **SSMS**
 2. Right-click server → **Properties** → **Security**
 3. Select **SQL Server and Windows Authentication mode**
-4. Click **OK** and restart SQL Server service
+4. Click **OK** and **restart SQL Server service**
 
 **Create SQL Login for Laravel:**
 ```sql
@@ -106,7 +87,7 @@ cloudflared tunnel create tdfc-companion-app
 CREATE LOGIN laravel_user WITH PASSWORD = 'YourStrongPassword123!';
 GO
 
-USE your_database_name;
+USE tdfcdb;  -- Your actual database name
 GO
 
 CREATE USER laravel_user FOR LOGIN laravel_user;
@@ -117,56 +98,31 @@ ALTER ROLE db_datawriter ADD MEMBER laravel_user;
 GO
 ```
 
-### Step 1.5: Create Tunnel Config File
+### Step 1.4: Start ngrok Tunnel
 
 ```powershell
-# Create config directory
-New-Item -Path "$env:USERPROFILE\.cloudflared" -ItemType Directory -Force
-
-# Create config file
-@"
-tunnel: tdfc-companion-app
-credentials-file: $env:USERPROFILE\.cloudflared\12345678-1234-1234-1234-123456789abc.json
-
-ingress:
-  - hostname: sql.yourdomain.com
-    service: tcp://localhost:1433
-  - service: http_status:404
-"@ | Out-File -FilePath "$env:USERPROFILE\.cloudflared\config.yml" -Encoding UTF8
+# Start ngrok tunnel for SQL Server
+ngrok tcp 1433
 ```
 
-**Replace:**
-- `12345678-1234-1234-1234-123456789abc.json` with your actual tunnel credentials file (keep tdfc-companion-app as is)
-- `12345678-1234-1234-1234-123456789abc.json` with your actual tunnel credentials file
-- `sql.yourdomain.com` with your desired hostname (or use the auto-generated one)
+**Important:** Keep this terminal window open!
 
-### Step 1.6: Route DNS (if using custom domain)
-
-```powershell
-cloudflared tunnel route dns tdfc-companion-app sql.yourdomain.com
+You'll see output like:
+```
+Forwarding    tcp://0.tcp.ngrok.io:12345 -> localhost:1433
 ```
 
-### Step 1.7: Run Tunnel
-
-```powershell
-# Test run (keep this window open)
-cloudflared tunnel run tdfc-companion-app
-```
-
-**To run as Windows Service (auto-start):**
-```powershell
-cloudflared service install
-```
-
-**Your SQL Server is now accessible at:** `sql.yourdomain.com:1433`
+**Copy the forwarding address** (e.g., `0.tcp.ngrok.io` and port `12345`)
 
 ---
 
-## Part 2: Prepare Laravel App for Deployment
+## Part 2: Prepare Laravel App for Railway Deployment
 
-### Step 2.1: Update Database Configuration
+## Part 2: Prepare Laravel App for Railway Deployment
 
-Edit `config/database.php`:
+### Step 2.1: Verify Database Configuration
+
+Your `config/database.php` should already have:
 
 ```php
 'sqlsrv' => [
@@ -180,103 +136,51 @@ Edit `config/database.php`:
     'charset' => 'utf8',
     'prefix' => '',
     'prefix_indexes' => true,
-    // Add trust server certificate for tunnel connection
-    'trust_server_certificate' => true,
+    'trust_server_certificate' => true,  // Important for ngrok
 ],
 ```
 
-### Step 2.2: Create Production .env Template
+### Step 2.2: Create Required Files
 
-Create `.env.railway` (template for Railway):
+**1. Create `Dockerfile`** (already exists in your project):
+- Uses PHP 8.3 with Apache
+- Installs SQL Server drivers (sqlsrv, pdo_sqlsrv)
+- Installs Node.js for building frontend assets
+- Configures Apache for Railway's dynamic PORT
 
-```env
-APP_NAME="TDFC App"
-APP_ENV=production
-APP_KEY=base64:your-app-key-here
-APP_DEBUG=false
-APP_URL=https://your-app-name.up.railway.app
-
-LOG_CHANNEL=stack
-LOG_LEVEL=error
-
-DB_CONNECTION=sqlsrv
-DB_HOST=sql.yourdomain.com
-DB_PORT=1433
-DB_DATABASE=your_database_name
-DB_USERNAME=laravel_user
-DB_PASSWORD=YourStrongPassword123!
-
-# Add trust for Cloudflare tunnel
-DB_TRUST_SERVER_CERTIFICATE=true
-
-SESSION_DRIVER=file
-SESSION_LIFETIME=120
-
-BROADCAST_DRIVER=log
-CACHE_DRIVER=file
-FILESYSTEM_DISK=local
-QUEUE_CONNECTION=sync
-```
-
-### Step 2.3: Create Railway-specific Files
-
-**Create `railway.json`:**
-```json
-{
-  "$schema": "https://railway.app/railway.schema.json",
-  "build": {
-    "builder": "NIXPACKS",
-    "buildCommand": "composer install --optimize-autoloader --no-dev && npm install && npm run build"
-  },
-  "deploy": {
-    "startCommand": "php artisan config:cache && php artisan route:cache && php artisan view:cache && php artisan serve --host=0.0.0.0 --port=$PORT",
-    "restartPolicyType": "ON_FAILURE",
-    "restartPolicyMaxRetries": 10
-  }
-}
-```
-
-**Create `nixpacks.toml`:**
+**2. Create `railway.toml`** (already exists):
 ```toml
-[phases.setup]
-nixPkgs = ["php82", "php82Extensions.pdo", "php82Extensions.pdo_sqlsrv", "php82Extensions.sqlsrv", "nodejs", "unixODBC"]
-
-[phases.install]
-cmds = [
-    "composer install --optimize-autoloader --no-dev",
-    "npm install",
-    "npm run build"
-]
-
-[phases.build]
-cmds = [
-    "php artisan config:cache",
-    "php artisan route:cache",
-    "php artisan view:cache"
-]
-
-[start]
-cmd = "php artisan serve --host=0.0.0.0 --port=$PORT"
+[build]
+builder = "dockerfile"
 ```
 
-### Step 2.4: Update .gitignore
+**3. Create `start-container.sh`** (already exists):
+- Creates storage link
+- Caches Laravel configs
+- Configures Apache to use Railway's PORT
+- Starts Apache
 
-Make sure these are NOT ignored (Railway needs them):
-```gitignore
-# Keep these files for Railway
-!public/build
-!composer.lock
-!package-lock.json
-```
-
-### Step 2.5: Build Production Assets
+### Step 2.3: Build Production Assets Locally
 
 ```powershell
+# Install dependencies
+npm install
+
 # Build for production
 npm run build
 ```
 
-### Step 2.6: Push to GitHub
+**Important:** The `public/build` folder is committed to Git for Railway.
+
+### Step 2.4: Update .gitignore
+
+Ensure `public/build` is **NOT** ignored:
+```gitignore
+# Comment out or remove this line if it exists:
+# /public/build
+```
+
+### Step 2.5: Push to GitHub
 
 ```powershell
 # Initialize git if not already
@@ -286,9 +190,9 @@ git init
 git add .
 
 # Commit
-git commit -m "Prepare for Railway deployment"
+git commit -m "Prepare for Railway deployment with Docker"
 
-# Create GitHub repo (go to github.com/new)
+# Create GitHub repo at github.com/new
 # Then push
 git remote add origin https://github.com/yourusername/TDFCapp.git
 git branch -M main
@@ -299,158 +203,231 @@ git push -u origin main
 
 ## Part 3: Deploy to Railway
 
+## Part 3: Deploy to Railway
+
 ### Step 3.1: Sign Up to Railway
 
 1. Go to https://railway.app
 2. Click **"Login with GitHub"**
 3. Authorize Railway
-4. **No credit card required!**
+4. No credit card required for free tier
 
 ### Step 3.2: Create New Project
 
 1. Click **"New Project"**
 2. Select **"Deploy from GitHub repo"**
-3. Choose your **TDFCapp** repository
-4. Railway will auto-detect Laravel
+3. Authorize Railway to access your GitHub repositories
+4. Choose your **TDFCapp** repository
+5. Railway will detect the Dockerfile and use it for deployment
 
 ### Step 3.3: Configure Environment Variables
 
-1. Click on your deployment
+1. Click on your deployment/service
 2. Go to **"Variables"** tab
-3. Click **"RAW Editor"**
-4. Paste your `.env.railway` content
-5. Click **"Update Variables"**
+3. Add the following variables:
 
-**Important variables:**
+**Required Variables:**
 ```env
-APP_KEY=base64:... (generate with: php artisan key:generate --show)
-DB_HOST=sql.yourdomain.com
-DB_PORT=1433
-DB_DATABASE=your_database_name
+APP_NAME=TDFC App
+APP_ENV=production
+APP_KEY=base64:YOUR_GENERATED_KEY_HERE
+APP_DEBUG=false
+APP_URL=https://YOUR-APP-NAME.up.railway.app
+
+DB_CONNECTION=sqlsrv
+DB_HOST=0.tcp.ngrok.io
+DB_PORT=12345
+DB_DATABASE=tdfcdb
 DB_USERNAME=laravel_user
 DB_PASSWORD=YourStrongPassword123!
+
+SESSION_DRIVER=file
+SESSION_LIFETIME=120
+FILESYSTEM_DISK=public
 ```
+
+**To generate APP_KEY:**
+```powershell
+# Run locally
+php artisan key:generate --show
+# Copy the output (e.g., base64:abc123...)
+```
+
+**Important:** 
+- Replace `DB_HOST` and `DB_PORT` with your ngrok tunnel address
+- Replace `DB_PASSWORD` with your actual SQL Server password
 
 ### Step 3.4: Add Custom Domain (Optional)
 
 1. Go to **"Settings"** tab
 2. Click **"Generate Domain"** (Railway provides free subdomain)
-3. Or add your custom domain
+3. Your app will be at: `https://your-app-name.up.railway.app`
+4. Update `APP_URL` environment variable with this URL
 
 ### Step 3.5: Deploy
 
-Railway will automatically deploy. Wait 3-5 minutes.
+Railway will automatically build and deploy:
+- Build time: ~5-10 minutes (first deployment)
+- Uses Dockerfile to build the image
+- Runs `start-container.sh` on startup
 
-**Check logs:**
-- Click **"Deployments"** tab
-- View build and deploy logs
-
----
-
-## Part 4: Test the Deployment
-
-### Step 4.1: Test SQL Server Connection
-
-```powershell
-# From Railway deployment logs, check for:
-# "Database connection successful"
-```
-
-### Step 4.2: Test Application
-
-1. Visit your Railway URL: `https://your-app.up.railway.app`
-2. Try logging in
-3. Check if data loads from your local SQL Server
-
-### Step 4.3: Monitor Cloudflare Tunnel
-
-```powershell
-# Check tunnel status
-cloudflared tunnel info tdfc-companion-app
-
-# View tunnel logs
-cloudflared tunnel logs tdfc-companion-app
-```
+**Monitor the deployment:**
+1. Click **"Deployments"** tab
+2. View real-time build logs
+3. Check for any errors
 
 ---
 
-## Part 5: Maintenance & Updates
+## Part 4: Configure File Storage (Profile Photos)
 
-### Update Application
+## Part 4: Configure File Storage (Profile Photos)
+
+### Important: Railway uses Ephemeral Storage
+
+By default, uploaded files (like profile photos) are stored on the container's filesystem, which is **ephemeral**. This means files are lost when the container restarts.
+
+### Solution: Add Railway Volume
+
+1. In Railway project, go to your service
+2. Click **"Variables"** tab  
+3. Scroll down to **"Volumes"** section
+4. Click **"+ New Volume"**
+5. Set **Mount Path**: `/app/storage/app/public`
+6. Click **"Add"**
+
+This creates a 1GB persistent volume (included in free tier).
+
+### Verify Storage Link
+
+The `start-container.sh` script already runs:
+```bash
+php artisan storage:link
+```
+
+This creates a symlink from `public/storage` → `storage/app/public`.
+
+Profile photos are stored at:
+- **Path in code**: `storage/app/public/avatars/filename.jpg`
+- **Public URL**: `https://your-app.railway.app/storage/avatars/filename.jpg`
+
+---
+
+## Part 5: Test the Deployment
+
+---
+
+## Part 6: Maintenance & Updates
+
+### Update Application Code
 
 ```powershell
 # Make changes locally
 git add .
-git commit -m "Your changes"
+git commit -m "Your changes description"
 git push origin main
 
-# Railway will auto-deploy!
+# Railway will automatically rebuild and redeploy (5-10 minutes)
 ```
 
-### Keep Tunnel Running
+### Keep ngrok Tunnel Running
 
-**Option 1: Run as Windows Service (Recommended)**
-```powershell
-# Install service
-cloudflared service install
+**Important:** Keep the ngrok terminal window open at all times!
 
-# Start service
-Start-Service cloudflared
+**Free Tier Limitations:**
+- URL changes every time ngrok restarts
+- When URL changes, update Railway environment variables:
+  1. Start ngrok: `ngrok tcp 1433`
+  2. Copy new forwarding address
+  3. Update `DB_HOST` and `DB_PORT` in Railway
+  4. Redeploy (Railway will restart automatically)
 
-# Check status
-Get-Service cloudflared
-```
+**Upgrade to ngrok Paid Plan ($8/month):**
+- Get a static TCP address that never changes
+- No need to update Railway env vars on restart
 
-**Option 2: Run in Background**
-```powershell
-# Create a scheduled task to run on startup
-# Or keep PowerShell window open with tunnel running
-```
+### Monitor Application
+
+1. **Railway Logs**: Check deployment and runtime logs
+2. **ngrok Dashboard**: View tunnel connections at https://dashboard.ngrok.com
+3. **SQL Server**: Monitor connections in SSMS Activity Monitor
 
 ---
+
+## Troubleshooting
 
 ## Troubleshooting
 
 ### Issue: Railway can't connect to SQL Server
 
 **Solution:**
-1. Check Cloudflare tunnel is running: `cloudflared tunnel info tdfc-companion-app`
-2. Test connection from Railway logs
-3. Verify SQL Server firewall allows port 1433
-4. Check SQL Server is running and TCP/IP enabled
+1. Check ngrok tunnel is running: verify the terminal shows "Session Status: online"
+2. Copy the exact forwarding address from ngrok (e.g., `0.tcp.ngrok.io:12345`)
+3. Update Railway environment variables with correct `DB_HOST` and `DB_PORT`
+4. Verify SQL Server is running and TCP/IP enabled
+5. Test connection locally first using the ngrok address
 
 ### Issue: "Login failed for user"
 
 **Solution:**
 ```sql
--- In SSMS, verify user permissions:
-USE your_database_name;
+-- In SSMS, verify user exists and has permissions:
+USE tdfcdb;  -- Your database name
 GO
 
-SELECT dp.name, dp.type_desc, o.name AS object_name, p.permission_name
-FROM sys.database_permissions p
-JOIN sys.database_principals dp ON p.grantee_principal_id = dp.principal_id
-LEFT JOIN sys.objects o ON p.major_id = o.object_id
-WHERE dp.name = 'laravel_user';
+-- Check if user exists
+SELECT name FROM sys.database_principals WHERE name = 'laravel_user';
+
+-- Grant permissions if needed
+ALTER ROLE db_datareader ADD MEMBER laravel_user;
+ALTER ROLE db_datawriter ADD MEMBER laravel_user;
+GO
 ```
+
+### Issue: ngrok URL changed and app won't connect
+
+**Solution:**
+1. Check ngrok terminal for new forwarding address
+2. Go to Railway → Variables
+3. Update `DB_HOST` and `DB_PORT` with new values
+4. Railway will automatically restart the app
 
 ### Issue: Build fails on Railway
 
 **Solution:**
-1. Check `railway.json` and `nixpacks.toml` are in root
-2. Verify `composer.json` has all dependencies
-3. Check Railway build logs for specific error
+1. Verify `Dockerfile` and `railway.toml` exist in root
+2. Check `composer.json` has all required dependencies
+3. Ensure `public/build` folder is committed to Git
+4. Review Railway build logs for specific error messages
+5. Try rebuilding: Deployments → ⋯ menu → Redeploy
 
-### Issue: Assets not loading
+### Issue: Profile photos disappear after restart
 
 **Solution:**
-```php
-// In config/app.php, ensure:
-'asset_url' => env('ASSET_URL'),
+1. Add a Railway Volume (see Part 4)
+2. Mount path: `/app/storage/app/public`
+3. Redeploy the application
 
-// In .env on Railway:
-ASSET_URL=https://your-app.up.railway.app
+### Issue: Assets (CSS/JS) not loading
+
+**Solution:**
+```bash
+# Verify build folder exists
+ls public/build
+
+# Rebuild assets locally
+npm run build
+git add public/build
+git commit -m "Add build assets"
+git push
 ```
+
+### Issue: Apache won't start or port errors
+
+**Solution:**
+- Check Railway logs for specific Apache errors
+- Verify `start-container.sh` is executable
+- Railway automatically sets `PORT` environment variable
+- The startup script configures Apache to use this PORT
 
 ---
 
@@ -458,76 +435,157 @@ ASSET_URL=https://your-app.up.railway.app
 
 ### Secure Your Tunnel
 
-1. **Use strong passwords** for SQL Server login
-2. **Restrict IP access** if possible (in Cloudflare settings)
-3. **Enable SQL Server encryption**
-4. **Regularly update** cloudflared
+1. **Use strong passwords** for SQL Server login (min 12 characters)
+2. **Don't share ngrok URL publicly** (it exposes your database)
+3. **Monitor ngrok dashboard** for suspicious connections
+4. **Consider ngrok IP restrictions** (paid feature)
 
 ### Railway Security
 
-1. **Never commit** `.env` to GitHub
-2. **Use Railway secrets** for sensitive data
+1. **Never commit** `.env` files to GitHub
+2. **Use strong APP_KEY** (generate new one for production)
 3. **Enable 2FA** on GitHub account
 4. **Review Railway access logs** regularly
+5. **Set APP_DEBUG=false** in production
+
+### SQL Server Security
+
+1. Use SQL Server authentication with strong passwords
+2. Consider VPN instead of ngrok for production
+3. Regularly review SQL Server logs
+4. Keep SQL Server updated with latest patches
 
 ---
 
 ## Cost Breakdown
 
-| Service | Cost |
-|---------|------|
-| Railway | $5/month credit (free tier) |
-| Cloudflare Tunnel | FREE forever |
-| GitHub | FREE |
-| SQL Server | FREE (already running locally) |
-| **Total** | **$0** (within Railway free tier) |
+| Service | Cost | Notes |
+|---------|------|-------|
+| Railway | FREE | $5/month credit, ~500 hours execution |
+| ngrok Free | FREE | URL changes on restart |
+| ngrok Paid | $8/month | Static TCP address (recommended) |
+| GitHub | FREE | Public/private repos |
+| SQL Server | FREE | Already running locally |
+| **Total (Free)** | **$0** | Good for testing |
+| **Total (Recommended)** | **$8/month** | ngrok paid for stability |
 
-**Railway Free Tier Limits:**
-- $5/month credit
-- ~500 hours/month execution time
-- Suitable for small-medium traffic apps
+**Railway Free Tier:**
+- $5 credit/month (~500 hours)
+- 1GB persistent volume included
+- Enough for development/small production
+
+**ngrok Paid Benefits:**
+- Static address (no need to update Railway vars)
+- Better performance and reliability
+- Custom domains
+- IP restrictions
+
+---
+
+## Production Recommendations
+
+### For Serious Production Use
+
+1. **Use Cloudflare Tunnel instead of ngrok** (more stable, free)
+2. **Set up Railway Volume** for file uploads
+3. **Use S3/Cloudinary** for profile photos (better scalability)
+4. **Add monitoring** (Railway provides basic metrics)
+5. **Set up backups** for SQL Server database
+6. **Use a VPN** instead of public tunnel (most secure)
+
+### Upgrading to Better Storage
+
+Currently, profile photos are saved to:
+- **Ephemeral storage** (without volume): Files lost on restart
+- **Railway Volume** (with volume): 1GB persistent, single region
+- **Recommended for production**: S3 or Cloudinary
+
+See Cloudinary setup (free tier):
+1. Sign up at https://cloudinary.com
+2. Install: `composer require cloudinary/cloudinary_php`
+3. Configure in `config/filesystems.php`
+4. Update ProfileController to use Cloudinary disk
 
 ---
 
 ## Alternative: Use ngrok (Simpler but Less Reliable)
 
-If you want a quicker test setup:
+**You are currently using this method!**
 
 ```powershell
-# Download ngrok: https://ngrok.com/download
-# Install and authenticate
-
-# Expose SQL Server
+# Your current setup:
 ngrok tcp 1433
 
-# Copy the forwarding address (e.g., 0.tcp.ngrok.io:12345)
-# Use this in Railway's DB_HOST environment variable
+# To make it more permanent:
+# 1. Upgrade to ngrok paid plan ($8/month)
+# 2. Reserve a TCP address
+# 3. Update Railway variables once
+# 4. Never worry about URL changes again
 ```
-
-**Note:** ngrok free tier changes URL on restart, so Cloudflare Tunnel is better for production.
 
 ---
 
 ## Next Steps
 
-1. ✅ Setup Cloudflare Tunnel
-2. ✅ Configure SQL Server
-3. ✅ Push to GitHub
-4. ✅ Deploy to Railway
-5. ✅ Test thoroughly
-6. 📝 Monitor logs and performance
-7. 🚀 Share with users!
+## Next Steps
+
+### Checklist
+
+- [x] SQL Server configured for remote connections
+- [x] ngrok tunnel running (keep terminal open!)
+- [x] GitHub repository created and pushed
+- [x] Railway project deployed with Dockerfile
+- [x] Environment variables configured
+- [x] Railway Volume added for persistent storage
+- [x] Application tested and working
+
+### Ongoing Tasks
+
+1. **Keep ngrok running**: Don't close the terminal!
+2. **Monitor Railway logs**: Check for errors regularly
+3. **Test file uploads**: Verify profile photos persist
+4. **Update code**: Push to GitHub, Railway auto-deploys
+5. **Backup database**: Regular SQL Server backups
+
+### Future Improvements
+
+1. **Upgrade to ngrok paid** ($8/month) for stable URL
+2. **Add Cloudinary** for better image storage and CDN
+3. **Set up error monitoring** (Sentry, Bugsnag)
+4. **Add Redis** for sessions/cache (Railway add-on)
+5. **Custom domain** for professional appearance
 
 ---
 
-## Support
+## Summary
 
-**Need help?**
-- Railway Discord: https://discord.gg/railway
-- Cloudflare Community: https://community.cloudflare.com
-- Laravel Docs: https://laravel.com/docs
+**What You've Deployed:**
+- ✅ Laravel + React app on Railway (Docker-based)
+- ✅ SQL Server database running locally
+- ✅ ngrok tunnel connecting Railway → Local DB
+- ✅ Profile photos stored in Railway Volume (persistent)
+- ✅ Automatic deployments from GitHub
 
-**Common Issues:**
-- Check Railway logs for errors
-- Verify tunnel is running: `cloudflared tunnel info tdfc-companion-app`
-- Test SQL Server connection locally first
+**Important Reminders:**
+- Keep ngrok terminal window open
+- ngrok URL changes on restart (update Railway vars)
+- Railway Volume required for persistent file uploads
+- Free tier suitable for development/testing
+
+**Total Cost:** $0/month (within free tiers) or $8/month with ngrok paid
+
+---
+
+## Support Resources
+
+- **Railway Docs**: https://docs.railway.app
+- **Railway Discord**: https://discord.gg/railway
+- **ngrok Docs**: https://ngrok.com/docs
+- **Laravel Docs**: https://laravel.com/docs
+- **SQL Server Docs**: https://docs.microsoft.com/sql
+
+**Need Help?**
+- Check Railway deployment logs first
+- Verify ngrok tunnel is running  
+- Test SQL connection locally
+- Review this guide's troubleshooting section

@@ -232,11 +232,20 @@ const ClientList: React.FC<Props> = ({
                                     </Avatar>
 
                                     {/* Client info */}
-                                    <Stack sx={{ flex: 1 }}>
+                                    <Stack sx={{ flex: 1, minWidth: 0 }}>
                                         <Typography variant={isMobile ? 'subtitle1' : 'h6'} fontWeight={700} noWrap>
                                             {client.name}
                                         </Typography>
-                                        <Typography variant="body2" color="text.secondary" noWrap>
+                                        <Typography 
+                                            variant="body2" 
+                                            color="text.secondary" 
+                                            sx={{
+                                                overflow: 'hidden',
+                                                textOverflow: 'ellipsis',
+                                                whiteSpace: 'nowrap',
+                                                fontSize: isMobile ? '0.75rem' : '0.875rem'
+                                            }}
+                                        >
                                             {client.email}
                                         </Typography>
                                     </Stack>
