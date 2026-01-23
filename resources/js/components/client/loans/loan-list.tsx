@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Box, Stack, Typography, Button, Tooltip, TextField, InputAdornment, Pagination } from '@mui/material';
+import { Box, Stack, Typography, Button, Tooltip, TextField, InputAdornment, Pagination, useMediaQuery } from '@mui/material';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import SearchIcon from '@mui/icons-material/Search';
 import CalculateIcon from '@mui/icons-material/Calculate';
@@ -37,6 +37,7 @@ type Props = {
 
 export default function LoanList({ onOpenCalculator, onScheduleClick, onLedgerClick, desktopMode = false }: Props) {
     const tw = useMyTheme();
+    const isMobile = useMediaQuery('(max-width:900px)');
     const { props, url } = usePage<PageProps>();
     const urlMatch = url.match(/\/client\/([^/]+)/);
     const urlAcctno = urlMatch ? urlMatch[1] : '';
@@ -260,30 +261,32 @@ export default function LoanList({ onOpenCalculator, onScheduleClick, onLedgerCl
                     <Typography variant="h5" fontWeight={700} sx={{ color: '#F57979', fontSize: { xs: '1.25rem', sm: '1.5rem' } }}>
                         Active Loans
                     </Typography>
-                    <Button
-                        variant="contained"
-                        size="medium"
-                        startIcon={<CalculateIcon sx={{ fontSize: { xs: '18px', sm: '20px' } }} />}
-                        onClick={() => router.visit(calculatorUrl)}
-                        sx={{
-                            bgcolor: '#F57979',
-                            color: 'white',
-                            fontWeight: 600,
-                            textTransform: 'none',
-                            borderRadius: 3,
-                            px: { xs: 2, sm: 3 },
-                            py: { xs: 0.8, sm: 1.2 },
-                            fontSize: { xs: '0.813rem', sm: '0.875rem' },
-                            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.2)',
-                            transition: 'all 0.2s ease',
-                            '&:hover': {
-                                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)',
-                                transform: 'translateY(-2px)',
-                            },
-                        }}
-                    >
-                        New Transaction
-                    </Button>
+                    {!isMobile && (
+                        <Button
+                            variant="contained"
+                            size="medium"
+                            startIcon={<CalculateIcon sx={{ fontSize: { xs: '18px', sm: '20px' } }} />}
+                            onClick={() => router.visit(calculatorUrl)}
+                            sx={{
+                                bgcolor: '#F57979',
+                                color: 'white',
+                                fontWeight: 600,
+                                textTransform: 'none',
+                                borderRadius: 3,
+                                px: { xs: 2, sm: 3 },
+                                py: { xs: 0.8, sm: 1.2 },
+                                fontSize: { xs: '0.813rem', sm: '0.875rem' },
+                                boxShadow: '0 1px 3px rgba(0, 0, 0, 0.2)',
+                                transition: 'all 0.2s ease',
+                                '&:hover': {
+                                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)',
+                                    transform: 'translateY(-2px)',
+                                },
+                            }}
+                        >
+                            New Transaction
+                        </Button>
+                    )}
                 </Box>
                 <TextField
                     fullWidth
