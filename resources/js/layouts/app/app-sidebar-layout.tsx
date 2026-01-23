@@ -4,6 +4,7 @@ import { AppSidebar } from '@/components/app-sidebar';
 import { AppSidebarHeader } from '@/components/app-sidebar-header';
 import NavMobile from '@/components/nav-mobile';
 import PWAInstallPrompt from '@/components/pwa-install-prompt';
+import PWATestButton from '@/components/pwa-test-button';
 import { type BreadcrumbItem } from '@/types';
 import { type PropsWithChildren } from 'react';
 
@@ -33,6 +34,9 @@ export default function AppSidebarLayout({ children, breadcrumbs = [] }: PropsWi
 
             {/* PWA Install Prompt */}
             <PWAInstallPrompt />
+            
+            {/* PWA Test Button - REMOVE AFTER TESTING */}
+            <PWATestButton />
         </AppShell>
     );
 }

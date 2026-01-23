@@ -17,12 +17,30 @@ const PWAInstallPrompt: React.FC = () => {
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
     useEffect(() => {
+        console.log('[PWA] Install prompt component mounted');
+        
+        // Check if app is already installed
+        if (window.matchMedia('(display-mode: standalone)').matches) {
+            console.log('[PWA] App is already installed');
+            return;
+        }
+
         // Check if user has already dismissed the prompt
         const dismissed = localStorage.getItem('pwa-install-dismissed');
-        if (dismissed) return;
+        if (dismissed) {
+            const dismissedUntil = parseInt(dismissed);
+            if (Date.now() < dismissedUntil) {
+                console.log('[PWA] Install prompt was dismissed, will show again at:', new Date(dismissedUntil));
+                return;
+            } else {
+                // Dismissal expired, clear it
+                localStorage.removeItem('pwa-install-dismissed');
+            }
+        }
 
         // Listen for the beforeinstallprompt event
         const handler = (e: Event) => {
+            console.log('[PWA] beforeinstallprompt event fired!');
             // Prevent the default browser install prompt
             e.preventDefault();
             
@@ -31,17 +49,13 @@ const PWAInstallPrompt: React.FC = () => {
             
             // Show our custom prompt after a short delay
             setTimeout(() => {
+                console.log('[PWA] Showing custom install prompt');
                 setShowPrompt(true);
             }, 2000);
         };
 
         window.addEventListener('beforeinstallprompt', handler);
-
-        // Check if app is already installed
-        if (window.matchMedia('(display-mode: standalone)').matches) {
-            // App is already installed, don't show prompt
-            return;
-        }
+        console.log('[PWA] Listening for beforeinstallprompt event...');
 
         return () => {
             window.removeEventListener('beforeinstallprompt', handler);
@@ -49,8 +63,13 @@ const PWAInstallPrompt: React.FC = () => {
     }, []);
 
     const handleInstall = async () => {
-        if (!deferredPrompt) return;
+        if (!deferredPrompt) {
+            console.log('[PWA] No deferred prompt available');
+            alert('Install prompt not available. Make sure you:\n1. Are using HTTPS or localhost\n2. Have a valid manifest.json\n3. Have a registered service worker\n4. Haven\'t already installed the app');
+            return;
+        }
 
+        console.log('[PWA] Triggering install prompt');
         // Show the native install prompt
         await deferredPrompt.prompt();
 
@@ -58,9 +77,9 @@ const PWAInstallPrompt: React.FC = () => {
         const choiceResult = await deferredPrompt.userChoice;
 
         if (choiceResult.outcome === 'accepted') {
-            console.log('User accepted the install prompt');
+            console.log('[PWA] User accepted the install prompt');
         } else {
-            console.log('User dismissed the install prompt');
+            console.log('[PWA] User dismissed the install prompt');
         }
 
         // Clear the prompt
