@@ -131,8 +131,8 @@ export default function LoanCalculator({ selectedProduct, loanDefaults, loading 
         };
     }, [isMobile]);
 
-    const cardBg = tw.isDark ? '#2f2f2f' : '#f7f7f7';
-    const cardBorder = tw.isDark ? '#3a3a3a' : '#e5e5e5';
+    const cardBg = tw.isDark ? '#2f2f2f' : '#ffffff';
+    const cardBorder = tw.isDark ? '#3a3a3a' : '#d4d4d4';
     const accentColor = '#F57979';
 
     // Calculate due amount and net proceeds
@@ -376,8 +376,7 @@ export default function LoanCalculator({ selectedProduct, loanDefaults, loading 
                             borderRadius: 2,
                             p: 2.5,
                             textAlign: 'center',
-                            border: `1px solid ${cardBorder}`,
-                            boxShadow: tw.isDark ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.05)',
+                            border: `2px solid ${cardBorder}`,
                         }}
                     >
                         <Typography variant="h5" fontWeight={700} sx={{ fontVariantNumeric: 'tabular-nums' }}>
@@ -402,8 +401,7 @@ export default function LoanCalculator({ selectedProduct, loanDefaults, loading 
                             borderRadius: 2,
                             p: 2.5,
                             textAlign: 'center',
-                            border: `1px solid ${cardBorder}`,
-                            boxShadow: tw.isDark ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.05)',
+                            border: `2px solid ${cardBorder}`,
                         }}
                     >
                         <Typography variant="h5" fontWeight={700}>
@@ -438,7 +436,6 @@ export default function LoanCalculator({ selectedProduct, loanDefaults, loading 
                             p: 3,
                             textAlign: 'center',
                             border: `2px solid ${accentColor}`,
-                            boxShadow: '0 4px 12px rgba(245, 115, 115, 0.15)',
                         }}
                     >
                         <Typography variant="h4" sx={{ color: accentColor, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.02em' }}>
@@ -527,8 +524,6 @@ export default function LoanCalculator({ selectedProduct, loanDefaults, loading 
                         transition: 'all 0.3s ease-in-out',
                         '&:hover': {
                             bgcolor: '#e66767',
-                            transform: showFloatingButton ? 'scale(1.05)' : 'scale(0.8)',
-                            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
                         },
                     }}
                     aria-label="More information"
