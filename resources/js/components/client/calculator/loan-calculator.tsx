@@ -131,7 +131,7 @@ export default function LoanCalculator({ selectedProduct, loanDefaults, loading 
         };
     }, [isMobile]);
 
-    const cardBg = tw.isDark ? '#2f2f2f' : '#ffffff';
+    const cardBg = tw.isDark ? '#2f2f2f' : '#f5f5f5';
     const cardBorder = tw.isDark ? '#3a3a3a' : '#d4d4d4';
     const accentColor = '#F57979';
 

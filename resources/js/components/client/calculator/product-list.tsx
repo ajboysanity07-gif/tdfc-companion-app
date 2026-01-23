@@ -15,7 +15,7 @@ type Props = {
 export default function ProductList({ products, loading, error, selectedProduct, onSelectProduct }: Props) {
     const isMobile = useMediaQuery('(max-width:900px)');
     const tw = useMyTheme();
-    const cardBg = tw.isDark ? '#2f2f2f' : '#ffffff';
+    const cardBg = tw.isDark ? '#2f2f2f' : '#f5f5f5';
     const cardBorder = tw.isDark ? '#3a3a3a' : '#d4d4d4';
 
     return (

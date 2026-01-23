@@ -320,7 +320,7 @@ export default function LoanList({ onOpenCalculator, onScheduleClick, onLedgerCl
                             sx={{
                                 width: '100%',
                                 borderRadius: 2,
-                                bgcolor: tw.isDark ? '#262626' : '#FFFFFF',
+                                bgcolor: tw.isDark ? '#262626' : '#f5f5f5',
                                 border: '2px solid',
                                 borderColor: tw.isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.15)',
                                 p: 2.5,
