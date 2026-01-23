@@ -1,7 +1,6 @@
 import { login as apiLogin } from '@/api/auth-api';
 import AuthCardLayout from '@/layouts/auth/auth-card-layout';
 import PWAInstallPrompt from '@/components/pwa-install-prompt';
-import PWATestButton from '@/components/pwa-test-button';
 import { Head } from '@inertiajs/react';
 import { AxiosError } from 'axios';
 import { Eye, EyeOff } from 'lucide-react';
@@ -202,9 +201,6 @@ export default function Login() {
       
       {/* PWA Install Prompt */}
       <PWAInstallPrompt />
-      
-      {/* PWA Test Button - REMOVE AFTER TESTING */}
-      <PWATestButton />
     </>
   );
 }
