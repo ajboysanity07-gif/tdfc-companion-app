@@ -9,7 +9,7 @@ export default function HeaderBlock({ title, subtitle }: HeaderBlockProps) {
     const tw = useMyTheme();
     
     return (
-        <div className="p-4" style={{ backgroundColor: tw.isDark ? '#0a0a0a' : '#FFFFFF' }}>
+        <div className="p-4" style={{ backgroundColor: tw.isDark ? '#0a0a0a' : '#f5f5f5' }}>
             <div className="relative overflow-hidden rounded-2xl bg-linear-to-br from-[#F57979] to-[#e66767] shadow-md">
                 <div className="relative z-10 px-6 py-8">
                     <h1 className="mb-2 text-2xl md:text-3xl font-extrabold tracking-tight text-white">{title}</h1>

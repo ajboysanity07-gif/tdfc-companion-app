@@ -37,7 +37,7 @@ export default function MobileViewLayout({ children, footer, wrapperSx, stackSx 
         pt: 0,
         pb: { xs: 10, sm: 2 },
         minHeight: 'auto',
-        bgcolor: tw.isDark ? '#0a0a0a' : '#FFFFFF',
+        bgcolor: tw.isDark ? '#0a0a0a' : '#f5f5f5',
     };
 
     const stackBase: SxProps<Theme> = {

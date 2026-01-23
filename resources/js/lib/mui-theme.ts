@@ -10,7 +10,7 @@ export const lightTheme = createTheme({
     warning: { main: '#ffe57b' },        // Accent yellow
     background: {
       default: '#fafafb',                // Soft background (softer than pure white)
-      paper: '#ffffff',                  // Card/paper white
+      paper: '#f5f5f5',                  // Card/paper light gray
     },
     text: {
       primary: '#0a0a0a',                // Near black for maximum contrast

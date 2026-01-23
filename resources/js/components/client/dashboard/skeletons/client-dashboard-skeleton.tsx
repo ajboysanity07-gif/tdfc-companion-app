@@ -5,7 +5,7 @@ import { useMyTheme } from '@/hooks/use-mytheme';
 const ClientDashboardSkeleton: React.FC = () => {
     const tw = useMyTheme();
     const isMobile = useMediaQuery('(max-width:900px)');
-    const surface = tw.isDark ? '#2f2f2f' : '#ffffff';
+    const surface = tw.isDark ? '#2f2f2f' : '#f5f5f5';
     const borderColor = tw.isDark ? '#3a3a3a' : '#e5e7eb';
     const actionCount = isMobile ? 2 : 3;
     const rowCount = isMobile ? 4 : 5;
