@@ -1,4 +1,6 @@
 import { Head, Link } from '@inertiajs/react';
+import PWAInstallPrompt from '@/components/pwa-install-prompt';
+import PWATestButton from '@/components/pwa-test-button';
 
 export default function Welcome() {
     return (
@@ -62,6 +64,12 @@ export default function Welcome() {
                     </div>
                 </div>
             </div>
+            
+            {/* PWA Install Prompt */}
+            <PWAInstallPrompt />
+            
+            {/* PWA Test Button - REMOVE AFTER TESTING */}
+            <PWATestButton />
         </>
     );
 }

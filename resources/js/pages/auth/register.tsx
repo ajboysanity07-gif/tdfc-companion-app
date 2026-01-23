@@ -3,6 +3,8 @@ import PayslipWizard from '@/components/auth/register/payslip-wizard';
 import PRCFileRow from '@/components/auth/register/prc-filerow';
 import PrcWizard from '@/components/auth/register/prc-wizard';
 import AvatarCropModal from '@/components/ui/avatar-crop-modal';
+import PWAInstallPrompt from '@/components/pwa-install-prompt';
+import PWATestButton from '@/components/pwa-test-button';
 import AuthCardLayout from '@/layouts/auth/auth-card-layout';
 import { Head } from '@inertiajs/react';
 import { AxiosError } from 'axios';
@@ -715,6 +717,12 @@ export default function Register({ adminMode = false }: Props) {
                     setPayslipWizardOpen(false);
                 }}
             />
+            
+            {/* PWA Install Prompt */}
+            <PWAInstallPrompt />
+            
+            {/* PWA Test Button - REMOVE AFTER TESTING */}
+            <PWATestButton />
         </>
     );
 }
