@@ -249,11 +249,13 @@ const PWAInstallPrompt: React.FC = () => {
                             <Box sx={{ position: 'relative', p: 2, borderBottom: `1px solid ${tw.isDark ? '#333' : '#e5e5e5'}` }}>
                                 <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                                     <Box component="span" sx={{ width: 16, height: 16 }}>
-                                        <svg viewBox="0 0 24 24" fill="currentColor">
-                                            <path d="M3,20.5V3.5C3,2.91 3.34,2.39 3.84,2.15L13.69,12L3.84,21.85C3.34,21.6 3,21.09 3,20.5M16.81,15.12L6.05,21.34L14.54,12.85L16.81,15.12M20.16,10.81C20.5,11.08 20.75,11.5 20.75,12C20.75,12.5 20.53,12.9 20.18,13.18L17.89,14.5L15.39,12L17.89,9.5L20.16,10.81M6.05,2.66L16.81,8.88L14.54,11.15L6.05,2.66Z"/>
-                                        </svg>
+                                        <img 
+                                            src="/images/logo-white.png" 
+                                            alt="RADS Logo" 
+                                            style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                                        />
                                     </Box>
-                                    Google Play
+                                    RADS Computer Services
                                 </Typography>
                                 <IconButton
                                     size="small"
@@ -297,45 +299,7 @@ const PWAInstallPrompt: React.FC = () => {
                                             TDFC Companion App
                                         </Typography>
                                         <Typography variant="body2" color="primary" gutterBottom>
-                                            TDFC Cooperative
-                                        </Typography>
-                                        <Typography variant="caption" color="text.secondary">
-                                            Contains ads · In-app purchases
-                                        </Typography>
-                                    </Box>
-                                </Box>
-
-                                {/* Stats Section */}
-                                <Box sx={{ 
-                                    display: 'flex', 
-                                    justifyContent: 'space-around', 
-                                    mb: 3,
-                                    pb: 2,
-                                    borderBottom: `1px solid ${tw.isDark ? '#333' : '#e5e5e5'}`
-                                }}>
-                                    <Box sx={{ textAlign: 'center' }}>
-                                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.3, mb: 0.5 }}>
-                                            <Typography variant="body2" fontWeight={600}>4.8</Typography>
-                                            <StarIcon sx={{ fontSize: 14, color: '#5f6368' }} />
-                                        </Box>
-                                        <Typography variant="caption" color="text.secondary">
-                                            326K reviews
-                                        </Typography>
-                                    </Box>
-                                    <Box sx={{ textAlign: 'center' }}>
-                                        <Typography variant="body2" fontWeight={600} gutterBottom>
-                                            3+
-                                        </Typography>
-                                        <Typography variant="caption" color="text.secondary">
-                                            Rated for 3+
-                                        </Typography>
-                                    </Box>
-                                    <Box sx={{ textAlign: 'center' }}>
-                                        <Typography variant="body2" fontWeight={600} gutterBottom>
-                                            5M+
-                                        </Typography>
-                                        <Typography variant="caption" color="text.secondary">
-                                            Downloads
+                                            RADS Computer Services
                                         </Typography>
                                     </Box>
                                 </Box>
@@ -382,27 +346,38 @@ const PWAInstallPrompt: React.FC = () => {
                                             borderRadius: 2,
                                         },
                                     }}>
-                                        {[1, 2, 3, 4].map((i) => (
-                                            <Box
-                                                key={i}
-                                                sx={{
-                                                    width: 180,
-                                                    height: 320,
-                                                    borderRadius: 2,
-                                                    overflow: 'hidden',
-                                                    flexShrink: 0,
-                                                    border: `1px solid ${tw.isDark ? '#333' : '#e5e5e5'}`,
-                                                    bgcolor: tw.isDark ? '#2a2a2a' : '#f5f5f5',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center',
-                                                }}
-                                            >
-                                                <Typography variant="caption" color="text.secondary">
-                                                    Screenshot {i}
-                                                </Typography>
-                                            </Box>
-                                        ))}
+                                        {[1, 2, 3, 4].map((i) => {
+                                            const screenshotName = tw.isDark 
+                                                ? `screenshot-${i}-dark-k.png`
+                                                : `screenshot-${i}-high-t.png`;
+                                            return (
+                                                <Box
+                                                    key={i}
+                                                    sx={{
+                                                        width: 180,
+                                                        height: 320,
+                                                        borderRadius: 2,
+                                                        overflow: 'hidden',
+                                                        flexShrink: 0,
+                                                        border: `1px solid ${tw.isDark ? '#333' : '#e5e5e5'}`,
+                                                        bgcolor: tw.isDark ? '#2a2a2a' : '#f5f5f5',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                    }}
+                                                >
+                                                    <img 
+                                                        src={`/images/${screenshotName}`}
+                                                        alt={`Screenshot ${i}`}
+                                                        style={{ 
+                                                            width: '100%', 
+                                                            height: '100%', 
+                                                            objectFit: 'cover'
+                                                        }}
+                                                    />
+                                                </Box>
+                                            );
+                                        })}
                                     </Box>
                                 </Box>
 
@@ -468,40 +443,40 @@ const PWAInstallPrompt: React.FC = () => {
                                     alignItems: 'center',
                                     justifyContent: 'center',
                                     gap: 2,
+                                    overflow: 'auto',
                                 }}
                             >
-                                <Box
-                                    sx={{
-                                        width: 120,
-                                        height: 120,
-                                        borderRadius: 3,
-                                        overflow: 'hidden',
-                                        border: `2px solid ${tw.isDark ? '#333' : '#e5e5e5'}`,
-                                    }}
-                                >
-                                    <img 
-                                        src="/images/tdfc-icon.png" 
-                                        alt="TDFC App" 
-                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                    />
-                                </Box>
-                                <Box
-                                    sx={{
-                                        width: '100%',
-                                        height: 200,
-                                        borderRadius: 2,
-                                        overflow: 'hidden',
-                                        border: `1px solid ${tw.isDark ? '#333' : '#e5e5e5'}`,
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        bgcolor: tw.isDark ? '#1f1f1f' : '#ffffff',
-                                    }}
-                                >
-                                    <Typography variant="caption" color="text.secondary">
-                                        Screenshot
-                                    </Typography>
-                                </Box>
+                                {[1, 2].map((i) => {
+                                    const screenshotName = tw.isDark 
+                                        ? `screenshot-${i}-dark-k.png`
+                                        : `screenshot-${i}-high-t.png`;
+                                    return (
+                                        <Box
+                                            key={i}
+                                            sx={{
+                                                width: '90%',
+                                                maxWidth: 160,
+                                                aspectRatio: '9/16',
+                                                borderRadius: 2,
+                                                overflow: 'hidden',
+                                                border: `1px solid ${tw.isDark ? '#333' : '#e5e5e5'}`,
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                            }}
+                                        >
+                                            <img 
+                                                src={`/images/${screenshotName}`}
+                                                alt={`Screenshot ${i}`}
+                                                style={{ 
+                                                    width: '100%', 
+                                                    height: '100%', 
+                                                    objectFit: 'cover'
+                                                }}
+                                            />
+                                        </Box>
+                                    );
+                                })}
                             </Box>
 
                             {/* Right Side: Content */}
@@ -535,21 +510,8 @@ const PWAInstallPrompt: React.FC = () => {
 
                                 {/* Publisher */}
                                 <Typography variant="body2" color="primary" gutterBottom>
-                                    TDFC Cooperative
+                                    RADS Computer Services
                                 </Typography>
-
-                                {/* Stats */}
-                                <Box sx={{ display: 'flex', gap: 2, mb: 3, pb: 2, borderBottom: `1px solid ${tw.isDark ? '#333' : '#e5e5e5'}` }}>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                        <StarIcon sx={{ fontSize: 16, color: '#ffc107' }} />
-                                        <Typography variant="body2" fontWeight={600}>4.8</Typography>
-                                        <Typography variant="caption" color="text.secondary">(326K)</Typography>
-                                    </Box>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                        <Typography variant="caption" color="text.secondary">•</Typography>
-                                        <Typography variant="caption" color="text.secondary">5M+ downloads</Typography>
-                                    </Box>
-                                </Box>
 
                                 {/* Description */}
                                 <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.6, mb: 3, flex: 1 }}>
