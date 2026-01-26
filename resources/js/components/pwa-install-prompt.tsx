@@ -277,14 +277,14 @@ const PWAInstallPrompt: React.FC = () => {
                             </Box>
 
                             {/* Scrollable content */}
-                            <Box sx={{ flex: 1, overflow: 'auto', p: 3 }}>
+                            <Box sx={{ flex: 1, overflow: 'auto', p: 2 }}>
                                 {/* App Info Section */}
-                                <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
+                                <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
                                     {/* App Icon */}
                                     <Box
                                         sx={{
-                                            width: 72,
-                                            height: 72,
+                                            width: 64,
+                                            height: 64,
                                             borderRadius: 2,
                                             overflow: 'hidden',
                                             flexShrink: 0,
@@ -300,10 +300,10 @@ const PWAInstallPrompt: React.FC = () => {
 
                                     {/* App Name & Publisher */}
                                     <Box sx={{ flex: 1, minWidth: 0 }}>
-                                        <Typography variant="h6" fontWeight={600} gutterBottom noWrap>
+                                        <Typography variant="h6" fontWeight={600} gutterBottom noWrap sx={{ fontSize: '1rem' }}>
                                             TDFC Companion App
                                         </Typography>
-                                        <Typography variant="body2" color="primary" gutterBottom>
+                                        <Typography variant="body2" color="primary" gutterBottom sx={{ fontSize: '0.85rem' }}>
                                             RADS Computer Services
                                         </Typography>
                                     </Box>
@@ -315,14 +315,14 @@ const PWAInstallPrompt: React.FC = () => {
                                     onClick={handleInstall}
                                     sx={{
                                         width: '100%',
-                                        py: 1.5,
-                                        mb: 3,
+                                        py: 1.2,
+                                        mb: 2,
                                         borderRadius: 2,
                                         border: 'none',
                                         bgcolor: '#01875f',
                                         color: 'white',
                                         fontWeight: 700,
-                                        fontSize: '0.875rem',
+                                        fontSize: '0.8rem',
                                         cursor: 'pointer',
                                         transition: 'all 0.2s',
                                         '&:hover': {
@@ -337,14 +337,14 @@ const PWAInstallPrompt: React.FC = () => {
                                 </Box>
 
                                 {/* Screenshots Section */}
-                                <Box sx={{ mb: 3 }}>
+                                <Box sx={{ mb: 2 }}>
                                     <Box sx={{ 
                                         display: 'flex', 
-                                        gap: 1.5, 
+                                        gap: 1, 
                                         overflowX: 'auto',
-                                        pb: 1,
+                                        pb: 0.5,
                                         '&::-webkit-scrollbar': {
-                                            height: 4,
+                                            height: 3,
                                         },
                                         '&::-webkit-scrollbar-thumb': {
                                             backgroundColor: tw.isDark ? '#444' : '#ccc',
@@ -359,9 +359,9 @@ const PWAInstallPrompt: React.FC = () => {
                                                 <Box
                                                     key={i}
                                                     sx={{
-                                                        width: 140,
-                                                        height: 250,
-                                                        borderRadius: 2,
+                                                        width: 110,
+                                                        height: 200,
+                                                        borderRadius: 1.5,
                                                         overflow: 'hidden',
                                                         flexShrink: 0,
                                                         border: `1px solid ${tw.isDark ? '#333' : '#e5e5e5'}`,
@@ -387,14 +387,13 @@ const PWAInstallPrompt: React.FC = () => {
                                 </Box>
 
                                 {/* About Section */}
-                                <Box sx={{ mb: 2 }}>
-                                    <Typography variant="subtitle2" fontWeight={700} gutterBottom>
+                                <Box>
+                                    <Typography variant="subtitle2" fontWeight={700} gutterBottom sx={{ fontSize: '0.8rem', mb: 0.5 }}>
                                         About this app
                                     </Typography>
-                                    <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.6 }}>
+                                    <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.4, fontSize: '0.75rem' }}>
                                         TDFC Cooperative Financial Management System - Manage your loans, track transactions, 
-                                        view amortization schedules, and stay connected with your cooperative. Access your 
-                                        financial information anytime, anywhere with offline support.
+                                        view amortization schedules, and stay connected with your cooperative.
                                     </Typography>
                                 </Box>
                             </Box>
