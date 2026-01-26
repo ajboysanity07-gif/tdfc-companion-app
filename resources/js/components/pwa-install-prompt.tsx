@@ -60,14 +60,15 @@ const PWAInstallPrompt: React.FC = () => {
 
         // Allow clearing the dismissal flag via URL param (?resetPWA=true) for testing
         const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.has('resetPWA')) {
+        const isResettingPWA = urlParams.has('resetPWA');
+        if (isResettingPWA) {
             localStorage.removeItem('pwa-install-dismissed');
             console.log('[PWA] Dismissal flag cleared via URL param');
         }
 
-        // Check if user has already dismissed the prompt
+        // Check if user has already dismissed the prompt (skip if URL param is set)
         const dismissed = localStorage.getItem('pwa-install-dismissed');
-        if (dismissed) {
+        if (dismissed && !isResettingPWA) {
             const dismissedUntil = parseInt(dismissed);
             const maxReasonableDate = Date.now() + 30 * 24 * 60 * 60 * 1000; // 30 days max
             
