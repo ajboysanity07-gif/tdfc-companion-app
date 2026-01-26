@@ -348,8 +348,8 @@ const PWAInstallPrompt: React.FC = () => {
                                     }}>
                                         {[1, 2, 3, 4].map((i) => {
                                             const screenshotName = tw.isDark 
-                                                ? `screenshot-${i}-dark-k.png`
-                                                : `screenshot-${i}-high-t.png`;
+                                                ? `screenshot-${i}-dark.png`
+                                                : `screenshot-${i}-light.png`;
                                             return (
                                                 <Box
                                                     key={i}
@@ -448,8 +448,8 @@ const PWAInstallPrompt: React.FC = () => {
                             >
                                 {[1, 2].map((i) => {
                                     const screenshotName = tw.isDark 
-                                        ? `screenshot-${i}-dark-k.png`
-                                        : `screenshot-${i}-high-t.png`;
+                                        ? `screenshot-${i}-dark.png`
+                                        : `screenshot-${i}-light.png`;
                                     return (
                                         <Box
                                             key={i}
