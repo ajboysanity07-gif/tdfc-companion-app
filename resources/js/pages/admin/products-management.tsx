@@ -96,13 +96,14 @@ function ProductDesktopLayoutView({
             right={
                 <AnimatePresence mode="wait">
                     <motion.div
-                        key={activeProduct ? activeProduct.product_id : 'create'}
+                        key={activeProduct?.product_id ?? 'new'}
                         initial={{ opacity: 0, y: 12 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: 12 }}
                         transition={{ type: 'spring', stiffness: 240, damping: 22, mass: 0.7 }}
                     >
                         <ProductCrud
+                            key={activeProduct?.product_id ?? 'new'}
                             product={activeProduct}
                             availableTypes={availableTypes}
                             onCancel={() => {
@@ -185,6 +186,7 @@ function ProductMobileLayoutView({ products, availableTypes = [], onSave, onDele
                         bodySx={{ pb: { xs: 4, sm: 4 } }}
                     >
                         <ProductCrud
+                            key={selected?.product_id ?? 'new-mobile'}
                             product={selected}
                             availableTypes={availableTypes}
                             onCancel={closeModal}

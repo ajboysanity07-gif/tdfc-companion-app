@@ -1,11 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Box, IconButton, Paper, Typography, useMediaQuery, useTheme, Button } from '@mui/material';
+import { Box, IconButton, Paper, Typography, useMediaQuery, useTheme } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import StarIcon from '@mui/icons-material/Star';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMyTheme } from '@/hooks/use-mytheme';
-import FileDownloadIcon from '@mui/icons-material/FileDownload';
-import InfoIcon from '@mui/icons-material/Info';
 
 interface BeforeInstallPromptEvent extends Event {
     prompt: () => Promise<void>;
@@ -194,12 +192,13 @@ const PWAInstallPrompt: React.FC = () => {
                             backgroundColor: 'rgba(0, 0, 0, 0.5)',
                             zIndex: 9998,
                         }}
-                        onClick={handleRemindLater}
+                        onClick={isMobile ? handleRemindLater : undefined}
                     />
                 )}
             </AnimatePresence>
 
-            {/* Google Play Style Dialog */}
+            {/* Mobile: Google Play Style Bottom Sheet */}
+            {isMobile && (
             <AnimatePresence>
                 {showPrompt && (
                     <motion.div
@@ -226,10 +225,10 @@ const PWAInstallPrompt: React.FC = () => {
                             elevation={0}
                             sx={{
                                 width: '100%',
-                                maxWidth: isMobile ? '100%' : 500,
+                                maxWidth: '100%',
                                 bgcolor: tw.isDark ? '#1f1f1f' : '#ffffff',
-                                borderTopLeftRadius: isMobile ? 24 : 24,
-                                borderTopRightRadius: isMobile ? 24 : 24,
+                                borderTopLeftRadius: 24,
+                                borderTopRightRadius: 24,
                                 borderBottomLeftRadius: 0,
                                 borderBottomRightRadius: 0,
                                 overflow: 'hidden',
@@ -415,6 +414,199 @@ const PWAInstallPrompt: React.FC = () => {
                     </motion.div>
                 )}
             </AnimatePresence>
+            )}
+
+            {/* Desktop: Modern Card Dialog */}
+            {!isMobile && (
+            <AnimatePresence>
+                {showPrompt && (
+                    <motion.div
+                        initial={{ scale: 0.9, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        exit={{ scale: 0.9, opacity: 0 }}
+                        transition={{ 
+                            type: 'spring',
+                            damping: 25,
+                            stiffness: 300,
+                        }}
+                        style={{
+                            position: 'fixed',
+                            top: '50%',
+                            left: '50%',
+                            transform: 'translate(-50%, -50%)',
+                            zIndex: 9999,
+                        }}
+                    >
+                        <Paper
+                            elevation={8}
+                            sx={{
+                                width: 700,
+                                maxHeight: '90vh',
+                                bgcolor: tw.isDark ? '#1f1f1f' : '#ffffff',
+                                borderRadius: 3,
+                                overflow: 'hidden',
+                                display: 'flex',
+                                flexDirection: 'row',
+                            }}
+                        >
+                            {/* Left Side: Screenshots/Visual */}
+                            <Box
+                                sx={{
+                                    width: '40%',
+                                    bgcolor: tw.isDark ? '#2a2a2a' : '#f5f5f5',
+                                    p: 2,
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: 2,
+                                }}
+                            >
+                                <Box
+                                    sx={{
+                                        width: 120,
+                                        height: 120,
+                                        borderRadius: 3,
+                                        overflow: 'hidden',
+                                        border: `2px solid ${tw.isDark ? '#333' : '#e5e5e5'}`,
+                                    }}
+                                >
+                                    <img 
+                                        src="/images/tdfc-icon.png" 
+                                        alt="TDFC App" 
+                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                    />
+                                </Box>
+                                <Box
+                                    sx={{
+                                        width: '100%',
+                                        height: 200,
+                                        borderRadius: 2,
+                                        overflow: 'hidden',
+                                        border: `1px solid ${tw.isDark ? '#333' : '#e5e5e5'}`,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        bgcolor: tw.isDark ? '#1f1f1f' : '#ffffff',
+                                    }}
+                                >
+                                    <Typography variant="caption" color="text.secondary">
+                                        Screenshot
+                                    </Typography>
+                                </Box>
+                            </Box>
+
+                            {/* Right Side: Content */}
+                            <Box
+                                sx={{
+                                    width: '60%',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    p: 3,
+                                    position: 'relative',
+                                }}
+                            >
+                                {/* Close Button */}
+                                <IconButton
+                                    size="small"
+                                    onClick={handleDismiss}
+                                    sx={{
+                                        position: 'absolute',
+                                        top: 12,
+                                        right: 12,
+                                        color: 'text.secondary',
+                                    }}
+                                >
+                                    <CloseIcon />
+                                </IconButton>
+
+                                {/* Title */}
+                                <Typography variant="h5" fontWeight={700} gutterBottom sx={{ mt: 1 }}>
+                                    TDFC Companion App
+                                </Typography>
+
+                                {/* Publisher */}
+                                <Typography variant="body2" color="primary" gutterBottom>
+                                    TDFC Cooperative
+                                </Typography>
+
+                                {/* Stats */}
+                                <Box sx={{ display: 'flex', gap: 2, mb: 3, pb: 2, borderBottom: `1px solid ${tw.isDark ? '#333' : '#e5e5e5'}` }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                        <StarIcon sx={{ fontSize: 16, color: '#ffc107' }} />
+                                        <Typography variant="body2" fontWeight={600}>4.8</Typography>
+                                        <Typography variant="caption" color="text.secondary">(326K)</Typography>
+                                    </Box>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                        <Typography variant="caption" color="text.secondary">•</Typography>
+                                        <Typography variant="caption" color="text.secondary">5M+ downloads</Typography>
+                                    </Box>
+                                </Box>
+
+                                {/* Description */}
+                                <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.6, mb: 3, flex: 1 }}>
+                                    Manage your loans, track transactions, view amortization schedules, and stay connected with your cooperative. Access your financial information anytime, anywhere with offline support.
+                                </Typography>
+
+                                {/* Buttons */}
+                                <Box sx={{ display: 'flex', gap: 2 }}>
+                                    <Box
+                                        component="button"
+                                        onClick={handleInstall}
+                                        sx={{
+                                            flex: 1,
+                                            py: 1.2,
+                                            borderRadius: 2,
+                                            border: 'none',
+                                            bgcolor: '#01875f',
+                                            color: 'white',
+                                            fontWeight: 700,
+                                            fontSize: '0.95rem',
+                                            cursor: 'pointer',
+                                            transition: 'all 0.2s',
+                                            '&:hover': {
+                                                bgcolor: '#017a56',
+                                            },
+                                            '&:active': {
+                                                transform: 'scale(0.98)',
+                                            },
+                                        }}
+                                    >
+                                        Install Now
+                                    </Box>
+                                    <Box
+                                        component="button"
+                                        onClick={handleRemindLater}
+                                        sx={{
+                                            flex: 1,
+                                            py: 1.2,
+                                            borderRadius: 2,
+                                            border: `1px solid ${tw.isDark ? '#333' : '#e5e5e5'}`,
+                                            bgcolor: 'transparent',
+                                            color: tw.isDark ? '#fff' : '#000',
+                                            fontWeight: 600,
+                                            fontSize: '0.95rem',
+                                            cursor: 'pointer',
+                                            transition: 'all 0.2s',
+                                            '&:hover': {
+                                                bgcolor: tw.isDark ? '#2a2a2a' : '#f5f5f5',
+                                            },
+                                        }}
+                                    >
+                                        Remind Later
+                                    </Box>
+                                </Box>
+
+                                {/* Legal */}
+                                <Typography variant="caption" color="text.secondary" sx={{ mt: 2, textAlign: 'center' }}>
+                                    Contains ads · In-app purchases
+                                </Typography>
+                            </Box>
+                        </Paper>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+            )}
         </>
     );
 };

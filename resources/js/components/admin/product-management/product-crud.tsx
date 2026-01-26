@@ -126,25 +126,54 @@ const ProductCreateOrDelete: React.FC<Props> = ({
     const [maxAmortError, setMaxAmortError] = useState('');
 
     useEffect(() => {
-        setProductName(product?.product_name ?? '');
-        setIsActive(product?.is_active ?? true);
-        setTags(product?.types?.map((t) => t.typecode) ?? []);
-        setScheme((product?.schemes as SchemeOption) ?? 'ADD-ON');
-        setMode((product?.mode as ModeOption) ?? 'MONTHLY');
-        setRate(formatNumber((product?.interest_rate ?? '').toString(), { maximumFractionDigits: 2 }));
-        setMaxTerm(formatNumber((product?.max_term_days ?? '').toString(), { maximumFractionDigits: 0 }));
-        setMaxAmortMode((product?.max_amortization_mode as AmortModeOption) ?? 'FIXED');
-        setMaxAmortFormula(product?.max_amortization_formula ?? '');
-        setMaxAmort(formatNumber((product?.max_amortization ?? '').toString(), { maximumFractionDigits: 0 }));
-        setServiceFee(formatNumber((product?.service_fee ?? '').toString(), { maximumFractionDigits: 2 }));
-        setLrf(formatNumber((product?.lrf ?? '').toString(), { maximumFractionDigits: 2 }));
-        setDocStamp(formatNumber((product?.document_stamp ?? '').toString(), { maximumFractionDigits: 2 }));
-        setMortNotarial(formatNumber((product?.mort_plus_notarial ?? '').toString(), { maximumFractionDigits: 2 }));
-        setAllowMultiple(product?.is_multiple ?? false);
-        setTermEditable(product?.is_max_term_editable ?? false);
-        setAmortEditable(product?.is_max_amortization_editable ?? false);
-        // setRateEditable(product?.is_max_term_editable ?? true);
-        setTerms(product?.terms ?? '');
+        if (!product) {
+            // Reset all fields when no product selected
+            setProductName('');
+            setIsActive(true);
+            setTags([]);
+            setScheme('ADD-ON');
+            setMode('MONTHLY');
+            setRate('');
+            setMaxTerm('');
+            setMaxAmortMode('FIXED');
+            setMaxAmortFormula('');
+            setMaxAmort('');
+            setServiceFee('');
+            setLrf('');
+            setDocStamp('');
+            setMortNotarial('');
+            setAllowMultiple(false);
+            setTermEditable(false);
+            setAmortEditable(false);
+            setTerms('');
+            setProductNameError('');
+            setTagsError('');
+            setRateError('');
+            setMaxAmortError('');
+            setMaxTermError('');
+            setMaxAmortFormulaError('');
+            return;
+        }
+
+        // Update all fields from selected product
+        setProductName(product.product_name ?? '');
+        setIsActive(product.is_active ?? true);
+        setTags(product.types?.map((t) => t.typecode) ?? []);
+        setScheme((product.schemes as SchemeOption) ?? 'ADD-ON');
+        setMode((product.mode as ModeOption) ?? 'MONTHLY');
+        setRate(formatNumber((product.interest_rate ?? '').toString(), { maximumFractionDigits: 2 }));
+        setMaxTerm(formatNumber((product.max_term_days ?? '').toString(), { maximumFractionDigits: 0 }));
+        setMaxAmortMode((product.max_amortization_mode as AmortModeOption) ?? 'FIXED');
+        setMaxAmortFormula(product.max_amortization_formula ?? '');
+        setMaxAmort(formatNumber((product.max_amortization ?? '').toString(), { maximumFractionDigits: 0 }));
+        setServiceFee(formatNumber((product.service_fee ?? '').toString(), { maximumFractionDigits: 2 }));
+        setLrf(formatNumber((product.lrf ?? '').toString(), { maximumFractionDigits: 2 }));
+        setDocStamp(formatNumber((product.document_stamp ?? '').toString(), { maximumFractionDigits: 2 }));
+        setMortNotarial(formatNumber((product.mort_plus_notarial ?? '').toString(), { maximumFractionDigits: 2 }));
+        setAllowMultiple(product.is_multiple ?? false);
+        setTermEditable(product.is_max_term_editable ?? false);
+        setAmortEditable(product.is_max_amortization_editable ?? false);
+        setTerms(product.terms ?? '');
         setProductNameError('');
         setTagsError('');
         setRateError('');
@@ -157,8 +186,19 @@ const ProductCreateOrDelete: React.FC<Props> = ({
 
     const tagOptions = availableTypes;
 
-    // const findLabel = (typecode: string) => tagOptions.find((t) => t.typecode === typecode)?.lntype ?? typecode;
-    const findTagsLabel = (typecode: string) => tagOptions.find((t) => t.typecode === typecode)?.lntags ?? typecode;
+    // Helper function to get tag label from typecode
+    const findTagsLabel = (typecode: string) => {
+        const found = tagOptions.find((t) => t.typecode === typecode);
+        if (!found) return typecode;
+        
+        // If lntags exists and is not empty, return it
+        if (found.lntags && found.lntags.trim()) {
+            return found.lntags;
+        }
+        
+        // Otherwise return lntype or typecode
+        return found.lntype || typecode;
+    };
 
     const handleSave = useCallback(() => {
         let hasError = false;
