@@ -1,23 +1,57 @@
 import React, { useEffect, useState } from 'react';
-import { Box, IconButton, Paper, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { Box, IconButton, Paper, Typography, useMediaQuery, useTheme, Button } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import StarIcon from '@mui/icons-material/Star';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMyTheme } from '@/hooks/use-mytheme';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import InfoIcon from '@mui/icons-material/Info';
 
 interface BeforeInstallPromptEvent extends Event {
     prompt: () => Promise<void>;
     userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
 }
 
+type BrowserType = 'chrome' | 'firefox' | 'safari' | 'mobile' | 'unknown';
+
+const detectBrowser = (): BrowserType => {
+    const ua = navigator.userAgent;
+    
+    // Check for Safari (must be before Chrome as Safari contains 'Chrome')
+    if (/^((?!chrome|android).)*safari/i.test(ua) || /Safari/.test(ua) && !/Chrome/.test(ua)) {
+        return 'safari';
+    }
+    
+    // Check for Firefox
+    if (/firefox|fxios/i.test(ua)) {
+        return 'firefox';
+    }
+    
+    // Check for Chrome (includes Chromium-based)
+    if (/chrome|chromium|crios/i.test(ua)) {
+        return 'chrome';
+    }
+    
+    // Check for mobile browser
+    if (/mobile|android|iphone|ipad|ipod/i.test(ua)) {
+        return 'mobile';
+    }
+    
+    return 'unknown';
+};
+
 const PWAInstallPrompt: React.FC = () => {
     const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
     const [showPrompt, setShowPrompt] = useState(false);
+    const [browserType, setBrowserType] = useState<BrowserType>('unknown');
     const tw = useMyTheme();
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
     useEffect(() => {
+        const browser = detectBrowser();
+        setBrowserType(browser);
+        console.log('[PWA] Detected browser:', browser);
         console.log('[PWA] Install prompt component mounted');
         
         // Check if app is already installed
@@ -39,52 +73,91 @@ const PWAInstallPrompt: React.FC = () => {
             }
         }
 
-        // Listen for the beforeinstallprompt event
-        const handler = (e: Event) => {
-            console.log('[PWA] beforeinstallprompt event fired!');
-            // Prevent the default browser install prompt
-            e.preventDefault();
-            
-            const promptEvent = e as BeforeInstallPromptEvent;
-            setDeferredPrompt(promptEvent);
-            
-            // Show our custom prompt after a short delay
-            setTimeout(() => {
-                console.log('[PWA] Showing custom install prompt');
-                setShowPrompt(true);
-            }, 2000);
-        };
+        // For Chrome/Chromium browsers
+        if (browser === 'chrome') {
+            const handler = (e: Event) => {
+                console.log('[PWA] beforeinstallprompt event fired!');
+                e.preventDefault();
+                
+                const promptEvent = e as BeforeInstallPromptEvent;
+                setDeferredPrompt(promptEvent);
+                
+                setTimeout(() => {
+                    console.log('[PWA] Showing Chrome native install prompt');
+                    setShowPrompt(true);
+                }, 2000);
+            };
 
-        window.addEventListener('beforeinstallprompt', handler);
-        console.log('[PWA] Listening for beforeinstallprompt event...');
+            window.addEventListener('beforeinstallprompt', handler);
+            console.log('[PWA] Listening for beforeinstallprompt event (Chrome)...');
 
-        return () => {
-            window.removeEventListener('beforeinstallprompt', handler);
-        };
+            return () => {
+                window.removeEventListener('beforeinstallprompt', handler);
+            };
+        }
+        
+        // For non-Chrome browsers, show fallback prompt after delay
+        const timer = setTimeout(() => {
+            console.log('[PWA] Showing fallback install prompt for', browser);
+            setShowPrompt(true);
+        }, 3000);
+
+        return () => clearTimeout(timer);
     }, []);
 
     const handleInstall = async () => {
-        if (!deferredPrompt) {
-            console.log('[PWA] No deferred prompt available');
-            alert('Install prompt not available. Make sure you:\n1. Are using HTTPS or localhost\n2. Have a valid manifest.json\n3. Have a registered service worker\n4. Haven\'t already installed the app');
+        // For Chrome/Chromium browsers with deferred prompt
+        if (deferredPrompt) {
+            console.log('[PWA] Triggering Chrome native install prompt');
+            await deferredPrompt.prompt();
+            const choiceResult = await deferredPrompt.userChoice;
+
+            if (choiceResult.outcome === 'accepted') {
+                console.log('[PWA] User accepted the install prompt');
+            } else {
+                console.log('[PWA] User dismissed the install prompt');
+            }
+
+            setDeferredPrompt(null);
+            setShowPrompt(false);
             return;
         }
 
-        console.log('[PWA] Triggering install prompt');
-        // Show the native install prompt
-        await deferredPrompt.prompt();
+        // For non-Chrome browsers, show browser-specific instructions
+        console.log('[PWA] Showing browser-specific install instructions for:', browserType);
 
-        // Wait for the user's response
-        const choiceResult = await deferredPrompt.userChoice;
-
-        if (choiceResult.outcome === 'accepted') {
-            console.log('[PWA] User accepted the install prompt');
+        let instructions = '';
+        
+        if (browserType === 'firefox') {
+            instructions = 'Firefox - Install Instructions:\n\n' +
+                '1. Click the menu icon (☰) in the top right corner\n' +
+                '2. Select "Install" or look for an install icon next to the address bar\n' +
+                '3. Click "Install" when prompted\n\n' +
+                'Note: Some Firefox versions may not show an install option. ' +
+                'If you don\'t see it, the app is still accessible from the browser.';
+        } else if (browserType === 'safari') {
+            instructions = 'Safari - Install Instructions:\n\n' +
+                '1. Tap the Share button (up arrow from bottom) at the bottom of the screen\n' +
+                '2. Scroll down and tap "Add to Home Screen"\n' +
+                '3. Enter a name for the app\n' +
+                '4. Tap "Add" in the top right corner\n\n' +
+                'The app will now appear on your home screen and can be launched from there.';
+        } else if (browserType === 'mobile') {
+            instructions = 'Mobile Browser - Install Instructions:\n\n' +
+                'Look for an "Install" or "Add to Home Screen" button, usually:\n' +
+                '• In the address bar\n' +
+                '• In the menu (☰ or ⋯)\n' +
+                '• At the bottom of the screen\n\n' +
+                'If you don\'t see an install option, try opening this page in Chrome, Firefox, or Safari.';
         } else {
-            console.log('[PWA] User dismissed the install prompt');
+            instructions = 'Install Instructions:\n\n' +
+                'Your browser should show an install prompt. If not:\n' +
+                '• Try refreshing the page (F5 or Ctrl+R)\n' +
+                '• Look for an install button in the address bar or menu\n' +
+                '• Use Chrome, Firefox, or Safari for best results';
         }
 
-        // Clear the prompt
-        setDeferredPrompt(null);
+        alert(instructions);
         setShowPrompt(false);
     };
 
@@ -101,8 +174,6 @@ const PWAInstallPrompt: React.FC = () => {
         const remindAt = Date.now() + 24 * 60 * 60 * 1000;
         localStorage.setItem('pwa-install-dismissed', remindAt.toString());
     };
-
-    if (!deferredPrompt) return null;
 
     return (
         <>
