@@ -63,27 +63,15 @@ const PWAInstallPrompt: React.FC = () => {
         const isResettingPWA = urlParams.has('resetPWA');
         if (isResettingPWA) {
             localStorage.removeItem('pwa-install-dismissed');
+            sessionStorage.removeItem('pwa-prompt-shown-this-session');
             console.log('[PWA] Dismissal flag cleared via URL param');
         }
 
-        // Check if user has already dismissed the prompt (skip if URL param is set)
-        const dismissed = localStorage.getItem('pwa-install-dismissed');
-        if (dismissed && !isResettingPWA) {
-            const dismissedUntil = parseInt(dismissed);
-            const maxReasonableDate = Date.now() + 30 * 24 * 60 * 60 * 1000; // 30 days max
-            
-            // Safety check: if dismissal is unreasonably far in future, clear it
-            if (dismissedUntil > maxReasonableDate) {
-                console.log('[PWA] Dismissal timestamp invalid (too far in future), clearing flag');
-                localStorage.removeItem('pwa-install-dismissed');
-            } else if (Date.now() < dismissedUntil) {
-                console.log('[PWA] Install prompt was dismissed, will show again at:', new Date(dismissedUntil));
-                return;
-            } else {
-                // Dismissal expired, clear it
-                localStorage.removeItem('pwa-install-dismissed');
-                console.log('[PWA] Dismissal expired, clearing flag');
-            }
+        // Check if prompt was already shown in this session (don't repeat during same session)
+        const shownThisSession = sessionStorage.getItem('pwa-prompt-shown-this-session');
+        if (shownThisSession && !isResettingPWA) {
+            console.log('[PWA] Prompt already shown in this session');
+            return;
         }
 
         // For Chrome/Chromium browsers
@@ -114,6 +102,7 @@ const PWAInstallPrompt: React.FC = () => {
         console.log('[PWA] Non-Chrome browser, showing fallback prompt in 3 seconds...');
         const timer = setTimeout(() => {
             console.log('[PWA] Showing fallback install prompt for', browser);
+            sessionStorage.setItem('pwa-prompt-shown-this-session', 'true');
             setShowPrompt(true);
         }, 3000);
 
@@ -121,6 +110,9 @@ const PWAInstallPrompt: React.FC = () => {
     }, []);
 
     const handleInstall = async () => {
+        // Mark as shown this session
+        sessionStorage.setItem('pwa-prompt-shown-this-session', 'true');
+        
         // For Chrome/Chromium browsers with deferred prompt
         if (deferredPrompt) {
             console.log('[PWA] Triggering Chrome native install prompt');
@@ -178,6 +170,8 @@ const PWAInstallPrompt: React.FC = () => {
 
     const handleDismiss = () => {
         setShowPrompt(false);
+        // Mark as shown this session
+        sessionStorage.setItem('pwa-prompt-shown-this-session', 'true');
         // Remember dismissal for 7 days
         const dismissedUntil = Date.now() + 7 * 24 * 60 * 60 * 1000;
         localStorage.setItem('pwa-install-dismissed', dismissedUntil.toString());
@@ -185,6 +179,8 @@ const PWAInstallPrompt: React.FC = () => {
 
     const handleRemindLater = () => {
         setShowPrompt(false);
+        // Mark as shown this session
+        sessionStorage.setItem('pwa-prompt-shown-this-session', 'true');
         // Show again in 24 hours
         const remindAt = Date.now() + 24 * 60 * 60 * 1000;
         localStorage.setItem('pwa-install-dismissed', remindAt.toString());
@@ -363,8 +359,8 @@ const PWAInstallPrompt: React.FC = () => {
                                                 <Box
                                                     key={i}
                                                     sx={{
-                                                        width: 180,
-                                                        height: 320,
+                                                        width: 140,
+                                                        height: 250,
                                                         borderRadius: 2,
                                                         overflow: 'hidden',
                                                         flexShrink: 0,
