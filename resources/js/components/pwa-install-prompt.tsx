@@ -437,13 +437,16 @@ const PWAInstallPrompt: React.FC = () => {
                             left: '50%',
                             transform: 'translate(-50%, -50%)',
                             zIndex: 9999,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
                         }}
                     >
                         <Paper
                             elevation={8}
                             sx={{
-                                width: 700,
-                                maxHeight: '90vh',
+                                width: 750,
+                                height: 550,
                                 bgcolor: tw.isDark ? '#1f1f1f' : '#ffffff',
                                 borderRadius: 3,
                                 overflow: 'hidden',
@@ -454,7 +457,7 @@ const PWAInstallPrompt: React.FC = () => {
                             {/* Left Side: Screenshots/Visual */}
                             <Box
                                 sx={{
-                                    width: '40%',
+                                    width: '45%',
                                     bgcolor: tw.isDark ? '#2a2a2a' : '#f5f5f5',
                                     p: 2,
                                     display: 'flex',
@@ -473,15 +476,15 @@ const PWAInstallPrompt: React.FC = () => {
                                         <Box
                                             key={i}
                                             sx={{
-                                                width: '90%',
-                                                maxWidth: 160,
-                                                aspectRatio: '9/16',
+                                                width: 130,
+                                                height: 250,
                                                 borderRadius: 2,
                                                 overflow: 'hidden',
                                                 border: `1px solid ${tw.isDark ? '#333' : '#e5e5e5'}`,
                                                 display: 'flex',
                                                 alignItems: 'center',
                                                 justifyContent: 'center',
+                                                bgcolor: tw.isDark ? '#1f1f1f' : '#ffffff',
                                             }}
                                         >
                                             <img 
@@ -490,7 +493,7 @@ const PWAInstallPrompt: React.FC = () => {
                                                 style={{ 
                                                     width: '100%', 
                                                     height: '100%', 
-                                                    objectFit: 'cover'
+                                                    objectFit: 'contain'
                                                 }}
                                             />
                                         </Box>
@@ -501,11 +504,12 @@ const PWAInstallPrompt: React.FC = () => {
                             {/* Right Side: Content */}
                             <Box
                                 sx={{
-                                    width: '60%',
+                                    width: '55%',
                                     display: 'flex',
                                     flexDirection: 'column',
                                     p: 3,
                                     position: 'relative',
+                                    overflow: 'auto',
                                 }}
                             >
                                 {/* Close Button */}
