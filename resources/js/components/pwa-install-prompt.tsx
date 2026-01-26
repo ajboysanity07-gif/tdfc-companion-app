@@ -58,6 +58,13 @@ const PWAInstallPrompt: React.FC = () => {
             return;
         }
 
+        // Allow clearing the dismissal flag via URL param (?resetPWA=true) for testing
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('resetPWA')) {
+            localStorage.removeItem('pwa-install-dismissed');
+            console.log('[PWA] Dismissal flag cleared via URL param');
+        }
+
         // Check if user has already dismissed the prompt
         const dismissed = localStorage.getItem('pwa-install-dismissed');
         if (dismissed) {
@@ -68,6 +75,7 @@ const PWAInstallPrompt: React.FC = () => {
             } else {
                 // Dismissal expired, clear it
                 localStorage.removeItem('pwa-install-dismissed');
+                console.log('[PWA] Dismissal expired, clearing flag');
             }
         }
 
