@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Box, IconButton, Paper, Typography, useMediaQuery, useTheme } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import StarIcon from '@mui/icons-material/Star';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMyTheme } from '@/hooks/use-mytheme';
 
@@ -69,7 +68,13 @@ const PWAInstallPrompt: React.FC = () => {
         const dismissed = localStorage.getItem('pwa-install-dismissed');
         if (dismissed) {
             const dismissedUntil = parseInt(dismissed);
-            if (Date.now() < dismissedUntil) {
+            const maxReasonableDate = Date.now() + 30 * 24 * 60 * 60 * 1000; // 30 days max
+            
+            // Safety check: if dismissal is unreasonably far in future, clear it
+            if (dismissedUntil > maxReasonableDate) {
+                console.log('[PWA] Dismissal timestamp invalid (too far in future), clearing flag');
+                localStorage.removeItem('pwa-install-dismissed');
+            } else if (Date.now() < dismissedUntil) {
                 console.log('[PWA] Install prompt was dismissed, will show again at:', new Date(dismissedUntil));
                 return;
             } else {
@@ -566,11 +571,6 @@ const PWAInstallPrompt: React.FC = () => {
                                         Remind Later
                                     </Box>
                                 </Box>
-
-                                {/* Legal */}
-                                <Typography variant="caption" color="text.secondary" sx={{ mt: 2, textAlign: 'center' }}>
-                                    Contains ads · In-app purchases
-                                </Typography>
                             </Box>
                         </Paper>
                     </motion.div>
