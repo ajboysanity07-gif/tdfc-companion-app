@@ -50,6 +50,7 @@ const PWAInstallPrompt: React.FC = () => {
         setBrowserType(browser);
         console.log('[PWA] Detected browser:', browser);
         console.log('[PWA] Install prompt component mounted');
+        console.log('[PWA] User Agent:', navigator.userAgent);
         
         // Check if app is already installed
         if (window.matchMedia('(display-mode: standalone)').matches) {
@@ -86,21 +87,22 @@ const PWAInstallPrompt: React.FC = () => {
 
         // For Chrome/Chromium browsers
         if (browser === 'chrome') {
+            console.log('[PWA] Chrome detected, setting up beforeinstallprompt listener...');
             const handler = (e: Event) => {
-                console.log('[PWA] beforeinstallprompt event fired!');
+                console.log('[PWA] ✓ beforeinstallprompt event FIRED!');
                 e.preventDefault();
                 
                 const promptEvent = e as BeforeInstallPromptEvent;
                 setDeferredPrompt(promptEvent);
                 
                 setTimeout(() => {
-                    console.log('[PWA] Showing Chrome native install prompt');
+                    console.log('[PWA] Setting showPrompt to TRUE');
                     setShowPrompt(true);
                 }, 2000);
             };
 
             window.addEventListener('beforeinstallprompt', handler);
-            console.log('[PWA] Listening for beforeinstallprompt event (Chrome)...');
+            console.log('[PWA] beforeinstallprompt listener attached');
 
             return () => {
                 window.removeEventListener('beforeinstallprompt', handler);
@@ -108,6 +110,7 @@ const PWAInstallPrompt: React.FC = () => {
         }
         
         // For non-Chrome browsers, show fallback prompt after delay
+        console.log('[PWA] Non-Chrome browser, showing fallback prompt in 3 seconds...');
         const timer = setTimeout(() => {
             console.log('[PWA] Showing fallback install prompt for', browser);
             setShowPrompt(true);
