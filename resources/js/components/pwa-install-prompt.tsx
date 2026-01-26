@@ -229,9 +229,10 @@ const PWAInstallPrompt: React.FC = () => {
                             left: 0,
                             right: 0,
                             zIndex: 9999,
-                            maxHeight: '85vh',
+                            maxHeight: '95vh',
                             display: 'flex',
-                            justifyContent: 'center',
+                            justifyContent: 'flex-end',
+                            flexDirection: 'column',
                         }}
                     >
                         <Paper
@@ -245,7 +246,7 @@ const PWAInstallPrompt: React.FC = () => {
                                 borderBottomLeftRadius: 0,
                                 borderBottomRightRadius: 0,
                                 overflow: 'hidden',
-                                maxHeight: '85vh',
+                                maxHeight: '95vh',
                                 display: 'flex',
                                 flexDirection: 'column',
                             }}
@@ -277,9 +278,9 @@ const PWAInstallPrompt: React.FC = () => {
                             </Box>
 
                             {/* Scrollable content */}
-                            <Box sx={{ flex: 1, overflow: 'auto', p: 2 }}>
+                            <Box sx={{ flex: 1, overflow: 'auto', p: 2, display: 'flex', flexDirection: 'column' }}>
                                 {/* App Info Section */}
-                                <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+                                <Box sx={{ display: 'flex', gap: 2, mb: 2, flexShrink: 0 }}>
                                     {/* App Icon */}
                                     <Box
                                         sx={{
@@ -325,6 +326,7 @@ const PWAInstallPrompt: React.FC = () => {
                                         fontSize: '0.8rem',
                                         cursor: 'pointer',
                                         transition: 'all 0.2s',
+                                        flexShrink: 0,
                                         '&:hover': {
                                             bgcolor: '#017a56',
                                         },
@@ -336,8 +338,8 @@ const PWAInstallPrompt: React.FC = () => {
                                     Install
                                 </Box>
 
-                                {/* Screenshots Section */}
-                                <Box sx={{ mb: 2 }}>
+                                {/* Screenshots Section - with minimum height */}
+                                <Box sx={{ mb: 2, flex: 1, minHeight: 280, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                                     <Box sx={{ 
                                         display: 'flex', 
                                         gap: 1, 
@@ -359,8 +361,8 @@ const PWAInstallPrompt: React.FC = () => {
                                                 <Box
                                                     key={i}
                                                     sx={{
-                                                        width: 110,
-                                                        height: 200,
+                                                        width: 130,
+                                                        height: 280,
                                                         borderRadius: 1.5,
                                                         overflow: 'hidden',
                                                         flexShrink: 0,
@@ -377,7 +379,7 @@ const PWAInstallPrompt: React.FC = () => {
                                                         style={{ 
                                                             width: '100%', 
                                                             height: '100%', 
-                                                            objectFit: 'cover'
+                                                            objectFit: 'contain'
                                                         }}
                                                     />
                                                 </Box>
@@ -387,7 +389,7 @@ const PWAInstallPrompt: React.FC = () => {
                                 </Box>
 
                                 {/* About Section */}
-                                <Box>
+                                <Box sx={{ flexShrink: 0 }}>
                                     <Typography variant="subtitle2" fontWeight={700} gutterBottom sx={{ fontSize: '0.8rem', mb: 0.5 }}>
                                         About this app
                                     </Typography>
