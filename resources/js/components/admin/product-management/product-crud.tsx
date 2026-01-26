@@ -186,20 +186,6 @@ const ProductCreateOrDelete: React.FC<Props> = ({
 
     const tagOptions = availableTypes;
 
-    // Helper function to get tag label from typecode
-    const findTagsLabel = (typecode: string) => {
-        const found = tagOptions.find((t) => t.typecode === typecode);
-        if (!found) return typecode;
-        
-        // If lntags exists and is not empty, return it
-        if (found.lntags && found.lntags.trim()) {
-            return found.lntags;
-        }
-        
-        // Otherwise return lntype or typecode
-        return found.lntype || typecode;
-    };
-
     const handleSave = useCallback(() => {
         let hasError = false;
         //Error Message for Product Name
