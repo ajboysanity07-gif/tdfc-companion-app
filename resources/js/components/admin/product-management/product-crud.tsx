@@ -384,7 +384,19 @@ const ProductCreateOrDelete: React.FC<Props> = ({
                                                 label={findTagsLabel(tag)}
                                                 onDelete={() => setTags((prev) => prev.filter((t) => t !== tag))}
                                                 onMouseDown={(evt) => evt.stopPropagation()}
-                                                sx={{ borderRadius: '999px', height: 24, fontSize: 12, px: 0.75 }}
+                                                sx={{ 
+                                                    borderRadius: '999px', 
+                                                    height: 24, 
+                                                    fontSize: 12, 
+                                                    px: 0.75,
+                                                    backgroundColor: '#f57979',
+                                                    color: '#ffffff',
+                                                    fontWeight: 600,
+                                                    '& .MuiChip-deleteIcon': {
+                                                        color: 'rgba(255,255,255,0.7)',
+                                                        '&:hover': { color: '#ffffff' }
+                                                    }
+                                                }}
                                             />
                                         ))}
                                     </Stack>
@@ -408,7 +420,15 @@ const ProductCreateOrDelete: React.FC<Props> = ({
                                                             key={tag}
                                                             label={tag}
                                                             size="small"
-                                                            sx={{ height: 22, borderRadius: '999px', fontSize: 11, px: 0.5 }}
+                                                            sx={{ 
+                                                                height: 22, 
+                                                                borderRadius: '999px', 
+                                                                fontSize: 11, 
+                                                                px: 0.5,
+                                                                backgroundColor: 'rgba(245, 121, 121, 0.15)',
+                                                                color: '#f57979',
+                                                                fontWeight: 600
+                                                            }}
                                                         />
                                                     ))}
                                                 </Stack>
