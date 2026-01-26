@@ -158,7 +158,14 @@ const ProductCreateOrDelete: React.FC<Props> = ({
         // Update all fields from selected product
         setProductName(product.product_name ?? '');
         setIsActive(product.is_active ?? true);
-        setTags(product.types?.map((t) => t.typecode) ?? []);
+        const typecodes = product.types?.map((t) => t.typecode) ?? [];
+        console.log('[ProductCrud] Product types loaded:', {
+            product_name: product.product_name,
+            types: product.types,
+            typecodes: typecodes,
+            availableTypes: availableTypes
+        });
+        setTags(typecodes);
         setScheme((product.schemes as SchemeOption) ?? 'ADD-ON');
         setMode((product.mode as ModeOption) ?? 'MONTHLY');
         setRate(formatNumber((product.interest_rate ?? '').toString(), { maximumFractionDigits: 2 }));
