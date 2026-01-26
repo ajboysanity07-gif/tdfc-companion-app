@@ -77,8 +77,11 @@ const PWAInstallPrompt: React.FC = () => {
         // For Chrome/Chromium browsers
         if (browser === 'chrome') {
             console.log('[PWA] Chrome detected, setting up beforeinstallprompt listener...');
+            let promptEventFired = false;
+            
             const handler = (e: Event) => {
                 console.log('[PWA] ✓ beforeinstallprompt event FIRED!');
+                promptEventFired = true;
                 e.preventDefault();
                 
                 const promptEvent = e as BeforeInstallPromptEvent;
@@ -93,8 +96,18 @@ const PWAInstallPrompt: React.FC = () => {
             window.addEventListener('beforeinstallprompt', handler);
             console.log('[PWA] beforeinstallprompt listener attached');
 
+            // Fallback: if no beforeinstallprompt event after 3 seconds, show fallback (for dev/localhost)
+            const fallbackTimer = setTimeout(() => {
+                if (!promptEventFired) {
+                    console.log('[PWA] beforeinstallprompt event did not fire (likely on localhost/dev), showing fallback prompt');
+                    sessionStorage.setItem('pwa-prompt-shown-this-session', 'true');
+                    setShowPrompt(true);
+                }
+            }, 3000);
+
             return () => {
                 window.removeEventListener('beforeinstallprompt', handler);
+                clearTimeout(fallbackTimer);
             };
         }
         
