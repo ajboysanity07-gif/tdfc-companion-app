@@ -3,6 +3,8 @@ import { Box, Stack, Typography, Button, Tooltip, TextField, InputAdornment, Pag
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import SearchIcon from '@mui/icons-material/Search';
 import CalculateIcon from '@mui/icons-material/Calculate';
+import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
+import BlockIcon from '@mui/icons-material/Block';
 import { router, usePage } from '@inertiajs/react';
 import { useMyTheme } from '@/hooks/use-mytheme';
 import AmortschedTable from '@/components/common/amortsched-table';
@@ -191,6 +193,28 @@ export default function LoanList({ onOpenCalculator, onScheduleClick, onLedgerCl
         if (activeLnnumber) {
             fetchAmortsched(activeLnnumber);
         }
+    };
+
+    // Helper function to get tooltip message and icon based on disable reason
+    const getDisableReasonTooltip = (rec: WlnMasterRecord): { message: string; icon: React.ReactNode } | null => {
+        if (!rec.is_renew_disabled) {
+            return null;
+        }
+
+        // Check if balance is greater than 0 (still owes money)
+        const balance = typeof rec.balance === 'string' ? Number(rec.balance) : rec.balance;
+        if (balance && balance > 0) {
+            return {
+                message: 'You still have an outstanding balance. Please settle before renewing.',
+                icon: <AccountBalanceWalletIcon sx={{ mr: 1, fontSize: '1.2rem' }} />
+            };
+        }
+
+        // Otherwise it's a typecode mismatch (balance = 0 but product not available)
+        return {
+            message: 'Not available in products. Contact the admin for more info.',
+            icon: <BlockIcon sx={{ mr: 1, fontSize: '1.2rem' }} />
+        };
     };
 
     // Filter loans based on search query
@@ -402,30 +426,57 @@ export default function LoanList({ onOpenCalculator, onScheduleClick, onLedgerCl
 
                                 {/* Action buttons - stacked vertically */}
                                 <Stack direction="column" spacing={1} sx={{ minWidth: 120 }}>
-                                    <Button
-                                        variant="contained"
-                                        size="small"
-                                        fullWidth
-                                        onClick={() => onOpenCalculator(rec)}
-                                        data-loan-action
-                                        sx={{
-                                            bgcolor: '#F57979',
-                                            color: 'white',
-                                            fontWeight: 700,
-                                            fontSize: '0.7rem',
-                                            textTransform: 'uppercase',
-                                            borderRadius: 6,
-                                            px: 3,
-                                            py: 0.75,
-                                            boxShadow: 'none',
-                                            '&:hover': {
-                                                bgcolor: '#e14e4e',
-                                                boxShadow: 'none',
-                                            },
-                                        }}
-                                    >
-                                        Renew
-                                    </Button>
+                                    {(() => {
+                                        const tooltipInfo = getDisableReasonTooltip(rec);
+                                        return (
+                                            <Tooltip
+                                                title={tooltipInfo ? (
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                                        {tooltipInfo.icon}
+                                                        <span>{tooltipInfo.message}</span>
+                                                    </Box>
+                                                ) : ''}
+                                                arrow
+                                                placement="top"
+                                                disableHoverListener={!rec.is_renew_disabled}
+                                                enterTouchDelay={0}
+                                                leaveTouchDelay={3000}
+                                            >
+                                                <span>
+                                                    <Button
+                                                        variant="contained"
+                                                        size="small"
+                                                        fullWidth
+                                                        onClick={() => onOpenCalculator(rec)}
+                                                        disabled={rec.is_renew_disabled}
+                                                        data-loan-action
+                                                        sx={{
+                                                            bgcolor: '#F57979',
+                                                            color: 'white',
+                                                            fontWeight: 700,
+                                                            fontSize: '0.7rem',
+                                                            textTransform: 'uppercase',
+                                                            borderRadius: 6,
+                                                            px: 3,
+                                                            py: 0.75,
+                                                            boxShadow: 'none',
+                                                            '&:hover': {
+                                                                bgcolor: rec.is_renew_disabled ? '#F57979' : '#e14e4e',
+                                                                boxShadow: 'none',
+                                                            },
+                                                            '&:disabled': {
+                                                                bgcolor: 'rgba(245, 121, 121, 0.5)',
+                                                                color: 'rgba(255, 255, 255, 0.5)',
+                                                                cursor: 'not-allowed',
+                                                            },
+                                                        }}
+                                                    >
+                                                        Renew
+                                                    </Button>
+                                                </span>
+                                            </Tooltip>
+                                        );
+                                    })()}
                                     <Button
                                         variant="outlined"
                                         size="small"

@@ -51,6 +51,7 @@ export type WlnMasterRecord = {
     term_mons?: number | string | null;
     amortization?: number | string | null;
     typecode?: string | null;
+    is_renew_disabled?: boolean;
     [key: string]: unknown;
 };
 

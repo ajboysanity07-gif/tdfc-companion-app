@@ -3,6 +3,7 @@
 namespace App\Services\Client;
 
 use App\Models\WlnProducts;
+use App\Models\WlnMaster;
 use App\Models\WSalaryRecord;
 
 class LoanCalculationService
@@ -13,14 +14,22 @@ class LoanCalculationService
 
     /**
      * Calculate maximum amortization for a product based on mode.
+     * For renewals, deduct the existing balance from the calculated max amortization.
      */
-    public function calculateMaxAmortization(WlnProducts $product, string $acctno): float
+    public function calculateMaxAmortization(WlnProducts $product, string $acctno, ?float $existingBalance = null): float
     {
-        return match ($product->max_amortization_mode) {
+        $maxAmortization = match ($product->max_amortization_mode) {
             WlnProducts::MODE_FIXED => $this->calculateFixedAmortization($product),
             WlnProducts::MODE_BASIC, WlnProducts::MODE_CUSTOM => $this->calculateDynamicAmortization($product, $acctno),
             default => 0.00,
         };
+
+        // For renewal: deduct existing balance from max amortization
+        if ($existingBalance !== null && $existingBalance > 0) {
+            $maxAmortization = max(0, $maxAmortization - $existingBalance);
+        }
+
+        return $maxAmortization;
     }
 
     /**
@@ -96,9 +105,18 @@ class LoanCalculationService
     /**
      * Validate amortization amount with error message.
      */
-    public function validateAmortization(WlnProducts $product, float $amortization, string $acctno): ?string
+    public function validateAmortization(WlnProducts $product, float $amortization, string $acctno, ?float $oldBalance = null): ?string
     {
-        $computedResult = $this->calculateMaxAmortization($product, $acctno);
+        // If oldBalance not provided, fetch from database
+        if ($oldBalance === null) {
+            $loan = WlnMaster::where('acctno', $acctno)
+                ->where('typecode', $product->typecode ?? '')
+                ->orderByDesc('date_created')
+                ->first();
+            $oldBalance = $loan ? (float) ($loan->balance ?? 0) : 0;
+        }
+
+        $computedResult = $this->calculateMaxAmortization($product, $acctno, $oldBalance);
         
         if ($computedResult > 0 && $amortization > $computedResult) {
             return "Amortization exceeds maximum allowed (₱" . number_format($computedResult, 2) . ") for this product";

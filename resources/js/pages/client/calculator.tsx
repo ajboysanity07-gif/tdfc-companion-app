@@ -91,11 +91,11 @@ export default function LoanTransactions() {
             }
             
             let computedAmortization = selectedProduct.computed_result;
+            const balance = toNumber(matchingLoan.balance) ?? 0;
             
             // Recalculate formula if available
             if (selectedProduct.max_amortization_formula && matchingLoan.balance) {
                 try {
-                    const balance = toNumber(matchingLoan.balance) ?? 0;
                     const termMonths = toNumber(matchingLoan.term_mons) ?? selectedProduct.max_term_months ?? 0;
                     const interestRate = selectedProduct.interest_rate ?? 0;
                     
@@ -124,7 +124,15 @@ export default function LoanTransactions() {
                     if (import.meta.env.DEV) {
                         console.error('[Calculator] Formula evaluation error:', error);
                     }
-                    computedAmortization = selectedProduct.max_amortization || toNumber(matchingLoan.balance) || 0;
+                    computedAmortization = selectedProduct.max_amortization || balance || 0;
+                }
+            }
+            
+            // For renewal: deduct outstanding balance from max amortization
+            if (balance > 0) {
+                computedAmortization = Math.max(0, computedAmortization - balance);
+                if (import.meta.env.DEV) {
+                    console.log('[Calculator] After balance deduction:', computedAmortization, '(max -', balance, ')');
                 }
             }
             
@@ -138,7 +146,7 @@ export default function LoanTransactions() {
                 productName: matchingLoan.remarks?.trim() || selectedProduct.product_name,
                 typecode: matchingLoan.typecode,
                 termMonths: toNumber(matchingLoan.term_mons),
-                oldBalance: toNumber(matchingLoan.balance),
+                oldBalance: balance,
             });
         } else {
             // No matching loan, use product as-is
