@@ -15,6 +15,7 @@ class ProductResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
+            'product_id' => $this->product_id,
             'product_code' => $this->product_code,
             'product_name' => $this->product_name,
             'is_active' => (bool) $this->is_active,
@@ -33,7 +34,8 @@ class ProductResource extends JsonResource
             'document_stamp' => $this->document_stamp ? (float) $this->document_stamp : null,
             'mort_plus_notarial' => $this->mort_plus_notarial ? (float) $this->mort_plus_notarial : null,
             'terms' => $this->terms,
-            'typecodes' => ProductTypeResource::collection($this->whenLoaded('types')),
+            'types' => ProductTypeResource::collection($this->whenLoaded('types')),
+            'tags' => ProductTypeResource::collection($this->whenLoaded('tags')),
             'created_at' => $this->created_at?->toIso8601String(),
             'updated_at' => $this->updated_at?->toIso8601String(),
         ];

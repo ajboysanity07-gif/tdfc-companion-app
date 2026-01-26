@@ -44,7 +44,6 @@ function ProductDesktopLayoutView({
     const [localSelected, setLocalSelected] = useState<ProductLntype | null>(selected);
 
     useEffect(() => {
-        console.log('[ProductDesktopLayoutView] selected prop changed:', selected?.product_name ?? 'null');
         setLocalSelected(selected);
     }, [selected]);
 
@@ -73,9 +72,7 @@ function ProductDesktopLayoutView({
     }, [syncedProducts, search]);
 
     const handleSelect = (product_id: number) => {
-        console.log('[ProductDesktopLayoutView] handleSelect called with product_id:', product_id);
         const found = products.find((p) => p.product_id === product_id) ?? null;
-        console.log('[ProductDesktopLayoutView] found product:', found?.product_name ?? 'not found');
         setLocalSelected(found);
         onSelect?.(product_id);
     };
