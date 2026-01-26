@@ -124,7 +124,15 @@ const ProductList: React.FC<Props> = ({
                     <AnimatePresence initial={false}>
                         {paginated.map((product) => {
                             const isOn = product.is_active ?? false;
-                            const typeLabels = product.types?.map((t) => t.lntags || t.typecode) ?? [];
+                            // Expand lntags from comma-separated strings into individual tag labels
+                            const typeLabels = product.types
+                                ?.flatMap((t) => {
+                                    if (t.lntags && t.lntags.trim()) {
+                                        return t.lntags.split(',').map((tag) => tag.trim()).filter(Boolean);
+                                    }
+                                    return t.typecode ? [t.typecode] : [];
+                                })
+                                .filter(Boolean) ?? [];
                             return (
                                 <motion.div
                                     key={product.product_id}

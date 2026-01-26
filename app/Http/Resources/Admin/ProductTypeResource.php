@@ -16,7 +16,10 @@ class ProductTypeResource extends JsonResource
     {
         return [
             'typecode' => $this->typecode,
+            'lntype' => $this->lntype,
+            'lntags' => $this->lntags,
             'description' => $this->description,
+            'controlno' => $this->controlno,
         ];
     }
 }

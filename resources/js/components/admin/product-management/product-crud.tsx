@@ -384,28 +384,38 @@ const ProductCreateOrDelete: React.FC<Props> = ({
                                 }}
                                 renderValue={(selected) => (
                                     <Stack direction="row" spacing={0.5} flexWrap="wrap" rowGap={0.5}>
-                                        {(selected as string[]).map((tag) => (
-                                            <Chip
-                                                size="small"
-                                                key={tag}
-                                                label={findTagsLabel(tag)}
-                                                onDelete={() => setTags((prev) => prev.filter((t) => t !== tag))}
-                                                onMouseDown={(evt) => evt.stopPropagation()}
-                                                sx={{ 
-                                                    borderRadius: '999px', 
-                                                    height: 24, 
-                                                    fontSize: 12, 
-                                                    px: 0.75,
-                                                    backgroundColor: '#f57979',
-                                                    color: '#ffffff',
-                                                    fontWeight: 600,
-                                                    '& .MuiChip-deleteIcon': {
-                                                        color: 'rgba(255,255,255,0.7)',
-                                                        '&:hover': { color: '#ffffff' }
-                                                    }
-                                                }}
-                                            />
-                                        ))}
+                                        {(selected as string[]).flatMap((typecode) => {
+                                            const found = tagOptions.find((t) => t.typecode === typecode);
+                                            if (!found) return [];
+                                            
+                                            // Split lntags into individual tags
+                                            const individualTags = found.lntags
+                                                ? found.lntags.split(',').map((t) => t.trim()).filter(Boolean)
+                                                : [found.lntype || typecode];
+                                            
+                                            return individualTags.map((tagLabel) => (
+                                                <Chip
+                                                    size="small"
+                                                    key={`${typecode}-${tagLabel}`}
+                                                    label={tagLabel}
+                                                    onDelete={() => setTags((prev) => prev.filter((t) => t !== typecode))}
+                                                    onMouseDown={(evt) => evt.stopPropagation()}
+                                                    sx={{ 
+                                                        borderRadius: '999px', 
+                                                        height: 24, 
+                                                        fontSize: 12, 
+                                                        px: 0.75,
+                                                        backgroundColor: '#f57979',
+                                                        color: '#ffffff',
+                                                        fontWeight: 600,
+                                                        '& .MuiChip-deleteIcon': {
+                                                            color: 'rgba(255,255,255,0.7)',
+                                                            '&:hover': { color: '#ffffff' }
+                                                        }
+                                                    }}
+                                                />
+                                            ));
+                                        })}
                                     </Stack>
                                 )}
                             >
