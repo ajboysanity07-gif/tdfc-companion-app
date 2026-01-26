@@ -3,7 +3,6 @@ import { Box, Stack, Typography, Button, Tooltip, TextField, InputAdornment, Pag
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import SearchIcon from '@mui/icons-material/Search';
 import CalculateIcon from '@mui/icons-material/Calculate';
-import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import BlockIcon from '@mui/icons-material/Block';
 import { router, usePage } from '@inertiajs/react';
 import { useMyTheme } from '@/hooks/use-mytheme';
@@ -201,18 +200,9 @@ export default function LoanList({ onOpenCalculator, onScheduleClick, onLedgerCl
             return null;
         }
 
-        // Check if balance is greater than 0 (still owes money)
-        const balance = typeof rec.balance === 'string' ? Number(rec.balance) : rec.balance;
-        if (balance && balance > 0) {
-            return {
-                message: 'You still have an outstanding balance. Please settle before renewing.',
-                icon: <AccountBalanceWalletIcon sx={{ mr: 1, fontSize: '1.2rem' }} />
-            };
-        }
-
-        // Otherwise it's a typecode mismatch (balance = 0 but product not available)
+        // Renewal is disabled when: typecode is missing, product not found, or is_multiple=false
         return {
-            message: 'Not available in products. Contact the admin for more info.',
+            message: 'This product type is not available for renewal. Contact your administrator for more information.',
             icon: <BlockIcon sx={{ mr: 1, fontSize: '1.2rem' }} />
         };
     };
@@ -431,7 +421,7 @@ export default function LoanList({ onOpenCalculator, onScheduleClick, onLedgerCl
                                         return (
                                             <Tooltip
                                                 title={tooltipInfo ? (
-                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
                                                         {tooltipInfo.icon}
                                                         <span>{tooltipInfo.message}</span>
                                                     </Box>
@@ -450,6 +440,7 @@ export default function LoanList({ onOpenCalculator, onScheduleClick, onLedgerCl
                                                         onClick={() => onOpenCalculator(rec)}
                                                         disabled={rec.is_renew_disabled}
                                                         data-loan-action
+                                                        startIcon={rec.is_renew_disabled ? <InfoOutlinedIcon sx={{ fontSize: '0.95rem !important' }} /> : undefined}
                                                         sx={{
                                                             bgcolor: '#F57979',
                                                             color: 'white',

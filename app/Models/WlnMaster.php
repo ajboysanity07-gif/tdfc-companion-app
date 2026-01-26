@@ -23,33 +23,36 @@ class WlnMaster extends Model
 
     /**
      * Determine if the Renew button should be disabled.
-     * Disabled when:
-     * - balance is greater than zero (still owes money), OR
-     * - product typecode does not exist in wln_product_tags (typecode mismatch)
      * 
-     * Enabled when:
-     * - balance = 0 (paid off) AND typecode matches a product
+     * Button is ENABLED when:
+     * - typecode exists AND
+     * - matching product tag found with is_multiple = true
+     * 
+     * Button is DISABLED when:
+     * - typecode is missing OR
+     * - no matching product tag found OR
+     * - product doesn't allow multiples (is_multiple = false)
      */
     public function getIsRenewDisabledAttribute(): bool
     {
-        // Check if balance is greater than zero (must be 0 or less to enable renewal)
-        $balance = $this->balance;
-        if ($balance && $balance > 0) {
-            return true;
-        }
-
-        // Check if typecode matches any product tag typecode
-        // If the wlnmaster typecode doesn't match any wln_product_tags typecode, disable renewal
+        // Disable if no typecode
         if (!$this->typecode) {
             return true;
         }
 
-        // Query to check if there's a matching typecode in wln_product_tags
+        // Check if there's a matching typecode in wln_product_tags
+        // AND the product allows multiple loans (is_multiple = true)
         $hasMatchingTag = \Illuminate\Support\Facades\DB::connection('sqlsrv')
-            ->table('wln_product_tags')
-            ->where('typecode', $this->typecode)
+            ->table('wln_product_tags as tags')
+            ->join('wln_products as prod', 'tags.product_id', '=', 'prod.product_id')
+            ->where('tags.typecode', $this->typecode)
+            ->where('prod.is_multiple', true)
             ->exists();
 
+        // Disable if:
+        // - no matching tag found OR
+        // - product doesn't allow multiples
+        // In other words: enable ONLY if hasMatchingTag is true
         return !$hasMatchingTag;
     }
 }

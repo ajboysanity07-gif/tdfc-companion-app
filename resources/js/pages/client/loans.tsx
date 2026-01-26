@@ -244,14 +244,52 @@ export default function LoansPage() {
                         }
                     }
                     
+                    // For renewals: deduct principal from computed result only if balance > 0
+                    const balance = toNumber(selectedLoan.balance);
+                    const principal = toNumber(selectedLoan.principal);
+                    
+                    let finalAmortization = finalComputed;
+                    if (balance !== null && balance > 0 && principal !== null) {
+                        // Balance is still outstanding, deduct principal
+                        finalAmortization = Math.max(0, finalComputed - principal);
+                    }
+                    // If balance = 0, don't deduct anything
+                    
+                    if (import.meta.env.DEV) {
+                        console.log('[Loans] Renewal calculation:');
+                        console.log('  - Computed result:', finalComputed);
+                        console.log('  - Balance:', balance);
+                        console.log('  - Principal:', principal);
+                        console.log('  - Final amortization:', finalAmortization);
+                    }
+                    
                     const productWithComputed = {
                         ...matchingProduct,
-                        computed_result: finalComputed,
+                        computed_result: finalAmortization,
                     };
                     setSelectedProduct(productWithComputed);
                 } else {
                     // If no formula, use the backend's computed_result or max_amortization
-                    const amountToUse = matchingProduct.computed_result || matchingProduct.max_amortization || 0;
+                    let amountToUse = matchingProduct.computed_result || matchingProduct.max_amortization || 0;
+                    
+                    // For renewals: deduct principal only if balance > 0
+                    const balance = toNumber(selectedLoan.balance);
+                    const principal = toNumber(selectedLoan.principal);
+                    
+                    if (balance !== null && balance > 0 && principal !== null) {
+                        // Balance is still outstanding, deduct principal
+                        amountToUse = Math.max(0, amountToUse - principal);
+                    }
+                    // If balance = 0, don't deduct anything
+                    
+                    if (import.meta.env.DEV) {
+                        console.log('[Loans] Renewal calculation (no formula):');
+                        console.log('  - Base amount:', matchingProduct.computed_result || matchingProduct.max_amortization);
+                        console.log('  - Balance:', balance);
+                        console.log('  - Principal:', principal);
+                        console.log('  - Final amount:', amountToUse);
+                    }
+                    
                     setSelectedProduct({
                         ...matchingProduct,
                         computed_result: amountToUse,
@@ -299,19 +337,19 @@ export default function LoansPage() {
         console.log('selectedLoan:', selectedLoan);
         
         const termMonths = toNumber(selectedLoan.term_mons);
-        const oldBalance = toNumber(selectedLoan.balance);
+        const existingBalance = toNumber(selectedLoan.balance);
         
         console.log('Extracted values:');
         console.log('  - productName (remarks):', selectedLoan.remarks);
         console.log('  - typecode:', selectedLoan.typecode);
         console.log('  - termMonths (term_mons):', selectedLoan.term_mons, '→', termMonths);
-        console.log('  - oldBalance (balance):', selectedLoan.balance, '→', oldBalance);
+        console.log('  - existingBalance (balance):', selectedLoan.balance, '→', existingBalance);
         
         return {
             productName: selectedLoan.remarks ?? null,
             typecode: selectedLoan.typecode ?? null,
             termMonths,
-            oldBalance,
+            existingBalance,
             // DO NOT include amortization from wlnmaster
             // The computed_result from formula evaluation should be used instead
         };

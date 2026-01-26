@@ -46,6 +46,7 @@ export type WlnMasterRecord = {
     acctno?: string;
     lnnumber?: string;
     balance?: number | string | null;
+    principal?: number | string | null;
     date_end?: string | null;
     remarks?: string | null;
     term_mons?: number | string | null;

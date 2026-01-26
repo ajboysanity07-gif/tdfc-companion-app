@@ -42,6 +42,7 @@ class LoanRepository
 
     /**
      * Get loan ledger entries for a loan number.
+     * Filters out rows where both principal=0 AND payment=0
      */
     public function getLedgerByLoanNumber(string $lnnumber): Collection
     {
@@ -69,6 +70,12 @@ class LoanRepository
 
         return WlnLed::query()
             ->where('lnnumber', $lnnumber)
+            ->where(function ($query) {
+                // Show rows where principal != 0 OR payment != 0
+                // Hide rows where principal = 0 AND payment = 0
+                $query->whereRaw('CAST(principal AS DECIMAL(18,2)) != 0')
+                      ->orWhereRaw('CAST(payments AS DECIMAL(18,2)) != 0');
+            })
             ->orderBy('controlno')
             ->get($selectColumns);
     }

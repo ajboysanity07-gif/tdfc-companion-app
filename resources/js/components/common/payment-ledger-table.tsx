@@ -111,7 +111,7 @@ const PaymentLedgerTable: React.FC<Props> = ({ title = 'Payment Ledger', rows, l
     const preparedRows: GridRow[] = useMemo(() => {
         const list = Array.isArray(rows) ? rows : [];
         return list.map((row, idx) => {
-            const record = row as Record<string, unknown>;
+            const record = row as unknown as Record<string, unknown>;
             return {
                 id: idx + 1,
                 date_in: row?.date_in ?? '',

@@ -82,14 +82,14 @@ class LoanCalculationService
     /**
      * Calculate loan fees and net proceeds.
      */
-    public function calculateLoanFees(WlnProducts $product, float $amortization, float $oldBalance): array
+    public function calculateLoanFees(WlnProducts $product, float $amortization): array
     {
         $serviceFee = $product->service_fee ?? 0;
         $lrf = $product->lrf ?? 0;
         $documentStamp = $product->document_stamp ?? 0;
         $mortPlusNotarial = $product->mort_plus_notarial ?? 0;
         
-        $totalDeductions = $serviceFee + $lrf + $documentStamp + $mortPlusNotarial + $oldBalance;
+        $totalDeductions = $serviceFee + $lrf + $documentStamp + $mortPlusNotarial;
         $estimatedNetProceeds = max(0, $amortization - $totalDeductions);
 
         return [
