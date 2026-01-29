@@ -13,6 +13,7 @@ RUN apt-get update && apt-get install -y \
     gnupg \
     apt-transport-https \
     unixodbc-dev \
+    proxychains-ng \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Microsoft ODBC Driver 18 for SQL Server
@@ -83,6 +84,9 @@ RUN apt-get update && \
 # Copy Tailscale startup script
 COPY start-tailscale.sh /usr/local/bin/start-tailscale.sh
 RUN chmod +x /usr/local/bin/start-tailscale.sh
+
+# Copy proxychains configuration
+COPY proxychains.conf /etc/proxychains4.conf
 
 # Expose port (Railway will set PORT env variable)
 EXPOSE ${PORT:-80}
