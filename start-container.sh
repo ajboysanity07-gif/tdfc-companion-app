@@ -27,5 +27,13 @@ echo "Apache will listen on 0.0.0.0:$PORT"
 cat /etc/apache2/ports.conf | grep Listen
 cat /etc/apache2/sites-available/000-default.conf | grep VirtualHost
 
-# Start Apache with proxychains to route DB connections through Tailscale
-exec proxychains4 -q apache2-foreground
+# Start socat to forward localhost:1433 to SQL Server through Tailscale SOCKS5
+echo "Starting SQL Server tunnel through Tailscale..."
+socat TCP-LISTEN:1433,fork,reuseaddr SOCKS5:127.0.0.1:100.100.54.27:1433,socksport=1055 &
+
+# Wait for socat to start
+sleep 2
+
+# Start Apache in foreground
+echo "Starting Apache..."
+exec apache2-foreground
