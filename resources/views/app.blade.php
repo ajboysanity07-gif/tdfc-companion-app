@@ -51,8 +51,13 @@
     <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('favicon-16x16.png') }}">
     <link rel="apple-touch-icon" href="{{ asset('images/tdfc-icon.png') }}">
 
+    {{-- Preconnect to font provider for faster loading --}}
     <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
+    <link rel="dns-prefetch" href="https://fonts.bunny.net">
+    
+    {{-- Preload critical fonts to improve LCP --}}
+    <link rel="preload" href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,800" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,800" rel="stylesheet"></noscript>
 
     @routes
     <!-- ZIGGY DEBUG MARKER -->
