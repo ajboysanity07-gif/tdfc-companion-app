@@ -1,9 +1,9 @@
 #!/bin/bash
 set -e
 
-# Start Tailscale in background
+# Start Tailscale in background with userspace networking
 echo "Starting Tailscale..."
-tailscaled &
+tailscaled --tun=userspace-networking --socks5-server=localhost:1055 &
 
 # Wait for tailscaled to be ready
 sleep 2
@@ -15,7 +15,7 @@ if [ -z "$TAILSCALE_AUTH_KEY" ]; then
 fi
 
 echo "Connecting to Tailscale network..."
-tailscale up --authkey=$TAILSCALE_AUTH_KEY --hostname=railway-laravel
+tailscale up --authkey=$TAILSCALE_AUTH_KEY --hostname=railway-laravel --accept-routes
 
 # Wait for Tailscale to connect
 echo "Waiting for Tailscale to connect..."
