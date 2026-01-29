@@ -34,8 +34,10 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // Skip chrome-extension and POST requests
-  if (event.request.url.startsWith('chrome-extension') || event.request.url.startsWith('chrome://') || event.request.method !== 'GET') {
+  const url = new URL(event.request.url);
+  
+  // Skip non-http(s) schemes and POST requests
+  if (!url.protocol.startsWith('http') || event.request.method !== 'GET') {
     return;
   }
 
@@ -51,18 +53,20 @@ self.addEventListener('fetch', (event) => {
         // Clone the response
         const responseToCache = response.clone();
         
-        // Cache the fetched response for future use
-        caches.open(CACHE_NAME).then((cache) => {
-          try {
-            cache.put(event.request, responseToCache).catch((err) => {
-              console.warn('[SW] Failed to cache:', event.request.url, err);
-            });
-          } catch (e) {
-            console.warn('[SW] Cache error:', e);
-          }
-        }).catch((err) => {
-          console.warn('[SW] Failed to open cache:', err);
-        });
+        // Cache the fetched response for future use (only http(s) requests)
+        if (url.protocol.startsWith('http')) {
+          caches.open(CACHE_NAME).then((cache) => {
+            try {
+              cache.put(event.request, responseToCache).catch((err) => {
+                console.warn('[SW] Failed to cache:', event.request.url, err);
+              });
+            } catch (e) {
+              console.warn('[SW] Cache error:', e);
+            }
+          }).catch((err) => {
+            console.warn('[SW] Failed to open cache:', err);
+          });
+        }
         
         return response;
       })
