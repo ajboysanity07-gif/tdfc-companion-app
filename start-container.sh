@@ -32,9 +32,9 @@ echo "Waiting for Tailscale SOCKS5 proxy to stabilize..."
 sleep 5
 
 # Start socat to forward localhost:1433 to SQL Server through Tailscale SOCKS5
-# Using extended connect-timeout and read timeout for Railway environment
+# Extended timeout (180s), keepalive enabled, reuse address
 echo "Starting SQL Server tunnel through Tailscale SOCKS5..."
-socat -T60 TCP-LISTEN:1433,fork,reuseaddr SOCKS5:127.0.0.1:100.100.54.27:1433,socksport=1055 &
+socat -T180 TCP-LISTEN:1433,fork,reuseaddr,keepalive,keepidle=30,keepintvl=10,keepcnt=3 SOCKS5:127.0.0.1:100.100.54.27:1433,socksport=1055 &
 
 # Wait for socat to start
 sleep 3
