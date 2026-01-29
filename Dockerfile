@@ -13,6 +13,7 @@ RUN apt-get update && apt-get install -y \
     gnupg \
     apt-transport-https \
     unixodbc-dev \
+    socat \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Microsoft ODBC Driver 18 for SQL Server
