@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -11,30 +12,33 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Add index to sessions table for faster lookups
-        Schema::table('sessions', function (Blueprint $table) {
-            if (!$this->hasIndex('sessions', 'sessions_user_id_index')) {
-                $table->index('user_id', 'sessions_user_id_index');
+        // Add index to sessions table for faster lookups (only if table exists)
+        if (Schema::hasTable('sessions') && Schema::hasColumn('sessions', 'user_id')) {
+            if (!$this->indexExists('sessions', 'sessions_user_id_index')) {
+                DB::statement('CREATE INDEX sessions_user_id_index ON sessions (user_id)');
             }
-            if (!$this->hasIndex('sessions', 'sessions_last_activity_index')) {
-                $table->index('last_activity', 'sessions_last_activity_index');
+        }
+        
+        if (Schema::hasTable('sessions') && Schema::hasColumn('sessions', 'last_activity')) {
+            if (!$this->indexExists('sessions', 'sessions_last_activity_index')) {
+                DB::statement('CREATE INDEX sessions_last_activity_index ON sessions (last_activity)');
             }
-        });
+        }
 
-        // Add indexes to cache table
-        Schema::table('cache', function (Blueprint $table) {
-            if (!$this->hasIndex('cache', 'cache_expires_at_index')) {
-                $table->index('expires_at', 'cache_expires_at_index');
+        // Add indexes to cache table (column is 'expiration' not 'expires_at')
+        if (Schema::hasTable('cache') && Schema::hasColumn('cache', 'expiration')) {
+            if (!$this->indexExists('cache', 'cache_expiration_index')) {
+                DB::statement('CREATE INDEX cache_expiration_index ON cache (expiration)');
             }
-        });
+        }
 
         // Add indexes to jobs table for queue performance
         if (Schema::hasTable('jobs')) {
-            Schema::table('jobs', function (Blueprint $table) {
-                if (!$this->hasIndex('jobs', 'jobs_queue_index')) {
-                    $table->index(['queue', 'reserved_at'], 'jobs_queue_index');
+            if (Schema::hasColumn('jobs', 'queue') && Schema::hasColumn('jobs', 'reserved_at')) {
+                if (!$this->indexExists('jobs', 'jobs_queue_index')) {
+                    DB::statement('CREATE INDEX jobs_queue_index ON jobs (queue, reserved_at)');
                 }
-            });
+            }
         }
     }
 
@@ -43,29 +47,32 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('sessions', function (Blueprint $table) {
-            $table->dropIndex('sessions_user_id_index');
-            $table->dropIndex('sessions_last_activity_index');
-        });
+        if (Schema::hasTable('sessions')) {
+            DB::statement('DROP INDEX IF EXISTS sessions_user_id_index ON sessions');
+            DB::statement('DROP INDEX IF EXISTS sessions_last_activity_index ON sessions');
+        }
 
-        Schema::table('cache', function (Blueprint $table) {
-            $table->dropIndex('cache_expires_at_index');
-        });
+        if (Schema::hasTable('cache')) {
+            DB::statement('DROP INDEX IF EXISTS cache_expiration_index ON cache');
+        }
 
         if (Schema::hasTable('jobs')) {
-            Schema::table('jobs', function (Blueprint $table) {
-                $table->dropIndex('jobs_queue_index');
-            });
+            DB::statement('DROP INDEX IF EXISTS jobs_queue_index ON jobs');
         }
     }
 
     /**
-     * Check if an index exists on a table.
+     * Check if an index exists on a table (SQL Server compatible).
      */
-    private function hasIndex(string $table, string $index): bool
+    private function indexExists(string $table, string $index): bool
     {
-        $sm = Schema::getConnection()->getDoctrineSchemaManager();
-        $indexes = $sm->listTableIndexes($table);
-        return isset($indexes[$index]);
+        $result = DB::select("
+            SELECT COUNT(*) as count 
+            FROM sys.indexes 
+            WHERE name = ? 
+            AND object_id = OBJECT_ID(?)
+        ", [$index, $table]);
+        
+        return $result[0]->count > 0;
     }
 };
