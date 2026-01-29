@@ -15,7 +15,7 @@ if [ -z "$TAILSCALE_AUTH_KEY" ]; then
 fi
 
 echo "Connecting to Tailscale network..."
-tailscale up --authkey=$TAILSCALE_AUTH_KEY --hostname=railway-laravel --accept-routes --ephemeral
+tailscale up --authkey=$TAILSCALE_AUTH_KEY --hostname=railway-laravel --accept-routes
 
 # Wait for Tailscale to connect
 echo "Waiting for Tailscale to connect..."
