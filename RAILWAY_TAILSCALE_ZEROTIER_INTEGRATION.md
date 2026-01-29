@@ -60,7 +60,7 @@ In your Railway project dashboard:
 2. Go to **Variables** tab
 3. Add new variable:
    ```
-   TAILSCALE_AUTH_KEY=tskey-auth-XXXXXXXXXXXXXXXXXXXXX
+   TAILSCALE_AUTH_KEY=tskey-auth-tskey-auth-kwwwPf7g5621CNTRL-SPgBdoaLGSUqQZiwWkBgSUuo6dy6s1Zp6
    ```
 4. Save changes
 

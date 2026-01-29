@@ -68,6 +68,13 @@ ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
 RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
 
+# Install Tailscale
+RUN apt-get update && apt-get install -y tailscale && rm -rf /var/lib/apt/lists/*
+
+# Copy Tailscale startup script
+COPY start-tailscale.sh /usr/local/bin/start-tailscale.sh
+RUN chmod +x /usr/local/bin/start-tailscale.sh
+
 # Expose port (Railway will set PORT env variable)
 EXPOSE ${PORT:-80}
 
@@ -75,5 +82,6 @@ EXPOSE ${PORT:-80}
 HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
     CMD curl -f http://localhost:${PORT:-80}/ || exit 1
 
-# Start Apache
+# Start Tailscale first, then Apache
+ENTRYPOINT ["/usr/local/bin/start-tailscale.sh"]
 CMD ["/usr/local/bin/start-container"]
