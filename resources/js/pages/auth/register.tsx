@@ -360,7 +360,7 @@ export default function Register({ adminMode = false }: Props) {
 
     return (
         <>
-            <Head title="Register" />
+            <Head title="Register - TDFC App`" />
             <Slide in={!!(success || globalError)} direction="down" mountOnEnter unmountOnExit>
                 <div className="fixed top-4 left-1/2 z-50 flex -translate-x-1/2 flex-col items-center gap-2">
                     {success ? (

@@ -34,16 +34,28 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // Network first, fall back to cache
+  // Skip chrome-extension and POST requests
+  if (event.request.url.startsWith('chrome-extension') || event.request.method !== 'GET') {
+    return;
+  }
+
+  // Network first, fall back to cache for GET requests only
   event.respondWith(
     fetch(event.request)
       .then((response) => {
+        // Only cache successful responses
+        if (!response || response.status !== 200 || response.type === 'error') {
+          return response;
+        }
+
         // Clone the response
         const responseToCache = response.clone();
         
         // Cache the fetched response for future use
         caches.open(CACHE_NAME).then((cache) => {
-          cache.put(event.request, responseToCache);
+          cache.put(event.request, responseToCache).catch((err) => {
+            console.warn('[SW] Failed to cache:', event.request.url, err);
+          });
         });
         
         return response;

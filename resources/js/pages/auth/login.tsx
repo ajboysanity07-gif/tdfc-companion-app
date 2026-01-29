@@ -102,7 +102,7 @@ export default function Login() {
 
   return (
     <>
-      <Head title="Login" />
+      <Head title="Login - TDFC App" />
       <AuthCardLayout
         title="Login"
         description="Welcome back. Enter your credentials to continue."
