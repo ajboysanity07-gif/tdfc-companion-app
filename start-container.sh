@@ -67,10 +67,10 @@ fi
 
 # Start socat with aggressive timeouts and retry logic
 # -d -d for verbose logging
+# -T300: 300 second total inactivity timeout
 # connect-timeout: 180s for initial SOCKS5 handshake
-# read timeout: 300s for SQL Server TLS negotiation
 echo "Starting SQL Server tunnel through Tailscale SOCKS5..."
-socat -d -d TCP-LISTEN:1433,fork,reuseaddr,so-keepalive,connect-timeout=180,readbytes=unlimited SOCKS5:127.0.0.1:100.100.54.27:1433,socksport=1055,connect-timeout=180,readbytes=unlimited 2>&1 | grep -v "transferred" &
+socat -d -d -T300 TCP-LISTEN:1433,fork,reuseaddr,so-keepalive,connect-timeout=180 SOCKS5:127.0.0.1:100.100.54.27:1433,socksport=1055 2>&1 | grep -v "transferred" &
 
 # Wait for socat to start and verify it's listening
 sleep 3
