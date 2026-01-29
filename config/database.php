@@ -110,16 +110,8 @@ return [
             'prefix_indexes' => true,
             'encrypt' => env('DB_ENCRYPT', 'yes'),
             'trust_server_certificate' => env('DB_TRUST_SERVER_CERTIFICATE', false),
-            'options' => [
-                PDO::ATTR_TIMEOUT => 300,  // 5 minutes
-                PDO::SQLSRV_ATTR_QUERY_TIMEOUT => 300,  // 5 minutes
-            ],
-            // ODBC connection string options for extended timeouts
-            'odbc_options' => [
-                'LoginTimeout' => 300,  // 5 minutes for initial connection
-                'ConnectRetryCount' => 3,  // Retry 3 times
-                'ConnectRetryInterval' => 10,  // Wait 10 seconds between retries
-            ],
+            // Connection timeout in seconds (default is 15)
+            'connect_timeout' => env('DB_CONNECT_TIMEOUT', 300),
         ],
 
     ],
