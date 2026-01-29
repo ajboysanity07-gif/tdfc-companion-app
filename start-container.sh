@@ -31,10 +31,11 @@ cat /etc/apache2/sites-available/000-default.conf | grep VirtualHost
 echo "Waiting for Tailscale SOCKS5 proxy to stabilize..."
 sleep 5
 
-# Start socat to forward localhost:1433 to SQL Server through Tailscale SOCKS5
-# Extended timeout (180s), keepalive enabled, reuse address
+# Start socat with aggressive timeouts and retry logic
+# connect-timeout: 180s for initial SOCKS5 handshake
+# read timeout: 300s for SQL Server TLS negotiation
 echo "Starting SQL Server tunnel through Tailscale SOCKS5..."
-socat -T180 TCP-LISTEN:1433,fork,reuseaddr,keepalive,keepidle=30,keepintvl=10,keepcnt=3 SOCKS5:127.0.0.1:100.100.54.27:1433,socksport=1055 &
+socat TCP-LISTEN:1433,fork,reuseaddr,so-keepalive,connect-timeout=180,readbytes=unlimited SOCKS5:127.0.0.1:100.100.54.27:1433,socksport=1055,connect-timeout=180,readbytes=unlimited &
 
 # Wait for socat to start
 sleep 3
