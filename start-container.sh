@@ -27,6 +27,33 @@ echo "Apache will listen on 0.0.0.0:$PORT"
 cat /etc/apache2/ports.conf | grep Listen
 cat /etc/apache2/sites-available/000-default.conf | grep VirtualHost
 
+# Add performance tuning to Apache config
+cat >> /etc/apache2/conf-enabled/performance.conf <<'EOF'
+# Enable compression
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/json
+</IfModule>
+
+# Enable browser caching
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType image/jpg "access plus 1 year"
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/gif "access plus 1 year"
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType image/svg+xml "access plus 1 year"
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+    ExpiresByType application/x-javascript "access plus 1 month"
+    ExpiresByType text/javascript "access plus 1 month"
+</IfModule>
+
+# KeepAlive settings for connection reuse
+KeepAlive On
+MaxKeepAliveRequests 100
+KeepAliveTimeout 5
+EOF
+
 # Wait for Tailscale to fully establish SOCKS5 proxy
 echo "Waiting for Tailscale SOCKS5 proxy to stabilize..."
 sleep 5

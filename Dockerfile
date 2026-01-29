@@ -30,6 +30,18 @@ RUN docker-php-ext-install pdo pdo_mysql mbstring exif pcntl bcmath gd
 RUN pecl install sqlsrv pdo_sqlsrv \
     && docker-php-ext-enable sqlsrv pdo_sqlsrv
 
+# Enable and configure OPcache for production performance
+RUN docker-php-ext-install opcache \
+    && { \
+        echo 'opcache.enable=1'; \
+        echo 'opcache.memory_consumption=256'; \
+        echo 'opcache.interned_strings_buffer=16'; \
+        echo 'opcache.max_accelerated_files=20000'; \
+        echo 'opcache.validate_timestamps=0'; \
+        echo 'opcache.revalidate_freq=0'; \
+        echo 'opcache.fast_shutdown=1'; \
+    } > /usr/local/etc/php/conf.d/opcache.ini
+
 # Install Node.js 20.x
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get install -y nodejs \
@@ -59,6 +71,9 @@ RUN chmod +x /usr/local/bin/start-container
 
 # Enable Apache mod_rewrite
 RUN a2enmod rewrite
+
+# Enable compression for faster response times
+RUN a2enmod deflate headers expires
 
 # Disable any conflicting MPM modules if loaded
 RUN if a2query -m mpm_event; then a2dismod mpm_event; fi && \
