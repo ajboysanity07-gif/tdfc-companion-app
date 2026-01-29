@@ -1,13 +1,21 @@
 #!/bin/bash
 set -e
 
-# Create storage link for public file access
-php artisan storage:link
+# Run initialization tasks in parallel for faster startup
+{
+    # Create storage link for public file access
+    php artisan storage:link 2>/dev/null || true
+} &
 
-# Cache Laravel configs
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
+{
+    # Cache Laravel configs (already cached in Dockerfile, just refresh)
+    php artisan config:cache
+    php artisan route:cache
+    php artisan view:cache
+} &
+
+# Wait for parallel tasks to complete
+wait
 
 # Disable conflicting MPM modules
 a2dismod mpm_event mpm_worker 2>/dev/null || true
@@ -52,6 +60,15 @@ cat >> /etc/apache2/conf-enabled/performance.conf <<'EOF'
 KeepAlive On
 MaxKeepAliveRequests 100
 KeepAliveTimeout 5
+
+# Apache MPM Prefork tuning for Railway (512MB container)
+<IfModule mpm_prefork_module>
+    StartServers 2
+    MinSpareServers 2
+    MaxSpareServers 5
+    MaxRequestWorkers 20
+    MaxConnectionsPerChild 1000
+</IfModule>
 EOF
 
 # Wait for Tailscale to fully establish SOCKS5 proxy

@@ -43,6 +43,17 @@ RUN docker-php-ext-install opcache \
         echo 'opcache.fast_shutdown=1'; \
     } > /usr/local/etc/php/conf.d/opcache.ini
 
+# Additional PHP performance settings
+RUN { \
+        echo 'memory_limit=512M'; \
+        echo 'max_execution_time=300'; \
+        echo 'upload_max_filesize=20M'; \
+        echo 'post_max_size=25M'; \
+        echo 'max_input_time=300'; \
+        echo 'realpath_cache_size=4096K'; \
+        echo 'realpath_cache_ttl=600'; \
+    } > /usr/local/etc/php/conf.d/performance.ini
+
 # Install Node.js 20.x
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get install -y nodejs \
@@ -54,14 +65,23 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Set working directory
 WORKDIR /var/www/html
 
+# Copy composer files first for better layer caching
+COPY composer.json composer.lock ./
+
+# Install PHP dependencies (without dev dependencies)
+RUN composer install --optimize-autoloader --classmap-authoritative --no-dev --no-interaction --no-scripts --ignore-platform-reqs
+
 # Copy application files
 COPY . .
 
-# Install PHP dependencies
-RUN composer install --optimize-autoloader --no-dev --no-interaction --ignore-platform-reqs
+# Run post-install scripts
+RUN composer run-script post-autoload-dump --no-interaction
 
 # Install npm dependencies and build assets
-RUN npm install && npm run build
+RUN npm ci --omit=dev && npm run build && npm cache clean --force
+
+# Remove unnecessary files to reduce image size
+RUN rm -rf node_modules tests .git .github .env.example
 
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
@@ -73,8 +93,8 @@ RUN chmod +x /usr/local/bin/start-container
 # Enable Apache mod_rewrite
 RUN a2enmod rewrite
 
-# Enable compression for faster response times
-RUN a2enmod deflate headers expires
+# Enable compression and HTTP/2 for faster response times
+RUN a2enmod deflate headers expires http2
 
 # Disable any conflicting MPM modules if loaded
 RUN if a2query -m mpm_event; then a2dismod mpm_event; fi && \
