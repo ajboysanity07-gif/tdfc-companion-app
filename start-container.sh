@@ -58,14 +58,27 @@ EOF
 echo "Waiting for Tailscale SOCKS5 proxy to stabilize..."
 sleep 5
 
+# Test SOCKS5 proxy is accessible
+if ! nc -z 127.0.0.1 1055 2>/dev/null; then
+    echo "⚠️  WARNING: SOCKS5 proxy not responding on localhost:1055"
+else
+    echo "✓ SOCKS5 proxy is listening on localhost:1055"
+fi
+
 # Start socat with aggressive timeouts and retry logic
+# -d -d for verbose logging
 # connect-timeout: 180s for initial SOCKS5 handshake
 # read timeout: 300s for SQL Server TLS negotiation
 echo "Starting SQL Server tunnel through Tailscale SOCKS5..."
-socat TCP-LISTEN:1433,fork,reuseaddr,so-keepalive,connect-timeout=180,readbytes=unlimited SOCKS5:127.0.0.1:100.100.54.27:1433,socksport=1055,connect-timeout=180,readbytes=unlimited &
+socat -d -d TCP-LISTEN:1433,fork,reuseaddr,so-keepalive,connect-timeout=180,readbytes=unlimited SOCKS5:127.0.0.1:100.100.54.27:1433,socksport=1055,connect-timeout=180,readbytes=unlimited 2>&1 | grep -v "transferred" &
 
-# Wait for socat to start
+# Wait for socat to start and verify it's listening
 sleep 3
+if ! nc -z 127.0.0.1 1433 2>/dev/null; then
+    echo "⚠️  WARNING: Socat tunnel not listening on localhost:1433"
+else
+    echo "✓ Socat tunnel is listening on localhost:1433"
+fi
 
 # Start Apache in foreground
 echo "Starting Apache..."
