@@ -131,7 +131,16 @@ CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
 
 ### Step 7: Update Railway Config
 
-Add to your `railway.toml` (or set via Railway UI):
+If using **Dockerfile with Apache** (recommended):
+
+```toml
+[build]
+builder = "dockerfile"
+```
+
+The Dockerfile's `ENTRYPOINT` will handle everything automatically.
+
+If using **Laravel's built-in server** (simple apps):
 
 ```toml
 [build]
