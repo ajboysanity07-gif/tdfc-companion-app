@@ -4,7 +4,7 @@ import PWAInstallPrompt from '@/components/pwa-install-prompt';
 export default function Welcome() {
     return (
         <>
-            <Head title="Welcome" />
+            <Head title="Welcome - TDFC App" />
 
             {/* MOBILE (unchanged, smaller image) */}
             <div className="mx-auto grid min-h-screen place-items-center bg-white px-10 py-8 md:hidden">
