@@ -35,7 +35,7 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   // Skip chrome-extension and POST requests
-  if (event.request.url.startsWith('chrome-extension') || event.request.method !== 'GET') {
+  if (event.request.url.startsWith('chrome-extension') || event.request.url.startsWith('chrome://') || event.request.method !== 'GET') {
     return;
   }
 
@@ -53,16 +53,25 @@ self.addEventListener('fetch', (event) => {
         
         // Cache the fetched response for future use
         caches.open(CACHE_NAME).then((cache) => {
-          cache.put(event.request, responseToCache).catch((err) => {
-            console.warn('[SW] Failed to cache:', event.request.url, err);
-          });
+          try {
+            cache.put(event.request, responseToCache).catch((err) => {
+              console.warn('[SW] Failed to cache:', event.request.url, err);
+            });
+          } catch (e) {
+            console.warn('[SW] Cache error:', e);
+          }
+        }).catch((err) => {
+          console.warn('[SW] Failed to open cache:', err);
         });
         
         return response;
       })
       .catch(() => {
         // If network fails, try cache
-        return caches.match(event.request);
+        return caches.match(event.request).catch(() => {
+          // If no cache, return nothing
+          return null;
+        });
       })
   );
 });
