@@ -27,5 +27,5 @@ echo "Apache will listen on 0.0.0.0:$PORT"
 cat /etc/apache2/ports.conf | grep Listen
 cat /etc/apache2/sites-available/000-default.conf | grep VirtualHost
 
-# Start Apache with proxychains to route DB connections through Tailscale SOCKS5
-exec proxychains4 -q apache2-foreground
+# Start Apache
+exec apache2-foreground
