@@ -40,6 +40,13 @@ Tailscale
 2. Mount a Railway persistent volume at `/var/lib/tailscale` (or match your `TS_STATE_DIR`) to keep the same Tailscale node across redeploys. If volumes are unavailable, persistent identity cannot be guaranteed.
 3. If using tags, ensure `tag:railway` is allowed in Tailscale ACL `tagOwners` or the auth key permits it; otherwise omit `TS_TAGS`.
 
+## Railway Hobbyist + Tailscale troubleshooting
+
+- `WantRunning=false` means `tailscaled` is running but `tailscale up` has not been applied. Ensure `TS_AUTHKEY` is set and watch logs for the `tailscale up` invocation.
+- Required env vars: `TS_AUTHKEY`, `TS_HOSTNAME`. Optional: `TS_TAGS`.
+- If you see `requested tags ... invalid or not permitted`, the entrypoint retries once without tags. To use tags, allow `tag:railway` in the Tailscale ACL `tagOwners` or use an auth key permitted to apply that tag.
+
 Notes
 - This setup runs Tailscale in userspace networking mode on Railway Hobbyist (no `/dev/net/tun`).
+- The entrypoint forces `--accept-dns=false` to avoid DNS changes inside the container.
 - Secrets must be injected via Railway variables. Do not commit `.env` files with credentials.

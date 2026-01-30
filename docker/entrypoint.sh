@@ -12,12 +12,43 @@ TS_TAGS="${TS_TAGS:-}"
 TS_AUTHKEY="${TS_AUTHKEY:-}"
 TS_TUN="${TS_TUN:-}"
 TS_NETFILTER="${TS_NETFILTER:-}"
-TS_ACCEPT_DNS="${TS_ACCEPT_DNS:-true}"
+TS_ACCEPT_DNS="${TS_ACCEPT_DNS:-false}"
+TS_READY_TIMEOUT="${TS_READY_TIMEOUT:-60}"
+TS_AUTH_TIMEOUT="${TS_AUTH_TIMEOUT:-60}"
 
 cd "${APP_DIR}"
 
 sanitize_hostname() {
     echo "$1" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9-]+/-/g; s/^-+//; s/-+$//; s/-{2,}/-/g'
+}
+
+truncate_hostname() {
+    echo "$1" | cut -c1-63
+}
+
+wait_for_localapi() {
+    local retries="$1"
+    for i in $(seq 1 "${retries}"); do
+        if [ -S "${TS_SOCKET}" ] && tailscale --socket="${TS_SOCKET}" status >/dev/null 2>&1; then
+            return 0
+        fi
+        sleep 1
+    done
+    return 1
+}
+
+wait_for_auth() {
+    local retries="$1"
+    for i in $(seq 1 "${retries}"); do
+        local ip
+        ip="$(tailscale --socket="${TS_SOCKET}" ip -4 2>/dev/null | head -n 1 || true)"
+        if [ -n "${ip}" ]; then
+            echo "Tailscale authenticated with IP ${ip}."
+            return 0
+        fi
+        sleep 1
+    done
+    return 1
 }
 
 TS_HOSTNAME_ORIG="${TS_HOSTNAME}"
@@ -31,11 +62,16 @@ fi
 if [ -z "${TS_HOSTNAME}" ]; then
     TS_HOSTNAME="tdfc-railway"
 fi
+TS_HOSTNAME="$(truncate_hostname "${TS_HOSTNAME}")"
 if [ -z "${TS_HOSTNAME_ORIG}" ]; then
     echo "TS_HOSTNAME not set; using derived hostname: ${TS_HOSTNAME}"
 fi
 if [ -n "${TS_TUN}" ] && [ "${TS_TUN}" != "userspace" ]; then
     echo "Ignoring TS_TUN=${TS_TUN}; Railway Hobbyist requires userspace networking."
+fi
+if [ "${TS_ACCEPT_DNS}" != "false" ]; then
+    echo "Ignoring TS_ACCEPT_DNS=${TS_ACCEPT_DNS}; Railway Hobbyist uses accept-dns=false."
+    TS_ACCEPT_DNS="false"
 fi
 
 # Ensure writable cache directories for Laravel
@@ -49,6 +85,9 @@ if [ "${TS_DISABLE:-}" != "1" ]; then
     echo "Starting tailscaled..."
     TS_SOCKET_DIR="$(dirname "${TS_SOCKET}")"
     mkdir -p "${TS_STATE_DIR}" "${TS_SOCKET_DIR}"
+    chown -R root:root "${TS_STATE_DIR}" "${TS_SOCKET_DIR}" 2>/dev/null || true
+    chmod 700 "${TS_STATE_DIR}" 2>/dev/null || true
+    chmod 755 "${TS_SOCKET_DIR}" 2>/dev/null || true
 
     if [ ! -w "${TS_STATE_DIR}" ]; then
         echo "Tailscale state dir not writable; attempting to fix permissions..."
@@ -76,14 +115,7 @@ if [ "${TS_DISABLE:-}" != "1" ]; then
 
     tailscaled "${TAILSCALED_ARGS[@]}" &
 
-    for i in $(seq 1 30); do
-        if [ -S "${TS_SOCKET}" ] && tailscale --socket="${TS_SOCKET}" status >/dev/null 2>&1; then
-            break
-        fi
-        sleep 1
-    done
-
-    if ! tailscale --socket="${TS_SOCKET}" status >/dev/null 2>&1; then
+    if ! wait_for_localapi "${TS_READY_TIMEOUT}"; then
         echo "Tailscaled did not become ready in time."
         exit 1
     fi
@@ -93,15 +125,12 @@ if [ "${TS_DISABLE:-}" != "1" ]; then
         echo "Tailscale already authenticated with IP ${TS_IP}."
     else
         if [ -z "${TS_AUTHKEY}" ]; then
-            echo "TS_AUTHKEY not set; skipping tailscale up."
+            echo "TS_AUTHKEY not set and no existing login detected. Cannot bring Tailscale up."
+            exit 1
         else
             TS_UP_COMMON_ARGS=()
             TS_UP_COMMON_ARGS+=(--hostname="${TS_HOSTNAME}")
-            if [ "${TS_ACCEPT_DNS}" = "true" ]; then
-                TS_UP_COMMON_ARGS+=(--accept-dns=true)
-            else
-                TS_UP_COMMON_ARGS+=(--accept-dns=false)
-            fi
+            TS_UP_COMMON_ARGS+=(--accept-dns="${TS_ACCEPT_DNS}")
             if [ -n "${TS_NETFILTER}" ]; then
                 TS_UP_COMMON_ARGS+=(--netfilter-mode="${TS_NETFILTER}")
             else
@@ -136,6 +165,12 @@ if [ "${TS_DISABLE:-}" != "1" ]; then
                 else
                     exit "${TS_UP_EXIT}"
                 fi
+            fi
+
+            if ! wait_for_auth "${TS_AUTH_TIMEOUT}"; then
+                echo "Tailscale did not authenticate in time."
+                tailscale --socket="${TS_SOCKET}" status || true
+                exit 1
             fi
         fi
     fi
