@@ -15,6 +15,10 @@ TS_NETFILTER="${TS_NETFILTER:-}"
 TS_ACCEPT_DNS="${TS_ACCEPT_DNS:-false}"
 TS_READY_TIMEOUT="${TS_READY_TIMEOUT:-60}"
 TS_AUTH_TIMEOUT="${TS_AUTH_TIMEOUT:-60}"
+TS_DB_PROXY="${TS_DB_PROXY:-auto}"
+TS_DB_LOCAL_PORT="${TS_DB_LOCAL_PORT:-}"
+TS_SOCKS5_HOST="${TS_SOCKS5_HOST:-}"
+TS_SOCKS5_PORT="${TS_SOCKS5_PORT:-}"
 
 cd "${APP_DIR}"
 
@@ -38,6 +42,23 @@ truncate_hostname() {
     echo "$1" | cut -c1-63
 }
 
+is_tailscale_ip() {
+    local host="$1"
+    case "$host" in
+        100.*)
+            local second="${host#100.}"
+            second="${second%%.*}"
+            case "$second" in
+                ''|*[!0-9]*) return 1 ;;
+            esac
+            if [ "$second" -ge 64 ] && [ "$second" -le 127 ]; then
+                return 0
+            fi
+            ;;
+    esac
+    return 1
+}
+
 TS_HOSTNAME="$(strip_wrapping_quotes "${TS_HOSTNAME}")"
 TS_TAGS="$(strip_wrapping_quotes "${TS_TAGS}")"
 TS_AUTHKEY="$(strip_wrapping_quotes "${TS_AUTHKEY}")"
@@ -46,6 +67,10 @@ TS_NETFILTER="$(strip_wrapping_quotes "${TS_NETFILTER}")"
 TS_ACCEPT_DNS="$(strip_wrapping_quotes "${TS_ACCEPT_DNS}")"
 TS_READY_TIMEOUT="$(strip_wrapping_quotes "${TS_READY_TIMEOUT}")"
 TS_AUTH_TIMEOUT="$(strip_wrapping_quotes "${TS_AUTH_TIMEOUT}")"
+TS_DB_PROXY="$(strip_wrapping_quotes "${TS_DB_PROXY}")"
+TS_DB_LOCAL_PORT="$(strip_wrapping_quotes "${TS_DB_LOCAL_PORT}")"
+TS_SOCKS5_HOST="$(strip_wrapping_quotes "${TS_SOCKS5_HOST}")"
+TS_SOCKS5_PORT="$(strip_wrapping_quotes "${TS_SOCKS5_PORT}")"
 
 if [ -n "${DB_HOST:-}" ]; then
     export DB_HOST
@@ -70,6 +95,23 @@ fi
 if [ -n "${DB_CONNECTION:-}" ]; then
     export DB_CONNECTION
     DB_CONNECTION="$(strip_wrapping_quotes "${DB_CONNECTION}")"
+fi
+
+if [ -z "${TS_DB_PROXY}" ] || [ "${TS_DB_PROXY}" = "auto" ]; then
+    if [ -n "${DB_HOST:-}" ] && is_tailscale_ip "${DB_HOST}"; then
+        TS_DB_PROXY="1"
+    else
+        TS_DB_PROXY="0"
+    fi
+fi
+
+if [ "${TS_DB_PROXY}" = "1" ]; then
+    if [ -z "${TS_SOCKS5_HOST}" ]; then
+        TS_SOCKS5_HOST="127.0.0.1"
+    fi
+    if [ -z "${TS_SOCKS5_PORT}" ]; then
+        TS_SOCKS5_PORT="1055"
+    fi
 fi
 
 wait_for_localapi() {
@@ -174,6 +216,9 @@ if [ "${TS_DISABLE:-}" != "1" ]; then
     fi
 
     TAILSCALED_ARGS=(--state="${TS_STATE_FILE}" --socket="${TS_SOCKET}" --tun=userspace-networking)
+    if [ -n "${TS_SOCKS5_HOST}" ] && [ -n "${TS_SOCKS5_PORT}" ]; then
+        TAILSCALED_ARGS+=(--socks5-server="${TS_SOCKS5_HOST}:${TS_SOCKS5_PORT}")
+    fi
 
     tailscaled "${TAILSCALED_ARGS[@]}" &
 
@@ -234,6 +279,31 @@ if [ "${TS_DISABLE:-}" != "1" ]; then
                 tailscale --socket="${TS_SOCKET}" status || true
                 exit 1
             fi
+        fi
+    fi
+
+    if [ "${TS_DB_PROXY}" = "1" ]; then
+        if [ -z "${DB_HOST:-}" ]; then
+            echo "TS_DB_PROXY enabled but DB_HOST is empty; skipping DB proxy."
+        else
+            TS_DB_REMOTE_HOST="${DB_HOST}"
+            TS_DB_REMOTE_PORT="${DB_PORT:-1433}"
+            if [ -z "${TS_DB_LOCAL_PORT}" ]; then
+                TS_DB_LOCAL_PORT="${TS_DB_REMOTE_PORT}"
+            fi
+
+            if ! command -v socat >/dev/null 2>&1; then
+                echo "socat not available; cannot start DB proxy."
+                exit 1
+            fi
+
+            echo "Starting Tailscale DB proxy on 127.0.0.1:${TS_DB_LOCAL_PORT}..."
+            socat TCP-LISTEN:"${TS_DB_LOCAL_PORT}",fork,reuseaddr \
+                SOCKS5:"${TS_SOCKS5_HOST}":"${TS_DB_REMOTE_HOST}":"${TS_DB_REMOTE_PORT}",socksport="${TS_SOCKS5_PORT}" &
+
+            DB_HOST="127.0.0.1"
+            DB_PORT="${TS_DB_LOCAL_PORT}"
+            export DB_HOST DB_PORT
         fi
     fi
 fi

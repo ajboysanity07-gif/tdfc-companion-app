@@ -33,6 +33,9 @@ Tailscale
 - `TS_HOSTNAME`: stable hostname (example: `tdfc-railway-6`). If unset, a deterministic name is derived from the Railway service or project name.
 - `TS_TAGS`: optional comma-separated tags (example: `tag:railway`).
 - `TS_STATE_DIR`: persistent state path (default `/var/lib/tailscale`).
+- `TS_DB_PROXY`: `auto` (default) to enable a local DB proxy when `DB_HOST` is a Tailscale IP; set `1` to force or `0` to disable.
+- `TS_DB_LOCAL_PORT`: local port for the DB proxy (defaults to `DB_PORT`).
+- `TS_SOCKS5_HOST` / `TS_SOCKS5_PORT`: SOCKS5 bind host/port for userspace networking (defaults to `127.0.0.1:1055` when proxying).
 
 ## Railway Hobbyist + Tailscale
 
@@ -49,4 +52,5 @@ Tailscale
 Notes
 - This setup runs Tailscale in userspace networking mode on Railway Hobbyist (no `/dev/net/tun`).
 - The entrypoint forces `--accept-dns=false` to avoid DNS changes inside the container.
+- When `DB_HOST` is a Tailscale IP, the entrypoint forwards DB traffic through a local SOCKS5 proxy so SQL Server connections work without a TUN device.
 - Secrets must be injected via Railway variables. Do not commit `.env` files with credentials.
