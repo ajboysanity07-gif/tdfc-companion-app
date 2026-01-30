@@ -181,14 +181,20 @@ if [ "${TS_DISABLE:-}" != "1" ]; then
 fi
 
 gosu www-data php artisan config:cache
-if [ -d "${APP_DIR}/resources/views" ]; then
-    if [ -n "$(find "${APP_DIR}/resources/views" -type f -name '*.blade.php' -print -quit 2>/dev/null)" ]; then
-        gosu www-data php artisan view:cache
+if [ -f "${APP_DIR}/config/view.php" ]; then
+    if [ -d "${APP_DIR}/resources/views" ]; then
+        if [ -n "$(find "${APP_DIR}/resources/views" -type f -name '*.blade.php' -print -quit 2>/dev/null)" ]; then
+            if ! gosu www-data php artisan view:cache; then
+                echo "view:cache failed; continuing."
+            fi
+        else
+            echo "No Blade views found; skipping view:cache."
+        fi
     else
-        echo "No Blade views found; skipping view:cache."
+        echo "Views directory not found; skipping view:cache."
     fi
 else
-    echo "Views directory not found; skipping view:cache."
+    echo "View config not found; skipping view:cache."
 fi
 
 case "${RUN_MIGRATIONS:-}" in
