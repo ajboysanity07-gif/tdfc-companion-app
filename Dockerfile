@@ -48,7 +48,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 WORKDIR /var/www/html
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    nginx gettext-base gosu nmap \
+    nginx gettext-base gosu ncat \
     && rm -rf /var/lib/apt/lists/*
 
 RUN curl -fsSL https://pkgs.tailscale.com/stable/debian/bookworm.noarmor.gpg -o /usr/share/keyrings/tailscale-archive-keyring.gpg \
