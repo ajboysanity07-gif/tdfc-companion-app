@@ -43,9 +43,12 @@ RUN rm -rf node_modules
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Configure Apache - disable conflicting MPM and set document root
-RUN a2dismod mpm_worker mpm_event; a2enmod mpm_prefork rewrite; \
-    sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf; \
+# Configure Apache - remove conflicting MPM modules and enable only prefork
+RUN rm -f /etc/apache2/mods-enabled/mpm_*.load /etc/apache2/mods-enabled/mpm_*.conf && \
+    ln -s /etc/apache2/mods-available/mpm_prefork.load /etc/apache2/mods-enabled/mpm_prefork.load && \
+    ln -s /etc/apache2/mods-available/mpm_prefork.conf /etc/apache2/mods-enabled/mpm_prefork.conf && \
+    a2enmod rewrite && \
+    sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf && \
     echo "ServerName localhost" >> /etc/apache2/apache2.conf
 
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
