@@ -108,10 +108,12 @@ return [
             'charset' => env('DB_CHARSET', 'utf8'),
             'prefix' => '',
             'prefix_indexes' => true,
-            'encrypt' => env('DB_ENCRYPT', 'no'),
-            'trust_server_certificate' => env('DB_TRUST_SERVER_CERTIFICATE', true),
-            'connect_timeout' => env('DB_CONNECT_TIMEOUT', 30),
-            'login_timeout' => env('DB_LOGIN_TIMEOUT', 30),
+            // ODBC Driver 18 specific settings
+            'encrypt' => 'no',
+            'trust_server_certificate' => 'yes',
+            'TrustServerCertificate' => 'yes',
+            'connect_timeout' => 30,
+            'login_timeout' => 30,
         ],
 
     ],
