@@ -1,2 +1,3 @@
 [build]
+# Minimal Railway config: use the Dockerfile in the repo root.
 builder = "dockerfile"
