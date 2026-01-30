@@ -11,8 +11,5 @@ done
 # Start PHP-FPM
 php-fpm -D
 
-# Wait for socket to be created
-sleep 2
-
 # Start nginx
 nginx -g "daemon off;"
