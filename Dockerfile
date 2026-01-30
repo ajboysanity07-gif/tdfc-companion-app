@@ -29,7 +29,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends git unzip \
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 COPY composer.json composer.lock ./
-RUN composer install --no-dev --no-interaction --no-progress --prefer-dist --optimize-autoloader
+RUN composer install --no-dev --no-interaction --no-progress --prefer-dist --optimize-autoloader --no-scripts
 
 FROM node:20-bookworm-slim AS node-build
 WORKDIR /app
