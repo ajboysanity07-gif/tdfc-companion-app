@@ -1,9 +1,9 @@
-FROM php:8.3-apache
+FROM php:8.3-fpm
 
-# Install system dependencies
+# Install system dependencies including nginx
 RUN apt-get update && apt-get install -y \
     git curl libpng-dev libonig-dev libxml2-dev zip unzip \
-    gnupg apt-transport-https unixodbc-dev \
+    gnupg apt-transport-https unixodbc-dev nginx \
     && rm -rf /var/lib/apt/lists/*
 
 # Install ODBC Driver 18 for SQL Server
@@ -43,19 +43,8 @@ RUN rm -rf node_modules
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Configure Apache - fix MPM conflict by editing mods-available directly
-RUN rm -f /etc/apache2/mods-enabled/mpm_*.load /etc/apache2/mods-enabled/mpm_*.conf /etc/apache2/mods-available/mpm_*.load /etc/apache2/mods-available/mpm_*.conf && \
-    mkdir -p /etc/apache2/mods-available && \
-    echo "LoadModule mpm_prefork_module modules/mod_mpm_prefork.so" > /etc/apache2/mods-available/mpm_prefork.load && \
-    touch /etc/apache2/mods-available/mpm_prefork.conf && \
-    mkdir -p /etc/apache2/mods-enabled && \
-    ln -s /etc/apache2/mods-available/mpm_prefork.load /etc/apache2/mods-enabled/mpm_prefork.load && \
-    ln -s /etc/apache2/mods-available/mpm_prefork.conf /etc/apache2/mods-enabled/mpm_prefork.conf && \
-    a2enmod rewrite && \
-    sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf && \
-    echo "ServerName localhost" >> /etc/apache2/apache2.conf
-
-ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
+# Configure nginx for Laravel
+COPY nginx.conf /etc/nginx/nginx.conf
 
 # Install Tailscale
 RUN apt-get update && \

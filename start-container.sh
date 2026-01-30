@@ -11,6 +11,10 @@ for i in {1..30}; do
     sleep 1
 done
 
-# Start Apache
-echo "Starting Apache..."
-apache2-foreground
+# Start PHP-FPM
+echo "Starting PHP-FPM..."
+php-fpm -D
+
+# Start nginx
+echo "Starting nginx..."
+nginx -g "daemon off;"
