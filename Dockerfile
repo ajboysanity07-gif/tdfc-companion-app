@@ -1,5 +1,5 @@
 # Use PHP 8.3 with Apache
-# Cache bust: 2026-01-30-fix-tailscale-ephemeral-flag
+# Cache bust: 2026-01-30-remove-socat-direct-tailscale
 FROM php:8.3-apache
 
 # Install system dependencies
