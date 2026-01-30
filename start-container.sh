@@ -82,23 +82,13 @@ else
     echo "✓ SOCKS5 proxy is listening on localhost:1055"
 fi
 
-# Resolve SQL Server Tailscale IP dynamically
-SQL_SERVER_IP="${DB_HOST:-100.100.54.27}"
-echo "Resolving SQL Server: $SQL_SERVER_IP"
-
-# Start socat tunnel with simplified approach
-echo "Starting SQL Server tunnel through Tailscale SOCKS5..."
-timeout 15 socat TCP-LISTEN:1433,fork,reuseaddr SOCKS5:127.0.0.1:$SQL_SERVER_IP:1433,socksport=1055 &
-SOCAT_PID=$!
-
-# Wait for socat to start and verify it's listening
-sleep 3
-if ! nc -z 127.0.0.1 1433 2>/dev/null; then
-    kill $SOCAT_PID 2>/dev/null || true
-    echo "⚠️  CRITICAL: Socat tunnel failed to establish. Check SQL Server IP: $SQL_SERVER_IP"
-    echo "Proceeding anyway - will retry on first connection attempt"
+# Skip socat tunnel - connect directly to SQL Server IP via SOCKS5
+# If DB_HOST is not set, assume local SQL Server on Railway Tailscale
+if [ -z "$DB_HOST" ]; then
+    echo "⚠️  DB_HOST not set - database connections will fail"
+    echo "   Set DB_HOST to the Tailscale IP of your SQL Server (e.g., 100.x.x.x)"
 else
-    echo "✓ Socat tunnel is listening on localhost:1433"
+    echo "✓ SQL Server configured: $DB_HOST:${DB_PORT:-1433}"
 fi
 
 # Start Apache in foreground

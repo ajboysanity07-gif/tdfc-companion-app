@@ -110,6 +110,8 @@ return [
             'prefix_indexes' => true,
             'encrypt' => 'no',
             'trust_server_certificate' => 'yes',
+            'MultiSubnetFailover' => 'no',
+            'Timeout' => env('DB_TIMEOUT', '30'),
         ],
 
     ],
