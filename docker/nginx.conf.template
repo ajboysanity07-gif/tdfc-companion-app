@@ -17,6 +17,12 @@ http {
     access_log /dev/stdout;
     error_log /dev/stderr warn;
 
+    client_body_temp_path /tmp/nginx/client_body;
+    proxy_temp_path /tmp/nginx/proxy;
+    fastcgi_temp_path /tmp/nginx/fastcgi;
+    uwsgi_temp_path /tmp/nginx/uwsgi;
+    scgi_temp_path /tmp/nginx/scgi;
+
     gzip on;
     gzip_types text/plain text/css application/json application/javascript application/xml+rss text/javascript image/svg+xml;
 

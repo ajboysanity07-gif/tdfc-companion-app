@@ -85,6 +85,10 @@ chown -R www-data:www-data "${APP_DIR}/storage" "${APP_DIR}/bootstrap/cache"
 export PORT
 envsubst '$PORT' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf
 
+# Ensure nginx temp directories are writable
+mkdir -p /tmp/nginx/client_body /tmp/nginx/proxy /tmp/nginx/fastcgi /tmp/nginx/uwsgi /tmp/nginx/scgi
+chown -R www-data:www-data /tmp/nginx
+
 if [ "${TS_DISABLE:-}" != "1" ]; then
     echo "Starting tailscaled..."
     TS_SOCKET_DIR="$(dirname "${TS_SOCKET}")"
