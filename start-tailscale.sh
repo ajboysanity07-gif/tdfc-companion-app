@@ -15,7 +15,13 @@ if [ -z "$TAILSCALE_AUTH_KEY" ]; then
 fi
 
 echo "Connecting to Tailscale network..."
-tailscale up --authkey=$TAILSCALE_AUTH_KEY --hostname=railway-laravel --accept-routes
+# Note: Do NOT use --ephemeral flag as it will cause the device to disconnect on container restart
+# Use a reusable, non-ephemeral auth key instead
+tailscale up \
+    --authkey="$TAILSCALE_AUTH_KEY" \
+    --hostname=railway-laravel \
+    --accept-routes \
+    --accept-dns=false
 
 # Wait for Tailscale to connect
 echo "Waiting for Tailscale to connect..."
