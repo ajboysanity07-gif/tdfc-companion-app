@@ -43,12 +43,12 @@ RUN rm -rf node_modules
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Enable Apache modules
-RUN a2enmod rewrite
+# Configure Apache - disable conflicting MPM and set document root
+RUN a2dismod mpm_worker mpm_event; a2enmod mpm_prefork rewrite; \
+    sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf; \
+    echo "ServerName localhost" >> /etc/apache2/apache2.conf
 
-# Configure Apache document root
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
-RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
 
 # Install Tailscale
 RUN apt-get update && \
