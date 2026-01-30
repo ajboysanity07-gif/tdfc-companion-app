@@ -75,6 +75,9 @@ RUN composer install --optimize-autoloader --classmap-authoritative --no-dev --n
 # Copy application files
 COPY . .
 
+# Regenerate optimized autoloader after copying all files
+RUN composer dump-autoload --optimize --classmap-authoritative --no-dev
+
 # Run post-install scripts
 RUN composer run-script post-autoload-dump --no-interaction
 
