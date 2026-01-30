@@ -10,6 +10,7 @@ TS_HOSTNAME="${TS_HOSTNAME:-}"
 TS_TAGS="${TS_TAGS:-}"
 TS_AUTHKEY="${TS_AUTHKEY:-}"
 TS_TUN="${TS_TUN:-kernel}"
+TS_NETFILTER="${TS_NETFILTER:-}"
 TS_ACCEPT_DNS="${TS_ACCEPT_DNS:-true}"
 
 cd "${APP_DIR}"
@@ -24,6 +25,11 @@ envsubst '$PORT' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf
 if [ "${TS_DISABLE:-}" != "1" ]; then
     echo "Starting tailscaled..."
     mkdir -p "${TS_STATE_DIR}" /var/run/tailscale
+
+    if [ "${TS_TUN}" != "userspace" ] && [ ! -e /dev/net/tun ]; then
+        echo "TUN device missing; falling back to userspace networking."
+        TS_TUN="userspace"
+    fi
 
     TAILSCALED_ARGS=(--state="${TS_STATE_DIR}/tailscaled.state" --socket="${TS_SOCKET}")
     if [ "${TS_TUN}" = "userspace" ]; then
@@ -57,6 +63,11 @@ if [ "${TS_DISABLE:-}" != "1" ]; then
                 TS_UP_ARGS+=(--accept-dns=true)
             else
                 TS_UP_ARGS+=(--accept-dns=false)
+            fi
+            if [ -n "${TS_NETFILTER}" ]; then
+                TS_UP_ARGS+=(--netfilter-mode="${TS_NETFILTER}")
+            elif [ "${TS_TUN}" = "userspace" ]; then
+                TS_UP_ARGS+=(--netfilter-mode=off)
             fi
 
             echo "Authenticating Tailscale..."
