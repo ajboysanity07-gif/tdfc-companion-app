@@ -18,6 +18,18 @@ TS_AUTH_TIMEOUT="${TS_AUTH_TIMEOUT:-60}"
 
 cd "${APP_DIR}"
 
+strip_wrapping_quotes() {
+    local value="$1"
+    if [ -n "${value}" ]; then
+        if [ "${value:0:1}" = "\"" ] && [ "${value: -1}" = "\"" ]; then
+            value="${value:1:${#value}-2}"
+        elif [ "${value:0:1}" = "'" ] && [ "${value: -1}" = "'" ]; then
+            value="${value:1:${#value}-2}"
+        fi
+    fi
+    printf '%s' "${value}"
+}
+
 sanitize_hostname() {
     echo "$1" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9-]+/-/g; s/^-+//; s/-+$//; s/-{2,}/-/g'
 }
@@ -25,6 +37,40 @@ sanitize_hostname() {
 truncate_hostname() {
     echo "$1" | cut -c1-63
 }
+
+TS_HOSTNAME="$(strip_wrapping_quotes "${TS_HOSTNAME}")"
+TS_TAGS="$(strip_wrapping_quotes "${TS_TAGS}")"
+TS_AUTHKEY="$(strip_wrapping_quotes "${TS_AUTHKEY}")"
+TS_TUN="$(strip_wrapping_quotes "${TS_TUN}")"
+TS_NETFILTER="$(strip_wrapping_quotes "${TS_NETFILTER}")"
+TS_ACCEPT_DNS="$(strip_wrapping_quotes "${TS_ACCEPT_DNS}")"
+TS_READY_TIMEOUT="$(strip_wrapping_quotes "${TS_READY_TIMEOUT}")"
+TS_AUTH_TIMEOUT="$(strip_wrapping_quotes "${TS_AUTH_TIMEOUT}")"
+
+if [ -n "${DB_HOST:-}" ]; then
+    export DB_HOST
+    DB_HOST="$(strip_wrapping_quotes "${DB_HOST}")"
+fi
+if [ -n "${DB_PORT:-}" ]; then
+    export DB_PORT
+    DB_PORT="$(strip_wrapping_quotes "${DB_PORT}")"
+fi
+if [ -n "${DB_DATABASE:-}" ]; then
+    export DB_DATABASE
+    DB_DATABASE="$(strip_wrapping_quotes "${DB_DATABASE}")"
+fi
+if [ -n "${DB_USERNAME:-}" ]; then
+    export DB_USERNAME
+    DB_USERNAME="$(strip_wrapping_quotes "${DB_USERNAME}")"
+fi
+if [ -n "${DB_PASSWORD:-}" ]; then
+    export DB_PASSWORD
+    DB_PASSWORD="$(strip_wrapping_quotes "${DB_PASSWORD}")"
+fi
+if [ -n "${DB_CONNECTION:-}" ]; then
+    export DB_CONNECTION
+    DB_CONNECTION="$(strip_wrapping_quotes "${DB_CONNECTION}")"
+fi
 
 wait_for_localapi() {
     local retries="$1"
