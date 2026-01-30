@@ -110,8 +110,14 @@ return [
             'prefix_indexes' => true,
             'encrypt' => env('DB_ENCRYPT', 'no'),
             'trust_server_certificate' => env('DB_TRUST_SERVER_CERTIFICATE', true),
+            'TrustServerCertificate' => env('DB_TRUST_SERVER_CERTIFICATE', true),
+            'Encrypt' => env('DB_ENCRYPT', 'no'),
             // Connection timeout in seconds (default is 15)
-            'connect_timeout' => env('DB_CONNECT_TIMEOUT', 300),
+            'connect_timeout' => env('DB_CONNECT_TIMEOUT', 60),
+            'loginTimeout' => env('DB_LOGIN_TIMEOUT', 60),
+            'options' => [
+                \PDO::ATTR_TIMEOUT => env('DB_PDO_TIMEOUT', 60),
+            ],
         ],
 
     ],
