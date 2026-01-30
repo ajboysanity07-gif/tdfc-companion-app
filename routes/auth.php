@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\ConfirmablePasswordController;
 use App\Http\Controllers\Auth\EmailVerificationNotificationController;
 use App\Http\Controllers\Auth\EmailVerificationPromptController;
@@ -66,7 +67,7 @@ Route::middleware('auth')->group(function () {
         ->name('verification.send');
     Route::get('confirm-password', [ConfirmablePasswordController::class, 'show'])->name('password.confirm');
     Route::post('confirm-password', [ConfirmablePasswordController::class, 'store'])->middleware('throttle:6,1');
-    Route::post('logout', [App\Http\Controllers\Auth\AuthenticatedSessionController::class, 'destroy'])->name('logout');
+    Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 });
 
 // No POST login/register here - those go in api.php for SPA+API!
