@@ -20,7 +20,7 @@ type ApiErrorPayload = { message?: string };
 
 export const useClientManagement = () => {
     const [clients, setClients] = useState<Client[]>([]);
-    const [loading, setLoading] = useState<boolean>(false);
+    const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [rejectionReasons, setRejectionReasons] = useState<RejectionReasonEntry[]>([]);
     const [success, setSuccess] = useState<string | null>(null);
@@ -53,7 +53,6 @@ export const useClientManagement = () => {
 
     // GET /api/rejection-reasons
     const fetchRejectionReasons = useCallback(async () => {
-        setLoading(true);
         setError(null);
         setSuccess(null);
         try {
@@ -78,8 +77,6 @@ export const useClientManagement = () => {
             setRejectionReasons(list);
         } catch (err) {
             setError(errorMessage(err));
-        } finally {
-            setLoading(false);
         }
     }, []);
 
