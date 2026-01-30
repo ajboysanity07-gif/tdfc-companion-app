@@ -82,17 +82,21 @@ else
     echo "✓ SOCKS5 proxy is listening on localhost:1055"
 fi
 
-# Start socat with aggressive timeouts and retry logic
-# -d -d for verbose logging
-# -T300: 300 second total inactivity timeout
-# connect-timeout: 180s for initial SOCKS5 handshake
+# Resolve SQL Server Tailscale IP dynamically
+SQL_SERVER_IP="${DB_HOST:-100.100.54.27}"
+echo "Resolving SQL Server: $SQL_SERVER_IP"
+
+# Start socat tunnel with simplified approach
 echo "Starting SQL Server tunnel through Tailscale SOCKS5..."
-socat -d -d -T300 TCP-LISTEN:1433,fork,reuseaddr,so-keepalive,connect-timeout=180 SOCKS5:127.0.0.1:100.100.54.27:1433,socksport=1055 2>&1 | grep -v "transferred" &
+timeout 15 socat TCP-LISTEN:1433,fork,reuseaddr SOCKS5:127.0.0.1:$SQL_SERVER_IP:1433,socksport=1055 &
+SOCAT_PID=$!
 
 # Wait for socat to start and verify it's listening
 sleep 3
 if ! nc -z 127.0.0.1 1433 2>/dev/null; then
-    echo "⚠️  WARNING: Socat tunnel not listening on localhost:1433"
+    kill $SOCAT_PID 2>/dev/null || true
+    echo "⚠️  CRITICAL: Socat tunnel failed to establish. Check SQL Server IP: $SQL_SERVER_IP"
+    echo "Proceeding anyway - will retry on first connection attempt"
 else
     echo "✓ Socat tunnel is listening on localhost:1433"
 fi

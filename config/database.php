@@ -108,12 +108,8 @@ return [
             'charset' => env('DB_CHARSET', 'utf8'),
             'prefix' => '',
             'prefix_indexes' => true,
-            // ODBC Driver 18 specific settings
             'encrypt' => 'no',
             'trust_server_certificate' => 'yes',
-            'TrustServerCertificate' => 'yes',
-            'connect_timeout' => 30,
-            'login_timeout' => 30,
         ],
 
     ],
