@@ -64,6 +64,3 @@ EXPOSE 80
 
 ENTRYPOINT ["/usr/local/bin/start-tailscale"]
 CMD ["/usr/local/bin/start-container"]
-
-ENTRYPOINT ["/usr/local/bin/start-tailscale"]
-CMD ["/usr/local/bin/start-container"]
