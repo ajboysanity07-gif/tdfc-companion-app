@@ -87,7 +87,8 @@ envsubst '$PORT' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf
 
 # Ensure nginx temp directories are writable
 mkdir -p /tmp/nginx/client_body /tmp/nginx/proxy /tmp/nginx/fastcgi /tmp/nginx/uwsgi /tmp/nginx/scgi
-chown -R www-data:www-data /tmp/nginx
+mkdir -p /var/lib/nginx/body /var/lib/nginx/proxy /var/lib/nginx/fastcgi /var/lib/nginx/uwsgi /var/lib/nginx/scgi
+chown -R www-data:www-data /tmp/nginx /var/lib/nginx
 
 if [ "${TS_DISABLE:-}" != "1" ]; then
     echo "Starting tailscaled..."
