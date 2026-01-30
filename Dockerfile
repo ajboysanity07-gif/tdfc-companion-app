@@ -15,6 +15,21 @@ RUN curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor
 RUN docker-php-ext-install pdo pdo_mysql mbstring exif pcntl bcmath gd opcache && \
     pecl install sqlsrv pdo_sqlsrv && docker-php-ext-enable sqlsrv pdo_sqlsrv
 
+# Configure PHP-FPM to use socket at /run/php-fpm.sock
+RUN mkdir -p /etc/php/fpm/pool.d && \
+    echo '[www]' > /etc/php/fpm/pool.d/www.conf && \
+    echo 'listen = /run/php-fpm.sock' >> /etc/php/fpm/pool.d/www.conf && \
+    echo 'listen.owner = www-data' >> /etc/php/fpm/pool.d/www.conf && \
+    echo 'listen.group = www-data' >> /etc/php/fpm/pool.d/www.conf && \
+    echo 'listen.mode = 0666' >> /etc/php/fpm/pool.d/www.conf && \
+    echo 'user = www-data' >> /etc/php/fpm/pool.d/www.conf && \
+    echo 'group = www-data' >> /etc/php/fpm/pool.d/www.conf && \
+    echo 'pm = dynamic' >> /etc/php/fpm/pool.d/www.conf && \
+    echo 'pm.max_children = 5' >> /etc/php/fpm/pool.d/www.conf && \
+    echo 'pm.start_servers = 2' >> /etc/php/fpm/pool.d/www.conf && \
+    echo 'pm.min_spare_servers = 1' >> /etc/php/fpm/pool.d/www.conf && \
+    echo 'pm.max_spare_servers = 3' >> /etc/php/fpm/pool.d/www.conf
+
 # Install Node.js 20.x
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
     apt-get install -y nodejs && rm -rf /var/lib/apt/lists/*
