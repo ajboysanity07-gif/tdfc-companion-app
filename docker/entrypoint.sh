@@ -292,14 +292,14 @@ if [ "${TS_DISABLE:-}" != "1" ]; then
                 TS_DB_LOCAL_PORT="${TS_DB_REMOTE_PORT}"
             fi
 
-            if ! command -v socat >/dev/null 2>&1; then
-                echo "socat not available; cannot start DB proxy."
+            if ! command -v ncat >/dev/null 2>&1; then
+                echo "ncat not available; cannot start DB proxy."
                 exit 1
             fi
 
             echo "Starting Tailscale DB proxy on 127.0.0.1:${TS_DB_LOCAL_PORT}..."
-            socat TCP-LISTEN:"${TS_DB_LOCAL_PORT}",fork,reuseaddr \
-                SOCKS5:"${TS_SOCKS5_HOST}":"${TS_DB_REMOTE_HOST}":"${TS_DB_REMOTE_PORT}",socksport="${TS_SOCKS5_PORT}" &
+            ncat --listen 127.0.0.1 "${TS_DB_LOCAL_PORT}" --keep-open \
+                --sh-exec "ncat --proxy ${TS_SOCKS5_HOST}:${TS_SOCKS5_PORT} --proxy-type socks5 ${TS_DB_REMOTE_HOST} ${TS_DB_REMOTE_PORT}" &
 
             DB_HOST="127.0.0.1"
             DB_PORT="${TS_DB_LOCAL_PORT}"
