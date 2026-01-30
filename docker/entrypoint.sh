@@ -124,7 +124,14 @@ if [ "${TS_ACCEPT_DNS}" != "false" ]; then
     TS_ACCEPT_DNS="false"
 fi
 
-# Ensure writable cache directories for Laravel
+# Ensure Laravel runtime directories exist and are writable
+mkdir -p \
+    "${APP_DIR}/storage/framework/sessions" \
+    "${APP_DIR}/storage/framework/cache" \
+    "${APP_DIR}/storage/framework/cache/data" \
+    "${APP_DIR}/storage/framework/views" \
+    "${APP_DIR}/storage/logs" \
+    "${APP_DIR}/bootstrap/cache"
 chown -R www-data:www-data "${APP_DIR}/storage" "${APP_DIR}/bootstrap/cache"
 
 # Render nginx config with runtime PORT
