@@ -1,137 +1,66 @@
-# Use PHP 8.3 with Apache
-# Cache bust: 2026-01-30-remove-socat-direct-tailscale
 FROM php:8.3-apache
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
-    git \
-    curl \
-    libpng-dev \
-    libonig-dev \
-    libxml2-dev \
-    zip \
-    unzip \
-    gnupg \
-    apt-transport-https \
-    unixodbc-dev \
-    socat \
-    netcat-openbsd \
+    git curl libpng-dev libonig-dev libxml2-dev zip unzip \
+    gnupg apt-transport-https unixodbc-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Microsoft ODBC Driver 18 for SQL Server
-RUN curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor -o /usr/share/keyrings/microsoft-prod.gpg \
-    && curl -fsSL https://packages.microsoft.com/config/debian/12/prod.list > /etc/apt/sources.list.d/mssql-release.list \
-    && apt-get update \
-    && ACCEPT_EULA=Y apt-get install -y msodbcsql18 \
-    && rm -rf /var/lib/apt/lists/*
+# Install ODBC Driver 18 for SQL Server
+RUN curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor -o /usr/share/keyrings/microsoft-prod.gpg && \
+    echo "deb [signed-by=/usr/share/keyrings/microsoft-prod.gpg] https://packages.microsoft.com/debian/12/prod bookworm main" > /etc/apt/sources.list.d/mssql-release.list && \
+    apt-get update && ACCEPT_EULA=Y apt-get install -y msodbcsql18 && rm -rf /var/lib/apt/lists/*
 
 # Install PHP extensions
-RUN docker-php-ext-install pdo pdo_mysql mbstring exif pcntl bcmath gd
-
-# Install SQL Server drivers
-RUN pecl install sqlsrv pdo_sqlsrv \
-    && docker-php-ext-enable sqlsrv pdo_sqlsrv
-
-# Enable and configure OPcache for production performance
-RUN docker-php-ext-install opcache \
-    && { \
-        echo 'opcache.enable=1'; \
-        echo 'opcache.memory_consumption=256'; \
-        echo 'opcache.interned_strings_buffer=16'; \
-        echo 'opcache.max_accelerated_files=20000'; \
-        echo 'opcache.validate_timestamps=0'; \
-        echo 'opcache.revalidate_freq=0'; \
-        echo 'opcache.fast_shutdown=1'; \
-    } > /usr/local/etc/php/conf.d/opcache.ini
-
-# Additional PHP performance settings
-RUN { \
-        echo 'memory_limit=512M'; \
-        echo 'max_execution_time=300'; \
-        echo 'upload_max_filesize=20M'; \
-        echo 'post_max_size=25M'; \
-        echo 'max_input_time=300'; \
-        echo 'realpath_cache_size=4096K'; \
-        echo 'realpath_cache_ttl=600'; \
-    } > /usr/local/etc/php/conf.d/performance.ini
+RUN docker-php-ext-install pdo pdo_mysql mbstring exif pcntl bcmath gd opcache && \
+    pecl install sqlsrv pdo_sqlsrv && docker-php-ext-enable sqlsrv pdo_sqlsrv
 
 # Install Node.js 20.x
-RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
-    && apt-get install -y nodejs \
-    && rm -rf /var/lib/apt/lists/*
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+    apt-get install -y nodejs && rm -rf /var/lib/apt/lists/*
 
-# Get latest Composer
+# Copy Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Set working directory
 WORKDIR /var/www/html
 
-# Copy composer files first for better layer caching
+# Copy and install PHP dependencies
 COPY composer.json composer.lock ./
+RUN composer install --no-dev --no-interaction --no-scripts --optimize-autoloader
 
-# Install PHP dependencies (without dev dependencies)
-RUN composer install --optimize-autoloader --classmap-authoritative --no-dev --no-interaction --no-scripts --ignore-platform-reqs
-
-# Copy application files
+# Copy application
 COPY . .
 
-# Regenerate optimized autoloader after copying all files
-RUN composer dump-autoload --optimize --classmap-authoritative --no-dev
+# Regenerate autoloader
+RUN composer dump-autoload --optimize
 
-# Run post-install scripts
-RUN composer run-script post-autoload-dump --no-interaction
+# Install Node dependencies and build assets
+RUN npm ci && npm run build
 
-# Install npm dependencies and build assets
-RUN npm ci --omit=dev && npm run build && npm cache clean --force
-
-# Remove unnecessary files to reduce image size
-RUN rm -rf node_modules tests .git .github .env.example
+# Clean up Node
+RUN rm -rf node_modules
 
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Copy startup script
-COPY start-container.sh /usr/local/bin/start-container
-RUN chmod +x /usr/local/bin/start-container
-
-# Enable Apache mod_rewrite
+# Enable Apache modules
 RUN a2enmod rewrite
 
-# Enable compression and HTTP/2 for faster response times
-RUN a2enmod deflate headers expires http2
-
-# Disable any conflicting MPM modules if loaded
-RUN if a2query -m mpm_event; then a2dismod mpm_event; fi && \
-    if a2query -m mpm_worker; then a2dismod mpm_worker; fi
-
-# Configure Apache document root and listen on Railway's PORT
+# Configure Apache document root
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
-RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
-
-# Set ServerName to suppress Apache warning
-RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
 
 # Install Tailscale
 RUN apt-get update && \
-    apt-get install -y curl gnupg && \
     curl -fsSL https://pkgs.tailscale.com/stable/debian/bookworm.noarmor.gpg -o /usr/share/keyrings/tailscale-archive-keyring.gpg && \
     echo "deb [signed-by=/usr/share/keyrings/tailscale-archive-keyring.gpg] https://pkgs.tailscale.com/stable/debian bookworm main" > /etc/apt/sources.list.d/tailscale.list && \
-    apt-get update && \
-    apt-get install -y tailscale && \
-    rm -rf /var/lib/apt/lists/*
+    apt-get update && apt-get install -y tailscale && rm -rf /var/lib/apt/lists/*
 
-# Copy Tailscale startup script
-COPY start-tailscale.sh /usr/local/bin/start-tailscale.sh
-RUN chmod +x /usr/local/bin/start-tailscale.sh
+# Copy startup scripts
+COPY start-tailscale.sh /usr/local/bin/start-tailscale
+COPY start-container.sh /usr/local/bin/start-container
+RUN chmod +x /usr/local/bin/start-tailscale /usr/local/bin/start-container
 
-# Expose port (Railway will set PORT env variable)
-EXPOSE ${PORT:-80}
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
-    CMD curl -f http://localhost:${PORT:-80}/ || exit 1
-
-# Start Tailscale first, then Apache
-ENTRYPOINT ["/usr/local/bin/start-tailscale.sh"]
+EXPOSE 80
+ENTRYPOINT ["/usr/local/bin/start-tailscale"]
 CMD ["/usr/local/bin/start-container"]
