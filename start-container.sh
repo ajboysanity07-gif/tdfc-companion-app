@@ -84,9 +84,17 @@ fi
 
 # Skip socat tunnel - connect directly to SQL Server IP via SOCKS5
 # If DB_HOST is not set, assume local SQL Server on Railway Tailscale
-if [ -z "$DB_HOST" ]; then
-    echo "⚠️  DB_HOST not set - database connections will fail"
-    echo "   Set DB_HOST to the Tailscale IP of your SQL Server (e.g., 100.x.x.x)"
+if [ -z "$DB_HOST" ] || [ "$DB_HOST" = "localhost" ] || [ "$DB_HOST" = "127.0.0.1" ]; then
+    echo "⚠️  ERROR: DB_HOST not properly configured"
+    echo "   Current: DB_HOST=$DB_HOST"
+    echo "   Required: DB_HOST=100.100.54.27 (your desktop's Tailscale IP)"
+    echo ""
+    echo "   Set this in Railway dashboard:"
+    echo "   1. Go to your Railway project"
+    echo "   2. Select 'Variables' tab"
+    echo "   3. Add: DB_HOST = 100.100.54.27"
+    echo "   4. Redeploy"
+    exit 1
 else
     echo "✓ SQL Server configured: $DB_HOST:${DB_PORT:-1433}"
 fi
