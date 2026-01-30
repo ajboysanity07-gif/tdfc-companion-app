@@ -11,10 +11,17 @@ for i in {1..30}; do
     sleep 1
 done
 
+# Create PHP-FPM runtime directory
+mkdir -p /run/php
+chown www-data:www-data /run/php
+
 # Start PHP-FPM
 echo "Starting PHP-FPM..."
 php-fpm -D
 
-# Start nginx
+# Give PHP-FPM a moment to create the socket
+sleep 1
+
+# Start nginx in foreground
 echo "Starting nginx..."
 nginx -g "daemon off;"

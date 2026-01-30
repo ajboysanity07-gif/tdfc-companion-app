@@ -57,6 +57,13 @@ COPY start-tailscale.sh /usr/local/bin/start-tailscale
 COPY start-container.sh /usr/local/bin/start-container
 RUN chmod +x /usr/local/bin/start-tailscale /usr/local/bin/start-container
 
+# Ensure nginx directory exists with proper permissions
+RUN mkdir -p /run/nginx && chown -R www-data:www-data /run/nginx /var/log/nginx
+
 EXPOSE 80
+
+ENTRYPOINT ["/usr/local/bin/start-tailscale"]
+CMD ["/usr/local/bin/start-container"]
+
 ENTRYPOINT ["/usr/local/bin/start-tailscale"]
 CMD ["/usr/local/bin/start-container"]
