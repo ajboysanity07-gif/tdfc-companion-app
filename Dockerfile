@@ -37,6 +37,7 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 
+COPY --from=composer-build /var/www/html/vendor /app/vendor
 COPY resources ./resources
 COPY public ./public
 COPY vite.config.ts tsconfig.json ./
