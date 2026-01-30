@@ -29,8 +29,12 @@ truncate_hostname() {
 wait_for_localapi() {
     local retries="$1"
     for i in $(seq 1 "${retries}"); do
-        if [ -S "${TS_SOCKET}" ] && tailscale --socket="${TS_SOCKET}" status >/dev/null 2>&1; then
-            return 0
+        if [ -S "${TS_SOCKET}" ]; then
+            local status_json
+            status_json="$(tailscale --socket="${TS_SOCKET}" status --json 2>&1 || true)"
+            if echo "${status_json}" | grep -q '"BackendState"' || echo "${status_json}" | grep -qi "Tailscale is stopped"; then
+                return 0
+            fi
         fi
         sleep 1
     done
