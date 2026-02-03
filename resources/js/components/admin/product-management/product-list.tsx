@@ -195,7 +195,7 @@ const ProductList: React.FC<Props> = ({
                                                 </div>
                                                 {typeLabels.length > 0 && (
                                                     <div style={{ display: 'flex', gap: '4px', alignItems: 'center', flexWrap: 'wrap', rowGap: '3px', marginTop: '4px' }}>
-                                                        <span style={{ fontSize: '0.75rem', fontWeight: 600, marginRight: '4px', color: 'rgba(255,255,255,0.6)' }}>
+                                                        <span style={{ fontSize: '0.75rem', fontWeight: 600, marginRight: '4px', color: tw.isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)' }}>
                                                             Tags:
                                                         </span>
                                                         {typeLabels.slice(0, 3).map((label) => (
