@@ -12,10 +12,9 @@ import {
   Settings,
   Sun,
   Moon,
+  X,
+  ChevronUp,
 } from "lucide-react";
-import CloseIcon from "@mui/icons-material/Close";
-import ExpandLessIcon from "@mui/icons-material/ExpandLess";
-import { useTheme } from '@mui/material/styles'; // <-- ADD THIS
 import { useEffect, useState } from "react";
 import { useMyTheme } from "@/hooks/use-mytheme";
 import { useAppearance } from "@/hooks/use-appearance";
@@ -260,7 +259,7 @@ export default function NavMobile() {
             }}
             aria-label={actionsOpen ? 'Close actions' : 'Open actions'}
           >
-            {actionsOpen ? <CloseIcon sx={{ fontSize: 18 }} /> : <ExpandLessIcon sx={{ fontSize: 18 }} />}
+            {actionsOpen ? <X className="h-4.5 w-4.5" /> : <ChevronUp className="h-4.5 w-4.5" />}
           </button>
         </div>
       )}

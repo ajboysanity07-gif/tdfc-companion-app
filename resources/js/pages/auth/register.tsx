@@ -9,7 +9,6 @@ import { Head } from '@inertiajs/react';
 import { AxiosError } from 'axios';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Eye, EyeOff, Plus, Check, CircleCheckBig, CircleX } from 'lucide-react';
-import { Slide } from '@mui/material';
 import React, { useEffect, useRef, useState } from 'react';
 import { register as apiRegister } from '../../api/auth-api';
 

@@ -8,7 +8,7 @@ import DesktopViewLayout from '@/components/desktop-view-layout';
 import MobileViewLayout from '@/components/mobile-view-layout';
 import { useClientManagement } from '@/hooks/use-client-management';
 import AppLayout from '@/layouts/app-layout';
-import { LinearProgress, Slide, useMediaQuery, Box } from '@mui/material';
+import { useMediaQuery } from '@/hooks/use-media-query';
 import { AnimatePresence, motion } from 'framer-motion';
 import { CircleCheckBig, CircleX } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';

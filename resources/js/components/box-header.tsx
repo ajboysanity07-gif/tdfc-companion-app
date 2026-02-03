@@ -1,5 +1,6 @@
-import { Stack, Typography, useTheme } from '@mui/material';
 import React from 'react';
+import { useMyTheme } from '@/hooks/use-mytheme';
+import { colors } from '@/lib/tailwind-theme';
 
 type Props = {
   title: string;
@@ -7,38 +8,25 @@ type Props = {
 };
 
 const BoxHeader: React.FC<Props> = ({ title, subtitle }) => {
-  const theme = useTheme();
-  const accent = theme.palette.primary.main;
+  const tw = useMyTheme();
+  const accent = colors.red;
 
   return (
-    <Stack spacing={0.5} sx={{ p: 1, mb: 2 }}>
-      <Typography
-        variant="h4"
-        fontWeight={800}
-        sx={{ 
-          letterSpacing: 0.3, 
-          color: accent,
-          fontSize: { xs: '1.5rem', md: '2.125rem' }
-        }}
+    <div className="p-1 mb-2">
+      <h2
+        className="text-2xl md:text-3xl font-extrabold tracking-widest"
+        style={{ color: accent, letterSpacing: '0.3px' }}
       >
         {title}
-      </Typography>
+      </h2>
       {subtitle && (
-        <Typography variant="body2" color="text.secondary">
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
           {subtitle}
-        </Typography>
+        </p>
       )}
       {/* Apple-style slim separator line */}
-      <Stack sx={{ pt: 0.75 }}>
-        <Stack
-          sx={{
-            height: 2,
-            borderRadius: 999,
-            bgcolor: theme.palette.mode === 'dark' ? theme.palette.grey[700] : theme.palette.grey[300],
-          }}
-        />
-      </Stack>
-    </Stack>
+      <div className={`h-0.5 mt-3 rounded-full ${tw.isDark ? 'bg-gray-700' : 'bg-gray-300'}`} />
+    </div>
   );
 };
 

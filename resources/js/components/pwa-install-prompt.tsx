@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Box, IconButton, Paper, Typography, useMediaQuery, useTheme } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
+import { Button } from '@/components/ui/button';
+import { X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMyTheme } from '@/hooks/use-mytheme';
+import { useMediaQuery } from '@/hooks/use-media-query';
 
 interface BeforeInstallPromptEvent extends Event {
     prompt: () => Promise<void>;
@@ -42,8 +43,7 @@ const PWAInstallPrompt: React.FC = () => {
     const [showPrompt, setShowPrompt] = useState(false);
     const [browserType, setBrowserType] = useState<BrowserType>('unknown');
     const tw = useMyTheme();
-    const theme = useTheme();
-    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+    const isMobile = useMediaQuery('(max-width: 768px)');
 
     useEffect(() => {
         const browser = detectBrowser();
