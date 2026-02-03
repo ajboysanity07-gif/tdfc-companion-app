@@ -1,4 +1,3 @@
-import { Stack, Typography } from '@mui/material';
 import React from 'react';
 
 type Props = {
@@ -7,22 +6,15 @@ type Props = {
 };
 
 const BoxHeader: React.FC<Props> = ({ title, subtitle }) => {
-
   return (
-    <Stack spacing={0.5} sx={{ pb: 1, mb: 2, width: '100%', alignItems: 'center' }}>
-      <Typography
-        variant="h4"
-        fontWeight={800}
-        sx={{ letterSpacing: 0.3, color: 'primary.main' }}
-      >
+    <div className="flex flex-col gap-0.5 pb-1 mb-2 w-full items-center">
+      <h4 className="text-2xl font-black text-blue-500" style={{ letterSpacing: '0.3px' }}>
         {title}
-      </Typography>
+      </h4>
       {subtitle && (
-        <Typography variant="body2" color="text.secondary">
-          {subtitle}
-        </Typography>
+        <p className="text-sm text-gray-500">{subtitle}</p>
       )}
-    </Stack>
+    </div>
   );
 };
 
