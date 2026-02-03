@@ -248,171 +248,120 @@ const PWAInstallPrompt: React.FC = () => {
                             flexDirection: 'column',
                         }}
                     >
-                        <Paper
-                            elevation={0}
-                            sx={{
-                                width: '100%',
-                                maxWidth: '100%',
-                                bgcolor: tw.isDark ? '#1f1f1f' : '#ffffff',
-                                borderTopLeftRadius: 24,
-                                borderTopRightRadius: 24,
-                                borderBottomLeftRadius: 0,
-                                borderBottomRightRadius: 0,
-                                overflow: 'hidden',
-                                maxHeight: '95vh',
-                                display: 'flex',
-                                flexDirection: 'column',
+                        <div
+                            className="w-full max-w-full rounded-t-3xl overflow-hidden max-h-screen flex flex-col"
+                            style={{
+                                backgroundColor: tw.isDark ? '#1f1f1f' : '#ffffff',
                             }}
                         >
                             {/* Header with close button */}
-                            <Box sx={{ position: 'relative', p: 2, borderBottom: `1px solid ${tw.isDark ? '#333' : '#e5e5e5'}` }}>
-                                <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                    <Box component="span" sx={{ width: 16, height: 16 }}>
+                            <div 
+                                className="relative p-2 border-b"
+                                style={{
+                                    borderColor: tw.isDark ? '#333' : '#e5e5e5',
+                                }}
+                            >
+                                <div className="flex items-center gap-0.5 text-xs text-gray-600">
+                                    <div className="w-4 h-4">
                                         <img 
                                             src="/images/logo-white.png" 
                                             alt="RADS Logo" 
-                                            style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                                            className="w-full h-full object-contain"
                                         />
-                                    </Box>
+                                    </div>
                                     RADS Computer Services
-                                </Typography>
-                                <IconButton
-                                    size="small"
+                                </div>
+                                <button
                                     onClick={handleDismiss}
-                                    sx={{
-                                        position: 'absolute',
-                                        top: 8,
-                                        right: 8,
-                                        color: 'text.secondary',
+                                    className="absolute top-2 right-2 p-1 text-gray-600 hover:bg-gray-100 rounded"
+                                    style={{
+                                        backgroundColor: tw.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
                                     }}
                                 >
-                                    <CloseIcon />
-                                </IconButton>
-                            </Box>
+                                    <X size={16} />
+                                </button>
+                            </div>
 
                             {/* Scrollable content */}
-                            <Box sx={{ flex: 1, overflow: 'auto', p: 2, display: 'flex', flexDirection: 'column' }}>
+                            <div className="flex-1 overflow-auto p-2 flex flex-col">
                                 {/* App Info Section */}
-                                <Box sx={{ display: 'flex', gap: 2, mb: 2, flexShrink: 0 }}>
+                                <div className="flex gap-2 mb-2">
                                     {/* App Icon */}
-                                    <Box
-                                        sx={{
-                                            width: 64,
-                                            height: 64,
-                                            borderRadius: 2,
-                                            overflow: 'hidden',
-                                            flexShrink: 0,
-                                            border: `1px solid ${tw.isDark ? '#333' : '#e5e5e5'}`,
+                                    <div
+                                        className="w-16 h-16 rounded shrink-0 overflow-hidden border flex items-center justify-center"
+                                        style={{
+                                            borderColor: tw.isDark ? '#333' : '#e5e5e5',
                                         }}
                                     >
                                         <img 
                                             src="/images/tdfc-icon.png" 
                                             alt="TDFC App" 
-                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                            className="w-full h-full object-cover"
                                         />
-                                    </Box>
+                                    </div>
 
                                     {/* App Name & Publisher */}
-                                    <Box sx={{ flex: 1, minWidth: 0 }}>
-                                        <Typography variant="h6" fontWeight={600} gutterBottom noWrap sx={{ fontSize: '1rem' }}>
+                                    <div className="flex-1 min-w-0">
+                                        <h3 className="font-semibold text-base truncate mb-1">
                                             TDFC Companion App
-                                        </Typography>
-                                        <Typography variant="body2" color="primary" gutterBottom sx={{ fontSize: '0.85rem' }}>
+                                        </h3>
+                                        <p className="text-xs font-semibold" style={{ color: '#01875f' }}>
                                             RADS Computer Services
-                                        </Typography>
-                                    </Box>
-                                </Box>
+                                        </p>
+                                    </div>
+                                </div>
 
                                 {/* Install Button */}
-                                <Box
-                                    component="button"
+                                <button
                                     onClick={handleInstall}
-                                    sx={{
-                                        width: '100%',
-                                        py: 1.2,
-                                        mb: 2,
-                                        borderRadius: 2,
-                                        border: 'none',
-                                        bgcolor: '#01875f',
+                                    className="w-full py-3 mb-2 rounded font-bold text-sm cursor-pointer transition-all shrink-0 hover:opacity-90 active:scale-95"
+                                    style={{
+                                        backgroundColor: '#01875f',
                                         color: 'white',
-                                        fontWeight: 700,
-                                        fontSize: '0.8rem',
-                                        cursor: 'pointer',
-                                        transition: 'all 0.2s',
-                                        flexShrink: 0,
-                                        '&:hover': {
-                                            bgcolor: '#017a56',
-                                        },
-                                        '&:active': {
-                                            transform: 'scale(0.98)',
-                                        },
                                     }}
                                 >
                                     Install
-                                </Box>
+                                </button>
 
                                 {/* Screenshots Section - with minimum height */}
-                                <Box sx={{ mb: 2, flex: 1, minHeight: 280, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                                    <Box sx={{ 
-                                        display: 'flex', 
-                                        gap: 1, 
-                                        overflowX: 'auto',
-                                        pb: 0.5,
-                                        '&::-webkit-scrollbar': {
-                                            height: 3,
-                                        },
-                                        '&::-webkit-scrollbar-thumb': {
-                                            backgroundColor: tw.isDark ? '#444' : '#ccc',
-                                            borderRadius: 2,
-                                        },
-                                    }}>
+                                <div className="mb-2 flex-1 min-h-72 flex flex-col justify-center">
+                                    <div className="flex gap-1 overflow-x-auto pb-0.5 scrollbar-thin scrollbar-thumb-gray-400">
                                         {[1, 2, 3, 4].map((i) => {
                                             const screenshotName = tw.isDark 
                                                 ? `screenshot-${i}-dark.png`
                                                 : `screenshot-${i}-light.png`;
                                             return (
-                                                <Box
+                                                <div
                                                     key={i}
-                                                    sx={{
-                                                        width: 130,
-                                                        height: 280,
-                                                        borderRadius: 1.5,
-                                                        overflow: 'hidden',
-                                                        flexShrink: 0,
-                                                        border: `1px solid ${tw.isDark ? '#333' : '#e5e5e5'}`,
-                                                        bgcolor: tw.isDark ? '#2a2a2a' : '#f5f5f5',
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'center',
+                                                    className="w-32 h-72 rounded border shrink-0 overflow-hidden flex items-center justify-center"
+                                                    style={{
+                                                        backgroundColor: tw.isDark ? '#2a2a2a' : '#f5f5f5',
+                                                        borderColor: tw.isDark ? '#333' : '#e5e5e5',
                                                     }}
                                                 >
                                                     <img 
                                                         src={`/images/${screenshotName}`}
                                                         alt={`Screenshot ${i}`}
-                                                        style={{ 
-                                                            width: '100%', 
-                                                            height: '100%', 
-                                                            objectFit: 'contain'
-                                                        }}
+                                                        className="w-full h-full object-contain"
                                                     />
-                                                </Box>
+                                                </div>
                                             );
                                         })}
-                                    </Box>
-                                </Box>
+                                    </div>
+                                </div>
 
                                 {/* About Section */}
-                                <Box sx={{ flexShrink: 0 }}>
-                                    <Typography variant="subtitle2" fontWeight={700} gutterBottom sx={{ fontSize: '0.8rem', mb: 0.5 }}>
+                                <div className="shrink-0">
+                                    <h4 className="font-bold text-xs mb-0.5">
                                         About this app
-                                    </Typography>
-                                    <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.4, fontSize: '0.75rem' }}>
+                                    </h4>
+                                    <p className="text-xs leading-relaxed opacity-70">
                                         TDFC Cooperative Financial Management System - Manage your loans, track transactions, 
                                         view amortization schedules, and stay connected with your cooperative.
-                                    </Typography>
-                                </Box>
-                            </Box>
-                        </Paper>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
                     </motion.div>
                 )}
             </AnimatePresence>
@@ -443,30 +392,17 @@ const PWAInstallPrompt: React.FC = () => {
                             justifyContent: 'center',
                         }}
                     >
-                        <Paper
-                            elevation={8}
-                            sx={{
-                                width: 750,
-                                height: 550,
-                                bgcolor: tw.isDark ? '#1f1f1f' : '#ffffff',
-                                borderRadius: 3,
-                                overflow: 'hidden',
-                                display: 'flex',
-                                flexDirection: 'row',
+                        <div
+                            className="w-full max-w-3xl h-96 rounded-lg overflow-hidden flex flex-row shadow-2xl"
+                            style={{
+                                backgroundColor: tw.isDark ? '#1f1f1f' : '#ffffff',
                             }}
                         >
                             {/* Left Side: Screenshots/Visual */}
-                            <Box
-                                sx={{
-                                    width: '45%',
-                                    bgcolor: tw.isDark ? '#2a2a2a' : '#f5f5f5',
-                                    p: 2,
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    gap: 2,
-                                    overflow: 'auto',
+                            <div
+                                className="w-5/12 p-2 flex flex-col items-center justify-center gap-2 overflow-auto"
+                                style={{
+                                    backgroundColor: tw.isDark ? '#2a2a2a' : '#f5f5f5',
                                 }}
                             >
                                 {[1, 2].map((i) => {
@@ -474,124 +410,79 @@ const PWAInstallPrompt: React.FC = () => {
                                         ? `screenshot-${i}-dark.png`
                                         : `screenshot-${i}-light.png`;
                                     return (
-                                        <Box
+                                        <div
                                             key={i}
-                                            sx={{
-                                                width: 130,
-                                                height: 250,
-                                                borderRadius: 2,
-                                                overflow: 'hidden',
-                                                border: `1px solid ${tw.isDark ? '#333' : '#e5e5e5'}`,
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                bgcolor: tw.isDark ? '#1f1f1f' : '#ffffff',
+                                            className="w-32 h-64 rounded-lg border overflow-hidden flex items-center justify-center"
+                                            style={{
+                                                borderColor: tw.isDark ? '#333' : '#e5e5e5',
+                                                backgroundColor: tw.isDark ? '#1f1f1f' : '#ffffff',
                                             }}
                                         >
                                             <img 
                                                 src={`/images/${screenshotName}`}
                                                 alt={`Screenshot ${i}`}
-                                                style={{ 
-                                                    width: '100%', 
-                                                    height: '100%', 
-                                                    objectFit: 'contain'
-                                                }}
+                                                className="w-full h-full object-contain"
                                             />
-                                        </Box>
+                                        </div>
                                     );
                                 })}
-                            </Box>
+                            </div>
 
                             {/* Right Side: Content */}
-                            <Box
-                                sx={{
-                                    width: '55%',
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    p: 3,
-                                    position: 'relative',
-                                    overflow: 'auto',
-                                }}
+                            <div
+                                className="w-7/12 flex flex-col p-6 relative overflow-auto"
                             >
                                 {/* Close Button */}
-                                <IconButton
-                                    size="small"
+                                <button
                                     onClick={handleDismiss}
-                                    sx={{
-                                        position: 'absolute',
-                                        top: 12,
-                                        right: 12,
-                                        color: 'text.secondary',
+                                    className="absolute top-3 right-3 p-1 text-gray-600 hover:bg-gray-100 rounded"
+                                    style={{
+                                        backgroundColor: tw.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
                                     }}
                                 >
-                                    <CloseIcon />
-                                </IconButton>
+                                    <X size={18} />
+                                </button>
 
                                 {/* Title */}
-                                <Typography variant="h5" fontWeight={700} gutterBottom sx={{ mt: 1 }}>
+                                <h2 className="text-2xl font-bold mb-1 mt-1">
                                     TDFC Companion App
-                                </Typography>
+                                </h2>
 
                                 {/* Publisher */}
-                                <Typography variant="body2" color="primary" gutterBottom>
+                                <p className="text-sm font-semibold mb-3" style={{ color: '#01875f' }}>
                                     RADS Computer Services
-                                </Typography>
+                                </p>
 
                                 {/* Description */}
-                                <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.6, mb: 3, flex: 1 }}>
+                                <p className="text-sm leading-relaxed mb-4 flex-1 opacity-80">
                                     Manage your loans, track transactions, view amortization schedules, and stay connected with your cooperative. Access your financial information anytime, anywhere with offline support.
-                                </Typography>
+                                </p>
 
                                 {/* Buttons */}
-                                <Box sx={{ display: 'flex', gap: 2 }}>
-                                    <Box
-                                        component="button"
+                                <div className="flex gap-2">
+                                    <button
                                         onClick={handleInstall}
-                                        sx={{
-                                            flex: 1,
-                                            py: 1.2,
-                                            borderRadius: 2,
-                                            border: 'none',
-                                            bgcolor: '#01875f',
+                                        className="flex-1 py-3 rounded font-bold text-sm cursor-pointer transition-all hover:opacity-90 active:scale-95"
+                                        style={{
+                                            backgroundColor: '#01875f',
                                             color: 'white',
-                                            fontWeight: 700,
-                                            fontSize: '0.95rem',
-                                            cursor: 'pointer',
-                                            transition: 'all 0.2s',
-                                            '&:hover': {
-                                                bgcolor: '#017a56',
-                                            },
-                                            '&:active': {
-                                                transform: 'scale(0.98)',
-                                            },
                                         }}
                                     >
                                         Install Now
-                                    </Box>
-                                    <Box
-                                        component="button"
+                                    </button>
+                                    <button
                                         onClick={handleRemindLater}
-                                        sx={{
-                                            flex: 1,
-                                            py: 1.2,
-                                            borderRadius: 2,
-                                            border: `1px solid ${tw.isDark ? '#333' : '#e5e5e5'}`,
-                                            bgcolor: 'transparent',
+                                        className="flex-1 py-3 rounded font-semibold text-sm cursor-pointer transition-all border hover:opacity-80 active:scale-95"
+                                        style={{
+                                            borderColor: tw.isDark ? '#333' : '#e5e5e5',
                                             color: tw.isDark ? '#fff' : '#000',
-                                            fontWeight: 600,
-                                            fontSize: '0.95rem',
-                                            cursor: 'pointer',
-                                            transition: 'all 0.2s',
-                                            '&:hover': {
-                                                bgcolor: tw.isDark ? '#2a2a2a' : '#f5f5f5',
-                                            },
                                         }}
                                     >
                                         Remind Later
-                                    </Box>
-                                </Box>
-                            </Box>
-                        </Paper>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </motion.div>
                 )}
             </AnimatePresence>
