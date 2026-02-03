@@ -341,15 +341,28 @@ const ProductCRUD: React.FC<Props> = ({
                         <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
                             <div style={{ flex: 1 }}>
                                 <label style={labelStyle}>Rate (P.A.)</label>
-                                <CurrencyInput
-                                    value={formData.interest_rate || ''}
-                                    onValueChange={(value) => setFormData({ ...formData, interest_rate: parseFloat(value || '0') })}
-                                    placeholder="0"
-                                    decimalsLimit={2}
-                                    prefix=""
-                                    suffix=" %"
-                                    style={inputStyle as React.CSSProperties}
-                                />
+                                <div style={{ display: 'flex', alignItems: 'center', borderRadius: '8px', border: `1px solid ${tw.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)'}`, overflow: 'hidden', backgroundColor: tw.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }}>
+                                    <CurrencyInput
+                                        value={formData.interest_rate || ''}
+                                        onValueChange={(value) => setFormData({ ...formData, interest_rate: parseFloat(value || '0') })}
+                                        placeholder="0"
+                                        decimalsLimit={2}
+                                        prefix=""
+                                        suffix=""
+                                        style={{
+                                            border: 'none',
+                                            backgroundColor: 'transparent',
+                                            color: tw.isDark ? '#ffffff' : '#000000',
+                                            fontSize: '0.875rem',
+                                            fontFamily: 'inherit',
+                                            transition: 'all 120ms ease',
+                                            padding: '10px 12px',
+                                            flex: 1,
+                                            outline: 'none',
+                                        } as React.CSSProperties}
+                                    />
+                                    <span style={{ paddingRight: '12px', color: tw.isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)', fontSize: '0.875rem', fontWeight: 600, minWidth: '24px' }}>%</span>
+                                </div>
                             </div>
                         </div>
 
@@ -418,14 +431,28 @@ const ProductCRUD: React.FC<Props> = ({
                     <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end', marginTop: '16px' }}>
                         <div style={{ flex: 1 }}>
                             <label style={labelStyle}>Max Amortization *</label>
-                            <CurrencyInput
-                                value={formData.max_amortization || ''}
-                                onValueChange={(value) => setFormData({ ...formData, max_amortization: parseFloat(value || '0') })}
-                                placeholder="0"
-                                decimalsLimit={2}
-                                prefix="₱ "
-                                style={inputStyle as React.CSSProperties}
-                            />
+                            <div style={{ display: 'flex', alignItems: 'center', borderRadius: '8px', border: `1px solid ${tw.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)'}`, overflow: 'hidden', backgroundColor: tw.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }}>
+                                <span style={{ paddingLeft: '12px', color: tw.isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)', fontSize: '0.875rem', fontWeight: 600, minWidth: '24px' }}>₱</span>
+                                <CurrencyInput
+                                    value={formData.max_amortization || ''}
+                                    onValueChange={(value) => setFormData({ ...formData, max_amortization: parseFloat(value || '0') })}
+                                    placeholder="0"
+                                    decimalsLimit={2}
+                                    prefix=""
+                                    suffix=""
+                                    style={{
+                                        border: 'none',
+                                        backgroundColor: 'transparent',
+                                        color: tw.isDark ? '#ffffff' : '#000000',
+                                        fontSize: '0.875rem',
+                                        fontFamily: 'inherit',
+                                        transition: 'all 120ms ease',
+                                        padding: '10px 12px',
+                                        flex: 1,
+                                        outline: 'none',
+                                    } as React.CSSProperties}
+                                />
+                            </div>
                         </div>
 
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', marginBottom: '4px' }}>
@@ -443,59 +470,111 @@ const ProductCRUD: React.FC<Props> = ({
                         <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
                             <div style={{ flex: 1 }}>
                                 <label style={labelStyle}>Service Fee (% of amount Applied)</label>
-                                <CurrencyInput
-                                    value={formData.service_fee || ''}
-                                    onValueChange={(value) => setFormData({ ...formData, service_fee: parseFloat(value || '0') })}
-                                    placeholder="0"
-                                    decimalsLimit={2}
-                                    prefix=""
-                                    suffix=" %"
-                                    style={inputStyle as React.CSSProperties}
-                                />
+                                <div style={{ display: 'flex', alignItems: 'center', borderRadius: '8px', border: `1px solid ${tw.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)'}`, overflow: 'hidden', backgroundColor: tw.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }}>
+                                    <CurrencyInput
+                                        value={formData.service_fee || ''}
+                                        onValueChange={(value) => setFormData({ ...formData, service_fee: parseFloat(value || '0') })}
+                                        placeholder="0"
+                                        decimalsLimit={2}
+                                        prefix=""
+                                        suffix=""
+                                        style={{
+                                            border: 'none',
+                                            backgroundColor: 'transparent',
+                                            color: tw.isDark ? '#ffffff' : '#000000',
+                                            fontSize: '0.875rem',
+                                            fontFamily: 'inherit',
+                                            transition: 'all 120ms ease',
+                                            padding: '10px 12px',
+                                            flex: 1,
+                                            outline: 'none',
+                                        } as React.CSSProperties}
+                                    />
+                                    <span style={{ paddingRight: '12px', color: tw.isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)', fontSize: '0.875rem', fontWeight: 600, minWidth: '24px' }}>%</span>
+                                </div>
                             </div>
                         </div>
 
                         <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
                             <div style={{ flex: 1 }}>
                                 <label style={labelStyle}>LRF (% of amount Applied)</label>
-                                <CurrencyInput
-                                    value={formData.lrf || ''}
-                                    onValueChange={(value) => setFormData({ ...formData, lrf: parseFloat(value || '0') })}
-                                    placeholder="0"
-                                    decimalsLimit={2}
-                                    prefix=""
-                                    suffix=" %"
-                                    style={inputStyle as React.CSSProperties}
-                                />
+                                <div style={{ display: 'flex', alignItems: 'center', borderRadius: '8px', border: `1px solid ${tw.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)'}`, overflow: 'hidden', backgroundColor: tw.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }}>
+                                    <CurrencyInput
+                                        value={formData.lrf || ''}
+                                        onValueChange={(value) => setFormData({ ...formData, lrf: parseFloat(value || '0') })}
+                                        placeholder="0"
+                                        decimalsLimit={2}
+                                        prefix=""
+                                        suffix=""
+                                        style={{
+                                            border: 'none',
+                                            backgroundColor: 'transparent',
+                                            color: tw.isDark ? '#ffffff' : '#000000',
+                                            fontSize: '0.875rem',
+                                            fontFamily: 'inherit',
+                                            transition: 'all 120ms ease',
+                                            padding: '10px 12px',
+                                            flex: 1,
+                                            outline: 'none',
+                                        } as React.CSSProperties}
+                                    />
+                                    <span style={{ paddingRight: '12px', color: tw.isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)', fontSize: '0.875rem', fontWeight: 600, minWidth: '24px' }}>%</span>
+                                </div>
                             </div>
                         </div>
 
                         <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
                             <div style={{ flex: 1 }}>
                                 <label style={labelStyle}>Doc Stamp (% of amount Applied)</label>
-                                <CurrencyInput
-                                    value={formData.document_stamp || ''}
-                                    onValueChange={(value) => setFormData({ ...formData, document_stamp: parseFloat(value || '0') })}
-                                    placeholder="0"
-                                    decimalsLimit={2}
-                                    prefix=""
-                                    suffix=" %"
-                                    style={inputStyle as React.CSSProperties}
-                                />
+                                <div style={{ display: 'flex', alignItems: 'center', borderRadius: '8px', border: `1px solid ${tw.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)'}`, overflow: 'hidden', backgroundColor: tw.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }}>
+                                    <CurrencyInput
+                                        value={formData.document_stamp || ''}
+                                        onValueChange={(value) => setFormData({ ...formData, document_stamp: parseFloat(value || '0') })}
+                                        placeholder="0"
+                                        decimalsLimit={2}
+                                        prefix=""
+                                        suffix=""
+                                        style={{
+                                            border: 'none',
+                                            backgroundColor: 'transparent',
+                                            color: tw.isDark ? '#ffffff' : '#000000',
+                                            fontSize: '0.875rem',
+                                            fontFamily: 'inherit',
+                                            transition: 'all 120ms ease',
+                                            padding: '10px 12px',
+                                            flex: 1,
+                                            outline: 'none',
+                                        } as React.CSSProperties}
+                                    />
+                                    <span style={{ paddingRight: '12px', color: tw.isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)', fontSize: '0.875rem', fontWeight: 600, minWidth: '24px' }}>%</span>
+                                </div>
                             </div>
                         </div>
 
                         <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
                             <div style={{ flex: 1 }}>
                                 <label style={labelStyle}>Mort + Notarial</label>
-                                <CurrencyInput
-                                    value={formData.mort_plus_notarial || ''}
-                                    onValueChange={(value) => setFormData({ ...formData, mort_plus_notarial: parseFloat(value || '0') })}
-                                    placeholder="0"
-                                    decimalsLimit={2}
-                                    prefix="₱ "
-                                    style={inputStyle as React.CSSProperties}
-                                />
+                                <div style={{ display: 'flex', alignItems: 'center', borderRadius: '8px', border: `1px solid ${tw.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)'}`, overflow: 'hidden', backgroundColor: tw.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }}>
+                                    <span style={{ paddingLeft: '12px', color: tw.isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)', fontSize: '0.875rem', fontWeight: 600, minWidth: '24px' }}>₱</span>
+                                    <CurrencyInput
+                                        value={formData.mort_plus_notarial || ''}
+                                        onValueChange={(value) => setFormData({ ...formData, mort_plus_notarial: parseFloat(value || '0') })}
+                                        placeholder="0"
+                                        decimalsLimit={2}
+                                        prefix=""
+                                        style={{
+                                            border: 'none',
+                                            backgroundColor: 'transparent',
+                                            color: tw.isDark ? '#ffffff' : '#000000',
+                                            fontSize: '0.875rem',
+                                            fontFamily: 'inherit',
+                                            transition: 'all 120ms ease',
+                                            padding: '10px 12px',
+                                            flex: 1,
+                                            outline: 'none',
+                                        } as React.CSSProperties}
+                                    />
+                                </div>
                             </div>
                         </div>
                     </div>
