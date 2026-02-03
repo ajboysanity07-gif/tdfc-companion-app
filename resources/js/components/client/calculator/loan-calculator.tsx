@@ -11,6 +11,7 @@ import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useLoanCalculation } from '@/hooks/use-loan-calculation';
 import { useCalculatorStyles } from '@/hooks/use-calculator-styles';
+import CurrencyInput from 'react-currency-input-field';
 
 type Props = {
     selectedProduct: ProductLntype | null;
@@ -138,14 +139,14 @@ export default function LoanCalculator({ selectedProduct, loanDefaults, loading 
                             </div>
                         )}
                     </div>
-                    <input
-                        type="number"
+                    <CurrencyInput
                         value={termMonths || ''}
-                        onChange={(e) => setTermMonths(Number(e.target.value))}
+                        onValueChange={(val) => setTermMonths(val ? parseInt(val) : 0)}
                         placeholder="0"
                         disabled={selectedProduct?.is_max_term_editable === false}
-                        min="0"
-                        max={selectedProduct?.max_term_months || undefined}
+                        decimalsLimit={0}
+                        prefix=""
+                        allowNegativeValue={false}
                         style={{
                             width: '100%',
                             fontSize: isMobile ? '1.25rem' : '1.5rem',
