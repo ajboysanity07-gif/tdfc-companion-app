@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import CloseIcon from '@mui/icons-material/Close';
 import { Switch } from '@/components/ui/switch';
 import Select from 'react-select';
+import CurrencyInput from 'react-currency-input-field';
 
 type Props = {
     product?: ProductLntype;
@@ -341,13 +342,16 @@ const ProductCRUD: React.FC<Props> = ({
                             <div style={{ flex: 1 }}>
                                 <label style={labelStyle}>Rate (P.A.)</label>
                                 <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                                    <input
-                                        type="number"
-                                        value={formData.interest_rate || 0}
-                                        onChange={(e) => setFormData({ ...formData, interest_rate: parseFloat(e.target.value) })}
+                                    <CurrencyInput
+                                        value={formData.interest_rate || ''}
+                                        onValueChange={(value) => setFormData({ ...formData, interest_rate: parseFloat(value || '0') })}
                                         placeholder="0"
-                                        step="0.01"
-                                        style={inputStyle as React.CSSProperties}
+                                        decimalsLimit={2}
+                                        prefix=""
+                                        style={{
+                                            ...inputStyle,
+                                            flex: 1,
+                                        } as React.CSSProperties}
                                     />
                                     <span style={{ color: textColorLight, fontSize: '0.875rem', minWidth: '20px' }}>%</span>
                                 </div>
@@ -357,11 +361,12 @@ const ProductCRUD: React.FC<Props> = ({
                         <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
                             <div style={{ flex: 1 }}>
                                 <label style={labelStyle}>Max Term (days)</label>
-                                <input
-                                    type="number"
-                                    value={formData.max_term_days || 0}
-                                    onChange={(e) => setFormData({ ...formData, max_term_days: parseInt(e.target.value) })}
+                                <CurrencyInput
+                                    value={formData.max_term_days || ''}
+                                    onValueChange={(value) => setFormData({ ...formData, max_term_days: parseInt(value || '0') })}
                                     placeholder="0"
+                                    decimalsLimit={0}
+                                    prefix=""
                                     style={inputStyle as React.CSSProperties}
                                 />
                             </div>
@@ -418,12 +423,12 @@ const ProductCRUD: React.FC<Props> = ({
                     <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end', marginTop: '16px' }}>
                         <div style={{ flex: 1 }}>
                             <label style={labelStyle}>Max Amortization *</label>
-                            <input
-                                type="number"
-                                value={formData.max_amortization || 0}
-                                onChange={(e) => setFormData({ ...formData, max_amortization: parseFloat(e.target.value) })}
+                            <CurrencyInput
+                                value={formData.max_amortization || ''}
+                                onValueChange={(value) => setFormData({ ...formData, max_amortization: parseFloat(value || '0') })}
                                 placeholder="0"
-                                step="0.01"
+                                decimalsLimit={2}
+                                prefix=""
                                 style={inputStyle as React.CSSProperties}
                             />
                         </div>
@@ -444,13 +449,16 @@ const ProductCRUD: React.FC<Props> = ({
                             <div style={{ flex: 1 }}>
                                 <label style={labelStyle}>Service Fee (% of amount Applied)</label>
                                 <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                                    <input
-                                        type="number"
-                                        value={formData.service_fee || 0}
-                                        onChange={(e) => setFormData({ ...formData, service_fee: parseFloat(e.target.value) })}
+                                    <CurrencyInput
+                                        value={formData.service_fee || ''}
+                                        onValueChange={(value) => setFormData({ ...formData, service_fee: parseFloat(value || '0') })}
                                         placeholder="0"
-                                        step="0.01"
-                                        style={inputStyle as React.CSSProperties}
+                                        decimalsLimit={2}
+                                        prefix=""
+                                        style={{
+                                            ...inputStyle,
+                                            flex: 1,
+                                        } as React.CSSProperties}
                                     />
                                     <span style={{ color: textColorLight, fontSize: '0.875rem', minWidth: '20px' }}>%</span>
                                 </div>
@@ -461,13 +469,16 @@ const ProductCRUD: React.FC<Props> = ({
                             <div style={{ flex: 1 }}>
                                 <label style={labelStyle}>LRF (% of amount Applied)</label>
                                 <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                                    <input
-                                        type="number"
-                                        value={formData.lrf || 0}
-                                        onChange={(e) => setFormData({ ...formData, lrf: parseFloat(e.target.value) })}
+                                    <CurrencyInput
+                                        value={formData.lrf || ''}
+                                        onValueChange={(value) => setFormData({ ...formData, lrf: parseFloat(value || '0') })}
                                         placeholder="0"
-                                        step="0.01"
-                                        style={inputStyle as React.CSSProperties}
+                                        decimalsLimit={2}
+                                        prefix=""
+                                        style={{
+                                            ...inputStyle,
+                                            flex: 1,
+                                        } as React.CSSProperties}
                                     />
                                     <span style={{ color: textColorLight, fontSize: '0.875rem', minWidth: '20px' }}>%</span>
                                 </div>
@@ -478,13 +489,16 @@ const ProductCRUD: React.FC<Props> = ({
                             <div style={{ flex: 1 }}>
                                 <label style={labelStyle}>Doc Stamp (% of amount Applied)</label>
                                 <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                                    <input
-                                        type="number"
-                                        value={formData.document_stamp || 0}
-                                        onChange={(e) => setFormData({ ...formData, document_stamp: parseFloat(e.target.value) })}
+                                    <CurrencyInput
+                                        value={formData.document_stamp || ''}
+                                        onValueChange={(value) => setFormData({ ...formData, document_stamp: parseFloat(value || '0') })}
                                         placeholder="0"
-                                        step="0.01"
-                                        style={inputStyle as React.CSSProperties}
+                                        decimalsLimit={2}
+                                        prefix=""
+                                        style={{
+                                            ...inputStyle,
+                                            flex: 1,
+                                        } as React.CSSProperties}
                                     />
                                     <span style={{ color: textColorLight, fontSize: '0.875rem', minWidth: '20px' }}>%</span>
                                 </div>
@@ -494,11 +508,12 @@ const ProductCRUD: React.FC<Props> = ({
                         <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
                             <div style={{ flex: 1 }}>
                                 <label style={labelStyle}>Mort + Notarial</label>
-                                <input
-                                    type="text"
-                                    value={formData.mort_plus_notarial || 0}
-                                    onChange={(e) => setFormData({ ...formData, mort_plus_notarial: parseFloat(e.target.value) || 0 })}
+                                <CurrencyInput
+                                    value={formData.mort_plus_notarial || ''}
+                                    onValueChange={(value) => setFormData({ ...formData, mort_plus_notarial: parseFloat(value || '0') })}
                                     placeholder="0"
+                                    decimalsLimit={2}
+                                    prefix=""
                                     style={inputStyle as React.CSSProperties}
                                 />
                             </div>
