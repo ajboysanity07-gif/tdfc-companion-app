@@ -25,7 +25,7 @@ const ClientDashboardSkeleton: React.FC = () => {
                     <div className="flex flex-row gap-2 items-center" style={{ minWidth: 0, flex: 1 }}>
                         {/* Avatar skeleton */}
                         <div
-                            className="rounded-full flex-shrink-0"
+                            className="rounded-full shrink-0"
                             style={{
                                 width: isMobile ? 56 : 72,
                                 height: isMobile ? 56 : 72,
@@ -65,7 +65,7 @@ const ClientDashboardSkeleton: React.FC = () => {
                     </div>
                     {!isMobile && (
                         <div
-                            className="rounded-full flex-shrink-0"
+                            className="rounded-full shrink-0"
                             style={{
                                 width: 64,
                                 height: 64,

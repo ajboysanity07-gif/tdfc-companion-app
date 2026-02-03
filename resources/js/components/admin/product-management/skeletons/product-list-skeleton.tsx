@@ -69,7 +69,7 @@ const ProductListSkeleton: React.FC<Props> = ({ itemCount = PRODUCT_LIST_PAGE_SI
                         >
                             {/* Icon/status skeleton */}
                             <div
-                                className="rounded-full animate-pulse flex-shrink-0"
+                                className="rounded-full animate-pulse shrink-0"
                                 style={{
                                     width: 36,
                                     height: 22,
@@ -109,7 +109,7 @@ const ProductListSkeleton: React.FC<Props> = ({ itemCount = PRODUCT_LIST_PAGE_SI
                             </div>
                             {/* Action menu skeleton */}
                             <div
-                                className="rounded-full animate-pulse flex-shrink-0"
+                                className="rounded-full animate-pulse shrink-0"
                                 style={{
                                     width: isMobile ? 30 : 34,
                                     height: isMobile ? 30 : 34,
