@@ -1,5 +1,4 @@
 import React from 'react';
-import { Box, Divider, Skeleton, Stack } from '@mui/material';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { useMyTheme } from '@/hooks/use-mytheme';
 
@@ -12,122 +11,319 @@ const ClientDashboardSkeleton: React.FC = () => {
     const rowCount = isMobile ? 4 : 5;
 
     return (
-        <Stack spacing={2}>
-            <Box
-                sx={{
-                    borderRadius: 3,
-                    p: { xs: 2.5, sm: 3 },
+        <div className="flex flex-col gap-2">
+            <div
+                style={{
+                    borderRadius: 24,
+                    padding: isMobile ? 20 : 24,
                     backgroundColor: surface,
                     border: `1px solid ${borderColor}`,
                     boxShadow: tw.isDark ? '0 12px 30px rgba(0,0,0,0.3)' : '0 12px 30px rgba(15,23,42,0.08)',
                 }}
             >
-                <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between">
-                    <Stack direction="row" spacing={2} alignItems="center" sx={{ minWidth: 0, flex: 1 }}>
-                        <Skeleton variant="circular" width={isMobile ? 56 : 72} height={isMobile ? 56 : 72} />
-                        <Stack spacing={1} sx={{ minWidth: 0 }}>
-                            <Skeleton variant="text" width={90} height={16} />
-                            <Skeleton variant="text" width={isMobile ? 120 : 160} height={isMobile ? 28 : 32} />
-                            <Skeleton variant="rounded" width={110} height={22} sx={{ borderRadius: 999 }} />
-                        </Stack>
-                    </Stack>
-                    {!isMobile && <Skeleton variant="circular" width={64} height={64} />}
-                </Stack>
+                <div className="flex flex-row gap-2 items-center justify-between">
+                    <div className="flex flex-row gap-2 items-center" style={{ minWidth: 0, flex: 1 }}>
+                        {/* Avatar skeleton */}
+                        <div
+                            className="rounded-full flex-shrink-0"
+                            style={{
+                                width: isMobile ? 56 : 72,
+                                height: isMobile ? 56 : 72,
+                                backgroundColor: 'rgba(255,255,255,0.1)',
+                                animation: 'pulse 1.5s ease-in-out infinite',
+                            }}
+                        />
+                        <div className="flex flex-col gap-1" style={{ minWidth: 0 }}>
+                            <div 
+                                style={{
+                                    width: 90,
+                                    height: 16,
+                                    backgroundColor: 'rgba(255,255,255,0.1)',
+                                    borderRadius: 4,
+                                    animation: 'pulse 1.5s ease-in-out infinite',
+                                }}
+                            />
+                            <div
+                                style={{
+                                    width: isMobile ? 120 : 160,
+                                    height: isMobile ? 28 : 32,
+                                    backgroundColor: 'rgba(255,255,255,0.1)',
+                                    borderRadius: 4,
+                                    animation: 'pulse 1.5s ease-in-out infinite',
+                                }}
+                            />
+                            <div
+                                style={{
+                                    width: 110,
+                                    height: 22,
+                                    backgroundColor: 'rgba(255,255,255,0.1)',
+                                    borderRadius: 999,
+                                    animation: 'pulse 1.5s ease-in-out infinite',
+                                }}
+                            />
+                        </div>
+                    </div>
+                    {!isMobile && (
+                        <div
+                            className="rounded-full flex-shrink-0"
+                            style={{
+                                width: 64,
+                                height: 64,
+                                backgroundColor: 'rgba(255,255,255,0.1)',
+                                animation: 'pulse 1.5s ease-in-out infinite',
+                            }}
+                        />
+                    )}
+                </div>
 
-                <Stack alignItems="center" spacing={1} sx={{ pt: 2 }}>
-                    <Divider sx={{ width: '90%', borderColor }} />
-                    <Skeleton variant="text" width={isMobile ? 160 : 200} height={isMobile ? 34 : 40} />
-                    <Skeleton variant="text" width={120} height={16} />
-                </Stack>
-            </Box>
+                <div className="flex flex-col items-center gap-1" style={{ paddingTop: 16 }}>
+                    <div
+                        style={{
+                            width: '90%',
+                            height: 1,
+                            backgroundColor: borderColor,
+                        }}
+                    />
+                    <div
+                        style={{
+                            width: isMobile ? 160 : 200,
+                            height: isMobile ? 34 : 40,
+                            backgroundColor: 'rgba(255,255,255,0.1)',
+                            borderRadius: 4,
+                            animation: 'pulse 1.5s ease-in-out infinite',
+                        }}
+                    />
+                    <div
+                        style={{
+                            width: 120,
+                            height: 16,
+                            backgroundColor: 'rgba(255,255,255,0.1)',
+                            borderRadius: 4,
+                            animation: 'pulse 1.5s ease-in-out infinite',
+                        }}
+                    />
+                </div>
+            </div>
 
-            <Box
-                sx={{
+            <div
+                style={{
                     display: 'grid',
-                    gridTemplateColumns: { xs: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
-                    gap: 1.5,
+                    gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)',
+                    gap: 12,
                 }}
             >
                 {Array.from({ length: actionCount }).map((_, idx) => (
-                    <Box
+                    <div
                         key={idx}
-                        sx={{
-                            borderRadius: 3,
+                        style={{
+                            borderRadius: 24,
                             border: `1px solid ${borderColor}`,
                             backgroundColor: surface,
-                            p: { xs: 2.5, sm: 3 },
+                            padding: isMobile ? 20 : 24,
                             minHeight: 140,
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                         }}
                     >
-                        <Stack spacing={1.25} alignItems="center" sx={{ width: '100%' }}>
-                            <Skeleton variant="circular" width={64} height={64} />
-                            <Skeleton variant="text" width="60%" height={24} />
-                            {!isMobile && <Skeleton variant="text" width="80%" height={16} />}
-                        </Stack>
-                    </Box>
+                        <div className="flex flex-col gap-1.25 items-center w-full">
+                            <div
+                                className="rounded-full"
+                                style={{
+                                    width: 64,
+                                    height: 64,
+                                    backgroundColor: 'rgba(255,255,255,0.1)',
+                                    animation: 'pulse 1.5s ease-in-out infinite',
+                                }}
+                            />
+                            <div
+                                style={{
+                                    width: '60%',
+                                    height: 24,
+                                    backgroundColor: 'rgba(255,255,255,0.1)',
+                                    borderRadius: 4,
+                                    animation: 'pulse 1.5s ease-in-out infinite',
+                                }}
+                            />
+                            {!isMobile && (
+                                <div
+                                    style={{
+                                        width: '80%',
+                                        height: 16,
+                                        backgroundColor: 'rgba(255,255,255,0.1)',
+                                        borderRadius: 4,
+                                        animation: 'pulse 1.5s ease-in-out infinite',
+                                    }}
+                                />
+                            )}
+                        </div>
+                    </div>
                 ))}
-            </Box>
+            </div>
 
-            <Box
-                sx={{
-                    borderRadius: 2,
+            <div
+                style={{
+                    borderRadius: 8,
                     border: `1px solid ${borderColor}`,
                     backgroundColor: surface,
-                    p: { xs: 2, md: 3 },
+                    padding: isMobile ? 16 : 24,
                     boxShadow: tw.isDark ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.05)',
                 }}
             >
-                <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
-                    <Skeleton variant="text" width="45%" height={26} />
-                    <Skeleton variant="rounded" width={70} height={28} sx={{ borderRadius: 999 }} />
-                </Stack>
-                <Divider sx={{ mb: 2, borderColor }} />
+                <div className="flex flex-row justify-between items-center" style={{ marginBottom: 8 }}>
+                    <div
+                        style={{
+                            width: '45%',
+                            height: 26,
+                            backgroundColor: 'rgba(255,255,255,0.1)',
+                            borderRadius: 4,
+                            animation: 'pulse 1.5s ease-in-out infinite',
+                        }}
+                    />
+                    <div
+                        style={{
+                            width: 70,
+                            height: 28,
+                            backgroundColor: 'rgba(255,255,255,0.1)',
+                            borderRadius: 999,
+                            animation: 'pulse 1.5s ease-in-out infinite',
+                        }}
+                    />
+                </div>
+                <div
+                    style={{
+                        marginBottom: 16,
+                        height: 1,
+                        backgroundColor: borderColor,
+                    }}
+                />
 
-                <Stack direction="row" spacing={2} sx={{ mb: 2 }} flexWrap="wrap">
-                    <Stack direction="row" spacing={1} alignItems="center">
-                        <Skeleton variant="circular" width={8} height={8} />
-                        <Skeleton variant="text" width={90} height={16} />
-                    </Stack>
-                    <Stack direction="row" spacing={1} alignItems="center">
-                        <Skeleton variant="circular" width={8} height={8} />
-                        <Skeleton variant="text" width={110} height={16} />
-                    </Stack>
-                </Stack>
+                <div className="flex flex-row gap-2 flex-wrap" style={{ marginBottom: 16 }}>
+                    <div className="flex flex-row gap-1 items-center">
+                        <div
+                            className="rounded-full"
+                            style={{
+                                width: 8,
+                                height: 8,
+                                backgroundColor: 'rgba(255,255,255,0.1)',
+                            }}
+                        />
+                        <div
+                            style={{
+                                width: 90,
+                                height: 16,
+                                backgroundColor: 'rgba(255,255,255,0.1)',
+                                borderRadius: 4,
+                                animation: 'pulse 1.5s ease-in-out infinite',
+                            }}
+                        />
+                    </div>
+                    <div className="flex flex-row gap-1 items-center">
+                        <div
+                            className="rounded-full"
+                            style={{
+                                width: 8,
+                                height: 8,
+                                backgroundColor: 'rgba(255,255,255,0.1)',
+                            }}
+                        />
+                        <div
+                            style={{
+                                width: 110,
+                                height: 16,
+                                backgroundColor: 'rgba(255,255,255,0.1)',
+                                borderRadius: 4,
+                                animation: 'pulse 1.5s ease-in-out infinite',
+                            }}
+                        />
+                    </div>
+                </div>
 
-                <Stack spacing={1.5}>
+                <div className="flex flex-col gap-1.5">
                     {Array.from({ length: rowCount }).map((_, idx) => (
-                        <Stack key={idx} direction="row" alignItems="center" justifyContent="space-between" spacing={2} py={1}>
-                            <Stack spacing={0.6}>
-                                <Skeleton variant="text" width={140} height={20} />
-                                <Skeleton variant="text" width={100} height={16} />
-                            </Stack>
-                            <Stack spacing={0.6} alignItems="flex-end">
-                                <Skeleton variant="text" width={90} height={20} />
-                                <Skeleton variant="text" width={80} height={16} />
-                            </Stack>
-                        </Stack>
+                        <div key={idx} className="flex flex-row items-center justify-between gap-2" style={{ paddingTop: 8, paddingBottom: 8 }}>
+                            <div className="flex flex-col gap-0.6">
+                                <div
+                                    style={{
+                                        width: 140,
+                                        height: 20,
+                                        backgroundColor: 'rgba(255,255,255,0.1)',
+                                        borderRadius: 4,
+                                        animation: 'pulse 1.5s ease-in-out infinite',
+                                    }}
+                                />
+                                <div
+                                    style={{
+                                        width: 100,
+                                        height: 16,
+                                        backgroundColor: 'rgba(255,255,255,0.1)',
+                                        borderRadius: 4,
+                                        animation: 'pulse 1.5s ease-in-out infinite',
+                                    }}
+                                />
+                            </div>
+                            <div className="flex flex-col gap-0.6 items-end">
+                                <div
+                                    style={{
+                                        width: 90,
+                                        height: 20,
+                                        backgroundColor: 'rgba(255,255,255,0.1)',
+                                        borderRadius: 4,
+                                        animation: 'pulse 1.5s ease-in-out infinite',
+                                    }}
+                                />
+                                <div
+                                    style={{
+                                        width: 80,
+                                        height: 16,
+                                        backgroundColor: 'rgba(255,255,255,0.1)',
+                                        borderRadius: 4,
+                                        animation: 'pulse 1.5s ease-in-out infinite',
+                                    }}
+                                />
+                            </div>
+                        </div>
                     ))}
-                </Stack>
+                </div>
 
-                <Stack spacing={1} sx={{ pt: 2, borderTop: `1px solid ${borderColor}` }}>
-                    <Stack
-                        direction={{ xs: 'column', sm: 'row' }}
-                        spacing={1}
-                        alignItems={{ xs: 'flex-start', sm: 'center' }}
-                        justifyContent="space-between"
+                <div className="flex flex-col gap-1" style={{ paddingTop: 16, borderTop: `1px solid ${borderColor}` }}>
+                    <div
+                        className={isMobile ? 'flex flex-col gap-1' : 'flex flex-row gap-1 items-center justify-between'}
+                        style={isMobile ? { alignItems: 'flex-start' } : {}}
                     >
-                        <Skeleton variant="rounded" width={140} height={32} sx={{ borderRadius: 1 }} />
-                        <Skeleton variant="text" width={140} height={16} />
-                    </Stack>
-                    <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-                        <Skeleton variant="rounded" width={180} height={32} sx={{ borderRadius: 999 }} />
-                    </Box>
-                </Stack>
-            </Box>
-        </Stack>
+                        <div
+                            style={{
+                                width: 140,
+                                height: 32,
+                                backgroundColor: 'rgba(255,255,255,0.1)',
+                                borderRadius: 4,
+                                animation: 'pulse 1.5s ease-in-out infinite',
+                            }}
+                        />
+                        <div
+                            style={{
+                                width: 140,
+                                height: 16,
+                                backgroundColor: 'rgba(255,255,255,0.1)',
+                                borderRadius: 4,
+                                animation: 'pulse 1.5s ease-in-out infinite',
+                            }}
+                        />
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'center' }}>
+                        <div
+                            style={{
+                                width: 180,
+                                height: 32,
+                                backgroundColor: 'rgba(255,255,255,0.1)',
+                                borderRadius: 999,
+                                animation: 'pulse 1.5s ease-in-out infinite',
+                            }}
+                        />
+                    </div>
+                </div>
+            </div>
+        </div>
     );
 };
 

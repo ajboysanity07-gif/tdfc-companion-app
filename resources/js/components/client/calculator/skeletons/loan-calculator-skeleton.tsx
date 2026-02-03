@@ -1,5 +1,4 @@
 import React from 'react';
-import { Box, Stack } from '@mui/material';
 import { useMediaQuery } from '@/hooks/use-media-query';
 
 const LoanCalculatorSkeleton: React.FC = () => {
@@ -7,65 +6,65 @@ const LoanCalculatorSkeleton: React.FC = () => {
     const skeletonBg = 'rgba(255,255,255,0.08)';
 
     return (
-        <Box sx={{ minHeight: isMobile ? 'auto' : 845 }}>
-            <Stack spacing={isMobile ? 2.5 : 3}>
+        <div style={{ minHeight: isMobile ? 'auto' : 845 }}>
+            <div className={`flex flex-col ${isMobile ? 'gap-2.5' : 'gap-3'}`}>
                 {/* Product field */}
-                <Box>
-                    <Box sx={{ width: 80, height: 14, bgcolor: skeletonBg, borderRadius: 1, mx: 'auto', mb: 1.5 }} />
-                    <Box sx={{ height: isMobile ? 44 : 53, bgcolor: skeletonBg, borderRadius: 3 }} />
-                </Box>
+                <div>
+                    <div style={{ width: 80, height: 14, backgroundColor: skeletonBg, borderRadius: 4, margin: '0 auto 6px' }} />
+                    <div style={{ height: isMobile ? 44 : 53, backgroundColor: skeletonBg, borderRadius: 12 }} />
+                </div>
 
                 {/* Term in Months field */}
-                <Box>
-                    <Box sx={{ width: 130, height: 14, bgcolor: skeletonBg, borderRadius: 1, mx: 'auto', mb: 1.5 }} />
-                    <Box sx={{ height: isMobile ? 44 : 53, bgcolor: skeletonBg, borderRadius: 3 }} />
-                </Box>
+                <div>
+                    <div style={{ width: 130, height: 14, backgroundColor: skeletonBg, borderRadius: 4, margin: '0 auto 6px' }} />
+                    <div style={{ height: isMobile ? 44 : 53, backgroundColor: skeletonBg, borderRadius: 12 }} />
+                </div>
 
                 {/* Amortization field */}
-                <Box>
-                    <Box sx={{ width: 120, height: 14, bgcolor: skeletonBg, borderRadius: 1, mx: 'auto', mb: 1.5 }} />
-                    <Box sx={{ height: isMobile ? 44 : 53, bgcolor: skeletonBg, borderRadius: 3 }} />
-                </Box>
+                <div>
+                    <div style={{ width: 120, height: 14, backgroundColor: skeletonBg, borderRadius: 4, margin: '0 auto 6px' }} />
+                    <div style={{ height: isMobile ? 44 : 53, backgroundColor: skeletonBg, borderRadius: 12 }} />
+                </div>
 
                 {/* Old Balance field */}
-                <Box>
-                    <Box sx={{ width: 100, height: 14, bgcolor: skeletonBg, borderRadius: 1, mx: 'auto', mb: 1.5 }} />
-                    <Box sx={{ height: isMobile ? 44 : 53, bgcolor: skeletonBg, borderRadius: 3 }} />
-                </Box>
+                <div>
+                    <div style={{ width: 100, height: 14, backgroundColor: skeletonBg, borderRadius: 4, margin: '0 auto 6px' }} />
+                    <div style={{ height: isMobile ? 44 : 53, backgroundColor: skeletonBg, borderRadius: 12 }} />
+                </div>
 
                 {/* Due Amount (display box) */}
-                <Box>
-                    <Box sx={{ width: 110, height: 14, bgcolor: skeletonBg, borderRadius: 1, mx: 'auto', mb: 1.5 }} />
-                    <Box sx={{ height: isMobile ? 70 : 80, bgcolor: skeletonBg, borderRadius: 2 }} />
-                </Box>
+                <div>
+                    <div style={{ width: 110, height: 14, backgroundColor: skeletonBg, borderRadius: 4, margin: '0 auto 6px' }} />
+                    <div style={{ height: isMobile ? 70 : 80, backgroundColor: skeletonBg, borderRadius: 8 }} />
+                </div>
 
                 {/* Monthly Payment (display box) */}
-                <Box>
-                    <Box sx={{ width: 200, height: 14, bgcolor: skeletonBg, borderRadius: 1, mx: 'auto', mb: 1.5 }} />
-                    <Box sx={{ height: isMobile ? 70 : 80, bgcolor: skeletonBg, borderRadius: 2 }} />
-                </Box>
+                <div>
+                    <div style={{ width: 200, height: 14, backgroundColor: skeletonBg, borderRadius: 4, margin: '0 auto 6px' }} />
+                    <div style={{ height: isMobile ? 70 : 80, backgroundColor: skeletonBg, borderRadius: 8 }} />
+                </div>
 
                 {/* Net Proceeds (highlighted box) */}
-                <Box sx={{ mt: 2 }}>
-                    <Box sx={{ width: 180, height: 14, bgcolor: skeletonBg, borderRadius: 1, mx: 'auto', mb: 1.5 }} />
-                    <Box sx={{ height: isMobile ? 88 : 100, bgcolor: skeletonBg, borderRadius: 2 }} />
-                </Box>
+                <div style={{ marginTop: 8 }}>
+                    <div style={{ width: 180, height: 14, backgroundColor: skeletonBg, borderRadius: 4, margin: '0 auto 6px' }} />
+                    <div style={{ height: isMobile ? 88 : 100, backgroundColor: skeletonBg, borderRadius: 8 }} />
+                </div>
 
                 {/* Disclaimer text */}
-                <Box>
-                    <Box sx={{ width: '90%', height: 12, bgcolor: skeletonBg, borderRadius: 1, mx: 'auto' }} />
-                    <Box sx={{ width: '85%', height: 12, bgcolor: skeletonBg, borderRadius: 1, mx: 'auto', mt: 0.5 }} />
-                </Box>
+                <div>
+                    <div style={{ width: '90%', height: 12, backgroundColor: skeletonBg, borderRadius: 4, margin: '0 auto' }} />
+                    <div style={{ width: '85%', height: 12, backgroundColor: skeletonBg, borderRadius: 4, margin: '2px auto 0' }} />
+                </div>
 
                 {/* Terms and Conditions - Desktop only */}
                 {!isMobile && (
-                    <Box>
-                        <Box sx={{ width: 180, height: 14, bgcolor: skeletonBg, borderRadius: 1, mx: 'auto', mb: 1.5 }} />
-                        <Box sx={{ height: 200, bgcolor: skeletonBg, borderRadius: 3 }} />
-                    </Box>
+                    <div>
+                        <div style={{ width: 180, height: 14, backgroundColor: skeletonBg, borderRadius: 4, margin: '0 auto 6px' }} />
+                        <div style={{ height: 200, backgroundColor: skeletonBg, borderRadius: 12 }} />
+                    </div>
                 )}
-            </Stack>
-        </Box>
+            </div>
+        </div>
     );
 };
 

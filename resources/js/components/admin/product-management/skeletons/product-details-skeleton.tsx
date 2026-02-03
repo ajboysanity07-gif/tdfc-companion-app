@@ -1,5 +1,4 @@
 import React from 'react';
-import { Box, Skeleton, Stack } from '@mui/material';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { useMyTheme } from '@/hooks/use-mytheme';
 
@@ -7,36 +6,95 @@ const ProductDetailsSkeleton: React.FC = () => {
     const tw = useMyTheme();
     const isMobile = useMediaQuery('(max-width: 600px)');
     const panelBg = tw.isDark ? '#262626' : '#FAFAFA';
+    const panelBorder = tw.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)';
 
     return (
-        <Box
-            sx={{
+        <div
+            style={{
                 flex: 1,
-                borderRadius: 3,
-                p: isMobile ? 2.5 : 3,
-                bgcolor: tw.isDark ? '#171717' : '#FAFAFA',
-                boxShadow: 3,
+                borderRadius: 24,
+                padding: isMobile ? 20 : 24,
+                backgroundColor: tw.isDark ? '#171717' : '#FAFAFA',
+                boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: 2,
+                gap: 16,
             }}
         >
-            <Skeleton variant="text" width="55%" height={isMobile ? 32 : 36} sx={{ alignSelf: 'center', borderRadius: 1 }} />
-            <Skeleton variant="rectangular" height={2} width="80%" sx={{ alignSelf: 'center', borderRadius: 1 }} />
+            {/* Title skeleton */}
+            <div
+                className="animate-pulse rounded self-center"
+                style={{
+                    width: '55%',
+                    height: isMobile ? 32 : 36,
+                    backgroundColor: 'rgba(255,255,255,0.1)',
+                }}
+            />
+            {/* Divider skeleton */}
+            <div
+                className="animate-pulse rounded self-center"
+                style={{
+                    height: 2,
+                    width: '80%',
+                    backgroundColor: 'rgba(255,255,255,0.1)',
+                }}
+            />
 
-            <Stack spacing={1.2} sx={{ bgcolor: panelBg, borderRadius: 2.5, p: isMobile ? 2 : 2.5, border: tw.isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.08)' }}>
-                <Skeleton variant="text" width="70%" height={24} />
-                <Skeleton variant="rounded" height={44} />
-                <Skeleton variant="rounded" height={44} />
-                <Skeleton variant="rounded" height={44} />
-                <Skeleton variant="rounded" height={120} />
-            </Stack>
+            {/* Form fields panel */}
+            <div
+                className="flex flex-col gap-1.2"
+                style={{
+                    backgroundColor: panelBg,
+                    borderRadius: 10,
+                    padding: isMobile ? 16 : 20,
+                    border: `1px solid ${panelBorder}`,
+                }}
+            >
+                <div
+                    className="animate-pulse rounded"
+                    style={{
+                        width: '70%',
+                        height: 24,
+                        backgroundColor: 'rgba(255,255,255,0.1)',
+                    }}
+                />
+                {[1, 2, 3, 4].map((idx) => (
+                    <div
+                        key={idx}
+                        className="animate-pulse rounded"
+                        style={{
+                            height: idx === 4 ? 120 : 44,
+                            backgroundColor: 'rgba(255,255,255,0.1)',
+                        }}
+                    />
+                ))}
+            </div>
 
-            <Stack direction={isMobile ? 'column' : 'row'} spacing={1.2} sx={{ mt: 'auto' }}>
-                <Skeleton variant="rounded" height={50} width="100%" sx={{ borderRadius: 999 }} />
-                <Skeleton variant="rounded" height={50} width="100%" sx={{ borderRadius: 999 }} />
-            </Stack>
-        </Box>
+            {/* Action buttons */}
+            <div
+                className={isMobile ? 'flex flex-col gap-1.2' : 'flex flex-row gap-1.2'}
+                style={{
+                    marginTop: 'auto',
+                }}
+            >
+                <div
+                    className="animate-pulse rounded w-full"
+                    style={{
+                        height: 50,
+                        backgroundColor: 'rgba(255,255,255,0.1)',
+                        borderRadius: 999,
+                    }}
+                />
+                <div
+                    className="animate-pulse rounded w-full"
+                    style={{
+                        height: 50,
+                        backgroundColor: 'rgba(255,255,255,0.1)',
+                        borderRadius: 999,
+                    }}
+                />
+            </div>
+        </div>
     );
 };
 

@@ -1,5 +1,4 @@
 import React from 'react';
-import { Box, Skeleton, Stack } from '@mui/material';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { useMyTheme } from '@/hooks/use-mytheme';
 
@@ -16,60 +15,102 @@ const ClientListSkeleton: React.FC<Props> = ({ itemCount = CLIENT_LIST_PAGE_SIZE
     const isMobile = useMediaQuery('(max-width: 600px)');
     const safeItemCount = Math.max(itemCount ?? CLIENT_LIST_PAGE_SIZE, 1);
 
-    const containerStyles = {
-        p: isMobile ? 1 : 1.5,
-        borderRadius: 2,
-        bgcolor: tw.isDark ? '#171717' : '#FAFAFA',
-        border: tw.isDark ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(0,0,0,0.08)',
-        boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.02)',
-        flex: fullHeight ? 1 : 'unset',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: isMobile ? 1 : 1.25,
-    } as const;
+    const containerBg = tw.isDark ? '#171717' : '#FAFAFA';
+    const containerBorder = tw.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.08)';
+    const itemBg = tw.isDark ? '#262626' : '#FFFFFF';
+    const itemBorder = tw.isDark ? '#3a3a3a' : '#e5e5e5';
+    const padding = isMobile ? 8 : 12;
+    const gap = isMobile ? 8 : 10;
 
     return (
-        <Stack spacing={isMobile ? 1.1 : 1.6} sx={fullHeight ? { flex: 1, minHeight: '100%', alignItems: 'stretch' } : undefined}>
+        <div
+            className={`flex flex-col ${fullHeight ? 'flex-1 min-h-full items-stretch' : ''}`}
+            style={{ gap: isMobile ? 8 : 13 }}
+        >
             {showTabs ? (
-                <Stack direction="row" spacing={1} justifyContent="space-between" sx={{ px: 0.5 }}>
+                <div className="flex flex-row gap-1 justify-between px-0.5">
                     {[1, 2, 3].map((idx) => (
-                        <Skeleton
+                        <div
                             key={idx}
-                            variant="rounded"
-                            height={isMobile ? 32 : 36}
-                            width="100%"
-                            sx={{ borderRadius: 1.5 }}
+                            className="animate-pulse rounded w-full"
+                            style={{
+                                height: isMobile ? 32 : 36,
+                                backgroundColor: 'rgba(255,255,255,0.1)',
+                                borderRadius: 6,
+                            }}
                         />
                     ))}
-                </Stack>
+                </div>
             ) : null}
 
-            <Box sx={containerStyles}>
-                <Skeleton variant="rounded" height={48} sx={{ borderRadius: 1.5 }} />
+            <div
+                style={{
+                    padding: `${padding}px`,
+                    borderRadius: 8,
+                    backgroundColor: containerBg,
+                    border: `1px solid ${containerBorder}`,
+                    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.02)',
+                    flex: fullHeight ? 1 : 'unset',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: `${gap}px`,
+                }}
+            >
+                <div
+                    className="animate-pulse rounded w-full"
+                    style={{
+                        height: 48,
+                        backgroundColor: 'rgba(255,255,255,0.1)',
+                        borderRadius: 6,
+                    }}
+                />
 
-                <Stack spacing={isMobile ? 1 : 1.1} sx={{ mt: 0.5 }}>
+                <div
+                    className="flex flex-col"
+                    style={{ gap: isMobile ? 8 : 8, marginTop: 4 }}
+                >
                     {Array.from({ length: safeItemCount }).map((_, idx) => (
-                        <Stack
+                        <div
                             key={idx}
-                            direction="row"
-                            spacing={isMobile ? 1.1 : 1.25}
-                            alignItems="center"
-                            sx={{
-                                bgcolor: tw.isDark ? '#262626' : '#FFFFFF',
-                                border: tw.isDark ? '1px solid #3a3a3a' : '1px solid #e5e5e5',
-                                borderRadius: isMobile ? 2 : 2.5,
-                                px: isMobile ? 1.25 : 1.5,
-                                py: isMobile ? 1 : 1.2,
+                            className="flex flex-row items-center"
+                            style={{
+                                gap: isMobile ? 8 : 10,
+                                backgroundColor: itemBg,
+                                border: `1px solid ${itemBorder}`,
+                                borderRadius: isMobile ? 8 : 10,
+                                padding: `${isMobile ? 8 : 12}px`,
                             }}
                         >
-                            <Skeleton variant="circular" width={isMobile ? 44 : 52} height={isMobile ? 44 : 52} />
-                            <Skeleton variant="text" width="60%" height={isMobile ? 24 : 28} sx={{ borderRadius: 1 }} />
-                            <Skeleton variant="circular" width={isMobile ? 30 : 34} height={isMobile ? 30 : 34} sx={{ ml: 'auto' }} />
-                        </Stack>
+                            <div
+                                className="rounded-full flex-shrink-0 animate-pulse"
+                                style={{
+                                    width: isMobile ? 44 : 52,
+                                    height: isMobile ? 44 : 52,
+                                    backgroundColor: 'rgba(255,255,255,0.1)',
+                                }}
+                            />
+                            <div
+                                className="animate-pulse rounded flex-1"
+                                style={{
+                                    width: '60%',
+                                    height: isMobile ? 24 : 28,
+                                    backgroundColor: 'rgba(255,255,255,0.1)',
+                                }}
+                            />
+                            <div
+                                className="rounded-full flex-shrink-0 animate-pulse"
+                                style={{
+                                    width: isMobile ? 30 : 34,
+                                    height: isMobile ? 30 : 34,
+                                    backgroundColor: 'rgba(255,255,255,0.1)',
+                                    marginLeft: 'auto',
+                                }}
+                            />
+                        </div>
                     ))}
-                </Stack>
-            </Box>
-        </Stack>
+                </div>
+            </div>
+        </div>
     );
 };
 

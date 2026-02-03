@@ -1,5 +1,4 @@
 import React from 'react';
-import { Box, Stack } from '@mui/material';
 import { useMyTheme } from '@/hooks/use-mytheme';
 
 export const LOAN_LIST_SKELETON_COUNT = 4;
@@ -18,120 +17,116 @@ const LoanListSkeleton: React.FC<Props> = ({ itemCount = LOAN_LIST_SKELETON_COUN
     return (
         <>
             {/* Header skeleton */}
-            <Box sx={{ mb: 3 }}>
-                <Box 
-                    sx={{ 
+            <div style={{ marginBottom: 24 }}>
+                <div 
+                    style={{
                         width: desktopMode ? '60%' : '50%',
                         height: 32,
-                        bgcolor: skeletonBg,
-                        borderRadius: 1,
-                        mb: 2,
+                        backgroundColor: skeletonBg,
+                        borderRadius: 4,
+                        marginBottom: 16,
                         animation: 'pulse 1.5s ease-in-out infinite',
-                        '@keyframes pulse': {
-                            '0%, 100%': { opacity: 1 },
-                            '50%': { opacity: 0.5 },
-                        },
-                    }} 
+                    }}
                 />
-                <Box 
-                    sx={{ 
+                <div 
+                    style={{
                         width: '100%',
                         height: 40,
-                        bgcolor: skeletonBg,
-                        borderRadius: 2,
+                        backgroundColor: skeletonBg,
+                        borderRadius: 8,
                         animation: 'pulse 1.5s ease-in-out infinite',
-                    }} 
+                    }}
                 />
-            </Box>
+            </div>
 
-            <Stack spacing={2} width="100%">
+            <div className="flex flex-col gap-2 w-full">
                 {Array.from({ length: safeItemCount }).map((_, idx) => (
-                    <Box
+                    <div
                         key={idx}
-                        sx={{
+                        style={{
                             width: '100%',
-                            borderRadius: 2,
-                            bgcolor: cardBg,
+                            borderRadius: 8,
+                            backgroundColor: cardBg,
                             border: 'none',
-                            p: 2.5,
+                            padding: 20,
                             animation: 'pulse 1.5s ease-in-out infinite',
                             animationDelay: `${idx * 0.1}s`,
                         }}
                     >
-                        <Stack direction="row" spacing={3} alignItems="center" justifyContent="space-between">
+                        <div className="flex flex-row gap-3 items-center justify-between">
                             {/* Left side - Loan info */}
-                            <Stack spacing={0.5} flex={1}>
+                            <div className="flex flex-col gap-0.5 flex-1">
                                 {/* Loan Title */}
-                                <Box 
-                                    sx={{ 
+                                <div 
+                                    style={{
                                         width: '60%',
                                         height: 22,
-                                        bgcolor: skeletonBg,
-                                        borderRadius: 1,
-                                    }} 
+                                        backgroundColor: skeletonBg,
+                                        borderRadius: 4,
+                                    }}
                                 />
                                 
                                 {/* Loan Number */}
-                                <Box 
-                                    sx={{ 
+                                <div 
+                                    style={{
                                         width: '70%',
                                         height: 18,
-                                        bgcolor: skeletonBg,
-                                        borderRadius: 1,
-                                        mt: 0.5,
-                                    }} 
+                                        backgroundColor: skeletonBg,
+                                        borderRadius: 4,
+                                        marginTop: 4,
+                                    }}
                                 />
                                 
                                 {/* Balance */}
-                                <Box 
-                                    sx={{ 
+                                <div 
+                                    style={{
                                         width: '55%',
                                         height: 20,
-                                        bgcolor: skeletonBg,
-                                        borderRadius: 1,
-                                        mt: 1,
-                                    }} 
+                                        backgroundColor: skeletonBg,
+                                        borderRadius: 4,
+                                        marginTop: 8,
+                                    }}
                                 />
                                 
                                 {/* Date */}
-                                <Box 
-                                    sx={{ 
+                                <div 
+                                    style={{
                                         width: '40%',
                                         height: 18,
-                                        bgcolor: skeletonBg,
-                                        borderRadius: 1,
-                                    }} 
+                                        backgroundColor: skeletonBg,
+                                        borderRadius: 4,
+                                    }}
                                 />
-                            </Stack>
+                            </div>
 
                             {/* Right side - Action buttons */}
-                            <Stack direction="column" spacing={1} sx={{ minWidth: 120 }}>
-                                <Box 
-                                    sx={{ 
+                            <div className="flex flex-col gap-1" style={{ minWidth: 120 }}>
+                                <div 
+                                    style={{
                                         height: 32,
-                                        bgcolor: skeletonBg,
-                                        borderRadius: 6,
-                                    }} 
+                                        backgroundColor: skeletonBg,
+                                        borderRadius: 24,
+                                    }}
                                 />
-                                <Box 
-                                    sx={{ 
+                                <div 
+                                    style={{
                                         height: 32,
-                                        bgcolor: skeletonBg,
-                                        borderRadius: 6,
-                                    }} 
+                                        backgroundColor: skeletonBg,
+                                        borderRadius: 24,
+                                    }}
                                 />
-                                <Box 
-                                    sx={{ 
+                                <div 
+                                    style={{
                                         height: 32,
-                                        bgcolor: skeletonBg,
-                                        borderRadius: 6,
-                                    }} 
+                                        backgroundColor: skeletonBg,
+                                        borderRadius: 24,
+                                    }}
                                 />
-                            </Stack>
-                        </Stack>
-                    </Box>
+                            </div>
+                        </div>
+                    </div>
                 ))}
-            </Stack>
+            </div>
         </>
     );
 };
