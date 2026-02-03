@@ -428,53 +428,43 @@ const ProductCRUD: React.FC<Props> = ({
                         </div>
                     )}
 
-                    {formData.max_amortization_mode !== 'CUSTOM' && (
-                        <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end', marginTop: '16px' }}>
-                            <div style={{ flex: 1 }}>
-                                <label style={labelStyle}>Max Amortization *</label>
-                                <div style={{ display: 'flex', alignItems: 'center', borderRadius: '8px', border: `1px solid ${tw.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)'}`, overflow: 'hidden', backgroundColor: tw.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }}>
-                                    <span style={{ paddingLeft: '12px', color: tw.isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)', fontSize: '0.875rem', fontWeight: 600, minWidth: '24px' }}>₱</span>
-                                    <CurrencyInput
-                                        value={formData.max_amortization || ''}
-                                        onValueChange={(value) => setFormData({ ...formData, max_amortization: parseFloat(value || '0') })}
-                                        placeholder="0"
-                                        decimalsLimit={2}
-                                        prefix=""
-                                        suffix=""
-                                        style={{
-                                            border: 'none',
-                                            backgroundColor: 'transparent',
-                                            color: tw.isDark ? '#ffffff' : '#000000',
-                                            fontSize: '0.875rem',
-                                            fontFamily: 'inherit',
-                                            transition: 'all 120ms ease',
-                                            padding: '10px 12px',
-                                            flex: 1,
-                                            outline: 'none',
-                                        } as React.CSSProperties}
-                                    />
-                                </div>
-                            </div>
-
-                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', marginBottom: '4px' }}>
-                                <span style={{ fontSize: '0.65rem', color: textColorLight }}>editable?</span>
-                                <Switch
-                                    checked={formData.is_max_amortization_editable || false}
-                                    onCheckedChange={(checked) => setFormData({ ...formData, is_max_amortization_editable: checked })}
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end', marginTop: '16px' }}>
+                        <div style={{ flex: 1 }}>
+                            <label style={labelStyle}>Max Amortization *</label>
+                            <div style={{ display: 'flex', alignItems: 'center', borderRadius: '8px', border: `1px solid ${tw.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)'}`, overflow: 'hidden', backgroundColor: tw.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)', opacity: formData.max_amortization_mode !== 'FIXED' ? 0.6 : 1 }}>
+                                <span style={{ paddingLeft: '12px', color: tw.isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)', fontSize: '0.875rem', fontWeight: 600, minWidth: '24px' }}>₱</span>
+                                <CurrencyInput
+                                    disabled={formData.max_amortization_mode !== 'FIXED'}
+                                    value={formData.max_amortization || ''}
+                                    onValueChange={(value) => setFormData({ ...formData, max_amortization: parseFloat(value || '0') })}
+                                    placeholder="0"
+                                    decimalsLimit={2}
+                                    prefix=""
+                                    suffix=""
+                                    style={{
+                                        border: 'none',
+                                        backgroundColor: 'transparent',
+                                        color: tw.isDark ? '#ffffff' : '#000000',
+                                        fontSize: '0.875rem',
+                                        fontFamily: 'inherit',
+                                        transition: 'all 120ms ease',
+                                        padding: '10px 12px',
+                                        flex: 1,
+                                        outline: 'none',
+                                        cursor: formData.max_amortization_mode !== 'FIXED' ? 'not-allowed' : 'text',
+                                    } as React.CSSProperties}
                                 />
                             </div>
                         </div>
-                    )}
 
-                    {formData.max_amortization_mode === 'CUSTOM' && (
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', marginTop: '16px' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', marginBottom: '4px' }}>
                             <span style={{ fontSize: '0.65rem', color: textColorLight }}>editable?</span>
                             <Switch
                                 checked={formData.is_max_amortization_editable || false}
                                 onCheckedChange={(checked) => setFormData({ ...formData, is_max_amortization_editable: checked })}
                             />
                         </div>
-                    )}
+                    </div>
 
                     {/* Fees */}
                     {renderSectionTitle('Fees & Charges')}
