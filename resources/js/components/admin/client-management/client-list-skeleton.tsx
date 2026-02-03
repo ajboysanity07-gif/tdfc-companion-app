@@ -1,4 +1,3 @@
-import { List, ListItem, Stack, Box, Avatar, Tabs, Tab } from '@mui/material';
 import { useMyTheme } from '@/hooks/use-mytheme';
 
 type ClientListSkeletonProps = {
@@ -14,99 +13,56 @@ export default function ClientListSkeleton({ itemCount = 5, fullHeight = false, 
         <>
             {/* Tabs skeleton */}
             {showTabs && (
-                <Tabs
-                    value="approved"
-                    variant="fullWidth"
-                    textColor="primary"
-                    indicatorColor="primary"
-                    sx={{ mb: { xs: 0.5, sm: 1 } }}
-                    className="animate-pulse"
-                >
-                    <Tab
-                        value="approved" 
-                        label="Approved"
-                        sx={{ 
-                            color: '#F57979',
-                            fontWeight: 600,
-                            '&.Mui-selected': {
-                                color: '#F57979'
-                            }
-                        }}
-                    />
-                    <Tab 
-                        value="pending"
-                        label="Pending"
-                        sx={{ 
-                            color: 'text.secondary'
-                        }}
-                    />
-                    <Tab 
-                        value="rejected"
-                        label="Rejected"
-                        sx={{ 
-                            color: 'text.secondary'
-                        }}
-                    />
-                </Tabs>
+                <div className="flex border-b border-gray-300 dark:border-neutral-700 mb-1 sm:mb-2 animate-pulse">
+                    <div className="flex-1 text-center py-2 px-3 font-semibold" style={{ color: '#F57979' }}>Approved</div>
+                    <div className="flex-1 text-center py-2 px-3 text-gray-500">Pending</div>
+                    <div className="flex-1 text-center py-2 px-3 text-gray-500">Rejected</div>
+                </div>
             )}
 
             {/* Search bar skeleton */}
-            <Box className="rounded-lg bg-neutral-700 h-12 w-full mb-3 animate-pulse" />
+            <div className="rounded-lg bg-neutral-700 h-12 w-full mb-3 animate-pulse" />
 
             {/* List items skeleton */}
-            <List sx={{ flex: fullHeight ? 1 : 'auto', display: 'flex', flexDirection: 'column', gap: 2, overflow: 'auto', p: 0 }}>
+            <div className={`flex flex-col gap-2 overflow-auto ${fullHeight ? 'flex-1' : 'auto'} p-0`}>
                 {Array.from({ length: itemCount }).map((_, i) => (
-                    <ListItem
+                    <div
                         key={i}
-                        sx={{
-                            borderRadius: 2,
-                            border: '1px solid',
-                            borderColor: 'divider',
-                            p: 2,
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            bgcolor: tw.isDark ? '#262626' : '#FFFFFF',
-                            '&:hover': {
-                                bgcolor: tw.isDark ? '#2f2f2f' : '#FFFFFF'
-                            }
-                        }}
+                        className="rounded-2xl border border-gray-200 dark:border-neutral-700 p-2 flex justify-between items-center"
+                        style={{ backgroundColor: tw.isDark ? '#262626' : '#FFFFFF' }}
                     >
-                        <Stack direction="row" spacing={2} sx={{ flex: 1, alignItems: 'center' }}>
+                        <div className="flex flex-row gap-2 flex-1 items-center">
                             {/* Avatar skeleton */}
-                            <Avatar 
-                                className="animate-pulse"
-                                sx={{ 
-                                    bgcolor: 'grey.600', 
-                                    width: 48, 
+                            <div 
+                                className="animate-pulse rounded-full"
+                                style={{
+                                    width: 48,
                                     height: 48,
-                                    color: 'grey.500'
-                                }} 
-                            >
-                                👤
-                            </Avatar>
+                                    backgroundColor: '#4B5563'
+                                }}
+                            />
 
                             {/* Content skeleton */}
-                            <Stack sx={{ flex: 1 }}>
+                            <div className="flex-1">
                                 {/* Name skeleton */}
-                                <Box className="rounded bg-neutral-700 h-5 w-48 mb-1 animate-pulse" />
+                                <div className="rounded bg-neutral-700 h-5 w-48 mb-1 animate-pulse" />
                                 {/* Email skeleton */}
-                                <Box className="rounded bg-neutral-700 h-4 w-56 animate-pulse" />
-                            </Stack>
-                        </Stack>
+                                <div className="rounded bg-neutral-700 h-4 w-56 animate-pulse" />
+                            </div>
+                        </div>
 
                         {/* Arrow icon skeleton */}
-                        <Box className="rounded-full bg-neutral-700 h-8 w-8 animate-pulse" />
-                    </ListItem>
+                        <div className="rounded-full bg-neutral-700 h-8 w-8 animate-pulse" />
+                    </div>
                 ))}
-            </List>
+            </div>
 
             {/* Pagination skeleton */}
-            <Stack direction="row" justifyContent="center" spacing={1} sx={{ mt: 3 }}>
-                <Box className="rounded bg-neutral-600 h-8 w-16 animate-pulse" />
-                <Box className="rounded bg-neutral-600 h-8 w-12 animate-pulse" />
-                <Box className="rounded bg-neutral-600 h-8 w-16 animate-pulse" />
-            </Stack>
+            <div className="flex flex-row justify-center gap-1 mt-3">
+                <div className="rounded bg-neutral-600 h-8 w-16 animate-pulse" />
+                <div className="rounded bg-neutral-600 h-8 w-12 animate-pulse" />
+                <div className="rounded bg-neutral-600 h-8 w-16 animate-pulse" />
+            </div>
         </>
     );
 }
