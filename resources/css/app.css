@@ -60,6 +60,13 @@
     --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-ring: var(--sidebar-ring);
+
+    /* Custom color palette */
+    --color-palette-red: #e14e4e;
+    --color-palette-red-light: #f57373;
+    --color-palette-yellow: #ffe57b;
+    --color-palette-blue: #4c92f1;
+    --color-palette-teal: #87bfd3;
 }
 
 :root {
