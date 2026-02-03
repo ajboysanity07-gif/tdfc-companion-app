@@ -94,12 +94,13 @@ const RejectModal: React.FC<Props> = ({ open, reasons, selected = [], onClose, o
             PaperProps={{
                 sx: {
                     borderRadius: 5,
-                    bgcolor: theme.palette.mode === 'dark' ? 'rgba(18,18,20,0.9)' : 'rgba(255,255,255,0.96)',
+                    bgcolor: 'rgba(18,18,20,0.9)',
                     backdropFilter: 'blur(22px)',
                     boxShadow: '0 26px 70px rgba(0,0,0,0.35)',
                     border: '1px solid rgba(255,255,255,0.08)',
                 },
             }}
+            className={!tw.isDark ? 'bg-white/96' : ''}
         >
             <DialogTitle sx={{ textAlign: 'center', fontWeight: 900, letterSpacing: 0.4 }}>Reject Client</DialogTitle>
             <DialogContent dividers sx={{ pt: 1 }}>
@@ -133,15 +134,16 @@ const RejectModal: React.FC<Props> = ({ open, reasons, selected = [], onClose, o
                                     py: 1,
                                     borderRadius: 2,
                                     border: '1px solid rgba(255,255,255,0.06)',
-                                    bgcolor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
+                                    bgcolor: 'rgba(255,255,255,0.03)',
                                 }}
+                                className={!tw.isDark ? 'bg-black/2' : ''}
                             >
                                 <Skeleton variant="rounded" width={18} height={18} sx={{ borderRadius: 1 }} />
                                 <Skeleton
                                     variant="text"
                                     width="72%"
                                     height={18}
-                                    sx={{ bgcolor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)' }}
+                                    sx={{ bgcolor: tw.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)' }}
                                 />
                             </Box>
                         ))}

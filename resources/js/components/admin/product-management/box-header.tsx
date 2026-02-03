@@ -28,8 +28,9 @@ const BoxHeader: React.FC<Props> = ({ title, subtitle }) => {
           sx={{
             height: 2,
             borderRadius: 999,
-            bgcolor: (theme) => theme.palette.mode === 'dark' ? theme.palette.grey[700] : theme.palette.grey[300],
+            bgcolor: '#e0e0e0',
           }}
+          className="dark:bg-[#424242]"
         />
       </Stack>
     </Stack>

@@ -140,10 +140,12 @@ export default function NavMobile() {
       `}</style>
       {/* Responsive bottom nav using theme palette, no opacity */}
       <nav
-        className="fixed inset-x-0 bottom-0 z-40 border-t px-3 py-3 md:hidden"
+        className={`fixed inset-x-0 bottom-0 z-40 border-t px-3 py-3 md:hidden ${
+          tw.isDark 
+            ? 'bg-neutral-800 border-neutral-700' 
+            : 'bg-white border-gray-200'
+        }`}
         style={{
-          background: theme.palette.background.paper, // <--- USE THEME!
-          borderColor: theme.palette.divider,
           zIndex: navZIndex,
         }}
       >
@@ -166,7 +168,7 @@ export default function NavMobile() {
                     className={`size-6 ${
                       active
                         ? "text-[#F57979]"
-                        : theme.palette.mode === "dark"
+                        : tw.isDark
                           ? "text-neutral-200"
                           : "text-gray-700"
                     }`}
@@ -175,7 +177,7 @@ export default function NavMobile() {
                     className={`mt-1 text-xs font-semibold ${
                       active
                         ? "text-[#F57979]"
-                        : theme.palette.mode === "dark"
+                        : tw.isDark
                           ? "text-neutral-200"
                           : "text-gray-700"
                     }`}

@@ -29,11 +29,12 @@ const ImagePreviewModal: React.FC<Props> = ({ open, title, images, onClose }) =>
             PaperProps={{
                 sx: {
                     borderRadius: 4,
-                    bgcolor: (theme) => theme.palette.mode === 'dark' ? 'rgba(28,28,28,0.92)' : 'rgba(255,255,255,0.9)',
+                    bgcolor: 'rgba(28,28,28,0.92)',
                     backdropFilter: 'blur(18px)',
                     boxShadow: '0 20px 60px rgba(0,0,0,0.35)',
                 },
             }}
+            className={!tw.isDark ? 'bg-white/90' : ''}
         >
             <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pr: 1 }}>
                 <Typography variant="h6" fontWeight={800}>

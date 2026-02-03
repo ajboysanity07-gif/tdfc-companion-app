@@ -591,8 +591,9 @@ const PaymentLedgerTable: React.FC<Props> = ({ title = 'Payment Ledger', rows, l
                 borderRadius: 3,
                 boxShadow: 3,
                 border: '1px solid',
-                borderColor: (theme) => (theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'),
+                borderColor: 'rgba(255,255,255,0.08)',
             }}
+            className={!tw.isDark ? 'border-black/8' : ''}
         >
             <Stack
                 direction={{ xs: 'column', sm: 'row' }}
