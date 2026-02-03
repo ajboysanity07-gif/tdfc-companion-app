@@ -265,7 +265,7 @@ export default function ProductsManagementPage() {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             {loading ? (
-                <div className="fixed top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 to-blue-500 z-50 animate-pulse" />
+                <div className="fixed top-0 left-0 w-full h-1 bg-linear-to-r from-red-500 to-blue-500 z-50 animate-pulse" />
             ) : null}
             <div className="fixed top-4 left-1/2 z-50 flex -translate-x-1/2 flex-col items-center gap-2">
                 <Slide in={!!success} direction="down" mountOnEnter unmountOnExit>
