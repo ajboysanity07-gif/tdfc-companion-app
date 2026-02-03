@@ -6,7 +6,6 @@ import MinimalLayout from '@/layouts/minimal-layout';
 import { Head } from '@inertiajs/react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useMediaQuery } from '@/hooks/use-media-query';
-import { useMyTheme } from '@/hooks/use-mytheme';
 import { motion } from 'framer-motion';
 import React, { useState } from 'react';
 import axiosClient from '@/api/axios-client';
@@ -32,7 +31,6 @@ export default function RegistrationStatus({
   reviewed_at,
   reviewed_by,
 }: Props) {
-  const theme = useMyTheme();
   const isMobile = useMediaQuery('(max-width:639px)');
 
   const prcCodes = ['prc_id_blurry', 'not_prc_id', 'prc_id_expired'];
@@ -142,8 +140,7 @@ export default function RegistrationStatus({
     }
   };
 
-  const errorBorder =
-    '#e14e4e';
+  const errorBorder = '#e14e4e';
   const errorBg = '#FFF8F8';
 
   const headlineFont = 'inherit';
@@ -163,44 +160,27 @@ export default function RegistrationStatus({
   return (
     <MinimalLayout>
       <Head title={currentStatus === 'pending' ? 'Registration Under Review' : 'Registration Rejected'} />
-<div className="h-screen w-full bg-gray-100 dark:bg-neutral-900 flex items-center justify-center px-2 overflow-hidden">
-  <motion.div
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    className={`
-      ${isMobile ? "max-w-sm" : "max-w-xl"}
-      ${isMobile ? "rounded-2xl" : "rounded-3xl"}
-      border border-gray-200 bg-white text-center shadow-xl
-      dark:border-neutral-700 dark:bg-neutral-800
-      ${isMobile ? "py-4 px-3 max-h-screen overflow-y-auto mx-6" : "py-10 px-10"}
-      ${isMobile ? "" : "h-fit max-h-[90vh] flex flex-col justify-center"}
-    `}
-  >
+      <div className="h-screen w-full bg-gray-100 dark:bg-neutral-900 flex items-center justify-center px-2 overflow-hidden">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className={`
+            ${isMobile ? "max-w-sm" : "max-w-xl"}
+            ${isMobile ? "rounded-2xl" : "rounded-3xl"}
+            border border-gray-200 bg-white text-center shadow-xl
+            dark:border-neutral-700 dark:bg-neutral-800
+            ${isMobile ? "py-4 px-3 max-h-screen overflow-y-auto mx-6" : "py-10 px-10"}
+            ${isMobile ? "" : "h-fit max-h-[90vh] flex flex-col justify-center"}
+          `}
+        >
           {/* Greeting */}
           <div className={`text-center ${isMobile ? "mb-2" : "mb-4"}`}>
-            <div
-              style={{
-                color: theme.palette.text.secondary,
-                fontWeight: 500,
-                fontSize: welcomeFontSize,
-                letterSpacing: welcomeLetterSpacing,
-                fontFamily: headlineFont,
-              }}
-            >
+            <div className={`text-gray-600 dark:text-gray-400 font-medium ${isMobile ? "text-sm" : "text-base"}`}>
               Welcome
             </div>
-            <div
-              style={{
-                color: theme.palette.text.primary,
-                fontWeight: 800,
-                fontSize: nameFontSize,
-                fontFamily: headlineFont,
-                marginTop: isMobile ? 3 : 6,
-                display: 'block',
-              }}
-            >
+            <div className={`font-extrabold text-gray-900 dark:text-neutral-100 ${isMobile ? "text-lg mt-1" : "text-2xl mt-3"}`}>
               {showFallbackSkeleton ? (
-                <Skeleton variant="text" width={isMobile ? 120 : 200} height={isMobile ? 24 : 32} sx={{ mx: 'auto' }} />
+                <Skeleton variant="text" width={isMobile ? 120 : 200} height={isMobile ? 24 : 32} className="mx-auto" />
               ) : (
                 displayName
               )}
@@ -208,7 +188,7 @@ export default function RegistrationStatus({
           </div>
 
           {/* Main status content */}
-            <div className={`text-center ${isMobile ? "mb-4" : "mb-6"}`}>
+          <div className={`text-center ${isMobile ? "mb-4" : "mb-6"}`}>
             <div
               className={`mx-auto ${isMobile ? "mb-3 h-16 w-16" : "mb-4 h-24 w-24"} flex items-center justify-center rounded-full ${
                 currentStatus === 'pending'
@@ -228,6 +208,7 @@ export default function RegistrationStatus({
             </p>
           </div>
 
+          {/* Status Info Box */}
           <div className={`rounded-xl border border-gray-200 bg-gray-50 ${isMobile ? "mb-4 p-3" : "mb-6 p-4"} dark:border-neutral-700 dark:bg-neutral-900`}>
             <div className={`${isMobile ? "mb-1" : "mb-2"} flex items-center justify-between`}>
               <span className={`${isMobile ? "text-xs" : "text-sm"} text-gray-600 dark:text-neutral-400`}>Submitted</span>
@@ -242,31 +223,11 @@ export default function RegistrationStatus({
             <div className="flex items-center justify-between">
               <span className={`${isMobile ? "text-xs" : "text-sm"} text-gray-600 dark:text-neutral-400`}>Status</span>
               <span
-                style={{
-                  paddingLeft: '8px',
-                  paddingRight: '8px',
-                  paddingTop: '2px',
-              paddingBottom: '2px',
-              borderRadius: '9999px',
-              fontSize: isMobile ? '12px' : '14px',
-              fontWeight: 500,
-              background:
-                currentStatus === 'pending'
-                  ? theme.palette.mode === 'dark'
-                    ? alpha(theme.palette.warning.main, 0.15)
-                    : '#FEF3C7'
-                  : theme.palette.mode === 'dark'
-                  ? alpha(theme.palette.error.main, 0.15)
-                    : '#FEE2E2',
-              color:
-                currentStatus === 'pending'
-                  ? theme.palette.mode === 'dark'
-                    ? theme.palette.warning.light
-                    : '#92400E'
-                  : theme.palette.mode === 'dark'
-                  ? theme.palette.error.light
-                      : '#991B1B',
-                }}
+                className={`inline-flex items-center rounded-full px-2 py-1 ${isMobile ? "text-xs" : "text-sm"} font-medium ${
+                  currentStatus === 'pending'
+                    ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
+                    : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
+                }`}
               >
                 {currentStatus === 'pending' ? 'Pending' : 'Rejected'}
               </span>
@@ -289,32 +250,14 @@ export default function RegistrationStatus({
 
           {currentStatus === 'rejected' && currentReasons && currentReasons.length > 0 && (
             <div className={isMobile ? "mb-4" : "mb-6"}>
-              <h3 className={`${isMobile ? "text-sm mb-1" : "mb-2 text-base"} text-left font-semibold text-gray-900 dark:text-neutral-100`}>Reasons for Rejection:</h3>
-              <div
-                style={{
-                  border: errorBorder,
-                  background: errorBg,
-                  borderRadius: isMobile ? 8 : 16,
-                  padding: isMobile ? '8px 6px' : '17px 14px',
-                  textAlign: 'left',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: isMobile ? '6px' : '9px',
-                  marginBottom: isMobile ? '12px' : '18px',
-                }}
-              >
+              <h3 className={`${isMobile ? "text-sm mb-2" : "mb-3 text-base"} text-left font-semibold text-gray-900 dark:text-neutral-100`}>Reasons for Rejection:</h3>
+              <div className="rounded-lg border-2 border-red-500 bg-red-50 dark:bg-red-950/20 p-4 mb-4 flex flex-col gap-3">
                 {currentReasons.map((reason) => (
                   <div
                     key={reason.code}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      color: theme.palette.error.main,
-                      fontWeight: 500,
-                      fontSize: isMobile ? '13px' : '15px',
-                    }}
+                    className="flex items-center text-red-700 dark:text-red-400 font-medium text-sm"
                   >
-                    <span style={{ marginRight: 6, fontSize: '0.9em' }}>•</span>
+                    <span className="mr-2">•</span>
                     <span>{reason.label}</span>
                   </div>
                 ))}
@@ -336,26 +279,16 @@ export default function RegistrationStatus({
                   />
                 )}
                 {(errors.prc_id_photo_front || errors.prc_id_photo_back || errors.payslip_photo_path || errors.general) && (
-                  <div className="mb-2 text-sm text-red-600">
+                  <div className="mb-3 text-sm text-red-600 dark:text-red-400">
                     {errors.prc_id_photo_front || errors.prc_id_photo_back || errors.payslip_photo_path || errors.general}
                   </div>
                 )}
                 <button
                   type="submit"
                   disabled={!canSubmit || processing}
-                  style={{
-                    width: '100%',
-                    background: theme.palette.error.main,
-                    color: '#fff',
-                    fontWeight: 600,
-                    fontSize: isMobile ? '13px' : '15px',
-                    padding: isMobile ? '8px 10px' : '12px 16px',
-                    borderRadius: '8px',
-                    border: 'none',
-                    cursor: canSubmit ? 'pointer' : 'not-allowed',
-                    opacity: canSubmit && !processing ? 1 : 0.6,
-                    marginTop: isMobile ? '10px' : '14px',
-                  }}
+                  className={`w-full bg-red-600 hover:bg-red-700 text-white font-semibold ${isMobile ? "py-2 px-3 text-sm" : "py-3 px-4 text-base"} rounded-lg border-none cursor-pointer transition-opacity ${
+                    canSubmit && !processing ? 'opacity-100 hover:opacity-90' : 'opacity-60 cursor-not-allowed'
+                  } mt-4`}
                 >
                   {processing ? 'Submitting...' : 'Register Again'}
                 </button>
@@ -380,7 +313,7 @@ export default function RegistrationStatus({
               />
             </div>
           )}
-          <p className={`${isMobile ? "text-xs px-1 mb-4" : "mb-6 text-sm"} text-gray-500 dark:text-neutral-400`}>
+          <p className={`${isMobile ? "text-xs px-1 mb-4" : "mb-6 text-sm"} text-gray-500 dark:text-neutral-500`}>
             {currentStatus === 'pending'
               ? "We'll notify you once your registration has been reviewed. This typically takes 1-2 business days."
               : 'Please address the issues above and submit a new registration.'}
