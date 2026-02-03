@@ -1,6 +1,5 @@
 import { useMyTheme } from '@/hooks/use-mytheme';
 import type { ProductLntype } from '@/types/product-lntype';
-import { Box, Chip, List, ListItem, Paper, Stack, Typography } from '@mui/material';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ProductListSkeleton } from './skeletons';
@@ -20,47 +19,49 @@ export default function ProductList({ products, loading, error, selectedProduct,
     const cardBorder = tw.isDark ? '#3a3a3a' : '#d4d4d4';
 
     return (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {loading && <ProductListSkeleton />}
             
             {error && !loading && (
-                <Box sx={{ p: 3, textAlign: 'center' }}>
-                    <Typography color="error" sx={{ mb: 1, fontWeight: 600 }}>
+                <div style={{ padding: 12, textAlign: 'center' }}>
+                    <div style={{ marginBottom: 4, fontWeight: 600, color: '#ef5350' }}>
                         {error}
-                    </Typography>
-                </Box>
+                    </div>
+                </div>
             )}
 
             {!loading && !error && products.length === 0 && (
-                <Box
-                    sx={{
+                <div
+                    style={{
                         border: `1px dashed ${cardBorder}`,
-                        borderRadius: 2,
-                        p: isMobile ? 2.5 : 4,
+                        borderRadius: 8,
+                        padding: isMobile ? 10 : 16,
                         minHeight: isMobile ? 200 : 360,
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: 'center',
                         justifyContent: 'center',
                         textAlign: 'center',
-                        color: 'text.secondary',
-                        gap: isMobile ? 0.5 : 0.75,
+                        color: tw.isDark ? '#999' : '#666',
+                        gap: isMobile ? 4 : 6,
                     }}
                 >
-                    <Typography variant={isMobile ? 'subtitle1' : 'h6'} fontWeight={800}>
+                    <h6 style={{ fontSize: isMobile ? '1rem' : '1.125rem', fontWeight: 800, margin: 0 }}>
                         No loan products available.
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
+                    </h6>
+                    <p style={{ fontSize: '0.875rem', color: tw.isDark ? '#999' : '#666', margin: 0 }}>
                         Please check back later.
-                    </Typography>
-                </Box>
+                    </p>
+                </div>
             )}
 
             {!loading && !error && products.length > 0 && (
-                <List disablePadding sx={{ width: '100%' }}>
+                <div style={{ width: '100%' }}>
                     <AnimatePresence initial={false}>
                         {products.map((product) => {
                             const typeLabels = product.types?.map((t) => t.lntags || t.typecode) ?? [];
+                            const isSelected = selectedProduct?.product_id === product.product_id;
+                            
                             return (
                                 <motion.div
                                     key={product.product_id}
@@ -69,76 +70,80 @@ export default function ProductList({ products, loading, error, selectedProduct,
                                     exit={{ opacity: 0, y: -16 }}
                                     transition={{ type: 'spring', stiffness: 220, damping: 20, mass: 0.6 }}
                                 >
-                                    <Paper
-                                        elevation={0}
+                                    <button
                                         onClick={() => onSelectProduct(product)}
-                                        sx={{
-                                            mb: isMobile ? 1 : 1.25,
-                                            borderRadius: isMobile ? 2 : 2.5,
+                                        style={{
+                                            width: '100%',
+                                            marginBottom: isMobile ? 8 : 10,
+                                            borderRadius: isMobile ? 8 : 10,
                                             overflow: 'hidden',
-                                            bgcolor: selectedProduct?.product_id === product.product_id 
+                                            backgroundColor: isSelected 
                                                 ? (tw.isDark ? '#3a3a3a' : '#e3f2fd')
                                                 : cardBg,
-                                            border: `2px solid ${selectedProduct?.product_id === product.product_id 
+                                            border: `2px solid ${isSelected 
                                                 ? '#F57979' 
                                                 : (tw.isDark ? '#3a3a3a' : '#d4d4d4')}`,
                                             cursor: 'pointer',
                                             transition: 'all 0.2s ease',
-                                            '&:hover': {
-                                                borderColor: selectedProduct?.product_id === product.product_id 
-                                                    ? '#F57979' 
-                                                    : (tw.isDark ? 'rgba(255,255,255,0.3)' : '#a3a3a3'),
-                                            },
+                                            padding: 0,
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            (e.currentTarget as HTMLButtonElement).style.borderColor = isSelected ? '#F57979' : (tw.isDark ? 'rgba(255,255,255,0.3)' : '#a3a3a3');
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            (e.currentTarget as HTMLButtonElement).style.borderColor = isSelected ? '#F57979' : (tw.isDark ? '#3a3a3a' : '#d4d4d4');
                                         }}
                                     >
-                                        <ListItem disableGutters sx={{ px: isMobile ? 1.5 : 2, py: isMobile ? 1 : 1.5 }}>
-                                            <Stack sx={{ width: '100%', alignItems: 'center', textAlign: 'center' }}>
-                                                <Typography variant={isMobile ? 'subtitle1' : 'h6'} fontWeight={800}>
-                                                    {product.product_name}
-                                                </Typography>
-                                                <Stack direction="row" spacing={isMobile ? 0.4 : 0.5} justifyContent="center" alignItems="center" flexWrap="wrap" rowGap={isMobile ? 0.3 : 0.5} mt={0.5}>
-                                                    <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600, mr: 0.5 }}>
-                                                        Tags:
-                                                    </Typography>
-                                                    {typeLabels.length ? (
-                                                        typeLabels.map((label) => (
-                                                            <Chip
-                                                                key={label}
-                                                                label={label}
-                                                                size="small"
-                                                                sx={{
-                                                                    height: isMobile ? 20 : 22,
-                                                                    borderRadius: '999px',
-                                                                    bgcolor: tw.isDark ? 'rgba(255,255,255,0.08)' : '#e2e8f0',
-                                                                    color: tw.isDark ? 'text.secondary' : '#1e293b',
-                                                                    fontWeight: 600,
-                                                                    '& .MuiChip-label': { px: isMobile ? 1 : 1.25, fontSize: isMobile ? 11 : 12 },
-                                                                }}
-                                                            />
-                                                        ))
-                                                    ) : (
-                                                        <Chip
-                                                            label="No tags"
-                                                            size="small"
-                                                            sx={{
+                                        <div style={{ paddingX: isMobile ? 6 : 8, paddingY: isMobile ? 4 : 6, width: '100%', alignItems: 'center', textAlign: 'center' }}>
+                                            <h6 style={{ fontSize: isMobile ? '1rem' : '1.125rem', fontWeight: 800, margin: 0 }}>
+                                                {product.product_name}
+                                            </h6>
+                                            <div style={{ display: 'flex', flexDirection: 'row', gap: isMobile ? 3 : 4, justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap', rowGap: isMobile ? 2 : 4, marginTop: 4 }}>
+                                                <span style={{ fontSize: '0.75rem', color: '#999', fontWeight: 600, marginRight: 4 }}>
+                                                    Tags:
+                                                </span>
+                                                {typeLabels.length ? (
+                                                    typeLabels.map((label) => (
+                                                        <span
+                                                            key={label}
+                                                            style={{
                                                                 height: isMobile ? 20 : 22,
                                                                 borderRadius: '999px',
-                                                                bgcolor: tw.isDark ? 'rgba(255,255,255,0.08)' : '#e2e8f0',
-                                                                color: tw.isDark ? 'text.secondary' : '#1e293b',
-                                                                '& .MuiChip-label': { px: isMobile ? 1 : 1.25, fontSize: isMobile ? 11 : 12 },
+                                                                backgroundColor: tw.isDark ? 'rgba(255,255,255,0.08)' : '#e2e8f0',
+                                                                color: tw.isDark ? '#999' : '#1e293b',
+                                                                fontWeight: 600,
+                                                                fontSize: isMobile ? 11 : 12,
+                                                                padding: `4px ${isMobile ? 8 : 10}px`,
+                                                                display: 'inline-block',
                                                             }}
-                                                        />
-                                                    )}
-                                                </Stack>
-                                            </Stack>
-                                        </ListItem>
-                                    </Paper>
+                                                        >
+                                                            {label}
+                                                        </span>
+                                                    ))
+                                                ) : (
+                                                    <span
+                                                        style={{
+                                                            height: isMobile ? 20 : 22,
+                                                            borderRadius: '999px',
+                                                            backgroundColor: tw.isDark ? 'rgba(255,255,255,0.08)' : '#e2e8f0',
+                                                            color: tw.isDark ? '#999' : '#1e293b',
+                                                            fontSize: isMobile ? 11 : 12,
+                                                            padding: `4px ${isMobile ? 8 : 10}px`,
+                                                            display: 'inline-block',
+                                                        }}
+                                                    >
+                                                        No tags
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </button>
                                 </motion.div>
                             );
                         })}
                     </AnimatePresence>
-                </List>
+                </div>
             )}
-        </Box>
+        </div>
     );
 }
