@@ -9,6 +9,7 @@ import MobileViewLayout from '@/components/mobile-view-layout';
 import { useClientManagement } from '@/hooks/use-client-management';
 import AppLayout from '@/layouts/app-layout';
 import { useMediaQuery } from '@/hooks/use-media-query';
+import { Box } from '@mui/material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { CircleCheckBig, CircleX } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
