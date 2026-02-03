@@ -1,6 +1,7 @@
 import { useMyTheme } from '@/hooks/use-mytheme';
 import type { ProductLntype } from '@/types/product-lntype';
-import { Box, Chip, List, ListItem, Paper, Stack, Typography, useMediaQuery } from '@mui/material';
+import { Box, Chip, List, ListItem, Paper, Stack, Typography } from '@mui/material';
+import { useMediaQuery } from '@/hooks/use-media-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ProductListSkeleton } from './skeletons';
 

@@ -1,5 +1,6 @@
 import React from 'react';
-import { Box, Skeleton, Stack, useMediaQuery } from '@mui/material';
+import { Box, Skeleton, Stack } from '@mui/material';
+import { useMediaQuery } from '@/hooks/use-media-query';
 import { useMyTheme } from '@/hooks/use-mytheme';
 
 export const CLIENT_LIST_PAGE_SIZE = 9;

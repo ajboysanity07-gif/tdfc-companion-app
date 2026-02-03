@@ -1,5 +1,6 @@
 import React from 'react';
-import { Box, Paper, Skeleton, Stack, useMediaQuery } from '@mui/material';
+import { Box, Paper, Skeleton, Stack } from '@mui/material';
+import { useMediaQuery } from '@/hooks/use-media-query';
 import { useMyTheme } from '@/hooks/use-mytheme';
 
 export const CLIENT_PRODUCT_LIST_SKELETON_COUNT = 6;

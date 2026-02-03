@@ -1,5 +1,6 @@
 import React from 'react';
-import { Box, Stack, useMediaQuery } from '@mui/material';
+import { Box, Stack } from '@mui/material';
+import { useMediaQuery } from '@/hooks/use-media-query';
 
 const LoanCalculatorSkeleton: React.FC = () => {
     const isMobile = useMediaQuery('(max-width:900px)');

@@ -1,6 +1,6 @@
 import CurrencyInput from 'react-currency-input-field';
 import { useCalculatorStyles } from '@/hooks/use-calculator-styles';
-import { useMediaQuery } from '@mui/material';
+import { useMediaQuery } from '@/hooks/use-media-query';
 
 type Props = {
     value: number | undefined;

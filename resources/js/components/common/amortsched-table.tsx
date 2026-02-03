@@ -5,7 +5,7 @@ import ListAltOutlinedIcon from '@mui/icons-material/ListAltOutlined';
 import PictureAsPdfOutlinedIcon from '@mui/icons-material/PictureAsPdfOutlined';
 import SimCardDownloadOutlinedIcon from '@mui/icons-material/SimCardDownloadOutlined';
 import { Box, IconButton, Skeleton, Stack, TextField, Tooltip, Typography } from '@mui/material';
-import useMediaQuery from '@mui/material/useMediaQuery';
+import { useMediaQuery } from '@/hooks/use-media-query';
 import { DataGrid, type GridColDef } from '@mui/x-data-grid';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';

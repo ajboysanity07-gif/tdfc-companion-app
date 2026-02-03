@@ -4,7 +4,8 @@ import { useInitials } from '@/hooks/use-initials';
 import type { Client, RegistrationStatus } from '@/types/user';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import SearchIcon from '@mui/icons-material/Search';
-import { Autocomplete, Avatar, Box, IconButton, List, ListItem, Stack, Tab, Tabs, TextField, Typography, useMediaQuery } from '@mui/material';
+import { Autocomplete, Avatar, Box, IconButton, List, ListItem, Stack, Tab, Tabs, TextField, Typography } from '@mui/material';
+import { useMediaQuery } from '@/hooks/use-media-query';
 import { CLIENT_LIST_PAGE_SIZE } from './skeletons';
 import BoxHeader from '@/components/box-header';
 

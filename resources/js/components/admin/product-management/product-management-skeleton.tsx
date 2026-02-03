@@ -1,4 +1,4 @@
-import { useMediaQuery } from '@mui/material';
+import { useMediaQuery } from '@/hooks/use-media-query';
 import ProductListSkeleton from './product-list-skeleton';
 import { PRODUCT_LIST_PAGE_SIZE } from './skeletons';
 import { useMyTheme } from '@/hooks/use-mytheme';

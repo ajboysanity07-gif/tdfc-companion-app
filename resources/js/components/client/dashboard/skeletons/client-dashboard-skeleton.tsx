@@ -1,5 +1,6 @@
 import React from 'react';
-import { Box, Divider, Skeleton, Stack, useMediaQuery } from '@mui/material';
+import { Box, Divider, Skeleton, Stack } from '@mui/material';
+import { useMediaQuery } from '@/hooks/use-media-query';
 import { useMyTheme } from '@/hooks/use-mytheme';
 
 const ClientDashboardSkeleton: React.FC = () => {
