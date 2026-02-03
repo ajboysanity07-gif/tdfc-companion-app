@@ -115,11 +115,10 @@ const ProductCRUD: React.FC<Props> = ({
                     borderRadius: isMobile ? '0px' : '24px',
                     backgroundColor: tw.isDark ? '#171717' : '#FFFFFF',
                     padding: 0,
-                    maxHeight: isMobile ? 'none' : '90vh',
-                    overflow: 'auto',
+                    overflow: 'hidden',
                     display: 'flex',
                     flexDirection: 'column',
-                    height: isMobile ? '100%' : 'auto',
+                    height: '100%',
                 }}
             >
                 {/* Header */}
@@ -163,9 +162,8 @@ const ProductCRUD: React.FC<Props> = ({
                     paddingRight: '16px',
                     paddingTop: '16px',
                     paddingBottom: '16px',
-                    maxHeight: isMobile ? 'none' : 'calc(90vh - 200px)',
                     overflow: 'auto',
-                    flex: isMobile ? 1 : 'unset',
+                    flex: 1,
                 }}>
                     {/* Basic Info */}
                     <div style={{ fontSize: '0.75rem', color: tw.isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)', marginBottom: '16px' }}>
