@@ -207,327 +207,284 @@ export default function CustomerDashboard() {
     };
 
     const headerBlock = (
-        <Box
-            sx={{
-                borderRadius: 3,
-                p: { xs: 2.5, sm: 3 },
+        <div
+            style={{
+                borderRadius: '1.5rem',
+                padding: '2.5rem',
                 background: tw.isDark ? 'linear-gradient(135deg, #F57979, #b85555)' : 'linear-gradient(135deg, #F57979, #ff9b9b)',
                 color: '#ffffff',
                 boxShadow: '0 12px 30px rgba(15,23,42,0.16)',
             }}
         >
-            <Stack
-                direction={{ xs: 'row', sm: 'row' }}
-                spacing={{ xs: 2, sm: 3 }}
-                alignItems="flex-start"
-                justifyContent="space-between"
-            >
-                <Stack direction="row" spacing={2} alignItems="center" sx={{ minWidth: 0, flex: { xs: '0 0 70%', sm: 1 } }}>
-                    <Avatar
-                        src={avatar || undefined}
-                        alt={fullName}
-                        sx={{
-                            width: { xs: 68, sm: 72 },
-                            height: { xs: 68, sm: 72 },
-                            bgcolor: 'rgba(255,255,255,0.2)',
+            <div className="flex flex-row gap-3 items-start justify-between">
+                <div className="flex flex-row gap-2 items-center min-w-0 flex-1 max-sm:hidden">
+                    <div
+                        className="shrink-0 flex items-center justify-center"
+                        style={{
+                            width: '72px',
+                            height: '72px',
+                            borderRadius: '50%',
+                            backgroundColor: 'rgba(255,255,255,0.2)',
                             fontWeight: 800,
                             border: '2px solid rgba(255,255,255,0.4)',
                             boxShadow: '0 8px 16px rgba(0,0,0,0.18)',
-                            display: { xs: 'none', sm: 'flex' },
-                            flexShrink: 0,
                         }}
                     >
-                        {!avatar ? initials : null}
-                    </Avatar>
-                    <Box sx={{ minWidth: 0, flex: 1 }}>
-                        <Typography variant="overline" sx={{ fontWeight: 800, letterSpacing: 1.1, color: accentHighlight }}>
+                        {!avatar ? initials : (avatar && <img src={avatar} alt={fullName} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />)}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                        <div className="font-bold tracking-wider text-yellow-300" style={{ fontSize: '0.875rem', textTransform: 'uppercase', letterSpacing: '1.1px' }}>
                             Welcome
-                        </Typography>
-                        <Typography
-                            variant="h4"
-                            sx={{
+                        </div>
+                        <h1
+                            className="font-bold text-2xl leading-tight capitalize truncate"
+                            style={{
                                 fontWeight: 750,
-                                lineHeight: 1.1,
                                 textTransform: 'capitalize',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                                whiteSpace: 'nowrap',
-                                maxWidth: { xs: '100%', sm: '28ch' },
-                                mt: -1,
+                                maxWidth: '28ch',
                                 fontFamily: 'system-ui, -apple-system, sans-serif',
+                                marginTop: '-0.25rem',
                             }}
                         >
                             {firstName}
-                        </Typography>
-                        <Box
-                            component="span"
-                            sx={{
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: 0.75,
-                                mt: 0.75,
-                                px: 1.25,
-                                py: 0.5,
-                                borderRadius: 999,
+                        </h1>
+                        <span
+                            className="inline-flex items-center rounded-full"
+                            style={{
+                                gap: '0.75px',
+                                marginTop: '0.75rem',
+                                paddingLeft: '1.25rem',
+                                paddingRight: '1.25rem',
+                                paddingTop: '0.5rem',
+                                paddingBottom: '0.5rem',
                                 backgroundColor: 'rgba(255,255,255,0.16)',
                                 fontWeight: 700,
-                                fontSize: 13,
+                                fontSize: '13px',
                             }}
                         >
                             Class: {loanClass || clientClass}
-                        </Box>
-                    </Box>
-                </Stack>
+                        </span>
+                    </div>
+                </div>
 
-                <Avatar
-                    src={avatar || undefined}
-                    alt={fullName}
-                    sx={{
-                        width: 68,
-                        height: 68,
-                        bgcolor: 'rgba(255,255,255,0.2)',
+                <div
+                    className="flex sm:hidden shrink-0 items-center justify-center"
+                    style={{
+                        width: '68px',
+                        height: '68px',
+                        borderRadius: '50%',
+                        backgroundColor: 'rgba(255,255,255,0.2)',
                         fontWeight: 800,
                         border: '2px solid rgba(255,255,255,0.4)',
                         boxShadow: '0 8px 16px rgba(0,0,0,0.18)',
-                        display: { xs: 'flex', sm: 'none' },
-                        flexShrink: 0,
                     }}
                 >
-                    {!avatar ? initials : null}
-                </Avatar>
-            </Stack>
-      <Stack alignItems="center" spacing={0.5} sx={{ width: { xs: '100%', sm: 'auto' }, pt: 2 }}>
-                    <Divider sx={{ width: '90%', mb: 1, borderColor: '#ffffff' }} />
-                </Stack>
-            <Stack
-                direction="row"
-                spacing={2}
-                alignItems="center"
-                justifyContent="center"
-                sx={{ width: '100%', mt: 2 }}
-            >
-          
-                <Stack alignItems="center" spacing={0.5} sx={{ width: { xs: '100%', sm: 'auto' } }}>
-                    <Typography 
-                        variant="h3" 
-                        sx={{ 
+                    {!avatar ? initials : (avatar && <img src={avatar} alt={fullName} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />)}
+                </div>
+            </div>
+            <div className="flex flex-col items-center gap-0.5 w-full sm:w-auto pt-2">
+                <div className="w-11/12 mb-1" style={{ borderBottom: '1px solid #ffffff', opacity: 1 }} />
+            </div>
+            <div className="flex flex-row gap-2 items-center justify-center w-full mt-2">
+                <div className="flex flex-col items-center gap-0.5 w-full sm:w-auto">
+                    <h2 
+                        className="font-black leading-none"
+                        style={{ 
                             fontWeight: 800, 
                             lineHeight: 1, 
-                            letterSpacing: { xs: -2, sm: -3 },
-                            fontSize: { xs: '2.5rem', sm: '3rem' },
+                            letterSpacing: '-2px',
+                            fontSize: '2.5rem',
                             fontFamily: 'system-ui, -apple-system, sans-serif',
                         }}
                     >
                         {latestSavingsBalance}
-                    </Typography>
-                    <Typography variant="overline" sx={{ letterSpacing: 1, color: accentHighlight, fontWeight: 800 }}>
+                    </h2>
+                    <div className="font-bold text-yellow-300" style={{ letterSpacing: '1px', fontSize: '0.875rem', textTransform: 'uppercase' }}>
                         Personal Savings
-                    </Typography>
-                </Stack>
-            </Stack>
-        </Box>
+                    </div>
+                </div>
+            </div>
+        </div>
     );
 
     const mobileTransactions = (
-        <Box
-            sx={{
-                borderRadius: 2,
+        <div
+            style={{
+                borderRadius: '0.5rem',
                 border: `1px solid ${borderColor}`,
                 backgroundColor: surface,
-                p: { xs: 2, md: 3 },
+                padding: '2rem',
                 boxShadow: tw.isDark ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.05)',
             }}
         >
-            <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
-                <Typography variant="h6" sx={{ fontWeight: 700, letterSpacing: '-0.01em' }}>
+            <div className="flex flex-row justify-between items-center mb-1">
+                <h3 className="font-bold tracking-tight">
                     Recent Transactions
-                </Typography>
+                </h3>
                 <Button 
-                    size="small" 
-                    sx={{ 
+                    size="sm"
+                    className="hover:bg-opacity-10 hover:scale-100"
+                    style={{ 
                         color: accent, 
-                        fontWeight: 700, 
-                        textTransform: 'none',
-                        '&:hover': {
-                            backgroundColor: `${accent}10`,
-                            transform: 'translateX(2px)',
-                        },
+                        fontWeight: 700,
+                        backgroundColor: 'transparent',
                         transition: 'all 0.2s ease'
                     }}
                 >
                     View All
                 </Button>
-            </Stack>
-            <Divider sx={{ mb: 2, borderColor, opacity: 0.6 }} />
+            </div>
+            <div className="mb-2 opacity-60" style={{ borderBottom: `1px solid ${borderColor}` }} />
             
             {/* Color Legend */}
-            <Stack 
-                direction="row" 
-                spacing={2} 
-                sx={{ 
-                    mb: 2, 
-                    pb: 2, 
+            <div 
+                className="flex flex-row gap-2 mb-2 pb-2 flex-wrap"
+                style={{ 
                     borderBottom: `1px dashed ${borderColor}`,
-                    flexWrap: 'wrap',
-                    gap: 1
                 }}
             >
-                <Stack direction="row" spacing={0.5} alignItems="center">
-                    <Box sx={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#4c92f1' }} />
-                    <Typography variant="caption" sx={{ fontSize: '0.7rem', opacity: 0.7 }}>
+                <div className="flex flex-row gap-0.5 items-center">
+                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#4c92f1' }} />
+                    <span style={{ fontSize: '0.7rem', opacity: 0.7 }}>
                         Deposit / Principal
-                    </Typography>
-                </Stack>
-                <Stack direction="row" spacing={0.5} alignItems="center">
-                    <Box sx={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#f57373' }} />
-                    <Typography variant="caption" sx={{ fontSize: '0.7rem', opacity: 0.7 }}>
+                    </span>
+                </div>
+                <div className="flex flex-row gap-0.5 items-center">
+                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#f57373' }} />
+                    <span style={{ fontSize: '0.7rem', opacity: 0.7 }}>
                         Withdrawal / Payment
-                    </Typography>
-                </Stack>
-            </Stack>
+                    </span>
+                </div>
+            </div>
 
             {loading && (
-                <Stack spacing={1.5} sx={{ py: 1 }}>
+                <div className="flex flex-col gap-1.5 py-1">
                     {Array.from({ length: isMobile ? 4 : 5 }).map((_, idx) => (
-                        <Stack
+                        <div
                             key={idx}
-                            direction="row"
-                            alignItems="center"
-                            justifyContent="space-between"
-                            spacing={2}
-                            py={1.5}
-                            px={1}
+                            className="flex flex-row items-center justify-between gap-2 py-1.5 px-1"
                         >
-                            <Stack spacing={0.6}>
+                            <div className="flex flex-col gap-0.6">
                                 <Skeleton variant="text" width={140} height={20} />
                                 <Skeleton variant="text" width={90} height={16} />
-                            </Stack>
-                            <Stack spacing={0.6} alignItems="flex-end">
+                            </div>
+                            <div className="flex flex-col gap-0.6 items-end">
                                 <Skeleton variant="text" width={90} height={20} />
                                 <Skeleton variant="text" width={80} height={16} />
-                            </Stack>
-                        </Stack>
+                            </div>
+                        </div>
                     ))}
-                </Stack>
+                </div>
             )}
 
             {error && !loading && (
-                <Box sx={{ py: 3, textAlign: 'center' }}>
-                    <Typography color="error" sx={{ mb: 1, fontWeight: 600 }}>
+                <div className="py-3 text-center">
+                    <p style={{ color: '#dc2626', marginBottom: '0.5rem', fontWeight: 600 }}>
                         {error}
-                    </Typography>
-                    <Button variant="contained" size="small" onClick={handleRetry} sx={{ backgroundColor: accent }}>
+                    </p>
+                    <Button variant="outline" size="sm" onClick={handleRetry} style={{ backgroundColor: accent, color: 'white' }}>
                         Try Again
                     </Button>
-                </Box>
+                </div>
             )}
 
             {!loading && !error && transactions.length === 0 && (
-                <Typography variant="body2" color="text.secondary" sx={{ py: 3, textAlign: 'center' }}>
+                <p style={{ color: '#6b7280', paddingTop: '3rem', paddingBottom: '3rem', textAlign: 'center', fontSize: '0.875rem' }}>
                     No transactions found.
-                </Typography>
+                </p>
             )}
 
             {!loading && !error && transactions.length > 0 && (
                 <>
-                    <Stack divider={<Divider flexItem sx={{ borderColor }} />}>
+                    <div>
                         {paginatedTransactions.map((t, idx) => {
                             const uniqueKey = `${t.ln_sv_number}-${t.date_in}-${t.amount}-${idx}`;
                             return (
-                                <Stack
-                                    key={uniqueKey}
-                                    direction="row"
-                                    alignItems="center"
-                                    justifyContent="space-between"
-                                    spacing={2}
-                                    py={1.5}
-                                    px={1}
-                                    sx={{
-                                        borderRadius: 1,
-                                        transition: 'all 0.2s ease',
-                                        cursor: 'pointer',
-                                        '&:hover': {
-                                            backgroundColor: tw.isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
-                                            transform: 'translateX(4px)',
-                                        }
-                                    }}
-                                >
-                                    <Box>
-                                        <Stack direction="row" spacing={1} alignItems="center">
-                                            <Typography 
-                                                variant="subtitle2" 
-                                                sx={{ 
-                                                    fontWeight: 700, 
-                                                    fontSize: { xs: '0.875rem', md: '1rem' },
-                                                    letterSpacing: '0.01em'
+                                <div key={uniqueKey}>
+                                    <div
+                                        className="flex flex-row items-center justify-between gap-2 py-1.5 px-1 rounded transition-all duration-200 cursor-pointer"
+                                        style={{
+                                            backgroundColor: tw.isDark ? 'rgba(255,255,255,0.03)' : 'transparent',
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            e.currentTarget.style.backgroundColor = tw.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.02)';
+                                            e.currentTarget.style.transform = 'translateX(4px)';
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.currentTarget.style.backgroundColor = tw.isDark ? 'rgba(255,255,255,0.03)' : 'transparent';
+                                            e.currentTarget.style.transform = 'translateX(0)';
+                                        }}
+                                    >
+                                        <div>
+                                            <div className="flex flex-row gap-1 items-center">
+                                                <span 
+                                                    className="font-bold"
+                                                    style={{ fontSize: '0.875rem', letterSpacing: '0.01em' }}
+                                                >
+                                                    {t.transaction_type}
+                                                </span>
+                                                <span 
+                                                    className="px-1.5 text-xs font-semibold rounded"
+                                                    style={{ 
+                                                        backgroundColor: tw.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)',
+                                                        color: tw.isDark ? '#d1d5db' : '#4b5563',
+                                                        height: '22px',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                    }}
+                                                >
+                                                    {transactionDetails[idx]}
+                                                </span>
+                                            </div>
+                                            <p 
+                                                style={{ 
+                                                    fontSize: '0.75rem',
+                                                    opacity: 0.7,
+                                                    color: '#6b7280',
+                                                    fontVariantNumeric: 'tabular-nums'
                                                 }}
                                             >
-                                                {t.transaction_type}
-                                            </Typography>
-                                            <Chip 
-                                                label={transactionDetails[idx]} 
-                                                size="small"
-                                                sx={{ 
-                                                    backgroundColor: tw.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)',
-                                                    color: tw.isDark ? '#d1d5db' : '#4b5563',
-                                                    fontWeight: 600,
-                                                    fontSize: { xs: '0.7rem', md: '0.75rem' },
-                                                    height: { xs: 22, md: 24 },
-                                                    border: 'none',
-                                                    '& .MuiChip-label': {
-                                                        px: 1.5,
-                                                    }
+                                                {formatDate(t.date_in)}
+                                            </p>
+                                        </div>
+                                        <div style={{ textAlign: 'right' }}>
+                                            <p 
+                                                className="font-bold"
+                                                style={{ 
+                                                    fontSize: '1rem', 
+                                                    color: amountValues[idx]?.color || '#000000',
+                                                    fontVariantNumeric: 'tabular-nums',
+                                                    letterSpacing: '-0.02em'
                                                 }}
-                                            />
-                                        </Stack>
-                                        <Typography 
-                                            variant="caption" 
-                                            color="text.secondary" 
-                                            sx={{ 
-                                                fontSize: { xs: '0.75rem', md: '0.8125rem' },
-                                                opacity: 0.7,
-                                                fontVariantNumeric: 'tabular-nums'
-                                            }}
-                                        >
-                                            {formatDate(t.date_in)}
-                                        </Typography>
-                                    </Box>
-                                    <Box textAlign="right">
-                                        <Typography 
-                                            variant="subtitle2" 
-                                            sx={{ 
-                                                fontWeight: 700, 
-                                                fontSize: { xs: '0.95rem', md: '1.125rem' }, 
-                                                color: amountValues[idx]?.color || '#000000',
-                                                fontVariantNumeric: 'tabular-nums',
-                                                letterSpacing: '-0.02em'
-                                            }}
-                                        >
-                                            {amountValues[idx]?.prefix}{formatCurrency(Math.abs(amountValues[idx]?.displayValue ?? 0))}
-                                        </Typography>
-                                        <Typography 
-                                            variant="caption" 
-                                            sx={{ 
-                                                fontSize: { xs: '0.75rem', md: '0.8125rem' }, 
-                                                color: balanceLabels[idx] || '#000000',
-                                                fontVariantNumeric: 'tabular-nums',
-                                                opacity: 0.9
-                                            }}
-                                        >
-                                            {formatCurrency(Math.abs(t.balance ?? 0))}
-                                        </Typography>
-                                    </Box>
-                                </Stack>
+                                            >
+                                                {amountValues[idx]?.prefix}{formatCurrency(Math.abs(amountValues[idx]?.displayValue ?? 0))}
+                                            </p>
+                                            <p 
+                                                style={{ 
+                                                    fontSize: '0.75rem', 
+                                                    color: balanceLabels[idx] || '#000000',
+                                                    fontVariantNumeric: 'tabular-nums',
+                                                    opacity: 0.9
+                                                }}
+                                            >
+                                                {formatCurrency(Math.abs(t.balance ?? 0))}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    {idx < paginatedTransactions.length - 1 && (
+                                        <div style={{ borderBottom: `1px solid ${borderColor}` }} />
+                                    )}
+                                </div>
                             );
                         })}
-                    </Stack>
+                    </div>
 
-                    <Stack spacing={2} sx={{ pt: 2, borderTop: `1px solid ${borderColor}`}}>
-                        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems={{ xs: 'flex-start', sm: 'center' }} justifyContent="space-between">
-                            <Stack direction="row" spacing={1} alignItems="center">
-                                <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                    <div className="flex flex-col gap-2 pt-2" style={{ borderTop: `1px solid ${borderColor}`}}>
+                        <div className="flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-between">
+                            <div className="flex flex-row gap-1 items-center">
+                                <span className="font-semibold text-sm">
                                     Items per page:
-                                </Typography>
+                                </span>
                                 <input
                                     type="number"
                                     min="1"
@@ -547,56 +504,59 @@ export default function CustomerDashboard() {
                                         transition: 'all 0.2s ease',
                                     }}
                                 />
-                            </Stack>
-                            <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500, opacity: 0.8 }}>
+                            </div>
+                            <span style={{ fontSize: '0.75rem', color: '#6b7280', fontWeight: 500, opacity: 0.8 }}>
                                 Page {currentPage} of {totalPages} ({transactions.length} total)
-                            </Typography>
-                        </Stack>
+                            </span>
+                        </div>
 
-                        <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-                            <Pagination
-                                count={totalPages}
-                                page={currentPage}
-                                onChange={(_, page) => handlePageChange(page)}
-                                color="standard"
-                                siblingCount={0}
-                                boundaryCount={1}
-                                sx={{
-                                    '& .MuiPaginationItem-root': {
-                                        color: tw.isDark ? '#e5e7eb' : '#000000',
-                                        borderColor: borderColor,
-                                        fontWeight: 500,
-                                        transition: 'all 0.2s ease',
-                                    },
-                                    '& .MuiPaginationItem-page.Mui-selected': {
-                                        backgroundColor: accent,
-                                        color: '#ffffff',
-                                        fontWeight: 700,
-                                        transform: 'scale(1.05)',
-                                        '&:hover': {
-                                            backgroundColor: '#e66767',
-                                        },
-                                    },
-                                    '& .MuiPaginationItem-page:hover': {
-                                        backgroundColor: `${accent}15`,
-                                        transform: 'scale(1.05)',
-                                    },
-                                }}
-                            />
-                        </Box>
-                    </Stack>
+                        <div className="flex justify-center w-full">
+                            <div className="flex gap-1">
+                                {totalPages > 0 && Array.from({ length: totalPages }).map((_, idx) => {
+                                    const pageNum = idx + 1;
+                                    const isActive = pageNum === currentPage;
+                                    return (
+                                        <button
+                                            key={pageNum}
+                                            onClick={() => handlePageChange(pageNum)}
+                                            className="px-2.5 py-1.5 rounded font-medium text-sm transition-all duration-200"
+                                            style={{
+                                                color: tw.isDark ? '#e5e7eb' : '#000000',
+                                                borderColor: borderColor,
+                                                fontWeight: isActive ? 700 : 500,
+                                                backgroundColor: isActive ? accent : 'transparent',
+                                                color: isActive ? '#ffffff' : (tw.isDark ? '#e5e7eb' : '#000000'),
+                                                transform: isActive ? 'scale(1.05)' : 'scale(1)',
+                                            }}
+                                            onMouseEnter={(e) => {
+                                                if (!isActive) {
+                                                    e.currentTarget.style.backgroundColor = `${accent}15`;
+                                                    e.currentTarget.style.transform = 'scale(1.05)';
+                                                }
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                e.currentTarget.style.backgroundColor = isActive ? accent : 'transparent';
+                                                e.currentTarget.style.transform = isActive ? 'scale(1.05)' : 'scale(1)';
+                                            }}
+                                        >
+                                            {pageNum}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    </div>
                 </>
             )}
-        </Box>
+        </div>
     );
 
     const primaryActions = (
-        <Box
-            sx={{
-                // mt: 1,
+        <div
+            style={{
                 display: 'grid',
-                gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
-                gap: 1.5,
+                gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))',
+                gap: '1.5rem',
                 justifyContent: 'center',
             }}
         >
@@ -631,9 +591,7 @@ export default function CustomerDashboard() {
             ].map((action) => (
                 <Button
                     key={action.key}
-                    fullWidth
-                    variant="contained"
-                    disableElevation
+                    className="w-full"
                     onClick={() => {
                         if (action.key === 'loan') {
                             router.get(route('client.loan-calculator', { acctno }));
@@ -643,75 +601,78 @@ export default function CustomerDashboard() {
                             router.post(route('logout'));
                         }
                     }}
-                    sx={{
+                    style={{
                         height: '100%',
-                        minHeight: 140,
+                        minHeight: '140px',
                         justifyContent: 'center',
                         textTransform: 'none',
-                        borderRadius: 3,
+                        borderRadius: '1.5rem',
                         alignItems: 'center',
-                        p: { xs: 2.5, sm: 3 },
-                        display: action.key === 'logout' ? { xs: 'none', sm: 'flex' } : 'flex',
+                        padding: '2.5rem',
+                        display: action.key === 'logout' ? 'none' : 'flex',
                         backgroundColor: action.bg,
                         color: action.color,
                         border: `1px solid ${action.key === 'logout' ? accent : borderColor}`,
                         boxShadow: '0 10px 24px rgba(15,23,42,0.12)',
                         transition: 'transform 160ms ease, box-shadow 160ms ease, background-color 160ms ease',
-                        '&:hover': {
-                            backgroundColor: action.key === 'logout' ? '#e66767' : tw.isDark ? '#353535' : '#ffffff',
-                            transform: 'translateY(-2px)',
-                            boxShadow: '0 14px 30px rgba(15,23,42,0.16)',
-                            borderColor: accent,
-                        },
+                        cursor: 'pointer',
+                    }}
+                    onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = action.key === 'logout' ? '#e66767' : (tw.isDark ? '#353535' : '#ffffff');
+                        e.currentTarget.style.transform = 'translateY(-2px)';
+                        e.currentTarget.style.boxShadow = '0 14px 30px rgba(15,23,42,0.16)';
+                        e.currentTarget.style.borderColor = accent;
+                    }}
+                    onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = action.bg;
+                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.boxShadow = '0 10px 24px rgba(15,23,42,0.12)';
                     }}
                 >
-                    <Stack spacing={1.25} alignItems="center" sx={{ textAlign: 'center', width: '100%' }}>
-                        <Box
-                            sx={{
-                                display: 'grid',
-                                placeItems: 'center',
-                                width: 72,
-                                height: 72,
-                                borderRadius: '50%',
+                    <div className="flex flex-col gap-1.25 items-center text-center w-full">
+                        <div
+                            className="flex items-center justify-center rounded-full"
+                            style={{
+                                width: '72px',
+                                height: '72px',
                                 backgroundColor: action.iconBg,
                                 color: action.key === 'logout' ? '#ffffff' : accent,
                                 boxShadow: '0 8px 18px rgba(0,0,0,0.12)',
                             }}
                         >
                             {action.icon}
-                        </Box>
-                        <Typography variant="h6" sx={{ fontWeight: 800 }}>
-                            {action.title}
-                        </Typography>
-                        <Typography
-                            variant="body2"
-                            color={action.key === 'logout' ? 'rgba(255,255,255,0.85)' : 'text.secondary'}
-                            sx={{ display: { xs: 'none', sm: 'block' } }}
+                        </div>
+                        <h4 className="font-black">{action.title}</h4>
+                        <p
+                            className="text-sm hidden sm:block"
+                            style={{
+                                color: action.key === 'logout' ? 'rgba(255,255,255,0.85)' : '#6b7280'
+                            }}
                         >
                             {action.description}
-                        </Typography>
-                    </Stack>
+                        </p>
+                    </div>
                 </Button>
             ))}
-        </Box>
+        </div>
     );
 
     const MobileView = () => (
-        <Stack spacing={2}>
+        <div className="flex flex-col gap-2">
             {mobileTransactions}
-        </Stack>
+        </div>
     );
 
     const DesktopView = () => (
-        <Stack spacing={2}>
+        <div className="flex flex-col gap-2">
             {mobileTransactions}
-        </Stack>
+        </div>
     );
 
     return (
         <AppLayout breadcrumbs={[{ title: 'Dashboard', href: '/client/dashboard' }]}>
             <Head title="Dashboard" />
-            {loading ? <LinearProgress color="primary" sx={{ position: 'fixed', top: 0, left: 0, width: '100%', zIndex: 60 }} /> : null}
+            {loading ? <div className="fixed top-0 left-0 w-full h-1 bg-linear-to-r from-red-500 to-blue-500 z-50 animate-pulse" /> : null}
             <div className="fixed top-4 left-1/2 z-50 flex -translate-x-1/2 flex-col items-center gap-2">
                 <Slide in={!!loading} direction="down" mountOnEnter unmountOnExit>
                     <div className="rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-sky-900/30">
@@ -725,28 +686,28 @@ export default function CustomerDashboard() {
                     </div>
                 </Slide>
             </div>
-            <Box sx={{ minHeight: '100%', bgcolor: tw.isDark ? '#0b0b0b' : '#f5f5f5', py: 2 }}>
-                <Box className="sr-only focus-within:not-sr-only">
+            <div style={{ minHeight: '100%', backgroundColor: tw.isDark ? '#0b0b0b' : '#f5f5f5', paddingTop: '2rem' }}>
+                <div className="sr-only focus-within:not-sr-only">
                     <a
                         href="#main-content"
                         className="absolute top-0 left-0 z-50 rounded-br-md bg-[#F57979] p-2 text-white focus:ring-2 focus:ring-white focus:outline-none"
                     >
                         Skip to main content
                     </a>
-                </Box>
+                </div>
 
-                <Box id="main-content" sx={{ display: 'flex', flexDirection: 'column', gap: 2, px: { xs: 2, sm: 3 }, pb: { xs: 9, sm: 2 }, bgcolor: tw.isDark ? '#0b0b0b' : '#f5f5f5' }}>
+                <div id="main-content" className="flex flex-col gap-2 px-4 sm:px-6 pb-24 sm:pb-2" style={{ backgroundColor: tw.isDark ? '#0b0b0b' : '#f5f5f5' }}>
                     {showDashboardSkeleton ? (
                         <ClientDashboardSkeleton />
                     ) : (
                         <>
-                            <Box>{headerBlock}</Box>
+                            <div>{headerBlock}</div>
                             {primaryActions}
                             {isMobile ? <MobileView /> : <DesktopView />}
                         </>
                     )}
-                </Box>
-            </Box>
+                </div>
+            </div>
 
             {/* Savings Modal */}
             <FullScreenModalMobile
