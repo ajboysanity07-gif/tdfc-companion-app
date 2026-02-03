@@ -1,18 +1,5 @@
 import axiosClient, { getCsrfCookie } from '@/api/axios-client';
 import React, { useEffect, useMemo, useState } from 'react';
-import {
-    Box,
-    Button,
-    Checkbox,
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogTitle,
-    FormControlLabel,
-    Skeleton,
-    Stack,
-    Typography,
-} from '@mui/material';
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 import BlockIcon from '@mui/icons-material/Block';
 import type { RejectionReasonEntry } from '@/types/user';
@@ -61,11 +48,13 @@ const RejectModal: React.FC<Props> = ({ open, reasons, selected = [], onClose, o
                     | { reasons: RejectionReasonEntry[] }
                 >('/rejection-reasons'),
             )
-            .then((res) => {
-                const list = normalizeReasons(res.data);
-                setFallbackReasons(list);
+            .then((response) => {
+                const normalized = normalizeReasons(response.data);
+                setFallbackReasons(normalized);
             })
-            .catch(() => setFallbackReasons([]))
+            .catch(() => {
+                /* Ignore API errors, use provided reasons */
+            })
             .finally(() => setLoadingReasons(false));
     }, [open]);
 
@@ -74,161 +63,294 @@ const RejectModal: React.FC<Props> = ({ open, reasons, selected = [], onClose, o
     }, [selected, open]);
 
     const safeReasons = useMemo(() => {
-        if (Array.isArray(reasons) && reasons.length) return reasons;
-        return fallbackReasons;
+        const merged = [...reasons];
+        for (const fr of fallbackReasons) {
+            if (!merged.some((r) => r.code === fr.code && r.label === fr.label)) {
+                merged.push(fr);
+            }
+        }
+        return merged;
     }, [reasons, fallbackReasons]);
 
-    const reasonCount = (Array.isArray(safeReasons) && safeReasons.length ? safeReasons.length : 0) || 6;
-    const listMinHeight = reasonCount * 56; // keep modal height stable between loading and loaded states
-
     const toggle = (code: string) => {
-        setLocalSelected((prev) => (prev.includes(code) ? prev.filter((c) => c !== code) : [...prev, code]));
+        setLocalSelected((prev) =>
+            prev.includes(code) ? prev.filter((c) => c !== code) : [...prev, code],
+        );
     };
 
+    const reasonCount = Math.max(safeReasons.length, 3);
+    const listMinHeight = 32 + reasonCount * 48;
+
+    if (!open) return null;
+
     return (
-        <Dialog
-            open={open}
-            onClose={onClose}
-            maxWidth="sm"
-            fullWidth
-            PaperProps={{
-                sx: {
-                    borderRadius: 5,
-                    bgcolor: 'rgba(18,18,20,0.9)',
+        <div
+            style={{
+                position: 'fixed',
+                inset: 0,
+                backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 1300,
+            }}
+            onClick={onClose}
+        >
+            <div
+                style={{
+                    backgroundColor: 'rgba(18, 18, 20, 0.9)',
                     backdropFilter: 'blur(22px)',
                     boxShadow: '0 26px 70px rgba(0,0,0,0.35)',
                     border: '1px solid rgba(255,255,255,0.08)',
-                },
-            }}
-            className={!tw.isDark ? 'bg-white/96' : ''}
-        >
-            <DialogTitle sx={{ textAlign: 'center', fontWeight: 900, letterSpacing: 0.4 }}>Reject Client</DialogTitle>
-            <DialogContent dividers sx={{ pt: 1 }}>
-                <Typography variant="body2" sx={{ mb: 0.5, textAlign: 'center', fontWeight: 700 }}>
-                    Select rejection reasons for {clientName ?? 'this client'}.
-                </Typography>
-                <Typography variant="body2" sx={{ mb: 1.5, textAlign: 'center', color: 'text.secondary' }}>
-                    You can choose more than one reason.
-                </Typography>
-                {loadingReasons ? (
-                    <Box
-                        sx={{
-                            p: 1,
-                            borderRadius: 3,
-                            bgcolor: 'rgba(255,255,255,0.03)',
+                    borderRadius: '20px',
+                    maxWidth: '540px',
+                    width: '100%',
+                    maxHeight: '90vh',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    overflow: 'hidden',
+                }}
+                onClick={(e) => e.stopPropagation()}
+            >
+                <div style={{
+                    textAlign: 'center',
+                    fontWeight: 900,
+                    letterSpacing: 0.4,
+                    paddingLeft: '24px',
+                    paddingRight: '24px',
+                    paddingTop: '20px',
+                    paddingBottom: '20px',
+                    borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+                    fontSize: '1.125rem',
+                }}>
+                    Reject Client
+                </div>
+
+                <div style={{
+                    flex: 1,
+                    overflow: 'auto',
+                    paddingLeft: '24px',
+                    paddingRight: '24px',
+                    paddingTop: '16px',
+                    paddingBottom: '16px',
+                    borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+                }}>
+                    <p style={{
+                        margin: '0 0 4px 0',
+                        fontSize: '0.875rem',
+                        fontWeight: 700,
+                        textAlign: 'center',
+                    }}>
+                        Select rejection reasons for {clientName ?? 'this client'}.
+                    </p>
+                    <p style={{
+                        margin: '0 0 24px 0',
+                        fontSize: '0.875rem',
+                        textAlign: 'center',
+                        color: 'rgba(255, 255, 255, 0.7)',
+                    }}>
+                        You can choose more than one reason.
+                    </p>
+
+                    {loadingReasons ? (
+                        <div style={{
+                            padding: '8px',
+                            borderRadius: '12px',
+                            backgroundColor: 'rgba(255,255,255,0.03)',
                             border: '1px solid rgba(255,255,255,0.08)',
                             display: 'grid',
                             gridTemplateColumns: '1fr',
-                            gap: 0.75,
-                            minHeight: listMinHeight,
-                        }}
-                    >
-                        {[...Array(reasonCount)].map((_, i) => (
-                            <Box
-                                key={i}
-                                sx={{
+                            gap: '6px',
+                            minHeight: `${listMinHeight}px`,
+                        }}>
+                            {[...Array(reasonCount)].map((_, i) => (
+                                <div key={i} style={{
                                     display: 'flex',
                                     alignItems: 'center',
-                                    gap: 1,
-                                    px: 1.25,
-                                    py: 1,
-                                    borderRadius: 2,
+                                    gap: '8px',
+                                    paddingLeft: '10px',
+                                    paddingRight: '10px',
+                                    paddingTop: '8px',
+                                    paddingBottom: '8px',
+                                    borderRadius: '8px',
                                     border: '1px solid rgba(255,255,255,0.06)',
-                                    bgcolor: 'rgba(255,255,255,0.03)',
-                                }}
-                                className={!tw.isDark ? 'bg-black/2' : ''}
-                            >
-                                <Skeleton variant="rounded" width={18} height={18} sx={{ borderRadius: 1 }} />
-                                <Skeleton
-                                    variant="text"
-                                    width="72%"
-                                    height={18}
-                                    sx={{ bgcolor: tw.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)' }}
-                                />
-                            </Box>
-                        ))}
-                    </Box>
-                ) : safeReasons.length === 0 ? (
-                    <Typography variant="body2" color="text.secondary">
-                        No rejection reasons configured.
-                    </Typography>
-                ) : (
-                    <Box
-                        sx={{
-                            p: 1,
-                            borderRadius: 3,
-                            bgcolor: 'rgba(255,255,255,0.03)',
+                                    backgroundColor: 'rgba(255,255,255,0.03)',
+                                }}>
+                                    <div style={{
+                                        width: '18px',
+                                        height: '18px',
+                                        borderRadius: '4px',
+                                        backgroundColor: 'rgba(255,255,255,0.15)',
+                                    }} />
+                                    <div style={{
+                                        width: '72%',
+                                        height: '18px',
+                                        borderRadius: '4px',
+                                        backgroundColor: 'rgba(255,255,255,0.15)',
+                                    }} />
+                                </div>
+                            ))}
+                        </div>
+                    ) : safeReasons.length === 0 ? (
+                        <p style={{
+                            margin: 0,
+                            fontSize: '0.875rem',
+                            color: 'rgba(255, 255, 255, 0.7)',
+                        }}>
+                            No rejection reasons configured.
+                        </p>
+                    ) : (
+                        <div style={{
+                            padding: '8px',
+                            borderRadius: '12px',
+                            backgroundColor: 'rgba(255,255,255,0.03)',
                             border: '1px solid rgba(255,255,255,0.08)',
                             display: 'grid',
                             gridTemplateColumns: '1fr',
-                            gap: 0.75,
-                            minHeight: listMinHeight,
-                        }}
-                    >
-                        {safeReasons.map((reason) => {
-                            const key = reason.code ?? String(reason.id ?? reason.label ?? Math.random());
-                            const label = reason.label ?? reason.code ?? 'Reason';
-                            const code = reason.code ?? String(reason.id ?? label);
-                            const selectedReason = localSelected.includes(code);
-                            return (
-                                <Box
-                                    key={key}
-                                    sx={{
-                                        px: 1.25,
-                                        py: 1,
-                                        borderRadius: 2,
-                                        border: selectedReason ? '1px solid #ef4444' : '1px solid rgba(255,255,255,0.14)',
-                                        bgcolor: selectedReason ? 'rgba(239,68,68,0.10)' : 'rgba(255,255,255,0.02)',
-                                        transition: 'all 140ms ease',
-                                        '&:hover': {
-                                            borderColor: '#ef4444',
-                                            bgcolor: 'rgba(239,68,68,0.06)',
-                                        },
-                                    }}
-                                >
-                                    <FormControlLabel
-                                        control={
-                                            <Checkbox
+                            gap: '6px',
+                            minHeight: `${listMinHeight}px`,
+                        }}>
+                            {safeReasons.map((reason) => {
+                                const key = reason.code ?? String(reason.id ?? reason.label ?? Math.random());
+                                const label = reason.label ?? reason.code ?? 'Reason';
+                                const code = reason.code ?? String(reason.id ?? label);
+                                const selectedReason = localSelected.includes(code);
+
+                                return (
+                                    <div
+                                        key={key}
+                                        style={{
+                                            paddingLeft: '10px',
+                                            paddingRight: '10px',
+                                            paddingTop: '8px',
+                                            paddingBottom: '8px',
+                                            borderRadius: '8px',
+                                            border: selectedReason ? '1px solid #ef4444' : '1px solid rgba(255,255,255,0.14)',
+                                            backgroundColor: selectedReason ? 'rgba(239,68,68,0.10)' : 'rgba(255,255,255,0.02)',
+                                            transition: 'all 140ms ease',
+                                            cursor: 'pointer',
+                                        }}
+                                        onClick={() => toggle(code)}
+                                        onMouseEnter={(e) => {
+                                            const el = e.currentTarget as HTMLDivElement;
+                                            el.style.borderColor = '#ef4444';
+                                            el.style.backgroundColor = 'rgba(239,68,68,0.06)';
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            const el = e.currentTarget as HTMLDivElement;
+                                            el.style.borderColor = selectedReason ? '#ef4444' : 'rgba(255,255,255,0.14)';
+                                            el.style.backgroundColor = selectedReason ? 'rgba(239,68,68,0.10)' : 'rgba(255,255,255,0.02)';
+                                        }}
+                                    >
+                                        <label style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '8px',
+                                            margin: 0,
+                                            width: '100%',
+                                            cursor: 'pointer',
+                                        }}>
+                                            <input
+                                                type="checkbox"
                                                 checked={selectedReason}
                                                 onChange={() => toggle(code)}
-                                                color="error"
-                                                size="small"
+                                                style={{
+                                                    width: '18px',
+                                                    height: '18px',
+                                                    cursor: 'pointer',
+                                                    accentColor: '#ef4444',
+                                                }}
                                             />
-                                        }
-                                        label={
-                                            <Typography variant="body2" fontWeight={700} color="text.primary">
+                                            <span style={{
+                                                fontSize: '0.875rem',
+                                                fontWeight: 700,
+                                                color: '#ffffff',
+                                            }}>
                                                 {label}
-                                            </Typography>
-                                        }
-                                        sx={{ m: 0, width: '100%' }}
-                                    />
-                                </Box>
-                            );
-                        })}
-                    </Box>
-                )}
-            </DialogContent>
-            <DialogActions sx={{ px: 3, pb: 2 }}>
-                <Stack direction="row" spacing={1} width="100%">
-                    <Button fullWidth variant="outlined" onClick={onClose} sx={{ borderRadius: 999 }} startIcon={<CancelOutlinedIcon />}>
+                                            </span>
+                                        </label>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
+                </div>
+
+                <div style={{
+                    display: 'flex',
+                    gap: '8px',
+                    paddingLeft: '24px',
+                    paddingRight: '24px',
+                    paddingTop: '16px',
+                    paddingBottom: '16px',
+                }}>
+                    <button
+                        onClick={onClose}
+                        style={{
+                            flex: 1,
+                            padding: '8px 16px',
+                            borderRadius: '999px',
+                            border: '1px solid rgba(255,255,255,0.25)',
+                            backgroundColor: 'transparent',
+                            color: '#ffffff',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '8px',
+                            fontSize: '0.875rem',
+                            transition: 'all 120ms ease',
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.5)';
+                            e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.08)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.25)';
+                            e.currentTarget.style.backgroundColor = 'transparent';
+                        }}
+                    >
+                        <CancelOutlinedIcon style={{ fontSize: '1.25rem' }} />
                         Cancel
-                    </Button>
-                    <Button
-                        fullWidth
-                        color="error"
-                        variant="contained"
+                    </button>
+                    <button
                         onClick={() => {
                             onSubmit(localSelected);
                             onClose();
                         }}
-                        sx={{ borderRadius: 999, boxShadow: '0 10px 24px rgba(220,38,38,0.28)' }}
-                        startIcon={<BlockIcon />}
+                        style={{
+                            flex: 1,
+                            padding: '8px 16px',
+                            borderRadius: '999px',
+                            border: 'none',
+                            backgroundColor: '#ef4444',
+                            color: '#ffffff',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '8px',
+                            fontSize: '0.875rem',
+                            boxShadow: '0 10px 24px rgba(220,38,38,0.28)',
+                            transition: 'all 120ms ease',
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = '#dc2626';
+                            e.currentTarget.style.boxShadow = '0 14px 32px rgba(220,38,38,0.4)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = '#ef4444';
+                            e.currentTarget.style.boxShadow = '0 10px 24px rgba(220,38,38,0.28)';
+                        }}
                     >
+                        <BlockIcon style={{ fontSize: '1.25rem' }} />
                         Reject
-                    </Button>
-                </Stack>
-            </DialogActions>
-        </Dialog>
+                    </button>
+                </div>
+            </div>
+        </div>
     );
 };
 
