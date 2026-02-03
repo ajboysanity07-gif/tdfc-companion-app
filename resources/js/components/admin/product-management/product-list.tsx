@@ -173,14 +173,14 @@ const ProductList: React.FC<Props> = ({
                                             display: 'flex',
                                             justifyContent: 'space-between',
                                             alignItems: 'center',
-                                            backgroundColor: tw.isDark ? '#262626' : '#FFFFFF',
+                                            backgroundColor: tw.isDark ? '#262626' : '#F5F5F5',
                                             transition: 'all 120ms ease',
                                         }}
                                         onMouseEnter={(e) => {
-                                            e.currentTarget.style.backgroundColor = tw.isDark ? '#2f2f2f' : '#F5F5F5';
+                                            e.currentTarget.style.backgroundColor = tw.isDark ? '#2f2f2f' : '#EEEEEE';
                                         }}
                                         onMouseLeave={(e) => {
-                                            e.currentTarget.style.backgroundColor = tw.isDark ? '#262626' : '#FFFFFF';
+                                            e.currentTarget.style.backgroundColor = tw.isDark ? '#262626' : '#F5F5F5';
                                         }}
                                     >
                                         <div style={{ display: 'flex', gap: '16px', flex: 1, alignItems: 'center' }}>
