@@ -1,4 +1,3 @@
-import { List, ListItem, Stack, Box } from '@mui/material';
 import { useMyTheme } from '@/hooks/use-mytheme';
 
 type ProductListSkeletonProps = {
@@ -12,47 +11,39 @@ export default function ProductListSkeleton({ itemCount = 5, fullHeight = false 
     return (
         <>
             {/* Search bar skeleton */}
-            <Box className="rounded-lg bg-neutral-700 h-10 w-full mb-2 animate-pulse" />
+            <div className="rounded-lg bg-neutral-700 h-10 w-full mb-2 animate-pulse" />
 
             {/* List items skeleton */}
-            <List sx={{ flex: fullHeight ? 1 : 'auto', display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <div className={`flex flex-col gap-1 ${fullHeight ? 'flex-1' : 'auto'}`}>
                 {Array.from({ length: itemCount }).map((_, i) => (
-                    <ListItem
+                    <div
                         key={i}
-                        sx={{
-                            borderRadius: 2,
-                            border: '1px solid',
-                            borderColor: 'divider',
-                            p: 2,
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            bgcolor: tw.isDark ? '#262626' : '#FFFFFF',
-                        }}
+                        className="rounded-2xl border border-gray-200 dark:border-neutral-700 p-2 flex justify-between items-center"
+                        style={{ backgroundColor: tw.isDark ? '#262626' : '#FFFFFF' }}
                     >
-                        <Stack direction="row" spacing={2} sx={{ flex: 1, alignItems: 'center' }}>
+                        <div className="flex flex-row gap-2 flex-1 items-center">
                             {/* Toggle switch skeleton */}
-                            <Box className="rounded-full bg-neutral-600 h-6 w-10 animate-pulse" />
+                            <div className="rounded-full bg-neutral-600 h-6 w-10 animate-pulse" />
                             
                             {/* Title skeleton */}
-                            <Stack sx={{ flex: 1 }}>
-                                <Box className="rounded bg-neutral-700 h-4 w-32 mb-2 animate-pulse" />
-                                <Box className="rounded bg-neutral-700 h-3 w-24 animate-pulse" />
-                            </Stack>
-                        </Stack>
+                            <div className="flex-1">
+                                <div className="rounded bg-neutral-700 h-4 w-32 mb-2 animate-pulse" />
+                                <div className="rounded bg-neutral-700 h-3 w-24 animate-pulse" />
+                            </div>
+                        </div>
 
                         {/* Arrow icon skeleton */}
-                        <Box className="rounded bg-neutral-700 h-5 w-5 animate-pulse" />
-                    </ListItem>
+                        <div className="rounded bg-neutral-700 h-5 w-5 animate-pulse" />
+                    </div>
                 ))}
-            </List>
+            </div>
 
             {/* Pagination skeleton */}
-            <Stack direction="row" justifyContent="center" spacing={1} sx={{ mt: 2 }}>
-                <Box className="rounded bg-neutral-700 h-8 w-16 animate-pulse" />
-                <Box className="rounded bg-neutral-700 h-8 w-12 animate-pulse" />
-                <Box className="rounded bg-neutral-700 h-8 w-16 animate-pulse" />
-            </Stack>
+            <div className="flex flex-row justify-center gap-1 mt-2">
+                <div className="rounded bg-neutral-700 h-8 w-16 animate-pulse" />
+                <div className="rounded bg-neutral-700 h-8 w-12 animate-pulse" />
+                <div className="rounded bg-neutral-700 h-8 w-16 animate-pulse" />
+            </div>
         </>
     );
 }
