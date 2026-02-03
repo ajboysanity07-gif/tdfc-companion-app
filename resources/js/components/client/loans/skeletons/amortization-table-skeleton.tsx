@@ -1,5 +1,4 @@
 import React from 'react';
-import { Box, Stack } from '@mui/material';
 import { useMyTheme } from '@/hooks/use-mytheme';
 
 type Props = {
@@ -12,66 +11,53 @@ const AmortizationTableSkeleton: React.FC<Props> = ({ rowCount = 10 }) => {
     const cardBg = tw.isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)';
 
     return (
-        <Box sx={{ width: '100%' }}>
+        <div className="w-full">
             {/* Table Header */}
-            <Box 
-                sx={{ 
-                    display: 'grid',
+            <div 
+                className="grid gap-2 p-2 rounded mb-1 animate-pulse"
+                style={{ 
                     gridTemplateColumns: 'repeat(5, 1fr)',
-                    gap: 2,
-                    p: 2,
-                    bgcolor: cardBg,
-                    borderRadius: 1,
-                    mb: 1,
+                    backgroundColor: cardBg,
                 }}
             >
                 {Array.from({ length: 5 }).map((_, idx) => (
-                    <Box
+                    <div
                         key={idx}
-                        sx={{
+                        className="rounded"
+                        style={{
                             height: 20,
-                            bgcolor: skeletonBg,
-                            borderRadius: 1,
-                            animation: 'pulse 1.5s ease-in-out infinite',
+                            backgroundColor: skeletonBg,
                         }}
                     />
                 ))}
-            </Box>
+            </div>
 
             {/* Table Rows */}
-            <Stack spacing={0.5}>
+            <div className="space-y-0.5">
                 {Array.from({ length: rowCount }).map((_, idx) => (
-                    <Box
+                    <div
                         key={idx}
-                        sx={{
-                            display: 'grid',
+                        className="grid gap-2 p-2 rounded animate-pulse"
+                        style={{
                             gridTemplateColumns: 'repeat(5, 1fr)',
-                            gap: 2,
-                            p: 2,
-                            bgcolor: cardBg,
-                            borderRadius: 1,
-                            animation: 'pulse 1.5s ease-in-out infinite',
+                            backgroundColor: cardBg,
                             animationDelay: `${idx * 0.05}s`,
-                            '@keyframes pulse': {
-                                '0%, 100%': { opacity: 1 },
-                                '50%': { opacity: 0.5 },
-                            },
                         }}
                     >
                         {Array.from({ length: 5 }).map((_, colIdx) => (
-                            <Box
+                            <div
                                 key={colIdx}
-                                sx={{
+                                className="rounded"
+                                style={{
                                     height: 18,
-                                    bgcolor: skeletonBg,
-                                    borderRadius: 1,
+                                    backgroundColor: skeletonBg,
                                 }}
                             />
                         ))}
-                    </Box>
+                    </div>
                 ))}
-            </Stack>
-        </Box>
+            </div>
+        </div>
     );
 };
 
