@@ -200,6 +200,12 @@ const ProductCRUD: React.FC<Props> = ({
                             style={{
                                 ...inputStyle,
                                 borderColor: errors.wln_type_id ? borderColorError : borderColorDefault,
+                                appearance: 'none',
+                                backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='${tw.isDark ? '%23ffffff' : '%23000000'}' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`,
+                                backgroundRepeat: 'no-repeat',
+                                backgroundPosition: 'right 8px center',
+                                backgroundSize: '20px',
+                                paddingRight: '32px',
                             } as React.CSSProperties}
                         >
                             <option value="">Select a type...</option>
@@ -221,7 +227,15 @@ const ProductCRUD: React.FC<Props> = ({
                         <select
                             value={formData.is_active ? '1' : '0'}
                             onChange={(e) => setFormData({ ...formData, is_active: parseInt(e.target.value) })}
-                            style={inputStyle as React.CSSProperties}
+                            style={{
+                                ...inputStyle,
+                                appearance: 'none',
+                                backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='${tw.isDark ? '%23ffffff' : '%23000000'}' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`,
+                                backgroundRepeat: 'no-repeat',
+                                backgroundPosition: 'right 8px center',
+                                backgroundSize: '20px',
+                                paddingRight: '32px',
+                            } as React.CSSProperties}
                         >
                             <option value="1">Active</option>
                             <option value="0">Inactive</option>
