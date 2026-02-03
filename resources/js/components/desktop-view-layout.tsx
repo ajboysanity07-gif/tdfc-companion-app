@@ -33,7 +33,7 @@ export default function DesktopViewLayout({
     return (
         <div
             className={cn(
-                'flex flex-1 flex-col gap-0 p-2 pt-0 transition-colors duration-300',
+                'flex flex-1 flex-col gap-0 p-4 pt-0 transition-colors duration-300',
                 tw.isDark ? 'bg-neutral-950' : 'bg-gray-100',
             )}
             style={wrapperSx}
