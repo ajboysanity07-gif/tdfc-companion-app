@@ -1,5 +1,3 @@
-import { CLIENT_LIST_PAGE_SIZE } from '@/components/admin/client-management/skeletons';
-import ClientManagementSkeleton from '@/components/admin/client-management/client-management-skeleton';
 import ClientDetails from '@/components/admin/client-management/client-details';
 import ClientList from '@/components/admin/client-management/client-list';
 import RejectModal from '@/components/admin/client-management/reject-modal';
@@ -433,11 +431,9 @@ export default function ClientManagementPage() {
                     <HeaderBlock title="Client Management" subtitle="Review, approve, and manage clients" />
                 ) : null}
 
-                {loading ? (
-                    <ClientManagementSkeleton itemCount={Math.max(approvedCount || clients.length, CLIENT_LIST_PAGE_SIZE)} isMobile={isMobile} selectedId={selectedId} />
-                ) : isMobile ? (
+                {isMobile ? (
                     <ClientMobileLayoutView
-                        clients={clients}
+                        clients={loading ? [] : clients}
                         rejectionReasons={rejectionReasons}
                         selectedId={selectedId}
                         onSelect={setSelectedId}
@@ -458,7 +454,7 @@ export default function ClientManagementPage() {
                     />
                 ) : (
                     <ClientDesktopLayoutView
-                        clients={clients}
+                        clients={loading ? [] : clients}
                         rejectionReasons={rejectionReasons}
                         selectedId={selectedId}
                         onSelect={setSelectedId}

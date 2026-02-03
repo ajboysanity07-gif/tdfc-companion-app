@@ -1,8 +1,6 @@
 import DesktopViewLayout from '@/components/desktop-view-layout';
 import MobileViewLayout from '@/components/mobile-view-layout';
 import ProductCrud from '@/components/admin/product-management/product-crud';
-import { PRODUCT_LIST_PAGE_SIZE } from '@/components/admin/product-management/skeletons';
-import ProductManagementSkeleton from '@/components/admin/product-management/product-management-skeleton';
 import FullScreenModalMobile from '@/components/ui/full-screen-modal-mobile';
 import ProductList from '@/components/admin/product-management/product-list';
 import { useProductManagement } from '@/hooks/use-product-management';
@@ -313,11 +311,9 @@ export default function ProductsManagementPage() {
             <div className="flex flex-col  overflow-x-auto bg-[#FAFAFA] transition-colors duration-300 dark:bg-neutral-900">
                 <HeaderBlock title="Product Management" subtitle="Activate and manage product listings" />
 
-                {loading ? (
-                    <ProductManagementSkeleton itemCount={Math.max(products.length, PRODUCT_LIST_PAGE_SIZE)} />
-                ) : isMobile ? (
+                {isMobile ? (
                     <ProductMobileLayoutView
-                        products={products}
+                        products={loading ? [] : products}
                         availableTypes={types}
                         onSave={(payload, id) => handleSave(payload, id)}
                         onDelete={(id) => handleDelete(id)}
@@ -326,7 +322,7 @@ export default function ProductsManagementPage() {
                 ) : (
                     <ProductDesktopLayoutView
                         key={isAdding ? 'adding' : selected?.product_id ?? 'new'}
-                        products={products}
+                        products={loading ? [] : products}
                         availableTypes={types}
                         selected={selected}
                         isAdding={isAdding}
