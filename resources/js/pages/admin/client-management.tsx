@@ -384,23 +384,49 @@ export default function ClientManagementPage() {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            {loading ? <LinearProgress color="primary" sx={{ position: 'fixed', top: 0, left: 0, width: '100%', zIndex: 60 }} /> : null}
+            {loading ? <div className="fixed top-0 left-0 w-full h-1 bg-linear-to-r from-red-500 to-blue-500 z-50 animate-pulse" /> : null}
             <div className="fixed top-4 left-1/2 z-50 flex -translate-x-1/2 flex-col items-center gap-2">
-                <Slide in={!!success} direction="down" mountOnEnter unmountOnExit>
-                    <div className="flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-emerald-900/30">
-                        <CircleCheckBig className="h-4 w-4" />
-                        <span>{success}</span>
-                    </div>
-                </Slide>
-                <Slide in={!!loading} direction="down" mountOnEnter unmountOnExit>
-                    <div className="rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-sky-900/30">Loading...</div>
-                </Slide>
-                <Slide in={!!error} direction="down" mountOnEnter unmountOnExit>
-                    <div className="flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-red-900/30">
-                        <CircleX className="h-4 w-4" />
-                        <span>{error}</span>
-                    </div>
-                </Slide>
+                <AnimatePresence>
+                    {success && (
+                        <motion.div
+                            initial={{ y: -100, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            exit={{ y: -100, opacity: 0 }}
+                            transition={{ duration: 0.3 }}
+                            className="flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-emerald-900/30"
+                        >
+                            <CircleCheckBig className="h-4 w-4" />
+                            <span>{success}</span>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+                <AnimatePresence>
+                    {loading && (
+                        <motion.div
+                            initial={{ y: -100, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            exit={{ y: -100, opacity: 0 }}
+                            transition={{ duration: 0.3 }}
+                            className="rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-sky-900/30"
+                        >
+                            Loading...
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+                <AnimatePresence>
+                    {error && (
+                        <motion.div
+                            initial={{ y: -100, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            exit={{ y: -100, opacity: 0 }}
+                            transition={{ duration: 0.3 }}
+                            className="flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-red-900/30"
+                        >
+                            <CircleX className="h-4 w-4" />
+                            <span>{error}</span>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </div>
             <div className="flex flex-col gap-0 overflow-x-auto bg-[#FAFAFA] transition-colors duration-300 dark:bg-neutral-900">
                 {!isMobile || !selectedId ? (

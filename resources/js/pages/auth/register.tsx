@@ -360,22 +360,30 @@ export default function Register({ adminMode = false }: Props) {
     return (
         <>
             <Head title="Register - TDFC App`" />
-            <Slide in={!!(success || globalError)} direction="down" mountOnEnter unmountOnExit>
-                <div className="fixed top-4 left-1/2 z-50 flex -translate-x-1/2 flex-col items-center gap-2">
-                    {success ? (
-                        <div className="rounded-full bg-green-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-emerald-900/30 flex items-center gap-2">
-                            <CircleCheckBig className="h-4 w-4" />
-                            <span>Registration successful!</span>
-                        </div>
-                    ) : null}
-                    {globalError ? (
-                        <div className="rounded-full bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-red-900/30 flex items-center gap-2">
-                            <CircleX className="h-4 w-4" />
-                            <span>{globalError}</span>
-                        </div>
-                    ) : null}
-                </div>
-            </Slide>
+            <AnimatePresence>
+                {(success || globalError) && (
+                    <motion.div
+                        initial={{ y: -100, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        exit={{ y: -100, opacity: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="fixed top-4 left-1/2 z-50 flex -translate-x-1/2 flex-col items-center gap-2"
+                    >
+                        {success ? (
+                            <div className="rounded-full bg-green-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-emerald-900/30 flex items-center gap-2">
+                                <CircleCheckBig className="h-4 w-4" />
+                                <span>Registration successful!</span>
+                            </div>
+                        ) : null}
+                        {globalError ? (
+                            <div className="rounded-full bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-red-900/30 flex items-center gap-2">
+                                <CircleX className="h-4 w-4" />
+                                <span>{globalError}</span>
+                            </div>
+                        ) : null}
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             <AuthCardLayout
                 title="Register"

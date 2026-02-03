@@ -16,6 +16,7 @@ import PaymentLedgerTable from '@/components/common/payment-ledger-table';
 import { DesktopPanelSkeleton } from '@/components/client/loans/skeletons';
 import { Calculator } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import type { ProductLntype } from '@/types/product-lntype';
 import type { WlnMasterRecord, AmortschedDisplayEntry, WlnLedEntry } from '@/types/user';
 import axiosClient from '@/api/axios-client';
@@ -463,23 +464,47 @@ export default function LoansPage() {
                     <div className="fixed top-0 left-0 w-full h-1 bg-linear-to-r from-red-500 to-blue-500 z-50 animate-pulse" />
                 ) : null}
                 <div className="fixed top-4 left-1/2 z-50 flex -translate-x-1/2 flex-col items-center gap-2">
-                    <Slide in={!!successMessage} direction="down" mountOnEnter unmountOnExit>
-                        <div className="flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-emerald-900/30">
-                            <CircleCheckBig className="h-4 w-4" />
-                            <span>{successMessage}</span>
-                        </div>
-                    </Slide>
-                    <Slide in={!!globalLoading} direction="down" mountOnEnter unmountOnExit>
-                        <div className="rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-sky-900/30">
-                            Loading...
-                        </div>
-                    </Slide>
-                    <Slide in={!!errorMessage && !globalLoading} direction="down" mountOnEnter unmountOnExit>
-                        <div className="flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-red-900/30">
-                            <CircleX className="h-4 w-4" />
-                            <span>{errorMessage}</span>
-                        </div>
-                    </Slide>
+                    <AnimatePresence>
+                        {successMessage && (
+                            <motion.div
+                                initial={{ y: -100, opacity: 0 }}
+                                animate={{ y: 0, opacity: 1 }}
+                                exit={{ y: -100, opacity: 0 }}
+                                transition={{ duration: 0.3 }}
+                                className="flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-emerald-900/30"
+                            >
+                                <CircleCheckBig className="h-4 w-4" />
+                                <span>{successMessage}</span>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                    <AnimatePresence>
+                        {globalLoading && (
+                            <motion.div
+                                initial={{ y: -100, opacity: 0 }}
+                                animate={{ y: 0, opacity: 1 }}
+                                exit={{ y: -100, opacity: 0 }}
+                                transition={{ duration: 0.3 }}
+                                className="rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-sky-900/30"
+                            >
+                                Loading...
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                    <AnimatePresence>
+                        {errorMessage && !globalLoading && (
+                            <motion.div
+                                initial={{ y: -100, opacity: 0 }}
+                                animate={{ y: 0, opacity: 1 }}
+                                exit={{ y: -100, opacity: 0 }}
+                                transition={{ duration: 0.3 }}
+                                className="flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-red-900/30"
+                            >
+                                <CircleX className="h-4 w-4" />
+                                <span>{errorMessage}</span>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
                 </div>
                 {header}
                 {actionButton}
@@ -505,25 +530,49 @@ export default function LoansPage() {
     return (
         <AppLayout>
             <Head title="Your Loan Applications" />
-            {globalLoading ? <LinearProgress color="primary" sx={{ position: 'fixed', top: 0, left: 0, width: '100%', zIndex: 60 }} /> : null}
+            {globalLoading ? <div className="fixed top-0 left-0 w-full h-1 bg-linear-to-r from-red-500 to-blue-500 z-50 animate-pulse" /> : null}
             <div className="fixed top-4 left-1/2 z-50 flex -translate-x-1/2 flex-col items-center gap-2">
-                <Slide in={!!successMessage} direction="down" mountOnEnter unmountOnExit>
-                    <div className="flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-emerald-900/30">
-                        <CircleCheckBig className="h-4 w-4" />
-                        <span>{successMessage}</span>
-                    </div>
-                </Slide>
-                <Slide in={!!globalLoading} direction="down" mountOnEnter unmountOnExit>
-                    <div className="rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-sky-900/30">
-                        Loading...
-                    </div>
-                </Slide>
-                <Slide in={!!errorMessage && !globalLoading} direction="down" mountOnEnter unmountOnExit>
-                    <div className="flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-red-900/30">
-                        <CircleX className="h-4 w-4" />
-                        <span>{errorMessage}</span>
-                    </div>
-                </Slide>
+                <AnimatePresence>
+                    {successMessage && (
+                        <motion.div
+                            initial={{ y: -100, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            exit={{ y: -100, opacity: 0 }}
+                            transition={{ duration: 0.3 }}
+                            className="flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-emerald-900/30"
+                        >
+                            <CircleCheckBig className="h-4 w-4" />
+                            <span>{successMessage}</span>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+                <AnimatePresence>
+                    {globalLoading && (
+                        <motion.div
+                            initial={{ y: -100, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            exit={{ y: -100, opacity: 0 }}
+                            transition={{ duration: 0.3 }}
+                            className="rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-sky-900/30"
+                        >
+                            Loading...
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+                <AnimatePresence>
+                    {errorMessage && !globalLoading && (
+                        <motion.div
+                            initial={{ y: -100, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            exit={{ y: -100, opacity: 0 }}
+                            transition={{ duration: 0.3 }}
+                            className="flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-red-900/30"
+                        >
+                            <CircleX className="h-4 w-4" />
+                            <span>{errorMessage}</span>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </div>
             {header}
             <DesktopViewLayout

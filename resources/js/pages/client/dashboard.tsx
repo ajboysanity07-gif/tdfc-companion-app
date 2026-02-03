@@ -9,6 +9,7 @@ import { Banknote, CircleX, LogOut, PiggyBank } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useRoute } from 'ziggy-js';
 import { createTheme } from 'react-data-table-component';
+import { motion, AnimatePresence } from 'framer-motion';
 import SavingsTable from '@/components/dashboard/savings-table';
 import FullScreenModalMobile from '@/components/ui/full-screen-modal-mobile';
 import { ClientDashboardSkeleton } from '@/components/client/dashboard/skeletons';
@@ -673,17 +674,33 @@ export default function CustomerDashboard() {
             <Head title="Dashboard" />
             {loading ? <div className="fixed top-0 left-0 w-full h-1 bg-linear-to-r from-red-500 to-blue-500 z-50 animate-pulse" /> : null}
             <div className="fixed top-4 left-1/2 z-50 flex -translate-x-1/2 flex-col items-center gap-2">
-                <Slide in={!!loading} direction="down" mountOnEnter unmountOnExit>
-                    <div className="rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-sky-900/30">
-                        Loading...
-                    </div>
-                </Slide>
-                <Slide in={!!error && !loading} direction="down" mountOnEnter unmountOnExit>
-                    <div className="flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-red-900/30">
-                        <CircleX className="h-4 w-4" />
-                        <span>{error || 'An error occurred'}</span>
-                    </div>
-                </Slide>
+                <AnimatePresence>
+                    {loading && (
+                        <motion.div
+                            initial={{ y: -100, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            exit={{ y: -100, opacity: 0 }}
+                            transition={{ duration: 0.3 }}
+                            className="rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-sky-900/30"
+                        >
+                            Loading...
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+                <AnimatePresence>
+                    {error && !loading && (
+                        <motion.div
+                            initial={{ y: -100, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            exit={{ y: -100, opacity: 0 }}
+                            transition={{ duration: 0.3 }}
+                            className="flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-red-900/30"
+                        >
+                            <CircleX className="h-4 w-4" />
+                            <span>{error || 'An error occurred'}</span>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </div>
             <div style={{ minHeight: '100%', backgroundColor: tw.isDark ? '#0b0b0b' : '#f5f5f5', paddingTop: '2rem' }}>
                 <div className="sr-only focus-within:not-sr-only">
