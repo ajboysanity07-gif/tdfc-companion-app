@@ -49,7 +49,7 @@ const ClientDetails: React.FC<Props> = ({ client, onSave, isLoading = false }) =
                 animate={{ opacity: 1, y: 0 }}
                 style={{
                     borderRadius: '24px',
-                    backgroundColor: tw.isDark ? '#171717' : '#FAFAFA',
+                    backgroundColor: tw.isDark ? '#171717' : '#FFFFFF',
                     padding: '32px',
                     textAlign: 'center',
                     color: 'rgba(255,255,255,0.6)',
@@ -73,7 +73,7 @@ const ClientDetails: React.FC<Props> = ({ client, onSave, isLoading = false }) =
             <div
                 style={{
                     borderRadius: '24px',
-                    backgroundColor: tw.isDark ? '#171717' : '#FAFAFA',
+                    backgroundColor: tw.isDark ? '#171717' : '#FFFFFF',
                     padding: 0,
                 }}
             >

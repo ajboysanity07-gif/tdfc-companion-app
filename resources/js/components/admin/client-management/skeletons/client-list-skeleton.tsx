@@ -15,7 +15,7 @@ const ClientListSkeleton: React.FC<Props> = ({ itemCount = CLIENT_LIST_PAGE_SIZE
     const isMobile = useMediaQuery('(max-width: 600px)');
     const safeItemCount = Math.max(itemCount ?? CLIENT_LIST_PAGE_SIZE, 1);
 
-    const containerBg = tw.isDark ? '#171717' : '#FAFAFA';
+    const containerBg = tw.isDark ? '#171717' : '#FFFFFF';
     const containerBorder = tw.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.08)';
     const itemBg = tw.isDark ? '#262626' : '#FFFFFF';
     const itemBorder = tw.isDark ? '#3a3a3a' : '#e5e5e5';

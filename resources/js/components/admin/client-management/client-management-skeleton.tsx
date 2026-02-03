@@ -20,13 +20,13 @@ export default function ClientManagementSkeleton({ itemCount = CLIENT_LIST_PAGE_
                 // Mobile view - show either list or details based on selection
                 selectedId ? (
                     <div className="px-4" style={{ paddingTop: 0 }}>
-                        <div className="rounded-3xl border border-gray-200 dark:border-neutral-700 shadow-sm p-4 flex flex-col gap-4" style={{ backgroundColor: tw.isDark ? '#171717' : '#FAFAFA' }}>
+                        <div className="rounded-3xl border border-gray-200 dark:border-neutral-700 shadow-sm p-4 flex flex-col gap-4" style={{ backgroundColor: tw.isDark ? '#171717' : '#FFFFFF' }}>
                             <ClientDetailsSkeleton />
                         </div>
                     </div>
                 ) : (
                     <div className="px-4" style={{ paddingTop: 0 }}>
-                        <div className="rounded-3xl border border-gray-200 dark:border-neutral-700 shadow-sm flex flex-col gap-2 p-4" style={{ backgroundColor: tw.isDark ? '#171717' : '#FAFAFA' }}>
+                        <div className="rounded-3xl border border-gray-200 dark:border-neutral-700 shadow-sm flex flex-col gap-2 p-4" style={{ backgroundColor: tw.isDark ? '#171717' : '#FFFFFF' }}>
                             <ClientListSkeleton itemCount={itemCount} fullHeight showTabs />
                         </div>
                     </div>
@@ -36,12 +36,12 @@ export default function ClientManagementSkeleton({ itemCount = CLIENT_LIST_PAGE_
                 <div className="px-4 lg:flex lg:flex-col lg:h-full flex-1" style={{ paddingTop: 0 }}>
                     <div className="flex gap-2 h-full">
                         <div className="flex-1">
-                            <div className="rounded-3xl border border-gray-200 dark:border-neutral-700 shadow-sm flex flex-col gap-2 p-4 h-full" style={{ backgroundColor: tw.isDark ? '#171717' : '#FAFAFA' }}>
+                            <div className="rounded-3xl border border-gray-200 dark:border-neutral-700 shadow-sm flex flex-col gap-2 p-4 h-full" style={{ backgroundColor: tw.isDark ? '#171717' : '#FFFFFF' }}>
                                 <ClientListSkeleton itemCount={itemCount} fullHeight showTabs />
                             </div>
                         </div>
                         <div className="flex-1">
-                            <div className="rounded-3xl border border-gray-200 dark:border-neutral-700 shadow-sm p-4 flex flex-col gap-4 h-full" style={{ backgroundColor: tw.isDark ? '#171717' : '#FAFAFA' }}>
+                            <div className="rounded-3xl border border-gray-200 dark:border-neutral-700 shadow-sm p-4 flex flex-col gap-4 h-full" style={{ backgroundColor: tw.isDark ? '#171717' : '#FFFFFF' }}>
                                 <ClientDetailsSkeleton />
                             </div>
                         </div>

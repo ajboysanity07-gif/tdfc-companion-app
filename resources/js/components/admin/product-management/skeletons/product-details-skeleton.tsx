@@ -5,7 +5,7 @@ import { useMyTheme } from '@/hooks/use-mytheme';
 const ProductDetailsSkeleton: React.FC = () => {
     const tw = useMyTheme();
     const isMobile = useMediaQuery('(max-width: 600px)');
-    const panelBg = tw.isDark ? '#262626' : '#FAFAFA';
+    const panelBg = tw.isDark ? '#262626' : '#FFFFFF';
     const panelBorder = tw.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)';
 
     return (
@@ -14,7 +14,7 @@ const ProductDetailsSkeleton: React.FC = () => {
                 flex: 1,
                 borderRadius: 24,
                 padding: isMobile ? 20 : 24,
-                backgroundColor: tw.isDark ? '#171717' : '#FAFAFA',
+                backgroundColor: tw.isDark ? '#171717' : '#FFFFFF',
                 boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
                 display: 'flex',
                 flexDirection: 'column',
