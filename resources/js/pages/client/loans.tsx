@@ -359,49 +359,32 @@ export default function LoansPage() {
     // Floating action button for mobile
     const actionButton = isMobile ? (
         <div
-            className="fixed bottom-24 left-1/2 -translate-x-1/2 z-40 flex gap-2 rounded-full shadow-lg">
-
-                transform: 'translateX(-50%)',
-                zIndex: (theme) => Math.max(theme.zIndex.modal, 3000) + 60,
-                px: 2,
-                width: '100%',
-                display: 'flex',
-                justifyContent: 'center',
-                pointerEvents: 'none',
+            className="fixed bottom-24 left-1/2 z-40 flex gap-2 rounded-full shadow-lg px-2 justify-center pointer-events-none"
+            style={{
                 opacity: isActionHidden ? 0 : 1,
                 visibility: isActionHidden ? 'hidden' : 'visible',
                 transition: 'opacity 160ms ease',
+                transform: 'translateX(-50%)',
             }}
         >
             <Button
-                component={Link}
-                href={calculatorHref}
-                variant="contained"
-                startIcon={<Calculator size={18} />}
+                className="pointer-events-auto font-bold whitespace-nowrap"
+                style={{
+                    backgroundColor: '#F57979',
+                    color: '#fff',
+                    borderRadius: '9999px',
+                    paddingLeft: '2rem',
+                    paddingRight: '2rem',
+                    paddingTop: '0.6rem',
+                    paddingBottom: '0.6rem',
+                    minWidth: '220px',
+                    animation: isActionHidden ? 'none' : 'new-transaction-float 2.6s ease-in-out infinite',
+                }}
+                onClick={() => router.get(calculatorHref)}
                 ref={actionButtonRef}
                 data-new-transaction
-                sx={{
-                    pointerEvents: 'auto',
-                    bgcolor: '#F57979',
-                    color: '#fff',
-                    fontWeight: 700,
-                    textTransform: 'none',
-                    borderRadius: 999,
-                    px: 4,
-                    py: 1.35,
-                    minWidth: 220,
-                    boxShadow: 'none',
-                    animation: isActionHidden ? 'none' : 'new-transaction-float 2.6s ease-in-out infinite',
-                    '@keyframes new-transaction-float': {
-                        '0%, 100%': { transform: 'translateY(0)' },
-                        '50%': { transform: 'translateY(-3px)' },
-                    },
-                    '@media (prefers-reduced-motion: reduce)': {
-                        animation: 'none',
-                    },
-                    '&:hover': { bgcolor: '#e14e4e' },
-                }}
             >
+                <Calculator size={18} className="mr-2 inline" />
                 New Transaction
             </Button>
         </div>

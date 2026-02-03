@@ -521,11 +521,10 @@ export default function CustomerDashboard() {
                                             onClick={() => handlePageChange(pageNum)}
                                             className="px-2.5 py-1.5 rounded font-medium text-sm transition-all duration-200"
                                             style={{
-                                                color: tw.isDark ? '#e5e7eb' : '#000000',
+                                                color: isActive ? '#ffffff' : (tw.isDark ? '#e5e7eb' : '#000000'),
                                                 borderColor: borderColor,
                                                 fontWeight: isActive ? 700 : 500,
                                                 backgroundColor: isActive ? accent : 'transparent',
-                                                color: isActive ? '#ffffff' : (tw.isDark ? '#e5e7eb' : '#000000'),
                                                 transform: isActive ? 'scale(1.05)' : 'scale(1)',
                                             }}
                                             onMouseEnter={(e) => {
