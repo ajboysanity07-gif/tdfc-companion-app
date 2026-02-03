@@ -80,13 +80,14 @@ const ProductCRUD: React.FC<Props> = ({
 
     const inputStyle = {
         width: '100%',
-        padding: '8px 12px',
+        padding: '10px 12px',
         borderRadius: '8px',
         border: '1px solid rgba(255,255,255,0.2)',
         backgroundColor: 'rgba(255,255,255,0.05)',
         color: '#ffffff',
         fontSize: '0.875rem',
         fontFamily: 'inherit',
+        transition: 'all 120ms ease',
     };
 
     const labelStyle = {
@@ -135,7 +136,7 @@ const ProductCRUD: React.FC<Props> = ({
                     </button>
                 </div>
 
-                <div style={{ paddingLeft: '16px', paddingRight: '16px', paddingTop: '16px', paddingBottom: '16px', display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '16px' }}>
+                <div style={{ paddingLeft: '16px', paddingRight: '16px', paddingTop: '16px', paddingBottom: '16px', display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(250px, 1fr))', gap: '16px', maxHeight: 'calc(90vh - 200px)', overflow: 'auto' }}>
                     <div>
                         <label style={labelStyle}>Product Name</label>
                         <input
@@ -278,27 +279,27 @@ const ProductCRUD: React.FC<Props> = ({
                     </div>
                 </div>
 
-                <div style={{ display: 'flex', gap: '8px', paddingLeft: '16px', paddingRight: '16px', paddingTop: '12px', paddingBottom: '16px', borderTop: `1px solid ${tw.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}` }}>
+                <div style={{ display: 'flex', gap: '12px', paddingLeft: '16px', paddingRight: '16px', paddingTop: '16px', paddingBottom: '16px', borderTop: `1px solid ${tw.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}` }}>
                     <button
                         onClick={onClose}
                         style={{
                             flex: 1,
-                            padding: '10px 16px',
+                            padding: '12px 20px',
                             backgroundColor: 'transparent',
-                            border: '1px solid rgba(255,255,255,0.2)',
+                            border: '1px solid rgba(255,255,255,0.3)',
                             borderRadius: '8px',
                             color: '#ffffff',
                             cursor: 'pointer',
-                            fontWeight: 600,
+                            fontWeight: 700,
                             fontSize: '0.875rem',
                             transition: 'all 120ms ease',
                         }}
                         onMouseEnter={(e) => {
-                            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.4)';
-                            e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)';
+                            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.5)';
+                            e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)';
                         }}
                         onMouseLeave={(e) => {
-                            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)';
+                            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)';
                             e.currentTarget.style.backgroundColor = 'transparent';
                         }}
                     >
@@ -309,16 +310,17 @@ const ProductCRUD: React.FC<Props> = ({
                         disabled={isSaving}
                         style={{
                             flex: 1,
-                            padding: '10px 16px',
+                            padding: '12px 20px',
                             backgroundColor: '#3b82f6',
                             border: 'none',
                             borderRadius: '8px',
                             color: '#ffffff',
                             cursor: isSaving ? 'not-allowed' : 'pointer',
-                            fontWeight: 600,
+                            fontWeight: 700,
                             fontSize: '0.875rem',
                             opacity: isSaving ? 0.6 : 1,
                             transition: 'all 120ms ease',
+                            boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)',
                         }}
                         onMouseEnter={(e) => !isSaving && (e.currentTarget.style.backgroundColor = '#2563eb')}
                         onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#3b82f6')}

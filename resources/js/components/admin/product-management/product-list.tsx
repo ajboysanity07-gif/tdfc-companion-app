@@ -226,28 +226,30 @@ const ProductList: React.FC<Props> = ({
                                         <button
                                             onClick={() => onSelect?.(product.product_id)}
                                             style={{
-                                                width: isMobile ? '32px' : '36px',
-                                                height: isMobile ? '32px' : '36px',
+                                                width: isMobile ? '40px' : '44px',
+                                                height: isMobile ? '40px' : '44px',
                                                 borderRadius: '50%',
-                                                border: '1px solid rgba(245,121,121,0.25)',
-                                                backgroundColor: 'rgba(245,121,121,0.12)',
+                                                border: '1px solid rgba(245,121,121,0.4)',
+                                                backgroundColor: 'rgba(245,121,121,0.15)',
                                                 color: '#f57979',
                                                 transition: 'all 120ms ease',
                                                 cursor: 'pointer',
                                                 display: 'flex',
                                                 alignItems: 'center',
                                                 justifyContent: 'center',
+                                                boxShadow: '0 2px 8px rgba(245,121,121,0.2)',
+                                                flexShrink: 0,
                                             }}
                                             onMouseEnter={(e) => {
-                                                e.currentTarget.style.transform = 'scale(1.08)';
-                                                e.currentTarget.style.backgroundColor = 'rgba(245,121,121,0.2)';
+                                                e.currentTarget.style.transform = 'scale(1.1)';
+                                                e.currentTarget.style.backgroundColor = 'rgba(245,121,121,0.25)';
                                             }}
                                             onMouseLeave={(e) => {
                                                 e.currentTarget.style.transform = 'scale(1)';
-                                                e.currentTarget.style.backgroundColor = 'rgba(245,121,121,0.12)';
+                                                e.currentTarget.style.backgroundColor = 'rgba(245,121,121,0.15)';
                                             }}
                                         >
-                                            <ArrowForwardIosIcon style={{ fontSize: 'inherit' }} />
+                                            <ArrowForwardIosIcon style={{ fontSize: '18px' }} />
                                         </button>
                                     </motion.div>
                                 );
@@ -264,17 +266,19 @@ const ProductList: React.FC<Props> = ({
                             style={{
                                 paddingLeft: '16px',
                                 paddingRight: '16px',
-                                paddingTop: '6px',
-                                paddingBottom: '6px',
-                                borderRadius: '4px',
-                                border: `1px solid ${tw.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)'}`,
-                                backgroundColor: tw.isDark ? '#2f2f2f' : 'rgba(0,0,0,0.04)',
-                                color: 'rgba(255,255,255,0.7)',
+                                paddingTop: '8px',
+                                paddingBottom: '8px',
+                                borderRadius: '6px',
+                                border: `1px solid ${tw.isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.2)'}`,
+                                backgroundColor: clampedPage <= 1 ? 'rgba(255,255,255,0.08)' : (tw.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)'),
+                                color: clampedPage <= 1 ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.8)',
                                 fontWeight: 700,
-                                opacity: clampedPage <= 1 ? 0.6 : 1,
-                                fontSize: '0.875rem',
                                 cursor: clampedPage <= 1 ? 'not-allowed' : 'pointer',
+                                fontSize: '0.875rem',
+                                transition: 'all 120ms ease',
                             }}
+                            onMouseEnter={(e) => !e.disabled && (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)')}
+                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = clampedPage <= 1 ? 'rgba(255,255,255,0.08)' : (tw.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)'))}
                         >
                             Prev
                         </button>
@@ -282,12 +286,12 @@ const ProductList: React.FC<Props> = ({
                             style={{
                                 paddingLeft: '16px',
                                 paddingRight: '16px',
-                                paddingTop: '6px',
-                                paddingBottom: '6px',
-                                borderRadius: '4px',
-                                border: `1px solid ${tw.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)'}`,
-                                backgroundColor: tw.isDark ? '#2f2f2f' : 'rgba(0,0,0,0.04)',
-                                color: 'rgba(255,255,255,0.7)',
+                                paddingTop: '8px',
+                                paddingBottom: '8px',
+                                borderRadius: '6px',
+                                border: `1px solid ${tw.isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.2)'}`,
+                                backgroundColor: tw.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)',
+                                color: 'rgba(255,255,255,0.8)',
                                 fontWeight: 700,
                                 fontSize: '0.875rem',
                             }}
@@ -300,17 +304,19 @@ const ProductList: React.FC<Props> = ({
                             style={{
                                 paddingLeft: '16px',
                                 paddingRight: '16px',
-                                paddingTop: '6px',
-                                paddingBottom: '6px',
-                                borderRadius: '4px',
-                                border: `1px solid ${tw.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)'}`,
-                                backgroundColor: tw.isDark ? '#2f2f2f' : 'rgba(0,0,0,0.04)',
-                                color: 'rgba(255,255,255,0.7)',
+                                paddingTop: '8px',
+                                paddingBottom: '8px',
+                                borderRadius: '6px',
+                                border: `1px solid ${tw.isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.2)'}`,
+                                backgroundColor: clampedPage >= totalPages ? 'rgba(255,255,255,0.08)' : (tw.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)'),
+                                color: clampedPage >= totalPages ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.8)',
                                 fontWeight: 700,
-                                opacity: clampedPage >= totalPages ? 0.6 : 1,
-                                fontSize: '0.875rem',
                                 cursor: clampedPage >= totalPages ? 'not-allowed' : 'pointer',
+                                fontSize: '0.875rem',
+                                transition: 'all 120ms ease',
                             }}
+                            onMouseEnter={(e) => !e.disabled && (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)')}
+                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = clampedPage >= totalPages ? 'rgba(255,255,255,0.08)' : (tw.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)'))}
                         >
                             Next
                         </button>
