@@ -71,7 +71,7 @@ const ProductCRUD: React.FC<Props> = ({
         padding: '10px 12px',
         borderRadius: '8px',
         border: `1px solid ${tw.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)'}`,
-        backgroundColor: tw.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
+        backgroundColor: tw.isDark ? 'rgba(255,255,255,0.05)' : '#FAFAFA',
         color: tw.isDark ? '#ffffff' : '#000000',
         fontSize: '0.875rem',
         fontFamily: 'inherit',
