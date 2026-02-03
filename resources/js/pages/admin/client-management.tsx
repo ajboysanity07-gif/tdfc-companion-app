@@ -9,7 +9,6 @@ import MobileViewLayout from '@/components/mobile-view-layout';
 import { useClientManagement } from '@/hooks/use-client-management';
 import AppLayout from '@/layouts/app-layout';
 import { useMediaQuery } from '@/hooks/use-media-query';
-import { Box } from '@mui/material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { CircleCheckBig, CircleX } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
@@ -108,8 +107,8 @@ function ClientDesktopLayoutView({
     return (
         <DesktopViewLayout
             left={
-                <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                    <Box sx={{ flex: 1, overflow: 'hidden' }}>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    <div style={{ flex: 1, overflow: 'hidden' }}>
                         <ClientList
                             clients={filtered}
                         onSelect={(id) => onSelect(id)}
@@ -121,8 +120,8 @@ function ClientDesktopLayoutView({
                         statusTab={statusTab}
                         onStatusTabChange={onStatusTabChange}
                     />
-                </Box>
-            </Box>
+                </div>
+            </div>
         }
             right={
                 <AnimatePresence mode="wait">

@@ -1,5 +1,4 @@
 import React from 'react';
-import { Box, Stack } from '@mui/material';
 import { useMyTheme } from '../../../hooks/use-mytheme';
 import { useMediaQuery } from '@/hooks/use-media-query';
 
@@ -27,141 +26,115 @@ const LoanListSkeleton: React.FC<Props> = ({ itemCount }) => {
         : 'rgba(0, 0, 0, 0.08)';
 
     return (
-        <Stack spacing={3} width="100%">
+        <div className="flex flex-col gap-3 w-full">
             {Array.from({ length: safeItemCount }).map((_, idx) => (
-                <Box
+                <div
                     key={idx}
-                    sx={{
+                    style={{
                         width: '100%',
-                        borderRadius: 4,
-                        bgcolor: cardBg,
+                        borderRadius: 16,
+                        backgroundColor: cardBg,
                         backdropFilter: 'blur(20px)',
                         boxShadow: `0 2px 16px ${shadowColor}, 0 1px 4px ${shadowColor}`,
-                        p: { xs: 3, sm: 3.5 },
+                        padding: isMobile ? 24 : 28,
                         transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                        '&:hover': {
-                            transform: 'translateY(-2px)',
-                            bgcolor: tw.isDark ? 'rgba(38, 38, 40, 0.95)' : 'rgba(255, 255, 255, 1)',
-                            boxShadow: `0 4px 24px ${shadowColor}, 0 2px 8px ${shadowColor}`,
-                        },
+                    }}
+                    onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'translateY(-2px)';
+                        e.currentTarget.style.backgroundColor = tw.isDark ? 'rgba(38, 38, 40, 0.95)' : 'rgba(255, 255, 255, 1)';
+                        e.currentTarget.style.boxShadow = `0 4px 24px ${shadowColor}, 0 2px 8px ${shadowColor}`;
+                    }}
+                    onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = '';
+                        e.currentTarget.style.backgroundColor = cardBg;
+                        e.currentTarget.style.boxShadow = `0 2px 16px ${shadowColor}, 0 1px 4px ${shadowColor}`;
                     }}
                 >
-                    <Stack
-                        direction={{ xs: 'column', sm: 'row' }}
-                        spacing={{ xs: 3, sm: 4 }}
-                        alignItems={{ xs: 'flex-start', sm: 'center' }}
-                        justifyContent="space-between"
-                    >
+                    <div className={isMobile ? 'flex flex-col gap-3' : 'flex flex-row gap-4'} style={{ alignItems: isMobile ? 'flex-start' : 'center', justifyContent: 'space-between' }}>
                         {/* Left side - Loan info */}
-                        <Stack spacing={2} flex={1}>
+                        <div className="flex flex-col gap-2 flex-1">
                             {/* Loan Title */}
-                            <Box 
-                                sx={{ 
+                            <div 
+                                style={{ 
                                     width: isMobile ? '60%' : '45%',
                                     height: 26,
-                                    bgcolor: skeletonBg,
-                                    borderRadius: 2,
+                                    backgroundColor: skeletonBg,
+                                    borderRadius: 8,
                                     animation: 'pulse 1.5s ease-in-out infinite',
-                                    '@keyframes pulse': {
-                                        '0%, 100%': { opacity: 1 },
-                                        '50%': { opacity: 0.5 },
-                                    },
                                 }} 
                             />
                             
                             {/* Loan Number */}
-                            <Box 
-                                sx={{ 
+                            <div 
+                                style={{ 
                                     width: isMobile ? '70%' : '52%',
                                     height: 20,
-                                    bgcolor: skeletonBg,
-                                    borderRadius: 1.5,
+                                    backgroundColor: skeletonBg,
+                                    borderRadius: 6,
                                     animation: 'pulse 1.5s ease-in-out 0.2s infinite',
-                                    '@keyframes pulse': {
-                                        '0%, 100%': { opacity: 1 },
-                                        '50%': { opacity: 0.5 },
-                                    },
                                 }} 
                             />
                             
                             {/* Balance */}
-                            <Box 
-                                sx={{ 
+                            <div 
+                                style={{ 
                                     width: isMobile ? '50%' : '38%',
                                     height: 28,
-                                    bgcolor: skeletonBg,
-                                    borderRadius: 2,
+                                    backgroundColor: skeletonBg,
+                                    borderRadius: 8,
                                     animation: 'pulse 1.5s ease-in-out 0.4s infinite',
-                                    '@keyframes pulse': {
-                                        '0%, 100%': { opacity: 1 },
-                                        '50%': { opacity: 0.5 },
-                                    },
                                 }} 
                             />
                             
                             {/* Date */}
-                            <Box 
-                                sx={{ 
+                            <div 
+                                style={{ 
                                     width: isMobile ? '40%' : '30%',
                                     height: 18,
-                                    bgcolor: skeletonBg,
-                                    borderRadius: 1.5,
+                                    backgroundColor: skeletonBg,
+                                    borderRadius: 6,
                                     animation: 'pulse 1.5s ease-in-out 0.6s infinite',
-                                    '@keyframes pulse': {
-                                        '0%, 100%': { opacity: 1 },
-                                        '50%': { opacity: 0.5 },
-                                    },
                                 }} 
                             />
-                        </Stack>
+                        </div>
 
                         {/* Right side - Action buttons */}
-                        <Stack 
-                            direction="column" 
-                            spacing={2} 
-                            minWidth={{ xs: '100%', sm: 180 }}
+                        <div 
+                            className="flex flex-col gap-2"
+                            style={{
+                                width: isMobile ? '100%' : 180,
+                                minWidth: isMobile ? '100%' : 180,
+                            }}
                         >
-                            <Box 
-                                sx={{ 
+                            <div 
+                                style={{ 
                                     height: 44,
-                                    bgcolor: skeletonBg,
-                                    borderRadius: 3,
+                                    backgroundColor: skeletonBg,
+                                    borderRadius: 12,
                                     animation: 'pulse 1.5s ease-in-out 0.3s infinite',
-                                    '@keyframes pulse': {
-                                        '0%, 100%': { opacity: 1 },
-                                        '50%': { opacity: 0.5 },
-                                    },
                                 }} 
                             />
-                            <Box 
-                                sx={{ 
+                            <div 
+                                style={{ 
                                     height: 44,
-                                    bgcolor: skeletonBg,
-                                    borderRadius: 3,
+                                    backgroundColor: skeletonBg,
+                                    borderRadius: 12,
                                     animation: 'pulse 1.5s ease-in-out 0.5s infinite',
-                                    '@keyframes pulse': {
-                                        '0%, 100%': { opacity: 1 },
-                                        '50%': { opacity: 0.5 },
-                                    },
                                 }} 
                             />
-                            <Box 
-                                sx={{ 
+                            <div 
+                                style={{ 
                                     height: 44,
-                                    bgcolor: skeletonBg,
-                                    borderRadius: 3,
+                                    backgroundColor: skeletonBg,
+                                    borderRadius: 12,
                                     animation: 'pulse 1.5s ease-in-out 0.7s infinite',
-                                    '@keyframes pulse': {
-                                        '0%, 100%': { opacity: 1 },
-                                        '50%': { opacity: 0.5 },
-                                    },
                                 }} 
                             />
-                        </Stack>
-                    </Stack>
-                </Box>
+                        </div>
+                    </div>
+                </div>
             ))}
-        </Stack>
+        </div>
     );
 };
 
