@@ -5,6 +5,7 @@ import type { ProductLntype, WlnType, ProductPayload } from '@/types/product-lnt
 import { AnimatePresence, motion } from 'framer-motion';
 import CloseIcon from '@mui/icons-material/Close';
 import { Switch } from '@/components/ui/switch';
+import Select from 'react-select';
 
 type Props = {
     product?: ProductLntype;
@@ -199,27 +200,92 @@ const ProductCRUD: React.FC<Props> = ({
                     {renderSectionTitle('Type Relation Tags')}
                     <div>
                         <label style={labelStyle}>Tags *</label>
-                        <select
-                            multiple
-                            value={formData.typecodes || []}
-                            onChange={(e) => {
-                                const selected = Array.from(e.target.selectedOptions, option => option.value);
-                                setFormData({ ...formData, typecodes: selected });
+                        <Select
+                            isMulti
+                            options={availableTypes.map((type) => ({
+                                value: type.typecode,
+                                label: type.lntype,
+                            }))}
+                            value={availableTypes
+                                .filter((type) => formData.typecodes?.includes(type.typecode))
+                                .map((type) => ({
+                                    value: type.typecode,
+                                    label: type.lntype,
+                                }))}
+                            onChange={(selected) => {
+                                setFormData({
+                                    ...formData,
+                                    typecodes: selected?.map((s) => s.value) || [],
+                                });
                             }}
-                            style={{
-                                ...inputStyle,
-                                appearance: 'none',
-                                minHeight: '100px',
-                                backgroundImage: 'none',
-                                paddingRight: '12px',
-                            } as React.CSSProperties}
-                        >
-                            {availableTypes.map((type) => (
-                                <option key={type.typecode} value={type.typecode}>
-                                    {type.lntype}
-                                </option>
-                            ))}
-                        </select>
+                            styles={{
+                                control: (base) => ({
+                                    ...base,
+                                    backgroundColor: tw.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
+                                    borderColor: tw.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)',
+                                    color: tw.isDark ? '#ffffff' : '#000000',
+                                    borderRadius: '8px',
+                                    padding: '4px',
+                                    fontSize: '0.875rem',
+                                    minHeight: '44px',
+                                    cursor: 'pointer',
+                                    transition: 'all 120ms ease',
+                                    '&:hover': {
+                                        borderColor: tw.isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.2)',
+                                    },
+                                }),
+                                menu: (base) => ({
+                                    ...base,
+                                    backgroundColor: tw.isDark ? '#171717' : '#FAFAFA',
+                                    borderColor: tw.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)',
+                                    borderRadius: '8px',
+                                }),
+                                option: (base, state) => ({
+                                    ...base,
+                                    backgroundColor: state.isSelected
+                                        ? '#3b82f6'
+                                        : state.isFocused
+                                          ? tw.isDark
+                                            ? 'rgba(59, 130, 246, 0.2)'
+                                            : 'rgba(59, 130, 246, 0.1)'
+                                          : 'transparent',
+                                    color: state.isSelected
+                                        ? '#ffffff'
+                                        : tw.isDark
+                                          ? 'rgba(255,255,255,0.9)'
+                                          : '#000000',
+                                    cursor: 'pointer',
+                                    padding: '10px 12px',
+                                    transition: 'all 120ms ease',
+                                    '&:active': {
+                                        backgroundColor: '#3b82f6',
+                                    },
+                                }),
+                                input: (base) => ({
+                                    ...base,
+                                    color: tw.isDark ? '#ffffff' : '#000000',
+                                }),
+                                multiValue: (base) => ({
+                                    ...base,
+                                    backgroundColor: '#3b82f6',
+                                    borderRadius: '4px',
+                                }),
+                                multiValueLabel: (base) => ({
+                                    ...base,
+                                    color: '#ffffff',
+                                }),
+                                multiValueRemove: (base) => ({
+                                    ...base,
+                                    color: '#ffffff',
+                                    cursor: 'pointer',
+                                    '&:hover': {
+                                        backgroundColor: '#2563eb',
+                                    },
+                                }),
+                            }}
+                            classNamePrefix="react-select"
+                            placeholder="Select tags..."
+                        />
                     </div>
 
                     {/* Scheme and Mode */}
