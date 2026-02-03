@@ -466,6 +466,16 @@ const ProductCRUD: React.FC<Props> = ({
                         </div>
                     )}
 
+                    {formData.max_amortization_mode === 'CUSTOM' && (
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', marginTop: '16px' }}>
+                            <span style={{ fontSize: '0.65rem', color: textColorLight }}>editable?</span>
+                            <Switch
+                                checked={formData.is_max_amortization_editable || false}
+                                onCheckedChange={(checked) => setFormData({ ...formData, is_max_amortization_editable: checked })}
+                            />
+                        </div>
+                    )}
+
                     {/* Fees */}
                     {renderSectionTitle('Fees & Charges')}
                     <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr', gap: '16px' }}>
