@@ -3,7 +3,6 @@ import { useMyTheme } from '@/hooks/use-mytheme';
 import type { ProductLntype } from '@/types/product-lntype';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import SearchIcon from '@mui/icons-material/Search';
-import { Autocomplete, Box, Chip, IconButton, List, ListItem, Stack, TextField, Typography } from '@mui/material';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import React, { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -17,7 +16,7 @@ type Props = {
     onAdd?: () => void;
     searchValue?: string;
     onSearchChange?: (value: string) => void;
-    searchOptions?: string[]; // e.g., lntype or typecode list for autocomplete
+    searchOptions?: string[];
     fullHeight?: boolean;
 };
 
@@ -52,239 +51,273 @@ const ProductList: React.FC<Props> = ({
     }, [searchValue]);
 
     return (
-        <Stack
-            spacing={isMobile ? 1.1 : 1.6}
-            sx={fullHeight ? { flex: 1, minHeight: '100%', alignItems: 'stretch', justifyContent: 'flex-start', pb: 3 } : { pb: 3 }}
+        <div
+            style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: isMobile ? '11px' : '16px',
+                paddingBottom: '24px',
+                ...(fullHeight && {
+                    flex: 1,
+                    minHeight: '100%',
+                    alignItems: 'stretch',
+                    justifyContent: 'flex-start',
+                }),
+            }}
         >
-            <Box
-                sx={{
-                    borderRadius: 6,
-                    bgcolor: tw.isDark ? '#171717' : '#FAFAFA',
-                    p: 0,
+            <div
+                style={{
+                    borderRadius: '24px',
+                    backgroundColor: tw.isDark ? '#171717' : '#FAFAFA',
+                    padding: 0,
                     flex: fullHeight ? 1 : 'unset',
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: isMobile ? 1.5 : 2,
+                    gap: isMobile ? '12px' : '16px',
                 }}
             >
                 <BoxHeader title="Available Products" />
-                {/* Search bar */}
-                <Autocomplete
-                    freeSolo
-                    options={searchOptions}
-                    value={searchValue}
-                    onInputChange={(_, value) => onSearchChange?.(value)}
-                    renderInput={(params) => (
-                        <TextField
-                            {...params}
-                            label={
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                    <SearchIcon fontSize="small" />
-                                    Search products
-                                </Box>
-                            }
-                            size="small"
-                        />
-                    )}
-                    sx={{ width: '100%' }}
-                />
 
-            {/* Product list */}
-            {paginated.length === 0 ? (
-                <Box
-                    sx={{
-                        border: `1px dashed ${tw.isDark ? '#3a3a3a' : '#e5e5e5'}`,
-                        borderRadius: 2,
-                        p: isMobile ? 2.5 : 4,
-                        minHeight: fullHeight ? '100%' : isMobile ? '75%' : 360,
-                        height: fullHeight ? '100%' : 'auto',
-                        flexGrow: fullHeight ? 1 : 0,
-                        width: '100%',
-                        alignSelf: 'stretch',
-                        maxWidth: '100%',
-                        mx: 'auto',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        textAlign: 'center',
-                        color: 'text.secondary',
-                        gap: isMobile ? 0.5 : 0.75,
-                    }}
-                >
-                    <Typography variant={isMobile ? 'subtitle1' : 'h6'} fontWeight={800}>
-                        No product available.
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                        You can always add a new product.
-                    </Typography>
-                </Box>
-            ) : (
-                <List sx={{ flex: fullHeight ? 1 : 'auto', display: 'flex', flexDirection: 'column', gap: 1, p: 0 }}>
-                    <AnimatePresence initial={false}>
-                        {paginated.map((product) => {
-                            const isOn = product.is_active ?? false;
-                            // Expand lntags from comma-separated strings into individual tag labels
-                            const typeLabels = product.types
-                                ?.flatMap((t) => {
-                                    if (t.lntags && t.lntags.trim()) {
-                                        return t.lntags.split(',').map((tag) => tag.trim()).filter(Boolean);
-                                    }
-                                    return t.typecode ? [t.typecode] : [];
-                                })
-                                .filter(Boolean) ?? [];
-                            return (
-                                <motion.div
-                                    key={product.product_id}
-                                    initial={{ opacity: 0, y: -16 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -16 }}
-                                    transition={{ type: 'spring', stiffness: 220, damping: 20, mass: 0.6 }}
-                                >
-                                    <ListItem
-                                        sx={{
-                                            borderRadius: 2,
-                                            border: '1px solid',
-                                            borderColor: 'divider',
-                                            p: 2,
+                <div style={{ paddingLeft: '16px', paddingRight: '16px' }}>
+                    <input
+                        type="text"
+                        placeholder="Search products"
+                        value={searchValue}
+                        onChange={(e) => {
+                            onSearchChange?.(e.target.value);
+                            setPage(1);
+                        }}
+                        list="product-search-options"
+                        style={{
+                            width: '100%',
+                            padding: '8px 12px',
+                            borderRadius: '8px',
+                            border: '1px solid rgba(255,255,255,0.2)',
+                            backgroundColor: 'rgba(255,255,255,0.05)',
+                            color: '#ffffff',
+                            fontSize: '0.875rem',
+                        }}
+                    />
+                    <datalist id="product-search-options">
+                        {searchOptions.map((option) => (
+                            <option key={option} value={option} />
+                        ))}
+                    </datalist>
+                </div>
+
+                {paginated.length === 0 ? (
+                    <div
+                        style={{
+                            border: `1px dashed ${tw.isDark ? '#3a3a3a' : '#e5e5e5'}`,
+                            borderRadius: '8px',
+                            padding: isMobile ? '20px' : '32px',
+                            minHeight: fullHeight ? '100%' : isMobile ? '75%' : '360px',
+                            height: fullHeight ? '100%' : 'auto',
+                            flexGrow: fullHeight ? 1 : 0,
+                            width: '100%',
+                            maxWidth: '100%',
+                            margin: '0 auto',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            textAlign: 'center',
+                            color: 'rgba(255,255,255,0.6)',
+                            gap: isMobile ? '4px' : '6px',
+                        }}
+                    >
+                        <div style={{ fontWeight: 800, fontSize: isMobile ? '1rem' : '1.25rem' }}>
+                            No product available.
+                        </div>
+                        <div style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.5)' }}>
+                            You can always add a new product.
+                        </div>
+                    </div>
+                ) : (
+                    <div
+                        style={{
+                            flex: fullHeight ? 1 : 'auto',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '8px',
+                            padding: 0,
+                            paddingLeft: '16px',
+                            paddingRight: '16px',
+                        }}
+                    >
+                        <AnimatePresence initial={false}>
+                            {paginated.map((product) => {
+                                const isOn = product.is_active ?? false;
+                                const typeLabels = product.types
+                                    ?.flatMap((t) => {
+                                        if (t.lntags && t.lntags.trim()) {
+                                            return t.lntags.split(',').map((tag) => tag.trim()).filter(Boolean);
+                                        }
+                                        return t.typecode ? [t.typecode] : [];
+                                    })
+                                    .filter(Boolean) ?? [];
+
+                                return (
+                                    <motion.div
+                                        key={product.product_id}
+                                        initial={{ opacity: 0, y: -16 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: -16 }}
+                                        transition={{ type: 'spring', stiffness: 220, damping: 20, mass: 0.6 }}
+                                        style={{
+                                            borderRadius: '8px',
+                                            border: '1px solid rgba(255,255,255,0.1)',
+                                            padding: '16px',
                                             display: 'flex',
                                             justifyContent: 'space-between',
                                             alignItems: 'center',
-                                            bgcolor: tw.isDark ? '#262626' : '#FFFFFF',
-                                            '&:hover': {
-                                                bgcolor: tw.isDark ? '#2f2f2f' : '#F5F5F5'
-                                            }
+                                            backgroundColor: tw.isDark ? '#262626' : '#FFFFFF',
+                                            transition: 'all 120ms ease',
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            e.currentTarget.style.backgroundColor = tw.isDark ? '#2f2f2f' : '#F5F5F5';
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.currentTarget.style.backgroundColor = tw.isDark ? '#262626' : '#FFFFFF';
                                         }}
                                     >
-                                        <Stack direction="row" spacing={2} sx={{ flex: 1, alignItems: 'center' }}>
-                                            {/* Toggle switch */}
+                                        <div style={{ display: 'flex', gap: '16px', flex: 1, alignItems: 'center' }}>
                                             <IOSSwitch
                                                 checked={isOn}
-                                                onChange={(e) => onToggleActive?.(product.product_id, e.target.checked)}
+                                                onChange={(e) => onToggleActive?.(product.product_id, e.target ? (e.target as HTMLInputElement).checked : e)}
                                             />
-                                            
-                                            {/* Product info */}
-                                            <Stack sx={{ flex: 1 }}>
-                                                <Typography variant={isMobile ? 'subtitle1' : 'h6'} fontWeight={700}>
+
+                                            <div style={{ flex: 1 }}>
+                                                <div style={{ fontSize: isMobile ? '1rem' : '1.125rem', fontWeight: 700 }}>
                                                     {product.product_name}
-                                                </Typography>
+                                                </div>
                                                 {typeLabels.length > 0 && (
-                                                    <Stack direction="row" spacing={0.5} alignItems="center" flexWrap="wrap" rowGap={0.3} mt={0.5}>
-                                                        <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600, mr: 0.5 }}>
+                                                    <div style={{ display: 'flex', gap: '4px', alignItems: 'center', flexWrap: 'wrap', rowGap: '3px', marginTop: '4px' }}>
+                                                        <span style={{ fontSize: '0.75rem', fontWeight: 600, marginRight: '4px', color: 'rgba(255,255,255,0.6)' }}>
                                                             Tags:
-                                                        </Typography>
+                                                        </span>
                                                         {typeLabels.slice(0, 3).map((label) => (
-                                                            <Chip
+                                                            <span
                                                                 key={label}
-                                                                label={label}
-                                                                size="small"
-                                                                sx={{
-                                                                    height: 18,
+                                                                style={{
+                                                                    height: '18px',
                                                                     borderRadius: '999px',
-                                                                    bgcolor: tw.isDark ? 'rgba(255,255,255,0.08)' : '#e2e8f0',
-                                                                    color: tw.isDark ? 'text.secondary' : '#475569',
+                                                                    backgroundColor: tw.isDark ? 'rgba(255,255,255,0.08)' : '#e2e8f0',
+                                                                    color: tw.isDark ? 'rgba(255,255,255,0.7)' : '#475569',
                                                                     fontWeight: 600,
-                                                                    '& .MuiChip-label': { px: 1, fontSize: 11 },
+                                                                    paddingLeft: '8px',
+                                                                    paddingRight: '8px',
+                                                                    fontSize: '11px',
                                                                 }}
-                                                            />
+                                                            >
+                                                                {label}
+                                                            </span>
                                                         ))}
                                                         {typeLabels.length > 3 && (
-                                                            <Typography variant="caption" color="text.secondary">
+                                                            <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.6)' }}>
                                                                 +{typeLabels.length - 3} more
-                                                            </Typography>
+                                                            </span>
                                                         )}
-                                                    </Stack>
+                                                    </div>
                                                 )}
-                                            </Stack>
-                                        </Stack>
+                                            </div>
+                                        </div>
 
-                                        {/* Arrow icon */}
-                                        <IconButton
-                                            size="small"
+                                        <button
                                             onClick={() => onSelect?.(product.product_id)}
-                                            sx={{
-                                                width: isMobile ? 32 : 36,
-                                                height: isMobile ? 32 : 36,
+                                            style={{
+                                                width: isMobile ? '32px' : '36px',
+                                                height: isMobile ? '32px' : '36px',
                                                 borderRadius: '50%',
                                                 border: '1px solid rgba(245,121,121,0.25)',
-                                                bgcolor: 'rgba(245,121,121,0.12)',
+                                                backgroundColor: 'rgba(245,121,121,0.12)',
                                                 color: '#f57979',
                                                 transition: 'all 120ms ease',
-                                                '&:hover': {
-                                                    transform: 'scale(1.08)',
-                                                    bgcolor: 'rgba(245,121,121,0.2)',
-                                                },
+                                                cursor: 'pointer',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                            }}
+                                            onMouseEnter={(e) => {
+                                                e.currentTarget.style.transform = 'scale(1.08)';
+                                                e.currentTarget.style.backgroundColor = 'rgba(245,121,121,0.2)';
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                e.currentTarget.style.transform = 'scale(1)';
+                                                e.currentTarget.style.backgroundColor = 'rgba(245,121,121,0.12)';
                                             }}
                                         >
-                                            <ArrowForwardIosIcon fontSize="inherit" />
-                                        </IconButton>
-                                    </ListItem>
-                                </motion.div>
-                            );
-                        })}
-                    </AnimatePresence>
-                </List>
-            )}
+                                            <ArrowForwardIosIcon style={{ fontSize: 'inherit' }} />
+                                        </button>
+                                    </motion.div>
+                                );
+                            })}
+                        </AnimatePresence>
+                    </div>
+                )}
 
-            {/* Pagination */}
-            {list.length > 0 && (
-                <Stack direction="row" justifyContent="center" spacing={1} sx={{ mt: 2 }}>
-                    <Box
-                        component="button"
-                        onClick={() => setPage((p) => Math.max(p - 1, 1))}
-                        disabled={clampedPage <= 1}
-                        style={{ cursor: clampedPage <= 1 ? 'not-allowed' : 'pointer' }}
-                        sx={{
-                            px: 2,
-                            py: 0.6,
-                            borderRadius: 1,
-                            border: `1px solid ${tw.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)'}`,
-                            bgcolor: tw.isDark ? '#2f2f2f' : 'rgba(0,0,0,0.04)',
-                            color: 'text.secondary',
-                            fontWeight: 700,
-                            opacity: clampedPage <= 1 ? 0.6 : 1,
-                            fontSize: '0.875rem',
-                        }}
-                    >
-                        Prev
-                    </Box>
-                    <Box
-                        sx={{
-                            px: 2,
-                            py: 0.6,
-                            borderRadius: 1,
-                            border: `1px solid ${tw.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)'}`,
-                            bgcolor: tw.isDark ? '#2f2f2f' : 'rgba(0,0,0,0.04)',
-                            color: 'text.secondary',
-                            fontWeight: 700,
-                            fontSize: '0.875rem',
-                        }}
-                    >
-                        {clampedPage} / {totalPages}
-                    </Box>
-                    <Box
-                        component="button"
-                        onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
-                        disabled={clampedPage >= totalPages}
-                        style={{ cursor: clampedPage >= totalPages ? 'not-allowed' : 'pointer' }}
-                        sx={{
-                            px: 2,
-                            py: 0.6,
-                            borderRadius: 1,
-                            border: `1px solid ${tw.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)'}`,
-                            bgcolor: tw.isDark ? '#2f2f2f' : 'rgba(0,0,0,0.04)',
-                            color: 'text.secondary',
-                            fontWeight: 700,
-                            opacity: clampedPage >= totalPages ? 0.6 : 1,
-                            fontSize: '0.875rem',
-                        }}
-                    >
-                        Next
-                    </Box>
-                </Stack>
-            )}
-            </Box>
-        </Stack>
+                {list.length > 0 && (
+                    <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginTop: '16px', paddingLeft: '16px', paddingRight: '16px', paddingBottom: '16px' }}>
+                        <button
+                            onClick={() => setPage((p) => Math.max(p - 1, 1))}
+                            disabled={clampedPage <= 1}
+                            style={{
+                                paddingLeft: '16px',
+                                paddingRight: '16px',
+                                paddingTop: '6px',
+                                paddingBottom: '6px',
+                                borderRadius: '4px',
+                                border: `1px solid ${tw.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)'}`,
+                                backgroundColor: tw.isDark ? '#2f2f2f' : 'rgba(0,0,0,0.04)',
+                                color: 'rgba(255,255,255,0.7)',
+                                fontWeight: 700,
+                                opacity: clampedPage <= 1 ? 0.6 : 1,
+                                fontSize: '0.875rem',
+                                cursor: clampedPage <= 1 ? 'not-allowed' : 'pointer',
+                            }}
+                        >
+                            Prev
+                        </button>
+                        <div
+                            style={{
+                                paddingLeft: '16px',
+                                paddingRight: '16px',
+                                paddingTop: '6px',
+                                paddingBottom: '6px',
+                                borderRadius: '4px',
+                                border: `1px solid ${tw.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)'}`,
+                                backgroundColor: tw.isDark ? '#2f2f2f' : 'rgba(0,0,0,0.04)',
+                                color: 'rgba(255,255,255,0.7)',
+                                fontWeight: 700,
+                                fontSize: '0.875rem',
+                            }}
+                        >
+                            {clampedPage} / {totalPages}
+                        </div>
+                        <button
+                            onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
+                            disabled={clampedPage >= totalPages}
+                            style={{
+                                paddingLeft: '16px',
+                                paddingRight: '16px',
+                                paddingTop: '6px',
+                                paddingBottom: '6px',
+                                borderRadius: '4px',
+                                border: `1px solid ${tw.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)'}`,
+                                backgroundColor: tw.isDark ? '#2f2f2f' : 'rgba(0,0,0,0.04)',
+                                color: 'rgba(255,255,255,0.7)',
+                                fontWeight: 700,
+                                opacity: clampedPage >= totalPages ? 0.6 : 1,
+                                fontSize: '0.875rem',
+                                cursor: clampedPage >= totalPages ? 'not-allowed' : 'pointer',
+                            }}
+                        >
+                            Next
+                        </button>
+                    </div>
+                )}
+            </div>
+        </div>
     );
 };
 
