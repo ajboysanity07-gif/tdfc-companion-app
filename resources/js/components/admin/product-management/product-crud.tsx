@@ -106,11 +106,14 @@ const ProductCRUD: React.FC<Props> = ({
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 20 }}
                 style={{
-                    borderRadius: '24px',
+                    borderRadius: isMobile ? '0px' : '24px',
                     backgroundColor: tw.isDark ? '#171717' : '#FAFAFA',
                     padding: 0,
-                    maxHeight: '90vh',
+                    maxHeight: isMobile ? 'none' : '90vh',
                     overflow: 'auto',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    height: isMobile ? '100%' : 'auto',
                 }}
             >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingLeft: '16px', paddingRight: '16px', paddingTop: '12px', paddingBottom: '12px', borderBottom: `1px solid ${tw.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}` }}>
@@ -136,7 +139,7 @@ const ProductCRUD: React.FC<Props> = ({
                     </button>
                 </div>
 
-                <div style={{ paddingLeft: '16px', paddingRight: '16px', paddingTop: '16px', paddingBottom: '16px', display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(250px, 1fr))', gap: '16px', maxHeight: 'calc(90vh - 200px)', overflow: 'auto' }}>
+                <div style={{ paddingLeft: '16px', paddingRight: '16px', paddingTop: '16px', paddingBottom: '16px', display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(250px, 1fr))', gap: '16px', maxHeight: isMobile ? 'none' : 'calc(90vh - 200px)', overflow: 'auto', flex: isMobile ? 1 : 'unset' }}>
                     <div>
                         <label style={labelStyle}>Product Name</label>
                         <input
