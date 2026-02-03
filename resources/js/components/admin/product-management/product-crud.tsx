@@ -82,9 +82,9 @@ const ProductCRUD: React.FC<Props> = ({
         width: '100%',
         padding: '10px 12px',
         borderRadius: '8px',
-        border: '1px solid rgba(255,255,255,0.2)',
-        backgroundColor: 'rgba(255,255,255,0.05)',
-        color: '#ffffff',
+        border: `1px solid ${tw.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)'}`,
+        backgroundColor: tw.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
+        color: tw.isDark ? '#ffffff' : '#000000',
         fontSize: '0.875rem',
         fontFamily: 'inherit',
         transition: 'all 120ms ease',
@@ -94,10 +94,15 @@ const ProductCRUD: React.FC<Props> = ({
         fontSize: '0.75rem',
         fontWeight: 700,
         textTransform: 'uppercase',
-        color: 'rgba(255,255,255,0.7)',
+        color: tw.isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)',
         marginBottom: '6px',
-        display: 'block',
+        display: 'block' as const,
     };
+
+    const borderColorDefault = tw.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)';
+    const borderColorError = '#ef4444';
+    const textColorLight = tw.isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)';
+    const textColorDark = tw.isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.9)';
 
     return (
         <AnimatePresence>
@@ -126,14 +131,14 @@ const ProductCRUD: React.FC<Props> = ({
                             padding: '4px 4px',
                             backgroundColor: 'transparent',
                             border: 'none',
-                            color: 'rgba(255,255,255,0.6)',
+                            color: textColorLight,
                             cursor: 'pointer',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                         }}
-                        onMouseEnter={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.9)')}
-                        onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.6)')}
+                        onMouseEnter={(e) => (e.currentTarget.style.color = textColorDark)}
+                        onMouseLeave={(e) => (e.currentTarget.style.color = textColorLight)}
                     >
                         <CloseIcon />
                     </button>
@@ -152,7 +157,7 @@ const ProductCRUD: React.FC<Props> = ({
                             placeholder="Enter product name"
                             style={{
                                 ...inputStyle,
-                                borderColor: errors.product_name ? '#ef4444' : 'rgba(255,255,255,0.2)',
+                                borderColor: errors.product_name ? borderColorError : borderColorDefault,
                             } as React.CSSProperties}
                         />
                         {errors.product_name && (
@@ -174,7 +179,7 @@ const ProductCRUD: React.FC<Props> = ({
                             placeholder="e.g., PROD001"
                             style={{
                                 ...inputStyle,
-                                borderColor: errors.product_code ? '#ef4444' : 'rgba(255,255,255,0.2)',
+                                borderColor: errors.product_code ? borderColorError : borderColorDefault,
                             } as React.CSSProperties}
                         />
                         {errors.product_code && (
@@ -194,7 +199,7 @@ const ProductCRUD: React.FC<Props> = ({
                             }}
                             style={{
                                 ...inputStyle,
-                                borderColor: errors.wln_type_id ? '#ef4444' : 'rgba(255,255,255,0.2)',
+                                borderColor: errors.wln_type_id ? borderColorError : borderColorDefault,
                             } as React.CSSProperties}
                         >
                             <option value="">Select a type...</option>
@@ -289,20 +294,20 @@ const ProductCRUD: React.FC<Props> = ({
                             flex: 1,
                             padding: '12px 20px',
                             backgroundColor: 'transparent',
-                            border: '1px solid rgba(255,255,255,0.3)',
+                            border: `1px solid ${tw.isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.2)'}`,
                             borderRadius: '8px',
-                            color: '#ffffff',
+                            color: tw.isDark ? '#ffffff' : '#000000',
                             cursor: 'pointer',
                             fontWeight: 700,
                             fontSize: '0.875rem',
                             transition: 'all 120ms ease',
                         }}
                         onMouseEnter={(e) => {
-                            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.5)';
-                            e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)';
+                            e.currentTarget.style.borderColor = tw.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)';
+                            e.currentTarget.style.backgroundColor = tw.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)';
                         }}
                         onMouseLeave={(e) => {
-                            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)';
+                            e.currentTarget.style.borderColor = tw.isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.2)';
                             e.currentTarget.style.backgroundColor = 'transparent';
                         }}
                     >
