@@ -1,783 +1,334 @@
-import IOSSwitch from '@/components/ui/ios-switch';
-import type { ProductLntype, ProductPayload, WlnType } from '@/types/product-lntype';
-import CreateIcon from '@mui/icons-material/Create';
-import DeleteIcon from '@mui/icons-material/Delete';
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-import SaveIcon from '@mui/icons-material/Save';
-import { Box, Button, Chip, Divider, FormControl, InputAdornment, InputLabel, MenuItem, Select, Stack, TextField, Typography } from '@mui/material';
+import React, { useState, useEffect, useMemo } from 'react';
+import { useMyTheme } from '@/hooks/use-mytheme';
+import { useMediaQuery } from '@/hooks/use-media-query';
+import type { WlnProducts, WlnType } from '@/types/db';
+import type { Product } from '@/types/request';
 import { AnimatePresence, motion } from 'framer-motion';
-import { isConstantNode, isFunctionNode, isOperatorNode, isParenthesisNode, isSymbolNode, parse, type MathNode } from 'mathjs';
-import React, { useCallback, useEffect, useState } from 'react';
+import CloseIcon from '@mui/icons-material/Close';
 import BoxHeader from '@/components/box-header';
 
-const sanitizeNumber = (value: string) => value.replace(/[^\d.,-]/g, '');
-const formatNumber = (value: string, options?: Intl.NumberFormatOptions) => {
-    const numeric = value.replace(/,/g, '');
-    if (!numeric) return '';
-    const num = Number(numeric);
-    if (Number.isNaN(num)) return value;
-    return new Intl.NumberFormat('en-US', options).format(num);
-};
-const toNumber = (value: string) => {
-    const cleaned = value.replace(/,/g, '');
-    return cleaned === '' ? null : Number(cleaned);
-};
-const toNumberOrZero = (value: string) => {
-    const n = toNumber(value);
-    return n ?? 0;
-};
-
-const validateCustomFormula = (value: string) => {
-    const trimmed = (value ?? '').trim();
-    if (!trimmed) return 'Custom formula is required';
-
-    const normalized = trimmed.replace(/(^|[^0-9])\.(\d)/g, '$10.$2');
-    let node: MathNode;
-
-    try {
-        node = parse(normalized);
-    } catch {
-        return 'Invalid formula syntax';
-    }
-
-    const symbols = new Set<string>();
-    let unsafe = false;
-
-    node.traverse((n: MathNode) => {
-        if (isFunctionNode(n)) unsafe = true;
-        if (isSymbolNode(n)) symbols.add(n.name.toLowerCase());
-
-        if (!isOperatorNode(n) && !isParenthesisNode(n) && !isConstantNode(n) && !isSymbolNode(n)) {
-            unsafe = true;
-        }
-    });
-    if (unsafe) return 'Allowed: numbers, + - * / ( ), and "basic".';
-    if (!symbols.has('basic')) return 'Formula must include the variable "basic".';
-    if ([...symbols].some((s) => s !== 'basic')) return 'Only the variable "basic" is allowed.';
-    return '';
-};
-
-type SchemeOption = 'ADD-ON' | 'PREPAID';
-type ModeOption = 'MONTHLY' | 'WEEKLY' | 'DAILY' | 'DUE-DATE';
-type AmortModeOption = 'FIXED' | 'BASIC' | 'CUSTOM';
-
-const schemeOptions: SchemeOption[] = ['ADD-ON', 'PREPAID'];
-const modeOptions: ModeOption[] = ['MONTHLY', 'WEEKLY', 'DAILY', 'DUE-DATE'];
-const maxmortmodeOptions: AmortModeOption[] = ['FIXED', 'BASIC', 'CUSTOM'];
-const amortContainerMinHeight = 70;
-
 type Props = {
-    product?: ProductLntype | null;
-    availableTypes?: WlnType[];
-    onSave?: (payload: ProductPayload) => Promise<void> | void;
-    onDelete?: (product?: ProductLntype | null) => Promise<void> | void;
-    onCancel?: () => void;
-    onToggleActive?: (productId: number, value: boolean) => void;
-    compactActions?: boolean;
-    saveButtonRef?: React.RefObject<HTMLButtonElement | null>;
-    deleteButtonRef?: React.RefObject<HTMLButtonElement | null>;
-    hideActionsOnMobile?: boolean;
+    product?: WlnProducts;
+    types: WlnType[];
+    onSave?: (product: Product) => Promise<void>;
+    onClose?: () => void;
 };
 
-/**
- * Pure front-end form (no API wiring yet) styled close to the provided mock.
- * Accepts a product to hydrate fields and exposes save/delete/cancel hookproduct?.
- */
-const ProductCreateOrDelete: React.FC<Props> = ({
+const ProductCRUD: React.FC<Props> = ({
     product,
-    availableTypes = [],
+    types = [],
     onSave,
-    onDelete,
-    onToggleActive,
-    onCancel,
-    compactActions = false,
-    saveButtonRef,
-    deleteButtonRef,
-    hideActionsOnMobile = false,
+    onClose,
 }) => {
-    const [productName, setProductName] = useState(product?.product_name ?? '');
-    const [isActive, setIsActive] = useState(product?.is_active ?? true);
-    const [tags, setTags] = useState<string[]>(product?.types?.map((t) => t.typecode) ?? []);
-    const [tagsOpen, setTagsOpen] = useState(false);
-    const [scheme, setScheme] = useState<SchemeOption>('ADD-ON');
-    const [mode, setMode] = useState<ModeOption>('MONTHLY');
-    const [rate, setRate] = useState('');
-    const [maxTerm, setMaxTerm] = useState('');
-    const [maxAmortMode, setMaxAmortMode] = useState<AmortModeOption>('FIXED');
-    const [maxAmortFormula, setMaxAmortFormula] = useState('');
-    const [maxAmort, setMaxAmort] = useState('');
-    const [serviceFee, setServiceFee] = useState('');
-    const [lrf, setLrf] = useState('');
-    const [docStamp, setDocStamp] = useState('');
-    const [mortNotarial, setMortNotarial] = useState('');
+    const tw = useMyTheme();
+    const isMobile = useMediaQuery('(max-width: 600px)');
 
-    const [allowMultiple, setAllowMultiple] = useState(product?.is_multiple ?? false);
-    const [termEditable, setTermEditable] = useState(product?.is_max_term_editable ?? false);
-    const [amortEditable, setAmortEditable] = useState(product?.is_max_amortization_editable ?? false);
-    const [terms, setTerms] = useState(
-        'Lorem ipsum dolor sit amet. Id dolorum aliquam eum laudantium neque et atque sint est eligendi tenetur est provident animi.',
-    );
-    // for Error Messages
-    const [productNameError, setProductNameError] = useState('');
-    const [tagsError, setTagsError] = useState('');
-    const [rateError, setRateError] = useState('');
-    const [maxTermError, setMaxTermError] = useState('');
-    const [maxAmortFormulaError, setMaxAmortFormulaError] = useState('');
-    const [maxAmortError, setMaxAmortError] = useState('');
+    const [formData, setFormData] = useState<Partial<Product>>({
+        product_name: '',
+        product_code: '',
+        wln_type_id: undefined,
+        is_active: 1,
+        min_loan: 0,
+        max_loan: 100000,
+        interest_rate: 0,
+        processing_fee: 0,
+        insurance_rate: 0,
+        ...(product && {
+            product_name: product.product_name,
+            product_code: product.product_code,
+            wln_type_id: product.wln_type_id,
+            is_active: product.is_active,
+            min_loan: product.min_loan,
+            max_loan: product.max_loan,
+            interest_rate: product.interest_rate,
+            processing_fee: product.processing_fee,
+            insurance_rate: product.insurance_rate,
+        }),
+    });
 
-    useEffect(() => {
-        if (!product) {
-            // Reset all fields when no product selected
-            setProductName('');
-            setIsActive(true);
-            setTags([]);
-            setScheme('ADD-ON');
-            setMode('MONTHLY');
-            setRate('');
-            setMaxTerm('');
-            setMaxAmortMode('FIXED');
-            setMaxAmortFormula('');
-            setMaxAmort('');
-            setServiceFee('');
-            setLrf('');
-            setDocStamp('');
-            setMortNotarial('');
-            setAllowMultiple(false);
-            setTermEditable(false);
-            setAmortEditable(false);
-            setTerms('');
-            setProductNameError('');
-            setTagsError('');
-            setRateError('');
-            setMaxAmortError('');
-            setMaxTermError('');
-            setMaxAmortFormulaError('');
+    const [isSaving, setIsSaving] = useState(false);
+    const [errors, setErrors] = useState<Record<string, string>>({});
+
+    const handleSave = async () => {
+        if (!onSave) return;
+
+        const newErrors: Record<string, string> = {};
+        if (!formData.product_name) newErrors.product_name = 'Product name is required';
+        if (!formData.product_code) newErrors.product_code = 'Product code is required';
+        if (!formData.wln_type_id) newErrors.wln_type_id = 'Product type is required';
+
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
             return;
         }
 
-        // Update all fields from selected product
-        setProductName(product.product_name ?? '');
-        setIsActive(product.is_active ?? true);
-        setTags(product.types?.map((t) => t.typecode) ?? []);
-        setScheme((product.schemes as SchemeOption) ?? 'ADD-ON');
-        setMode((product.mode as ModeOption) ?? 'MONTHLY');
-        setRate(formatNumber((product.interest_rate ?? '').toString(), { maximumFractionDigits: 2 }));
-        setMaxTerm(formatNumber((product.max_term_days ?? '').toString(), { maximumFractionDigits: 0 }));
-        setMaxAmortMode((product.max_amortization_mode as AmortModeOption) ?? 'FIXED');
-        setMaxAmortFormula(product.max_amortization_formula ?? '');
-        setMaxAmort(formatNumber((product.max_amortization ?? '').toString(), { maximumFractionDigits: 0 }));
-        setServiceFee(formatNumber((product.service_fee ?? '').toString(), { maximumFractionDigits: 2 }));
-        setLrf(formatNumber((product.lrf ?? '').toString(), { maximumFractionDigits: 2 }));
-        setDocStamp(formatNumber((product.document_stamp ?? '').toString(), { maximumFractionDigits: 2 }));
-        setMortNotarial(formatNumber((product.mort_plus_notarial ?? '').toString(), { maximumFractionDigits: 2 }));
-        setAllowMultiple(product.is_multiple ?? false);
-        setTermEditable(product.is_max_term_editable ?? false);
-        setAmortEditable(product.is_max_amortization_editable ?? false);
-        setTerms(product.terms ?? '');
-        setProductNameError('');
-        setTagsError('');
-        setRateError('');
-        setMaxAmortError('');
-        setMaxTermError('');
-        setMaxAmortFormulaError('');
-    }, [product]);
-
-    const showEmptyHint = !product && !productName && tags.length === 0;
-
-    const tagOptions = availableTypes;
-
-    const handleSave = useCallback(() => {
-        let hasError = false;
-        //Error Message for Product Name
-        if (!productName.trim()) {
-            setProductNameError('Product name is required');
-            hasError = true;
-        } else {
-            setProductNameError('');
+        setIsSaving(true);
+        try {
+            await onSave({
+                ...formData,
+                product_name: formData.product_name || '',
+                product_code: formData.product_code || '',
+                wln_type_id: formData.wln_type_id || 0,
+            } as Product);
+            onClose?.();
+        } catch (error) {
+            console.error('Failed to save product', error);
+        } finally {
+            setIsSaving(false);
         }
-        //Error Message for Tags
-        if (!tags.length) {
-            setTagsError('Select at least one tag');
-            hasError = true;
-        } else {
-            setTagsError('');
-        }
+    };
 
-        if (!rate.trim()) {
-            setRateError('Interest Rate is required');
-            hasError = true;
-        } else {
-            setRateError('');
-        }
-        if (!maxTerm.trim()) {
-            setMaxTermError('Max Term name is required');
-            hasError = true;
-        } else {
-            setMaxTermError('');
-        }
-        //Error Message for Max Amortization if 'FIXED' mode
-        if (maxAmortMode === 'FIXED') {
-            if (!maxAmort.trim()) {
-                setMaxAmortError('Max amortization is required for FIXED mode');
-                hasError = true;
-            } else {
-                setMaxAmortError('');
-            }
-        } else {
-            setMaxAmortError('');
-        }
-        //Error Message for Max Amortization if 'CUSTOM' mode
-        if (maxAmortMode === 'CUSTOM') {
-            const err = validateCustomFormula(maxAmortFormula);
-            setMaxAmortFormulaError(err);
-            if (err) hasError = true;
-        } else {
-            setMaxAmortFormulaError('');
-        }
+    const inputStyle = {
+        width: '100%',
+        padding: '8px 12px',
+        borderRadius: '8px',
+        border: '1px solid rgba(255,255,255,0.2)',
+        backgroundColor: 'rgba(255,255,255,0.05)',
+        color: '#ffffff',
+        fontSize: '0.875rem',
+        fontFamily: 'inherit',
+    };
 
-        if (hasError) return;
-
-        onSave?.({
-            product_name: productName,
-            is_active: isActive,
-            is_multiple: allowMultiple,
-            schemes: scheme,
-            mode,
-            interest_rate: toNumber(rate),
-            max_term_days: toNumber(maxTerm),
-            is_max_term_editable: termEditable,
-            max_amortization_mode: maxAmortMode,
-            max_amortization_formula: maxAmortFormula,
-            max_amortization: toNumber(maxAmort),
-            is_max_amortization_editable: amortEditable,
-            service_fee: toNumberOrZero(serviceFee),
-            lrf: toNumberOrZero(lrf),
-            document_stamp: toNumberOrZero(docStamp),
-            mort_plus_notarial: toNumberOrZero(mortNotarial),
-            terms,
-            typecodes: tags,
-        });
-    }, [
-        allowMultiple,
-        amortEditable,
-        docStamp,
-        isActive,
-        lrf,
-        maxAmort,
-        maxAmortMode,
-        maxAmortFormula,
-        maxTerm,
-        mode,
-        mortNotarial,
-        onSave,
-        productName,
-        rate,
-        scheme,
-        serviceFee,
-        tags,
-        termEditable,
-        terms,
-    ]);
-
-    const handleDelete = useCallback(() => onDelete?.(product), [onDelete, product]);
+    const labelStyle = {
+        fontSize: '0.75rem',
+        fontWeight: 700,
+        textTransform: 'uppercase',
+        color: 'rgba(255,255,255,0.7)',
+        marginBottom: '6px',
+        display: 'block',
+    };
 
     return (
-        <>
-            <BoxHeader title="Product Details" />
-            {showEmptyHint ? (
-                <Stack spacing={0.4} sx={{ mb: 4 }}>
-                    <Stack direction="row" alignItems="center" spacing={0.75}>
-                        <InfoOutlinedIcon fontSize="small" color="info" />
-                        <Typography variant="body2" fontWeight={600} color="info.main">
-                            • Select a product on the left to view its details, or start a new one.
-                        </Typography>
-                    </Stack>
-                    <Typography variant="body2" fontWeight={600} color="info.main" sx={{ pl: 3.5 }}>
-                        • Fields marked with * are required.
-                    </Typography>
-                </Stack>
-            ) : (
-                <Stack spacing={0.4} sx={{ mb: 2 }}>
-                    <Stack direction="row" alignItems="center" spacing={0.75}>
-                        <InfoOutlinedIcon fontSize="small" color="info" />
-                        <Typography variant="body2" fontWeight={600} color="info.main">
-                            • Fields marked with * are required.
-                        </Typography>
-                    </Stack>
-                </Stack>
-            )}
-
-            <Stack spacing={2}>
-                <Stack spacing={0.25}>
-                    <TextField
-                        fullWidth
-                        required
-                        size="small"
-                        label="Product Name"
-                        value={productName}
-                        onChange={(e) => {
-                            setProductName(e.target.value);
-                            if (productNameError) setProductNameError('');
+        <AnimatePresence>
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+                style={{
+                    borderRadius: '24px',
+                    backgroundColor: tw.isDark ? '#171717' : '#FAFAFA',
+                    padding: 0,
+                    maxHeight: '90vh',
+                    overflow: 'auto',
+                }}
+            >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingLeft: '16px', paddingRight: '16px', paddingTop: '12px', paddingBottom: '12px', borderBottom: `1px solid ${tw.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}` }}>
+                    <div style={{ fontSize: '1.125rem', fontWeight: 700 }}>
+                        {product ? 'Edit Product' : 'Create Product'}
+                    </div>
+                    <button
+                        onClick={onClose}
+                        style={{
+                            padding: '4px 4px',
+                            backgroundColor: 'transparent',
+                            border: 'none',
+                            color: 'rgba(255,255,255,0.6)',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
                         }}
-                        error={!!productNameError}
-                        helperText={undefined}
-                    />
-                    <Typography variant="caption" color={productNameError ? 'error' : 'text.secondary'} sx={{ minHeight: 18 }}>
-                        {productNameError || ' '}
-                    </Typography>
-                </Stack>
+                        onMouseEnter={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.9)')}
+                        onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.6)')}
+                    >
+                        <CloseIcon />
+                    </button>
+                </div>
 
-                <Stack direction="row" spacing={1.5} alignItems="center">
-                    <IOSSwitch
-                        checked={isActive}
-                        value={isActive}
-                        onChange={(e) => {
-                            const next = e.target.checked;
-                            setIsActive(next);
-                            if (product?.product_id) onToggleActive?.(product.product_id, next);
-                        }}
-                    />
-                    <Typography variant="body2" color="text.secondary">
-                        Enable or Disable this product
-                    </Typography>
-                </Stack>
-
-                <Stack spacing={0.5}>
-                    <Typography variant="subtitle1" fontWeight={700}>
-                        Type Relation Tags:
-                    </Typography>
-                    <Stack direction="row" alignItems="center" spacing={1.5}>
-                        <FormControl fullWidth size="small" required error={!!tagsError}>
-                            <InputLabel>Tags</InputLabel>
-                            <Select
-                                open={tagsOpen}
-                                onOpen={() => setTagsOpen(true)}
-                                onClose={() => setTagsOpen(false)}
-                                multiple
-                                label="Tags"
-                                value={tags}
-                                onChange={(e) => {
-                                    const next = typeof e.target.value === 'string' ? e.target.value.split(',') : (e.target.value as string[]);
-                                    setTags(next);
-                                    setTagsOpen(false);
-                                }}
-                                renderValue={(selected) => (
-                                    <Stack direction="row" spacing={0.5} flexWrap="wrap" rowGap={0.5}>
-                                        {(selected as string[]).flatMap((typecode) => {
-                                            const found = tagOptions.find((t) => t.typecode === typecode);
-                                            if (!found) return [];
-                                            
-                                            // Split lntags into individual tags
-                                            const individualTags = found.lntags
-                                                ? found.lntags.split(',').map((t) => t.trim()).filter(Boolean)
-                                                : [found.lntype || typecode];
-                                            
-                                            return individualTags.map((tagLabel) => (
-                                                <Chip
-                                                    size="small"
-                                                    key={`${typecode}-${tagLabel}`}
-                                                    label={tagLabel}
-                                                    onDelete={() => setTags((prev) => prev.filter((t) => t !== typecode))}
-                                                    onMouseDown={(evt) => evt.stopPropagation()}
-                                                    sx={{ 
-                                                        borderRadius: '999px', 
-                                                        height: 24, 
-                                                        fontSize: 12, 
-                                                        px: 0.75,
-                                                        backgroundColor: '#f57979',
-                                                        color: '#ffffff',
-                                                        fontWeight: 600,
-                                                        '& .MuiChip-deleteIcon': {
-                                                            color: 'rgba(255,255,255,0.7)',
-                                                            '&:hover': { color: '#ffffff' }
-                                                        }
-                                                    }}
-                                                />
-                                            ));
-                                        })}
-                                    </Stack>
-                                )}
-                            >
-                                {tagOptions
-                                    .filter((opt) => !tags?.includes(opt.typecode))
-                                    .map((opt) => {
-                                        const lntags = (opt.lntags || '')
-                                            .split(',')
-                                            .map((t) => t.trim())
-                                            .filter(Boolean);
-                                        return (
-                                            <MenuItem key={opt.typecode} value={opt.typecode}>
-                                                <Stack direction="row" spacing={0.75} alignItems="center" flexWrap="wrap" rowGap={0.5}>
-                                                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                                                        {opt.lntype}
-                                                    </Typography>
-                                                    {lntags.map((tag) => (
-                                                        <Chip
-                                                            key={tag}
-                                                            label={tag}
-                                                            size="small"
-                                                            sx={{ 
-                                                                height: 22, 
-                                                                borderRadius: '999px', 
-                                                                fontSize: 11, 
-                                                                px: 0.5,
-                                                                backgroundColor: 'rgba(245, 121, 121, 0.15)',
-                                                                color: '#f57979',
-                                                                fontWeight: 600
-                                                            }}
-                                                        />
-                                                    ))}
-                                                </Stack>
-                                            </MenuItem>
-                                        );
-                                    })}
-                            </Select>
-                            <Typography variant="caption" color={tagsError ? 'error' : 'transparent'} sx={{ mt: 0.25, minHeight: 18 }}>
-                                {tagsError || ' '}
-                            </Typography>
-                        </FormControl>
-                    </Stack>
-                </Stack>
-
-                <Stack spacing={1.5}>
-                    <Stack direction="row" spacing={1.5} alignItems="center">
-                        <FormControl fullWidth size="small">
-                            <InputLabel>Scheme</InputLabel>
-                            <Select label="Scheme" value={scheme} onChange={(e) => setScheme(e.target.value as SchemeOption)}>
-                                {schemeOptions?.map((opt) => (
-                                    <MenuItem key={opt} value={opt}>
-                                        {opt}
-                                    </MenuItem>
-                                ))}
-                            </Select>
-                        </FormControl>
-                    </Stack>
-
-                    <Stack direction="row" spacing={1.5} alignItems="center" justifyContent="flex-end">
-                        <FormControl fullWidth size="small">
-                            <InputLabel>Mode</InputLabel>
-                            <Select label="Mode" value={mode} onChange={(e) => setMode(e.target.value as ModeOption)}>
-                                {modeOptions?.map((opt) => (
-                                    <MenuItem key={opt} value={opt}>
-                                        {opt}
-                                    </MenuItem>
-                                ))}
-                            </Select>
-                        </FormControl>
-                        <Stack alignItems="center" spacing={0.25}>
-                            <Typography variant="caption" color="text.secondary" textAlign="center">
-                                multiple?
-                            </Typography>
-                            <IOSSwitch checked={allowMultiple} value={allowMultiple} onChange={(e) => setAllowMultiple(e.target.checked)} size="small" />
-                        </Stack>
-                    </Stack>
-
-                    <Stack spacing={0.25}>
-                        <TextField
-                            fullWidth
-                            required
-                            size="small"
-                            label="Rate (P.A.)"
-                            value={rate}
+                <div style={{ paddingLeft: '16px', paddingRight: '16px', paddingTop: '16px', paddingBottom: '16px', display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '16px' }}>
+                    <div>
+                        <label style={labelStyle}>Product Name</label>
+                        <input
+                            type="text"
+                            value={formData.product_name || ''}
                             onChange={(e) => {
-                                setRate(sanitizeNumber(e.target.value));
-                                if (rateError) setRateError('');
+                                setFormData({ ...formData, product_name: e.target.value });
+                                setErrors({ ...errors, product_name: '' });
                             }}
-                            error={!!rateError}
-                            helperText={undefined}
-                            onBlur={() => setRate((prev) => formatNumber(prev, { maximumFractionDigits: 2 }))}
-                            InputProps={{ endAdornment: <InputAdornment position="end">%</InputAdornment> }}
+                            placeholder="Enter product name"
+                            style={{
+                                ...inputStyle,
+                                borderColor: errors.product_name ? '#ef4444' : 'rgba(255,255,255,0.2)',
+                            } as React.CSSProperties}
                         />
-                        <Typography variant="caption" color={rateError ? 'error' : 'text.secondary'} sx={{ minHeight: 18 }}>
-                            {rateError || ' '}
-                        </Typography>
-                    </Stack>
+                        {errors.product_name && (
+                            <div style={{ fontSize: '0.75rem', color: '#ef4444', marginTop: '4px' }}>
+                                {errors.product_name}
+                            </div>
+                        )}
+                    </div>
 
-                    <Stack spacing={0.25}>
-                        <Stack direction="row" spacing={1.5} alignItems="center">
-                            <TextField
-                                fullWidth
-                                size="small"
-                                label="Max Term (days)"
-                                value={maxTerm}
-                                onChange={(e) => {
-                                    setMaxTerm(e.target.value);
-                                    if (maxTermError) setMaxTermError('');
-                                }}
-                                error={!!maxTermError}
-                                helperText={undefined}
-                                onBlur={() => setMaxTerm((prev) => formatNumber(prev, { maximumFractionDigits: 0 }))}
-                            />
-                            <Stack alignItems="center" spacing={0.25}>
-                                <Typography variant="caption" color="text.secondary">
-                                    editable?
-                                </Typography>
-                                <IOSSwitch checked={termEditable} value={termEditable} onChange={(e) => setTermEditable(e.target.checked)} size="small" />
-                            </Stack>
-                        </Stack>
-                        <Typography variant="caption" color={maxTermError ? 'error' : 'text.secondary'} sx={{ minHeight: 18 }}>
-                            {maxTermError || ' '}
-                        </Typography>
-                    </Stack>
+                    <div>
+                        <label style={labelStyle}>Product Code</label>
+                        <input
+                            type="text"
+                            value={formData.product_code || ''}
+                            onChange={(e) => {
+                                setFormData({ ...formData, product_code: e.target.value });
+                                setErrors({ ...errors, product_code: '' });
+                            }}
+                            placeholder="e.g., PROD001"
+                            style={{
+                                ...inputStyle,
+                                borderColor: errors.product_code ? '#ef4444' : 'rgba(255,255,255,0.2)',
+                            } as React.CSSProperties}
+                        />
+                        {errors.product_code && (
+                            <div style={{ fontSize: '0.75rem', color: '#ef4444', marginTop: '4px' }}>
+                                {errors.product_code}
+                            </div>
+                        )}
+                    </div>
 
-                    <Typography variant="body2" sx={{ color: '#4aa3d7', textAlign: 'center' }}>
-                        *Max Amortization can use variable (basic) for custom formulas, to do this select <strong>CUSTOM</strong> below.
-                    </Typography>
+                    <div>
+                        <label style={labelStyle}>Product Type</label>
+                        <select
+                            value={formData.wln_type_id || ''}
+                            onChange={(e) => {
+                                setFormData({ ...formData, wln_type_id: parseInt(e.target.value) });
+                                setErrors({ ...errors, wln_type_id: '' });
+                            }}
+                            style={{
+                                ...inputStyle,
+                                borderColor: errors.wln_type_id ? '#ef4444' : 'rgba(255,255,255,0.2)',
+                            } as React.CSSProperties}
+                        >
+                            <option value="">Select a type...</option>
+                            {types.map((type) => (
+                                <option key={type.id} value={type.id}>
+                                    {type.type_name}
+                                </option>
+                            ))}
+                        </select>
+                        {errors.wln_type_id && (
+                            <div style={{ fontSize: '0.75rem', color: '#ef4444', marginTop: '4px' }}>
+                                {errors.wln_type_id}
+                            </div>
+                        )}
+                    </div>
 
-                    <Stack direction="row" spacing={1.5} alignItems="center">
-                        <FormControl fullWidth size="small" required>
-                            <InputLabel>Max Amortization Mode</InputLabel>
-                            <Select
-                                label="Max Amortization Mode"
-                                value={maxAmortMode}
-                                onChange={(e) => {
-                                    const value = e.target.value as AmortModeOption;
-                                    setMaxAmortMode(value);
-                                    setMaxAmortError('');
-                                    setMaxAmortFormulaError('');
-                                    if (value === 'BASIC') {
-                                        setMaxAmortFormula('basic');
-                                        setMaxAmort('');
-                                    } else if (value === 'FIXED') {
-                                        setMaxAmortFormula('');
-                                    }
-                                }}
-                            >
-                                {maxmortmodeOptions?.map((opt) => (
-                                    <MenuItem key={opt} value={opt}>
-                                        {opt}
-                                    </MenuItem>
-                                ))}
-                            </Select>
-                        </FormControl>
-                    </Stack>
+                    <div>
+                        <label style={labelStyle}>Status</label>
+                        <select
+                            value={formData.is_active ? '1' : '0'}
+                            onChange={(e) => setFormData({ ...formData, is_active: parseInt(e.target.value) })}
+                            style={inputStyle as React.CSSProperties}
+                        >
+                            <option value="1">Active</option>
+                            <option value="0">Inactive</option>
+                        </select>
+                    </div>
 
-                    <Box sx={{ position: 'relative', minHeight: amortContainerMinHeight }}>
-                        <AnimatePresence mode="wait" initial={false}>
-                            {maxAmortMode === 'FIXED' && (
-                                <motion.div
-                                    key="fixed"
-                                    initial={{ opacity: 0, y: -6 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: 6 }}
-                                    transition={{ duration: 0.18, ease: 'easeOut' }}
-                                    style={{ position: 'absolute', top: 0, left: 0, right: 0, overflow: 'visible' }}
-                                >
-                                    <Stack spacing={0.25}>
-                                        <Stack direction="row" spacing={1.5} alignItems="center">
-                                            <TextField
-                                                required
-                                                fullWidth
-                                                size="small"
-                                                label="Max Amortization"
-                                                value={maxAmort}
-                                                onChange={(e) => {
-                                                    setMaxAmort(sanitizeNumber(e.target.value));
-                                                    if (maxAmortError) setMaxAmortError('');
-                                                }}
-                                                onBlur={() => setMaxAmort((prev) => formatNumber(prev, { maximumFractionDigits: 0 }))}
-                                                error={!!maxAmortError}
-                                                helperText={undefined}
-                                            />
-                                            <Stack alignItems="center" spacing={0.25}>
-                                                <Typography variant="caption" color="text.secondary">
-                                                    editable?
-                                                </Typography>
-                                                <IOSSwitch
-                                                    checked={amortEditable}
-                                                    value={amortEditable}
-                                                    onChange={(e) => setAmortEditable(e.target.checked)}
-                                                    size="small"
-                                                />
-                                            </Stack>
-                                        </Stack>
-                                        <Typography variant="caption" color={maxAmortError ? 'error' : 'text.secondary'} sx={{ minHeight: 18 }}>
-                                            {maxAmortError || ' '}
-                                        </Typography>
-                                    </Stack>
-                                </motion.div>
-                            )}
+                    <div>
+                        <label style={labelStyle}>Minimum Loan</label>
+                        <input
+                            type="number"
+                            value={formData.min_loan || 0}
+                            onChange={(e) => setFormData({ ...formData, min_loan: parseFloat(e.target.value) })}
+                            placeholder="0"
+                            style={inputStyle as React.CSSProperties}
+                        />
+                    </div>
 
-                            {maxAmortMode === 'BASIC' && (
-                                <motion.div
-                                    key="basic"
-                                    initial={{ opacity: 0, y: -6 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: 6 }}
-                                    transition={{ duration: 0.18, ease: 'easeOut' }}
-                                    style={{ position: 'absolute', top: 0, left: 0, right: 0, overflow: 'visible' }}
-                                >
-                                    <Stack direction="row" spacing={1.5} alignItems="center">
-                                        <TextField
-                                            required
-                                            fullWidth
-                                            size="small"
-                                            label="Max Amortization"
-                                            value={maxAmortFormula || 'basic'}
-                                            InputProps={{ readOnly: true }}
-                                        />
-                                        <Stack alignItems="center" spacing={0.25}>
-                                            <Typography variant="caption" color="text.secondary">
-                                                editable?
-                                            </Typography>
-                                            <IOSSwitch
-                                                checked={amortEditable}
-                                                value={amortEditable}
-                                                onChange={(e) => setAmortEditable(e.target.checked)}
-                                                size="small"
-                                            />
-                                        </Stack>
-                                    </Stack>
-                                </motion.div>
-                            )}
+                    <div>
+                        <label style={labelStyle}>Maximum Loan</label>
+                        <input
+                            type="number"
+                            value={formData.max_loan || 0}
+                            onChange={(e) => setFormData({ ...formData, max_loan: parseFloat(e.target.value) })}
+                            placeholder="100000"
+                            style={inputStyle as React.CSSProperties}
+                        />
+                    </div>
 
-                            {maxAmortMode === 'CUSTOM' && (
-                                <motion.div
-                                    key="custom"
-                                    initial={{ opacity: 0, y: -6 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: 6 }}
-                                    transition={{ duration: 0.18, ease: 'easeOut' }}
-                                    style={{ position: 'absolute', top: 0, left: 0, right: 0, overflow: 'visible' }}
-                                >
-                                    <Stack spacing={0.25}>
-                                        <Stack direction="row" spacing={1.5} alignItems="center">
-                                            <TextField
-                                                required
-                                                fullWidth
-                                                size="small"
-                                                label="Custom Formula"
-                                                value={maxAmortFormula}
-                                                onChange={(e) => {
-                                                    setMaxAmortFormula(e.target.value);
-                                                    if (maxAmortFormulaError) setMaxAmortFormulaError('');
-                                                }}
-                                                onBlur={(e) => setMaxAmortFormulaError(validateCustomFormula(e.target.value))}
-                                                error={!!maxAmortFormulaError}
-                                                placeholder="e.g. basic, 2 * basic, (basic * 5) / 0.5"
-                                                helperText={undefined}
-                                            />
-                                            <Stack alignItems="center" spacing={0.25}>
-                                                <Typography variant="caption" color="text.secondary">
-                                                    editable?
-                                                </Typography>
-                                                <IOSSwitch
-                                                    checked={amortEditable}
-                                                    value={amortEditable}
-                                                    onChange={(e) => setAmortEditable(e.target.checked)}
-                                                    size="small"
-                                                />
-                                            </Stack>
-                                        </Stack>
-                                        <Typography variant="caption" color={maxAmortFormulaError ? 'error' : 'text.secondary'} sx={{ minHeight: 18 }}>
-                                            {maxAmortFormulaError || 'Use "basic" as the member basic salary. Allowed: numbers, + - * / ( ).'}
-                                        </Typography>
-                                    </Stack>
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
-                    </Box>
+                    <div>
+                        <label style={labelStyle}>Interest Rate (%)</label>
+                        <input
+                            type="number"
+                            value={formData.interest_rate || 0}
+                            onChange={(e) => setFormData({ ...formData, interest_rate: parseFloat(e.target.value) })}
+                            placeholder="0"
+                            step="0.01"
+                            style={inputStyle as React.CSSProperties}
+                        />
+                    </div>
 
-                    <TextField
-                        fullWidth
-                        size="small"
-                        label="Service Fee (% of amount Applied)"
-                        value={serviceFee}
-                        onChange={(e) => setServiceFee(sanitizeNumber(e.target.value))}
-                        onBlur={() => setServiceFee((prev) => formatNumber(prev, { maximumFractionDigits: 2 }))}
-                        InputProps={{ endAdornment: <InputAdornment position="end">%</InputAdornment> }}
-                    />
-                    <TextField
-                        fullWidth
-                        size="small"
-                        label="LRF (% of amount Applied)"
-                        value={lrf}
-                        onChange={(e) => setLrf(sanitizeNumber(e.target.value))}
-                        onBlur={() => setLrf((prev) => formatNumber(prev, { maximumFractionDigits: 2 }))}
-                        InputProps={{ endAdornment: <InputAdornment position="end">%</InputAdornment> }}
-                    />
-                    <TextField
-                        fullWidth
-                        size="small"
-                        label="Doc Stamp (% of amount Applied)"
-                        value={docStamp}
-                        onChange={(e) => setDocStamp(sanitizeNumber(e.target.value))}
-                        onBlur={() => setDocStamp((prev) => formatNumber(prev, { maximumFractionDigits: 2 }))}
-                        InputProps={{ endAdornment: <InputAdornment position="end">%</InputAdornment> }}
-                    />
-                    <TextField
-                        fullWidth
-                        size="small"
-                        label="Mort + Notarial"
-                        value={mortNotarial}
-                        onChange={(e) => setMortNotarial(sanitizeNumber(e.target.value))}
-                        onBlur={() => setMortNotarial((prev) => formatNumber(prev, { maximumFractionDigits: 2 }))}
-                    />
+                    <div>
+                        <label style={labelStyle}>Processing Fee</label>
+                        <input
+                            type="number"
+                            value={formData.processing_fee || 0}
+                            onChange={(e) => setFormData({ ...formData, processing_fee: parseFloat(e.target.value) })}
+                            placeholder="0"
+                            step="0.01"
+                            style={inputStyle as React.CSSProperties}
+                        />
+                    </div>
 
-                    <Divider sx={{ my: 1 }} />
+                    <div>
+                        <label style={labelStyle}>Insurance Rate (%)</label>
+                        <input
+                            type="number"
+                            value={formData.insurance_rate || 0}
+                            onChange={(e) => setFormData({ ...formData, insurance_rate: parseFloat(e.target.value) })}
+                            placeholder="0"
+                            step="0.01"
+                            style={inputStyle as React.CSSProperties}
+                        />
+                    </div>
+                </div>
 
-                    <Typography variant="subtitle1" fontWeight={700}>
-                        TERMS/INFORMATION FOR CLIENTS:
-                    </Typography>
-                    <TextField
-                        fullWidth
-                        multiline
-                        minRows={4}
-                        value={terms}
-                        onChange={(e) => setTerms(e.target.value)}
-                        placeholder="Terms and Information about this Loan Product goes here."
-                    />
-                </Stack>
-            </Stack>
-
-            {compactActions ? (
-                <Stack
-                    direction="row"
-                    spacing={1.5}
-                    justifyContent="flex-end"
-                    sx={{ mt: 2, display: hideActionsOnMobile ? { xs: 'none', sm: 'flex' } : undefined }}
-                >
-                    <Button
-                        variant="contained"
-                        color="error"
-                        size="small"
-                        onClick={handleDelete}
-                        ref={deleteButtonRef}
-                        sx={{ borderRadius: 2, minWidth: 0, px: 1.5 }}
+                <div style={{ display: 'flex', gap: '8px', paddingLeft: '16px', paddingRight: '16px', paddingTop: '12px', paddingBottom: '16px', borderTop: `1px solid ${tw.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}` }}>
+                    <button
+                        onClick={onClose}
+                        style={{
+                            flex: 1,
+                            padding: '10px 16px',
+                            backgroundColor: 'transparent',
+                            border: '1px solid rgba(255,255,255,0.2)',
+                            borderRadius: '8px',
+                            color: '#ffffff',
+                            cursor: 'pointer',
+                            fontWeight: 600,
+                            fontSize: '0.875rem',
+                            transition: 'all 120ms ease',
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.4)';
+                            e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)';
+                            e.currentTarget.style.backgroundColor = 'transparent';
+                        }}
                     >
-                        <DeleteIcon fontSize="small" />
-                    </Button>
-                    <Button
-                        variant="contained"
-                        color="primary"
-                        size="small"
+                        Cancel
+                    </button>
+                    <button
                         onClick={handleSave}
-                        ref={saveButtonRef}
-                        sx={{ borderRadius: 2, minWidth: 0, px: 1.5 }}
+                        disabled={isSaving}
+                        style={{
+                            flex: 1,
+                            padding: '10px 16px',
+                            backgroundColor: '#3b82f6',
+                            border: 'none',
+                            borderRadius: '8px',
+                            color: '#ffffff',
+                            cursor: isSaving ? 'not-allowed' : 'pointer',
+                            fontWeight: 600,
+                            fontSize: '0.875rem',
+                            opacity: isSaving ? 0.6 : 1,
+                            transition: 'all 120ms ease',
+                        }}
+                        onMouseEnter={(e) => !isSaving && (e.currentTarget.style.backgroundColor = '#2563eb')}
+                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#3b82f6')}
                     >
-                        <SaveIcon fontSize="small" />
-                    </Button>
-                </Stack>
-            ) : (
-                <Stack
-                    direction="row"
-                    spacing={2}
-                    justifyContent="flex-end"
-                    sx={{ mt: 3, display: hideActionsOnMobile ? { xs: 'none', sm: 'flex' } : undefined }}
-                >
-                    <Button variant="outlined" color="inherit" startIcon={<CreateIcon />} onClick={onCancel}>
-                        Add New Product
-                    </Button>
-                    <Button variant="contained" color="primary" startIcon={<SaveIcon />} onClick={handleSave} ref={saveButtonRef}>
-                        Save
-                    </Button>
-                    <Button variant="contained" color="error" startIcon={<DeleteIcon />} onClick={handleDelete} ref={deleteButtonRef}>
-                        Delete
-                    </Button>
-                </Stack>
-            )}
-        </>
+                        {isSaving ? 'Saving...' : 'Save Product'}
+                    </button>
+                </div>
+            </motion.div>
+        </AnimatePresence>
     );
 };
 
-export default ProductCreateOrDelete;
+export default ProductCRUD;
