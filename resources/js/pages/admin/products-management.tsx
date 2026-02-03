@@ -311,9 +311,32 @@ export default function ProductsManagementPage() {
             <div className="flex flex-col  overflow-x-auto bg-[#FAFAFA] transition-colors duration-300 dark:bg-neutral-900">
                 <HeaderBlock title="Product Management" subtitle="Activate and manage product listings" />
 
-                {isMobile ? (
+                {loading ? (
+                    isMobile ? (
+                        <ProductMobileLayoutView
+                            products={[]}
+                            availableTypes={types}
+                            onSave={(payload, id) => handleSave(payload, id)}
+                            onDelete={(id) => handleDelete(id)}
+                            onToggleActive={handleToggleActive}
+                        />
+                    ) : (
+                        <ProductDesktopLayoutView
+                            key="loading"
+                            products={[]}
+                            availableTypes={types}
+                            selected={null}
+                            isAdding={false}
+                            onSelect={() => {}}
+                            onAdd={() => {}}
+                            onSave={() => {}}
+                            onDelete={() => {}}
+                            onToggleActive={() => {}}
+                        />
+                    )
+                ) : isMobile ? (
                     <ProductMobileLayoutView
-                        products={loading ? [] : products}
+                        products={products}
                         availableTypes={types}
                         onSave={(payload, id) => handleSave(payload, id)}
                         onDelete={(id) => handleDelete(id)}
@@ -322,7 +345,7 @@ export default function ProductsManagementPage() {
                 ) : (
                     <ProductDesktopLayoutView
                         key={isAdding ? 'adding' : selected?.product_id ?? 'new'}
-                        products={loading ? [] : products}
+                        products={products}
                         availableTypes={types}
                         selected={selected}
                         isAdding={isAdding}

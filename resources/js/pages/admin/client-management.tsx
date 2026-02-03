@@ -431,9 +431,53 @@ export default function ClientManagementPage() {
                     <HeaderBlock title="Client Management" subtitle="Review, approve, and manage clients" />
                 ) : null}
 
-                {isMobile ? (
+                {loading ? (
+                    isMobile ? (
+                        <ClientMobileLayoutView
+                            clients={[]}
+                            rejectionReasons={rejectionReasons}
+                            selectedId={selectedId}
+                            onSelect={setSelectedId}
+                            onApprove={handleApprove}
+                            onReject={handleReject}
+                            onSaveSalary={handleSaveSalary}
+                            fetchWlnMaster={fetchWlnMaster}
+                            wlnMasterByAcctno={wlnMasterByAcctno}
+                            wlnMasterLoading={wlnMasterLoading}
+                            fetchAmortsched={fetchAmortsched}
+                            amortschedByLnnumber={amortschedByLnnumber}
+                            amortschedLoading={amortschedLoading}
+                            fetchWlnLed={fetchWlnLed}
+                            wlnLedByLnnumber={wlnLedByLnnumber}
+                            wlnLedLoading={wlnLedLoading}
+                            statusTab={statusTab}
+                            onStatusTabChange={setStatusTab}
+                        />
+                    ) : (
+                        <ClientDesktopLayoutView
+                            clients={[]}
+                            rejectionReasons={rejectionReasons}
+                            selectedId={null}
+                            onSelect={setSelectedId}
+                            onApprove={handleApprove}
+                            onReject={handleReject}
+                            onSaveSalary={handleSaveSalary}
+                            fetchWlnMaster={fetchWlnMaster}
+                            wlnMasterByAcctno={wlnMasterByAcctno}
+                            wlnMasterLoading={wlnMasterLoading}
+                            fetchAmortsched={fetchAmortsched}
+                            amortschedByLnnumber={amortschedByLnnumber}
+                            amortschedLoading={amortschedLoading}
+                            fetchWlnLed={fetchWlnLed}
+                            wlnLedByLnnumber={wlnLedByLnnumber}
+                            wlnLedLoading={wlnLedLoading}
+                            statusTab={statusTab}
+                            onStatusTabChange={setStatusTab}
+                        />
+                    )
+                ) : isMobile ? (
                     <ClientMobileLayoutView
-                        clients={loading ? [] : clients}
+                        clients={clients}
                         rejectionReasons={rejectionReasons}
                         selectedId={selectedId}
                         onSelect={setSelectedId}
@@ -454,7 +498,7 @@ export default function ClientManagementPage() {
                     />
                 ) : (
                     <ClientDesktopLayoutView
-                        clients={loading ? [] : clients}
+                        clients={clients}
                         rejectionReasons={rejectionReasons}
                         selectedId={selectedId}
                         onSelect={setSelectedId}
