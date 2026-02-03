@@ -69,17 +69,16 @@ const ProductList: React.FC<Props> = ({
                 style={{
                     borderRadius: '24px',
                     backgroundColor: tw.isDark ? '#171717' : '#FAFAFA',
-                    paddingTop: '16px',
-                    paddingBottom: '16px',
-                    paddingLeft: 0,
-                    paddingRight: 0,
+                    padding: 0,
                     flex: fullHeight ? 1 : 'unset',
                     display: 'flex',
                     flexDirection: 'column',
                     gap: isMobile ? '12px' : '16px',
                 }}
             >
-                <BoxHeader title="Available Products" />
+                <div style={{ paddingLeft: '16px', paddingRight: '16px', paddingTop: '16px' }}>
+                    <BoxHeader title="Available Products" />
+                </div>
 
                 <div style={{ paddingLeft: '16px', paddingRight: '16px' }}>
                     <input
