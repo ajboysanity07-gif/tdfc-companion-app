@@ -8,12 +8,12 @@ import ProductList from '@/components/admin/product-management/product-list';
 import { useProductManagement } from '@/hooks/use-product-management';
 import AppLayout from '@/layouts/app-layout';
 import { ProductLntype, ProductPayload, WlnType } from '@/types/product-lntype';
-import { Button, LinearProgress, Slide, useMediaQuery } from '@mui/material';
-import AddCircleIcon from '@mui/icons-material/AddCircle';
+import { Button } from '@/components/ui/button';
 import { AnimatePresence, motion } from 'framer-motion';
-import { CircleCheckBig, CircleX } from 'lucide-react';
+import { CircleCheckBig, CircleX, Plus } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import HeaderBlock from '@/components/management/header-block';
+import { useMediaQuery } from '@/hooks/use-media-query';
 
 const breadcrumbs = [{ title: 'Product Management', href: '/admin/products' }];
 
@@ -158,24 +158,14 @@ function ProductMobileLayoutView({ products, availableTypes = [], onSave, onDele
             footer={
                 <>
                     <Button
-                        variant="contained"
-                        color="primary"
+                        variant="default"
                         onClick={() => {
                             setSelected(null);
                             setModalOpen(true);
                         }}
-                        startIcon={<AddCircleIcon />}
-                        sx={{
-                            position: 'fixed',
-                            bottom: 84,
-                            left: '50%',
-                            transform: 'translateX(-50%)',
-                            borderRadius: 999,
-                            px: 2.5,
-                            py: 1,
-                            boxShadow: '0 10px 30px rgba(0,0,0,0.22)',
-                        }}
+                        className="fixed bottom-20 left-1/2 -translate-x-1/2 rounded-full px-4 py-2 shadow-lg z-40"
                     >
+                        <Plus className="mr-2 h-4 w-4" />
                         Add New
                     </Button>
 
@@ -274,7 +264,9 @@ export default function ProductsManagementPage() {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            {loading ? <LinearProgress color="primary" sx={{ position: 'fixed', top: 0, left: 0, width: '100%', zIndex: 60 }} /> : null}
+            {loading ? (
+                <div className="fixed top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 to-blue-500 z-50 animate-pulse" />
+            ) : null}
             <div className="fixed top-4 left-1/2 z-50 flex -translate-x-1/2 flex-col items-center gap-2">
                 <Slide in={!!success} direction="down" mountOnEnter unmountOnExit>
                     <div className="flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-emerald-900/30">

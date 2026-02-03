@@ -1,10 +1,9 @@
 import React, { useEffect } from 'react';
-import { AppBar, Box, Dialog, IconButton, Slide, Toolbar, Typography } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
-import { useTheme } from '@mui/material/styles';
-import type { TransitionProps } from '@mui/material/transitions';
-import type { SxProps, Theme } from '@mui/material/styles';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { X } from 'lucide-react';
 import { useOptionalSidebar } from '@/components/ui/sidebar';
+import { cn } from '@/lib/utils';
 
 type Props = {
     open: boolean;
@@ -14,38 +13,27 @@ type Props = {
     headerBg?: string;
     headerColor?: string;
     toolbarContentRight?: React.ReactNode;
-    bodySx?: SxProps<Theme>;
-    paperSx?: SxProps<Theme>;
+    bodySx?: React.CSSProperties;
+    paperSx?: React.CSSProperties;
     bodyClassName?: string;
     onToggle?: (open: boolean) => void;
     zIndex?: number;
-    titleSx?: SxProps<Theme>;
+    titleSx?: React.CSSProperties;
 };
-
-const Transition = React.forwardRef(function Transition(
-    props: TransitionProps & { children: React.ReactElement },
-    ref: React.Ref<unknown>,
-) {
-    return <Slide direction="up" ref={ref} timeout={{ enter: 320, exit: 240 }} {...props} />;
-});
 
 const FullScreenModalMobile: React.FC<Props> = ({
     open,
     title,
     onClose,
     children,
-    headerBg = '#f57979',
+    headerBg = '#e14e4e',
     headerColor = '#fff',
     toolbarContentRight,
     bodySx,
-    paperSx,
     bodyClassName,
     onToggle,
-    zIndex,
     titleSx,
 }) => {
-    const theme = useTheme();
-    const layerZ = zIndex ?? theme.zIndex.modal; // Keep modal above page content (nav still sits higher)
     const sidebar = useOptionalSidebar();
     const isSidebarMobile = sidebar?.isMobile ?? true;
     const sidebarState = sidebar?.state ?? 'expanded';
@@ -71,104 +59,58 @@ const FullScreenModalMobile: React.FC<Props> = ({
     }, [bodyClassName, onToggle, open]);
 
     return (
-        <Dialog
-            fullScreen
-            open={open}
-            onClose={onClose}
-            TransitionComponent={Transition}
-            slotProps={{
-                root: {
-                    sx: {
-                        zIndex: layerZ,
-                    },
-                },
-                backdrop: {
-                    sx: {
-                        position: 'fixed',
-                        inset: 0,
-                        zIndex: layerZ,
-                        backgroundColor: 'transparent',
-                        backdropFilter: 'none',
-                        left: { xs: 0, md: sidebarWidth }, // Offset for sidebar on desktop
-                    },
-                },
-            }}
-            PaperProps={{
-                sx: {
-                    position: 'fixed',
-                    top: 0,
-                    bottom: { xs: 68, md: 0 }, // Leave room for bottom nav on mobile (nav height ~68px)
-                    left: { xs: 0, md: sidebarWidth }, // Offset for sidebar on desktop
-                    right: 0,
-                    width: { xs: '100%', md: `calc(100% - ${sidebarWidth})` },
-                    height: { xs: 'calc(100% - 68px)', md: '100%' },
-                    maxWidth: '100%',
-                    maxHeight: '100%',
-                    m: 0,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    bgcolor: theme.palette.mode === 'dark' ? 'rgba(12,12,14,0.94)' : 'rgba(255,255,255,0.98)',
-                    backdropFilter: 'blur(12px)',
-                    zIndex: layerZ + 1,
-                    overflow: 'hidden',
-                    ...paperSx,
-                },
-            }}
-        >
-            <AppBar
-                position="sticky"
-                color="default"
-                elevation={0}
-                sx={{
-                    bgcolor: headerBg,
-                    color: headerColor,
-                    borderBottom: '1px solid rgba(0,0,0,0.08)',
-                    pl: isCollapsed ? 2 : 0,
-                }}
+        <Dialog open={open} onOpenChange={onClose}>
+            <DialogContent 
+                className={cn(
+                    'fixed inset-0 max-w-none max-h-none border-0 rounded-0 p-0 data-[state=open]:slide-in-from-bottom-full',
+                    !isSidebarMobile && `left-[${sidebarWidth}] w-[calc(100%-${sidebarWidth})]`,
+                    'bottom-[68px] md:bottom-0 h-[calc(100%-68px)] md:h-full',
+                )}
             >
-                <Toolbar sx={{ pl: { xs: 2, md: 0 } }}>
-                    <IconButton 
-                        color="inherit" 
-                        onClick={onClose} 
-                        aria-label="close"
-                        sx={{ ml: { xs: 0, md: isCollapsed ? 0 : 2 } }}
-                    >
-                        <CloseIcon />
-                    </IconButton>
-                    <Typography
-                        sx={{
-                            ml: 2,
-                            flex: 1,
-                            minWidth: 0,
-                            whiteSpace: 'nowrap',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            fontSize: { xs: 16, sm: 20 },
-                            lineHeight: 1.2,
-                            ...titleSx,
+                <div
+                    className="flex flex-col h-full bg-background"
+                    style={{
+                        left: isSidebarMobile ? 0 : sidebarWidth,
+                        width: isSidebarMobile ? '100%' : `calc(100% - ${sidebarWidth})`,
+                    }}
+                >
+                    {/* Header */}
+                    <div
+                        className="sticky top-0 flex items-center justify-between px-2 md:px-0 py-0 border-b md:pl-0 md:pr-0"
+                        style={{
+                            backgroundColor: headerBg,
+                            color: headerColor,
                         }}
-                        variant="h6"
-                        component="div"
-                        fontWeight={800}
                     >
-                        {title}
-                    </Typography>
-                    {toolbarContentRight}
-                </Toolbar>
-            </AppBar>
-            <Box
-                sx={{
-                    px: { xs: 2.5, sm: 3.5 },
-                    py: { xs: 2.5, sm: 3.5 },
-                    pb: { xs: 5, sm: 6 },
-                    flex: 1,
-                    overflowY: 'auto',
-                    width: '100%',
-                    ...bodySx,
-                }}
-            >
-                {children}
-            </Box>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={onClose}
+                            className="h-12 w-12 md:ml-2"
+                        >
+                            <X className="h-5 w-5" />
+                        </Button>
+                        <h2
+                            className="flex-1 text-base sm:text-xl font-extrabold truncate overflow-hidden text-ellipsis ml-2"
+                            style={titleSx}
+                        >
+                            {title}
+                        </h2>
+                        {toolbarContentRight}
+                    </div>
+
+                    {/* Body */}
+                    <div
+                        className={cn(
+                            'flex-1 overflow-y-auto px-2.5 sm:px-3.5 py-2.5 sm:py-3.5 pb-5 sm:pb-6 w-full',
+                            bodyClassName,
+                        )}
+                        style={bodySx}
+                    >
+                        {children}
+                    </div>
+                </div>
+            </DialogContent>
         </Dialog>
     );
 };
