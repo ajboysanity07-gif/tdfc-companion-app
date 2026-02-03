@@ -1,4 +1,4 @@
-import IOSSwitch from '@/components/ui/ios-switch';
+import { Switch } from '@/components/ui/switch';
 import { useMyTheme } from '@/hooks/use-mytheme';
 import type { ProductLntype } from '@/types/product-lntype';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
@@ -182,9 +182,9 @@ const ProductList: React.FC<Props> = ({
                                         }}
                                     >
                                         <div style={{ display: 'flex', gap: '16px', flex: 1, alignItems: 'center' }}>
-                                            <IOSSwitch
+                                            <Switch
                                                 checked={isOn}
-                                                onChange={(e) => onToggleActive?.(product.product_id, e.target ? (e.target as HTMLInputElement).checked : e)}
+                                                onCheckedChange={(checked) => onToggleActive?.(product.product_id, checked)}
                                             />
 
                                             <div style={{ flex: 1 }}>
