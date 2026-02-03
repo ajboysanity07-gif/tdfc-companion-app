@@ -68,7 +68,7 @@ const ProductList: React.FC<Props> = ({
             <div
                 style={{
                     borderRadius: '24px',
-                    backgroundColor: tw.isDark ? '#171717' : '#FAFAFA',
+                    backgroundColor: tw.isDark ? '#171717' : '#FFFFFF',
                     padding: 0,
                     flex: fullHeight ? 1 : 'unset',
                     display: 'flex',

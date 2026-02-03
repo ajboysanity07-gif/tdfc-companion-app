@@ -113,7 +113,7 @@ const ProductCRUD: React.FC<Props> = ({
                 exit={{ opacity: 0, y: 20 }}
                 style={{
                     borderRadius: isMobile ? '0px' : '24px',
-                    backgroundColor: tw.isDark ? '#171717' : '#FAFAFA',
+                    backgroundColor: tw.isDark ? '#171717' : '#FFFFFF',
                     padding: 0,
                     maxHeight: isMobile ? 'none' : '90vh',
                     overflow: 'auto',
