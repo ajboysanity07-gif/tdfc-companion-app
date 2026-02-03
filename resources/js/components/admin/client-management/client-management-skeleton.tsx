@@ -1,6 +1,6 @@
 import { useMediaQuery } from '@/hooks/use-media-query';
-import ClientListSkeleton from './client-list-skeleton';
-import ClientDetailsSkeleton from './client-details-skeleton';
+import ClientListSkeleton from './skeletons/client-list-skeleton';
+import ClientDetailsSkeleton from './skeletons/client-details-skeleton';
 import { CLIENT_LIST_PAGE_SIZE } from './skeletons';
 import { useMyTheme } from '@/hooks/use-mytheme';
 

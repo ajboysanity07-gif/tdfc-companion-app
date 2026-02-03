@@ -1,5 +1,6 @@
 import { useMediaQuery } from '@/hooks/use-media-query';
-import ProductListSkeleton from './product-list-skeleton';
+import ProductListSkeleton from './skeletons/product-list-skeleton';
+import ProductDetailsSkeleton from './skeletons/product-details-skeleton';
 import { PRODUCT_LIST_PAGE_SIZE } from './skeletons';
 import { useMyTheme } from '@/hooks/use-mytheme';
 
@@ -27,7 +28,9 @@ export default function ProductManagementSkeleton({ itemCount = PRODUCT_LIST_PAG
                                 <ProductListSkeleton itemCount={itemCount} fullHeight />
                             </div>
                         </div>
-                        <div className="flex-1 rounded-2xl p-3 animate-pulse" style={{ backgroundColor: tw.isDark ? '#1a1a1a' : '#FFFFFF' }}></div>
+                        <div className="flex-1 rounded-2xl p-3" style={{ backgroundColor: tw.isDark ? '#1a1a1a' : '#FFFFFF' }}>
+                            <ProductDetailsSkeleton />
+                        </div>
                     </div>
                 </div>
             )}
