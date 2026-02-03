@@ -191,7 +191,7 @@ const ProductCRUD: React.FC<Props> = ({
                                 if (product) onToggleActive?.(product.product_id, checked);
                             }}
                         />
-                        <label style={{ ...labelStyle, marginBottom: 0, textTransform: 'capitalize' }}>
+                        <label style={{ ...labelStyle, marginBottom: 0, textTransform: 'capitalize', fontSize: '0.875rem', fontWeight: 500 }}>
                             Enable or Disable this product
                         </label>
                     </div>
@@ -335,34 +335,38 @@ const ProductCRUD: React.FC<Props> = ({
                         </div>
                     </div>
 
-                    {/* Rate and Multiple */}
-                    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(3, 1fr)', gap: '16px', marginTop: '16px' }}>
-                        <div>
-                            <label style={labelStyle}>Rate (P.A.) %</label>
-                            <input
-                                type="number"
-                                value={formData.interest_rate || 0}
-                                onChange={(e) => setFormData({ ...formData, interest_rate: parseFloat(e.target.value) })}
-                                placeholder="0"
-                                step="0.01"
-                                style={inputStyle as React.CSSProperties}
-                            />
-                        </div>
-
-                        <div>
-                            <label style={labelStyle}>Max Term (days)</label>
-                            <input
-                                type="number"
-                                value={formData.max_term_days || 0}
-                                onChange={(e) => setFormData({ ...formData, max_term_days: parseInt(e.target.value) })}
-                                placeholder="0"
-                                style={inputStyle as React.CSSProperties}
-                            />
-                        </div>
-
-                        <div style={{ display: 'flex', alignItems: 'flex-end', gap: '8px' }}>
+                    {/* Rate and Max Term */}
+                    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '16px', marginTop: '16px' }}>
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
                             <div style={{ flex: 1 }}>
-                                <label style={{ ...labelStyle, fontSize: '0.65rem' }}>Editable?</label>
+                                <label style={labelStyle}>Rate (P.A.)</label>
+                                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                    <input
+                                        type="number"
+                                        value={formData.interest_rate || 0}
+                                        onChange={(e) => setFormData({ ...formData, interest_rate: parseFloat(e.target.value) })}
+                                        placeholder="0"
+                                        step="0.01"
+                                        style={inputStyle as React.CSSProperties}
+                                    />
+                                    <span style={{ color: textColorLight, fontSize: '0.875rem', minWidth: '20px' }}>%</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
+                            <div style={{ flex: 1 }}>
+                                <label style={labelStyle}>Max Term (days)</label>
+                                <input
+                                    type="number"
+                                    value={formData.max_term_days || 0}
+                                    onChange={(e) => setFormData({ ...formData, max_term_days: parseInt(e.target.value) })}
+                                    placeholder="0"
+                                    style={inputStyle as React.CSSProperties}
+                                />
+                            </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', marginBottom: '4px' }}>
+                                <span style={{ fontSize: '0.65rem', color: textColorLight }}>editable?</span>
                                 <Switch
                                     checked={formData.is_max_term_editable || false}
                                     onCheckedChange={(checked) => setFormData({ ...formData, is_max_term_editable: checked })}
@@ -373,44 +377,46 @@ const ProductCRUD: React.FC<Props> = ({
 
                     {/* Max Amortization */}
                     {renderSectionTitle('Max Amortization')}
-                    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '16px' }}>
-                        <div>
-                            <label style={labelStyle}>Max Amortization Mode *</label>
-                            <select
-                                value={formData.max_amortization_mode || 'FIXED'}
-                                onChange={(e) => setFormData({ ...formData, max_amortization_mode: e.target.value as 'FIXED' | 'BASIC' | 'CUSTOM' })}
-                                style={{
-                                    ...inputStyle,
-                                    appearance: 'none',
-                                    backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='${tw.isDark ? '%23ffffff' : '%23000000'}' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`,
-                                    backgroundRepeat: 'no-repeat',
-                                    backgroundPosition: 'right 8px center',
-                                    backgroundSize: '20px',
-                                    paddingRight: '32px',
-                                } as React.CSSProperties}
-                            >
-                                <option value="FIXED">FIXED</option>
-                                <option value="BASIC">BASIC</option>
-                                <option value="CUSTOM">CUSTOM</option>
-                            </select>
-                        </div>
-
-                        {formData.max_amortization_mode === 'CUSTOM' && (
-                            <div>
-                                <label style={labelStyle}>Formula</label>
-                                <input
-                                    type="text"
-                                    value={formData.max_amortization_formula || ''}
-                                    onChange={(e) => setFormData({ ...formData, max_amortization_formula: e.target.value })}
-                                    placeholder="e.g., (salary * 0.5) * months"
-                                    style={inputStyle as React.CSSProperties}
-                                />
-                            </div>
-                        )}
+                    <div style={{ color: tw.isDark ? 'rgba(59, 130, 246, 0.9)' : 'rgba(59, 130, 246, 0.8)', fontSize: '0.75rem', marginBottom: '12px', lineHeight: '1.5' }}>
+                        *Max Amortization can use variable (basic) for custom formulas, to do this select <strong>CUSTOM</strong> below.
                     </div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(3, 1fr)', gap: '16px', marginTop: '16px' }}>
-                        <div>
+                    <div>
+                        <label style={labelStyle}>Max Amortization Mode *</label>
+                        <select
+                            value={formData.max_amortization_mode || 'FIXED'}
+                            onChange={(e) => setFormData({ ...formData, max_amortization_mode: e.target.value as 'FIXED' | 'BASIC' | 'CUSTOM' })}
+                            style={{
+                                ...inputStyle,
+                                appearance: 'none',
+                                backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='${tw.isDark ? '%23ffffff' : '%23000000'}' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`,
+                                backgroundRepeat: 'no-repeat',
+                                backgroundPosition: 'right 8px center',
+                                backgroundSize: '20px',
+                                paddingRight: '32px',
+                            } as React.CSSProperties}
+                        >
+                            <option value="FIXED">FIXED</option>
+                            <option value="BASIC">BASIC</option>
+                            <option value="CUSTOM">CUSTOM</option>
+                        </select>
+                    </div>
+
+                    {formData.max_amortization_mode === 'CUSTOM' && (
+                        <div style={{ marginTop: '16px' }}>
+                            <label style={labelStyle}>Formula</label>
+                            <input
+                                type="text"
+                                value={formData.max_amortization_formula || ''}
+                                onChange={(e) => setFormData({ ...formData, max_amortization_formula: e.target.value })}
+                                placeholder="e.g., (salary * 0.5) * months"
+                                style={inputStyle as React.CSSProperties}
+                            />
+                        </div>
+                    )}
+
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end', marginTop: '16px' }}>
+                        <div style={{ flex: 1 }}>
                             <label style={labelStyle}>Max Amortization *</label>
                             <input
                                 type="number"
@@ -422,72 +428,80 @@ const ProductCRUD: React.FC<Props> = ({
                             />
                         </div>
 
-                        <div>
-                            <label style={{ ...labelStyle, fontSize: '0.65rem' }}>Editable?</label>
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', marginBottom: '4px' }}>
+                            <span style={{ fontSize: '0.65rem', color: textColorLight }}>editable?</span>
                             <Switch
                                 checked={formData.is_max_amortization_editable || false}
                                 onCheckedChange={(checked) => setFormData({ ...formData, is_max_amortization_editable: checked })}
-                            />
-                        </div>
-
-                        <div>
-                            <label style={{ ...labelStyle, fontSize: '0.65rem' }}>Multiple?</label>
-                            <Switch
-                                checked={formData.is_multiple || false}
-                                onCheckedChange={(checked) => setFormData({ ...formData, is_multiple: checked })}
                             />
                         </div>
                     </div>
 
                     {/* Fees */}
                     {renderSectionTitle('Fees & Charges')}
-                    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)', gap: '16px' }}>
-                        <div>
-                            <label style={labelStyle}>Service Fee (% of amount Applied) %</label>
-                            <input
-                                type="number"
-                                value={formData.service_fee || 0}
-                                onChange={(e) => setFormData({ ...formData, service_fee: parseFloat(e.target.value) })}
-                                placeholder="0"
-                                step="0.01"
-                                style={inputStyle as React.CSSProperties}
-                            />
+                    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr', gap: '16px' }}>
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
+                            <div style={{ flex: 1 }}>
+                                <label style={labelStyle}>Service Fee (% of amount Applied)</label>
+                                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                    <input
+                                        type="number"
+                                        value={formData.service_fee || 0}
+                                        onChange={(e) => setFormData({ ...formData, service_fee: parseFloat(e.target.value) })}
+                                        placeholder="0"
+                                        step="0.01"
+                                        style={inputStyle as React.CSSProperties}
+                                    />
+                                    <span style={{ color: textColorLight, fontSize: '0.875rem', minWidth: '20px' }}>%</span>
+                                </div>
+                            </div>
                         </div>
 
-                        <div>
-                            <label style={labelStyle}>LRF (% of amount Applied) %</label>
-                            <input
-                                type="number"
-                                value={formData.lrf || 0}
-                                onChange={(e) => setFormData({ ...formData, lrf: parseFloat(e.target.value) })}
-                                placeholder="0"
-                                step="0.01"
-                                style={inputStyle as React.CSSProperties}
-                            />
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
+                            <div style={{ flex: 1 }}>
+                                <label style={labelStyle}>LRF (% of amount Applied)</label>
+                                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                    <input
+                                        type="number"
+                                        value={formData.lrf || 0}
+                                        onChange={(e) => setFormData({ ...formData, lrf: parseFloat(e.target.value) })}
+                                        placeholder="0"
+                                        step="0.01"
+                                        style={inputStyle as React.CSSProperties}
+                                    />
+                                    <span style={{ color: textColorLight, fontSize: '0.875rem', minWidth: '20px' }}>%</span>
+                                </div>
+                            </div>
                         </div>
 
-                        <div>
-                            <label style={labelStyle}>Doc Stamp (% of amount Applied) %</label>
-                            <input
-                                type="number"
-                                value={formData.document_stamp || 0}
-                                onChange={(e) => setFormData({ ...formData, document_stamp: parseFloat(e.target.value) })}
-                                placeholder="0"
-                                step="0.01"
-                                style={inputStyle as React.CSSProperties}
-                            />
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
+                            <div style={{ flex: 1 }}>
+                                <label style={labelStyle}>Doc Stamp (% of amount Applied)</label>
+                                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                    <input
+                                        type="number"
+                                        value={formData.document_stamp || 0}
+                                        onChange={(e) => setFormData({ ...formData, document_stamp: parseFloat(e.target.value) })}
+                                        placeholder="0"
+                                        step="0.01"
+                                        style={inputStyle as React.CSSProperties}
+                                    />
+                                    <span style={{ color: textColorLight, fontSize: '0.875rem', minWidth: '20px' }}>%</span>
+                                </div>
+                            </div>
                         </div>
 
-                        <div>
-                            <label style={labelStyle}>Mort + Notarial %</label>
-                            <input
-                                type="number"
-                                value={formData.mort_plus_notarial || 0}
-                                onChange={(e) => setFormData({ ...formData, mort_plus_notarial: parseFloat(e.target.value) })}
-                                placeholder="0"
-                                step="0.01"
-                                style={inputStyle as React.CSSProperties}
-                            />
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
+                            <div style={{ flex: 1 }}>
+                                <label style={labelStyle}>Mort + Notarial</label>
+                                <input
+                                    type="text"
+                                    value={formData.mort_plus_notarial || 0}
+                                    onChange={(e) => setFormData({ ...formData, mort_plus_notarial: parseFloat(e.target.value) || 0 })}
+                                    placeholder="0"
+                                    style={inputStyle as React.CSSProperties}
+                                />
+                            </div>
                         </div>
                     </div>
 
