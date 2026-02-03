@@ -142,20 +142,13 @@ export default function RegistrationStatus({
   };
 
   const errorBorder =
-    theme.palette.mode === 'dark'
-      ? `1.5px solid ${alpha(theme.palette.error.main, 0.34)}`
-      : '1.5px solid #F57979';
-  const errorBg =
-    theme.palette.mode === 'dark'
-      ? alpha(theme.palette.error.main, 0.08)
-      : '#FFF8F8';
+    '#e14e4e';
+  const errorBg = '#FFF8F8';
 
-  const headlineFont = theme.typography.h4?.fontFamily ?? 'inherit';
-  const welcomeFontSize = isMobile ? '14px' : (theme.typography.subtitle1?.fontSize ?? '16px');
-  const welcomeLetterSpacing = theme.typography.subtitle1?.letterSpacing ?? '0.05em';
-  const nameFontSize = isMobile
-    ? '1.125rem'
-    : (theme.typography.h6?.fontSize ?? '1.125rem');
+  const headlineFont = 'inherit';
+  const welcomeFontSize = isMobile ? '14px' : '16px';
+  const welcomeLetterSpacing = '0.05em';
+  const nameFontSize = isMobile ? '1.125rem' : '1.125rem';
   const showFallbackSkeleton = fallbackLoading && !(bname?.trim() || name?.trim() || acctno);
   const showSubmittedSkeleton = fallbackLoading && !submitted_at;
 

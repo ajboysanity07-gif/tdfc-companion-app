@@ -358,11 +358,9 @@ export default function LoansPage() {
 
     // Floating action button for mobile
     const actionButton = isMobile ? (
-        <Box
-            sx={{
-                position: 'fixed',
-                bottom: 88,
-                left: '50%',
+        <div
+            className="fixed bottom-24 left-1/2 -translate-x-1/2 z-40 flex gap-2 rounded-full shadow-lg">
+
                 transform: 'translateX(-50%)',
                 zIndex: (theme) => Math.max(theme.zIndex.modal, 3000) + 60,
                 px: 2,
@@ -406,7 +404,7 @@ export default function LoansPage() {
             >
                 New Transaction
             </Button>
-        </Box>
+        </div>
     ) : null;
 
     const content = (
@@ -419,9 +417,9 @@ export default function LoansPage() {
     );
 
     const leftPanel = (
-        <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+        <div className="h-full flex flex-col">
             {content}
-        </Box>
+        </div>
     );
 
     const rightPanel = !activeView ? (
@@ -431,22 +429,22 @@ export default function LoansPage() {
     ) : activeView === 'ledger' && ledgerLoading ? (
         <DesktopPanelSkeleton showMessage={false} />
     ) : activeView === 'calculator' ? (
-        <Box sx={{ height: '100%', overflow: 'auto', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+        <div className="h-full overflow-auto flex flex-col relative">
             <BoxHeader
                 title="Loan Calculator"
                 subtitle="Renew your loan application"
             />
-            <Box sx={{ flex: 1, p: 3 }}>
+            <div className="flex-1 p-3">
                 <LoanCalculator 
                     selectedProduct={selectedProduct} 
                     loading={productsLoading} 
                     loanDefaults={loanDefaults}
                     forceModalTerms={true}
                 />
-            </Box>
-        </Box>
+            </div>
+        </div>
     ) : (
-        <Box sx={{ height: '100%', overflow: 'auto' }}>
+        <div className="h-full overflow-auto">
             {activeView === 'schedule' ? (
                 <AmortschedTable 
                     rows={amortschedRows} 
@@ -471,14 +469,16 @@ export default function LoansPage() {
                     }}
                 />
             )}
-        </Box>
+        </div>
     );
 
     if (isMobile) {
         return (
             <AppLayout>
                 <Head title="Your Loan Applications" />
-                {globalLoading ? <LinearProgress color="primary" sx={{ position: 'fixed', top: 0, left: 0, width: '100%', zIndex: 60 }} /> : null}
+                {globalLoading ? (
+                    <div className="fixed top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 to-blue-500 z-50 animate-pulse" />
+                ) : null}
                 <div className="fixed top-4 left-1/2 z-50 flex -translate-x-1/2 flex-col items-center gap-2">
                     <Slide in={!!successMessage} direction="down" mountOnEnter unmountOnExit>
                         <div className="flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-emerald-900/30">
