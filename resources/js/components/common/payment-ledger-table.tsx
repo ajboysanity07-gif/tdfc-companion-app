@@ -6,7 +6,6 @@ import ListAltOutlinedIcon from '@mui/icons-material/ListAltOutlined';
 import PictureAsPdfOutlinedIcon from '@mui/icons-material/PictureAsPdfOutlined';
 import SimCardDownloadOutlinedIcon from '@mui/icons-material/SimCardDownloadOutlined';
 import { Box, IconButton, Skeleton, Stack, TextField, Tooltip, Typography } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { DataGrid, type GridColDef } from '@mui/x-data-grid';
 import jsPDF from 'jspdf';
@@ -75,9 +74,8 @@ const PaymentLedgerTable: React.FC<Props> = ({ title = 'Payment Ledger', rows, l
     const [searchTerm, setSearchTerm] = useState('');
     const [actionsOpen, setActionsOpen] = useState(false);
     const [logoDataUrl, setLogoDataUrl] = useState<string | null>(null);
-    const theme = useTheme();
     const tw = useMyTheme();
-    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+    const isMobile = useMediaQuery('(max-width: 600px)');
 
     const generatedOn = useMemo(
         () => new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date()),

@@ -1,11 +1,10 @@
 import React from 'react';
-import { Box, Skeleton, Stack, useMediaQuery, useTheme } from '@mui/material';
+import { Box, Skeleton, Stack, useMediaQuery } from '@mui/material';
 import { useMyTheme } from '@/hooks/use-mytheme';
 
 const ProductDetailsSkeleton: React.FC = () => {
-    const theme = useTheme();
     const tw = useMyTheme();
-    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+    const isMobile = useMediaQuery('(max-width: 600px)');
     const panelBg = tw.isDark ? '#262626' : '#FAFAFA';
 
     return (

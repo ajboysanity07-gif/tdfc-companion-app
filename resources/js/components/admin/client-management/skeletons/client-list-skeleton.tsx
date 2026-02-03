@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Skeleton, Stack, useMediaQuery, useTheme } from '@mui/material';
+import { Box, Skeleton, Stack, useMediaQuery } from '@mui/material';
 import { useMyTheme } from '@/hooks/use-mytheme';
 
 export const CLIENT_LIST_PAGE_SIZE = 9;
@@ -11,9 +11,8 @@ type Props = {
 };
 
 const ClientListSkeleton: React.FC<Props> = ({ itemCount = CLIENT_LIST_PAGE_SIZE, fullHeight = false, showTabs = true }) => {
-    const theme = useTheme();
     const tw = useMyTheme();
-    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+    const isMobile = useMediaQuery('(max-width: 600px)');
     const safeItemCount = Math.max(itemCount ?? CLIENT_LIST_PAGE_SIZE, 1);
 
     const containerStyles = {

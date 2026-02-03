@@ -3,7 +3,7 @@ import { useMyTheme } from '@/hooks/use-mytheme';
 import type { ProductLntype } from '@/types/product-lntype';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import SearchIcon from '@mui/icons-material/Search';
-import { Autocomplete, Box, Chip, IconButton, List, ListItem, Stack, TextField, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { Autocomplete, Box, Chip, IconButton, List, ListItem, Stack, TextField, Typography, useMediaQuery } from '@mui/material';
 import React, { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PRODUCT_LIST_PAGE_SIZE } from './skeletons';
@@ -30,8 +30,7 @@ const ProductList: React.FC<Props> = ({
     fullHeight = false,
 }) => {
     const tw = useMyTheme();
-    const theme = useTheme();
-    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+    const isMobile = useMediaQuery('(max-width: 600px)');
     const pageSize = PRODUCT_LIST_PAGE_SIZE;
 
     const list = products;

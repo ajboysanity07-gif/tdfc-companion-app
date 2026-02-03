@@ -1,6 +1,7 @@
 import React from 'react';
-import { Box, Stack, useMediaQuery, useTheme } from '@mui/material';
+import { Box, Stack } from '@mui/material';
 import { useMyTheme } from '../../../hooks/use-mytheme';
+import { useMediaQuery } from '@/hooks/use-media-query';
 
 export const LOAN_LIST_SKELETON_COUNT = 4;
 
@@ -9,9 +10,8 @@ type Props = {
 };
 
 const LoanListSkeleton: React.FC<Props> = ({ itemCount }) => {
-    const theme = useTheme();
     const tw = useMyTheme();
-    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+    const isMobile = useMediaQuery('(max-width: 600px)');
     const defaultCount = isMobile ? 3 : LOAN_LIST_SKELETON_COUNT;
     const safeItemCount = Math.max(itemCount ?? defaultCount, 1);
     

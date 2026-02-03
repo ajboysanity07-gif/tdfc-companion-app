@@ -58,9 +58,7 @@ export default function NavMobile() {
   //   pathname === customerDashboardHref ||
   //   pathname === adminDashboardHref;
 
-  // MUI theme hook
-  const theme = useTheme();
-  const navZIndex = Math.max(theme.zIndex.modal, 3000) + 50;
+  const navZIndex = 3050;  // MUI modal zIndex is 1300, we need higher
   const floatingZIndex = navZIndex + 20;
   const [productModalOpen, setProductModalOpen] = useState(false);
   const [anyModalOpen, setAnyModalOpen] = useState(false);

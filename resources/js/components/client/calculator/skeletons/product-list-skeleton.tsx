@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Paper, Skeleton, Stack, useMediaQuery, useTheme } from '@mui/material';
+import { Box, Paper, Skeleton, Stack, useMediaQuery } from '@mui/material';
 import { useMyTheme } from '@/hooks/use-mytheme';
 
 export const CLIENT_PRODUCT_LIST_SKELETON_COUNT = 6;
@@ -9,9 +9,8 @@ type Props = {
 };
 
 const ProductListSkeleton: React.FC<Props> = ({ itemCount }) => {
-    const theme = useTheme();
     const tw = useMyTheme();
-    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+    const isMobile = useMediaQuery('(max-width: 600px)');
     const defaultCount = isMobile ? 4 : CLIENT_PRODUCT_LIST_SKELETON_COUNT;
     const safeItemCount = Math.max(itemCount ?? defaultCount, 1);
     const cardBg = tw.isDark ? '#2f2f2f' : '#f7f7f7';

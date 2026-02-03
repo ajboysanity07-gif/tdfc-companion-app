@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Skeleton, Stack, useMediaQuery, useTheme } from '@mui/material';
+import { Box, Skeleton, Stack, useMediaQuery } from '@mui/material';
 import { useMyTheme } from '@/hooks/use-mytheme';
 
 export const PRODUCT_LIST_PAGE_SIZE = 6;
@@ -10,9 +10,8 @@ type Props = {
 };
 
 const ProductListSkeleton: React.FC<Props> = ({ itemCount = PRODUCT_LIST_PAGE_SIZE, fullHeight = false }) => {
-    const theme = useTheme();
     const tw = useMyTheme();
-    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+    const isMobile = useMediaQuery('(max-width: 600px)');
     const panelBg = tw.isDark ? '#262626' : 'rgba(0,0,0,0.04)';
     const cardBg = tw.isDark ? '#2f2f2f' : '#f7f7f7';
     const cardBorder = tw.isDark ? '#3a3a3a' : '#e5e5e5';

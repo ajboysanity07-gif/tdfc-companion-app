@@ -6,6 +6,7 @@ import MinimalLayout from '@/layouts/minimal-layout';
 import { Head } from '@inertiajs/react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useMediaQuery } from '@/hooks/use-media-query';
+import { useMyTheme } from '@/hooks/use-mytheme';
 import { motion } from 'framer-motion';
 import React, { useState } from 'react';
 import axiosClient from '@/api/axios-client';
@@ -31,7 +32,7 @@ export default function RegistrationStatus({
   reviewed_at,
   reviewed_by,
 }: Props) {
-  const theme = useTheme();
+  const theme = useMyTheme();
   const isMobile = useMediaQuery('(max-width:639px)');
 
   const prcCodes = ['prc_id_blurry', 'not_prc_id', 'prc_id_expired'];

@@ -12,7 +12,6 @@ import {
     Skeleton,
     Stack,
     Typography,
-    useTheme,
 } from '@mui/material';
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 import BlockIcon from '@mui/icons-material/Block';
@@ -31,7 +30,6 @@ const RejectModal: React.FC<Props> = ({ open, reasons, selected = [], onClose, o
     const [fallbackReasons, setFallbackReasons] = useState<RejectionReasonEntry[]>([]);
     const [loadingReasons, setLoadingReasons] = useState(false);
     const [localSelected, setLocalSelected] = useState<string[]>(selected ?? []);
-    const theme = useTheme();
 
     const normalizeReasons = (body: unknown): RejectionReasonEntry[] => {
         if (Array.isArray(body)) return body as RejectionReasonEntry[];

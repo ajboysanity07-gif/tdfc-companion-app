@@ -7,7 +7,6 @@ import {
     Stack,
     Typography,
     Box,
-    useTheme,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 
@@ -21,7 +20,6 @@ type Props = {
 };
 
 const ImagePreviewModal: React.FC<Props> = ({ open, title, images, onClose }) => {
-    const theme = useTheme();
     return (
         <Dialog
             open={open}
@@ -31,7 +29,7 @@ const ImagePreviewModal: React.FC<Props> = ({ open, title, images, onClose }) =>
             PaperProps={{
                 sx: {
                     borderRadius: 4,
-                    bgcolor: theme.palette.mode === 'dark' ? 'rgba(28,28,28,0.92)' : 'rgba(255,255,255,0.9)',
+                    bgcolor: (theme) => theme.palette.mode === 'dark' ? 'rgba(28,28,28,0.92)' : 'rgba(255,255,255,0.9)',
                     backdropFilter: 'blur(18px)',
                     boxShadow: '0 20px 60px rgba(0,0,0,0.35)',
                 },

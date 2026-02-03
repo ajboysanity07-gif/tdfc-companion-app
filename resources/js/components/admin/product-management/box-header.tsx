@@ -1,4 +1,4 @@
-import { Stack, Typography, useTheme } from '@mui/material';
+import { Stack, Typography } from '@mui/material';
 import React from 'react';
 
 type Props = {
@@ -7,15 +7,13 @@ type Props = {
 };
 
 const BoxHeader: React.FC<Props> = ({ title, subtitle }) => {
-  const theme = useTheme();
-  const accent = theme.palette.primary.main;
 
   return (
     <Stack spacing={0.5} sx={{ pb: 1, mb: 2 }}>
       <Typography
         variant="h4"
         fontWeight={800}
-        sx={{ letterSpacing: 0.3, color: accent }}
+        sx={{ letterSpacing: 0.3, color: 'primary.main' }}
       >
         {title}
       </Typography>
@@ -30,7 +28,7 @@ const BoxHeader: React.FC<Props> = ({ title, subtitle }) => {
           sx={{
             height: 2,
             borderRadius: 999,
-            bgcolor: theme.palette.mode === 'dark' ? theme.palette.grey[700] : theme.palette.grey[300],
+            bgcolor: (theme) => theme.palette.mode === 'dark' ? theme.palette.grey[700] : theme.palette.grey[300],
           }}
         />
       </Stack>
