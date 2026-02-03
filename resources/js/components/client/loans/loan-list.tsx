@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Box, Stack, Typography, Button, Tooltip, TextField, InputAdornment, Pagination, useMediaQuery } from '@mui/material';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import SearchIcon from '@mui/icons-material/Search';
 import CalculateIcon from '@mui/icons-material/Calculate';
 import BlockIcon from '@mui/icons-material/Block';
 import { router, usePage } from '@inertiajs/react';
 import { useMyTheme } from '@/hooks/use-mytheme';
+import { useMediaQuery } from '@/hooks/use-media-query';
 import AmortschedTable from '@/components/common/amortsched-table';
 import PaymentLedgerTable from '@/components/common/payment-ledger-table';
 import FullScreenModalMobile from '@/components/ui/full-screen-modal-mobile';
@@ -239,319 +239,352 @@ export default function LoanList({ onOpenCalculator, onScheduleClick, onLedgerCl
 
     if (error) {
         return (
-            <Box sx={{ textAlign: 'center', py: 4 }}>
-                <Typography color="error">{error}</Typography>
-            </Box>
+            <div style={{ textAlign: 'center', paddingY: 16 }}>
+                <div style={{ color: '#ef5350' }}>{error}</div>
+            </div>
         );
     }
 
     if (!wlnRecords.length) {
         return (
-            <Box
-                sx={{
+            <div
+                style={{
                     textAlign: 'center',
-                    py: 6,
-                    px: 3,
-                    borderRadius: 2,
+                    paddingY: 24,
+                    paddingX: 12,
+                    borderRadius: 8,
                     border: `1px dashed ${borderColor}`,
-                    bgcolor: panelBg,
+                    backgroundColor: panelBg,
                 }}
             >
-                <Typography variant="h6" fontWeight={700} gutterBottom>
+                <h6 style={{ fontSize: '1.125rem', fontWeight: 700, marginBottom: 8 }}>
                     No Loans Found
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
+                </h6>
+                <p style={{ fontSize: '0.875rem', color: tw.isDark ? '#999' : '#666', margin: 0 }}>
                     You don't have any loan applications yet.
-                </Typography>
-            </Box>
+                </p>
+            </div>
         );
     }
 
     return (
         <>
             {/* Header */}
-            <Box sx={{ mb: 4 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
-                    <Typography variant="h5" fontWeight={700} sx={{ color: '#F57979', fontSize: { xs: '1.25rem', sm: '1.5rem' } }}>
+            <div style={{ marginBottom: 16 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                    <h5 style={{ color: '#F57979', fontSize: isMobile ? '1.25rem' : '1.5rem', fontWeight: 700, margin: 0 }}>
                         Active Loans
-                    </Typography>
+                    </h5>
                     {!isMobile && (
-                        <Button
-                            variant="contained"
-                            size="medium"
-                            startIcon={<CalculateIcon sx={{ fontSize: { xs: '18px', sm: '20px' } }} />}
+                        <button
                             onClick={() => router.visit(calculatorUrl)}
-                            sx={{
-                                bgcolor: '#F57979',
+                            style={{
+                                backgroundColor: '#F57979',
                                 color: 'white',
                                 fontWeight: 600,
                                 textTransform: 'none',
-                                borderRadius: 3,
-                                px: { xs: 2, sm: 3 },
-                                py: { xs: 0.8, sm: 1.2 },
-                                fontSize: { xs: '0.813rem', sm: '0.875rem' },
+                                borderRadius: 12,
+                                paddingX: isMobile ? 8 : 12,
+                                paddingY: isMobile ? 6 : 10,
+                                fontSize: isMobile ? '0.813rem' : '0.875rem',
+                                border: 'none',
+                                cursor: 'pointer',
                                 boxShadow: '0 1px 3px rgba(0, 0, 0, 0.2)',
                                 transition: 'all 0.2s ease',
-                                '&:hover': {
-                                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)',
-                                    transform: 'translateY(-2px)',
-                                },
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 8,
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.3)';
+                                e.currentTarget.style.transform = 'translateY(-2px)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.2)';
+                                e.currentTarget.style.transform = 'none';
                             }}
                         >
+                            <CalculateIcon sx={{ fontSize: isMobile ? '18px' : '20px' }} />
                             New Transaction
-                        </Button>
+                        </button>
                     )}
-                </Box>
-                <TextField
-                    fullWidth
-                    size="small"
-                    placeholder="Search loans"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    InputProps={{
-                        startAdornment: (
-                            <InputAdornment position="start">
-                                <SearchIcon sx={{ color: 'text.secondary' }} />
-                            </InputAdornment>
-                        ),
-                    }}
-                    sx={{
-                        '& .MuiOutlinedInput-root': {
-                            bgcolor: tw.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
-                            borderRadius: 2,
-                        }
-                    }}
-                />
-            </Box>
-            <Stack spacing={1.5} width="100%">
+                </div>
+                <div style={{
+                    width: '100%',
+                    padding: '8px 12px',
+                    border: `1px solid ${tw.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)'}`,
+                    borderRadius: 8,
+                    backgroundColor: tw.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                }}>
+                    <SearchIcon style={{ color: tw.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }} />
+                    <input
+                        type="text"
+                        placeholder="Search loans"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        style={{
+                            flex: 1,
+                            border: 'none',
+                            backgroundColor: 'transparent',
+                            color: tw.isDark ? 'white' : 'black',
+                            fontSize: '0.875rem',
+                            outline: 'none',
+                        }}
+                    />
+                </div>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, width: '100%' }}>
                 {paginatedRecords.map((rec, idx) => {
                     const hasSchedule = amortschedByLnnumber[rec.lnnumber ?? '']?.length > 0;
                     const schedLoadingThis = amortschedLoading[rec.lnnumber ?? ''];
 
                     return (
-                        <Box
+                        <div
                             key={rec.lnnumber || idx}
-                            sx={{
+                            style={{
                                 width: '100%',
-                                borderRadius: 2,
-                                bgcolor: tw.isDark ? '#262626' : '#f5f5f5',
-                                border: '2px solid',
-                                borderColor: tw.isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.15)',
-                                p: 2.5,
+                                borderRadius: 8,
+                                backgroundColor: tw.isDark ? '#262626' : '#f5f5f5',
+                                border: `2px solid ${tw.isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.15)'}`,
+                                padding: 10,
                                 transition: 'all 0.2s ease',
-                                '&:hover': {
-                                    borderColor: tw.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.25)',
-                                },
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.borderColor = tw.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.25)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.borderColor = tw.isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.15)';
                             }}
                         >
-                            <Stack direction="row" spacing={3} alignItems="center" justifyContent="space-between">
+                            <div style={{ display: 'flex', flexDirection: 'row', gap: 12, alignItems: 'center', justifyContent: 'space-between' }}>
                                 {/* Loan info */}
-                                <Stack spacing={0.5} flex={1}>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                        <Typography 
-                                            variant="h6" 
-                                            fontWeight={700} 
-                                            sx={{ 
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 1 }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                                        <h6 
+                                            style={{ 
                                                 textTransform: 'uppercase',
                                                 fontSize: '0.95rem',
                                                 lineHeight: 1.2,
+                                                fontWeight: 700,
+                                                margin: 0,
                                             }}
                                         >
                                             {rec.remarks ? String(rec.remarks).trim() : 'LOAN'}
-                                        </Typography>
+                                        </h6>
                                         {!hasSchedule && !schedLoadingThis && (
-                                            <Tooltip 
-                                                title="No amortization schedule available for this loan" 
-                                                arrow 
-                                                placement="top"
-                                                enterTouchDelay={0}
-                                                leaveTouchDelay={3000}
-                                            >
+                                            <div title="No amortization schedule available for this loan" style={{ cursor: 'help' }}>
                                                 <InfoOutlinedIcon 
                                                     fontSize="small" 
-                                                    sx={{ 
-                                                        color: 'text.secondary',
-                                                        cursor: 'help',
+                                                    style={{ 
+                                                        color: tw.isDark ? '#999' : '#666',
                                                     }} 
                                                 />
-                                            </Tooltip>
+                                            </div>
                                         )}
-                                    </Box>
+                                    </div>
                                     
-                                    <Typography 
-                                        variant="body2" 
-                                        sx={{ 
-                                            color: 'text.secondary',
+                                    <p 
+                                        style={{ 
+                                            color: tw.isDark ? '#999' : '#666',
                                             fontWeight: 400,
                                             fontSize: '0.8rem',
+                                            margin: 0,
                                         }}
                                     >
                                         Loan no.: {rec.lnnumber || 'N/A'}
-                                    </Typography>
+                                    </p>
                                     
-                                    <Typography 
-                                        variant="h6" 
-                                        fontWeight={700} 
-                                        sx={{ 
+                                    <h6 
+                                        style={{ 
                                             fontSize: '0.9rem',
-                                            mt: 1,
+                                            fontWeight: 700,
+                                            marginTop: 4,
+                                            margin: 0,
                                         }}
                                     >
-                                        Balance: <Box component="span" sx={{ color: '#F57979' }}>₱{rec.balance ? Number(rec.balance).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}</Box>
-                                    </Typography>
+                                        Balance: <span style={{ color: '#F57979' }}>₱{rec.balance ? Number(rec.balance).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}</span>
+                                    </h6>
                                     
                                     {rec.date_end && (
-                                        <Typography 
-                                            variant="body2" 
-                                            sx={{ 
-                                                color: 'text.secondary',
+                                        <p 
+                                            style={{ 
+                                                color: tw.isDark ? '#999' : '#666',
                                                 fontWeight: 400,
                                                 fontSize: '0.8rem',
+                                                margin: 0,
                                             }}
                                         >
                                             {new Date(rec.date_end).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })}
-                                        </Typography>
+                                        </p>
                                     )}
-                                </Stack>
+                                </div>
 
-                                {/* Action buttons - stacked vertically */}
-                                <Stack direction="column" spacing={1} sx={{ minWidth: 120 }}>
+                                {/* Action buttons */}
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 4, minWidth: 120 }}>
                                     {(() => {
                                         const tooltipInfo = getDisableReasonTooltip(rec);
                                         return (
-                                            <Tooltip
-                                                title={tooltipInfo ? (
-                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
-                                                        {tooltipInfo.icon}
-                                                        <span>{tooltipInfo.message}</span>
-                                                    </Box>
-                                                ) : ''}
-                                                arrow
-                                                placement="top"
-                                                disableHoverListener={!rec.is_renew_disabled}
-                                                enterTouchDelay={0}
-                                                leaveTouchDelay={3000}
-                                            >
-                                                <span>
-                                                    <Button
-                                                        variant="contained"
-                                                        size="small"
-                                                        fullWidth
-                                                        onClick={() => onOpenCalculator(rec)}
-                                                        disabled={rec.is_renew_disabled}
-                                                        data-loan-action
-                                                        startIcon={rec.is_renew_disabled ? <InfoOutlinedIcon sx={{ fontSize: '0.95rem !important' }} /> : undefined}
-                                                        sx={{
-                                                            bgcolor: '#F57979',
-                                                            color: 'white',
-                                                            fontWeight: 700,
-                                                            fontSize: '0.7rem',
-                                                            textTransform: 'uppercase',
-                                                            borderRadius: 6,
-                                                            px: 3,
-                                                            py: 0.75,
-                                                            boxShadow: 'none',
-                                                            '&:hover': {
-                                                                bgcolor: rec.is_renew_disabled ? '#F57979' : '#e14e4e',
-                                                                boxShadow: 'none',
-                                                            },
-                                                            '&:disabled': {
-                                                                bgcolor: 'rgba(245, 121, 121, 0.5)',
-                                                                color: 'rgba(255, 255, 255, 0.5)',
-                                                                cursor: 'not-allowed',
-                                                            },
-                                                        }}
-                                                    >
-                                                        Renew
-                                                    </Button>
-                                                </span>
-                                            </Tooltip>
+                                            <div title={tooltipInfo ? tooltipInfo.message : ''}>
+                                                <button
+                                                    onClick={() => onOpenCalculator(rec)}
+                                                    disabled={rec.is_renew_disabled}
+                                                    style={{
+                                                        width: '100%',
+                                                        backgroundColor: '#F57979',
+                                                        color: 'white',
+                                                        fontWeight: 700,
+                                                        fontSize: '0.7rem',
+                                                        textTransform: 'uppercase',
+                                                        borderRadius: 12,
+                                                        paddingX: 12,
+                                                        paddingY: 3,
+                                                        border: 'none',
+                                                        cursor: rec.is_renew_disabled ? 'not-allowed' : 'pointer',
+                                                        boxShadow: 'none',
+                                                        opacity: rec.is_renew_disabled ? 0.5 : 1,
+                                                    }}
+                                                    onMouseEnter={(e) => {
+                                                        if (!rec.is_renew_disabled) {
+                                                            e.currentTarget.style.backgroundColor = '#e14e4e';
+                                                        }
+                                                    }}
+                                                    onMouseLeave={(e) => {
+                                                        e.currentTarget.style.backgroundColor = '#F57979';
+                                                    }}
+                                                >
+                                                    Renew
+                                                </button>
+                                            </div>
                                         );
                                     })()}
-                                    <Button
-                                        variant="outlined"
-                                        size="small"
-                                        fullWidth
+                                    <button
                                         onClick={() => openSchedule(rec)}
                                         disabled={schedLoadingThis || !hasSchedule}
-                                        sx={{
+                                        style={{
+                                            width: '100%',
                                             borderWidth: 1,
+                                            borderStyle: 'solid',
                                             borderColor: tw.isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.2)',
                                             fontWeight: 700,
                                             fontSize: '0.7rem',
                                             textTransform: 'uppercase',
-                                            borderRadius: 6,
-                                            px: 3,
-                                            py: 0.75,
-                                            '&:hover': {
-                                                borderWidth: 1,
-                                                borderColor: tw.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.3)',
-                                                bgcolor: tw.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
-                                            },
-                                            '&:disabled': {
-                                                borderColor: 'rgba(245, 121, 121, 0.2)',
-                                                color: 'rgba(255, 255, 255, 0.3)',
-                                            },
+                                            borderRadius: 12,
+                                            paddingX: 12,
+                                            paddingY: 3,
+                                            backgroundColor: 'transparent',
+                                            color: tw.isDark ? 'white' : 'black',
+                                            cursor: (schedLoadingThis || !hasSchedule) ? 'not-allowed' : 'pointer',
+                                            opacity: (schedLoadingThis || !hasSchedule) ? 0.5 : 1,
+                                            transition: 'all 0.2s ease',
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            if (!schedLoadingThis && hasSchedule) {
+                                                e.currentTarget.style.borderColor = tw.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.3)';
+                                                e.currentTarget.style.backgroundColor = tw.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
+                                            }
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.currentTarget.style.borderColor = tw.isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.2)';
+                                            e.currentTarget.style.backgroundColor = 'transparent';
                                         }}
                                     >
                                         {schedLoadingThis ? 'Loading...' : 'Schedule'}
-                                    </Button>
-                                    <Button
-                                        variant="outlined"
-                                        size="small"
-                                        fullWidth
+                                    </button>
+                                    <button
                                         onClick={() => openLedger(rec)}
-                                        sx={{
+                                        style={{
+                                            width: '100%',
                                             borderWidth: 1,
+                                            borderStyle: 'solid',
                                             borderColor: tw.isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.2)',
                                             fontWeight: 700,
                                             fontSize: '0.7rem',
                                             textTransform: 'uppercase',
-                                            borderRadius: 6,
-                                            px: 3,
-                                            py: 0.75,
-                                            '&:hover': {
-                                                borderWidth: 1,
-                                                borderColor: tw.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.3)',
-                                                bgcolor: tw.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
-                                            },
+                                            borderRadius: 12,
+                                            paddingX: 12,
+                                            paddingY: 3,
+                                            backgroundColor: 'transparent',
+                                            color: tw.isDark ? 'white' : 'black',
+                                            cursor: 'pointer',
+                                            transition: 'all 0.2s ease',
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            e.currentTarget.style.borderColor = tw.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.3)';
+                                            e.currentTarget.style.backgroundColor = tw.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.currentTarget.style.borderColor = tw.isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.2)';
+                                            e.currentTarget.style.backgroundColor = 'transparent';
                                         }}
                                     >
                                         Payments
-                                    </Button>
-                                </Stack>
-                            </Stack>
-                        </Box>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     );
                 })}
-            </Stack>
+            </div>
 
             {/* Pagination */}
             {totalPages > 1 && (
-                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-                    <Pagination 
-                        count={totalPages} 
-                        page={currentPage} 
-                        onChange={handlePageChange}
-                        color="primary"
-                        size="large"
-                        sx={{
-                            '& .MuiPaginationItem-root': {
-                                color: tw.isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)',
-                                '&.Mui-selected': {
-                                    bgcolor: '#F57979',
-                                    color: 'white',
-                                    '&:hover': {
-                                        bgcolor: '#e14e4e',
-                                    },
-                                },
-                                '&:hover': {
-                                    bgcolor: tw.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
-                                },
-                            },
-                        }}
-                    />
-                </Box>
+                <div style={{ display: 'flex', justifyContent: 'center', marginTop: 16 }}>
+                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center' }}>
+                        <button
+                            onClick={() => handlePageChange(null as any, Math.max(1, currentPage - 1))}
+                            disabled={currentPage === 1}
+                            style={{
+                                padding: '8px 12px',
+                                borderRadius: '4px',
+                                border: `1px solid ${tw.isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'}`,
+                                backgroundColor: tw.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
+                                color: tw.isDark ? 'white' : 'black',
+                                cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                                opacity: currentPage === 1 ? 0.5 : 1,
+                            }}
+                        >
+                            ←
+                        </button>
+                        {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                            const pageNum = i + Math.max(1, currentPage - 2);
+                            return (
+                                <button
+                                    key={pageNum}
+                                    onClick={() => handlePageChange(null as any, pageNum)}
+                                    style={{
+                                        padding: '8px 12px',
+                                        borderRadius: '4px',
+                                        border: `1px solid ${tw.isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'}`,
+                                        backgroundColor: pageNum === currentPage ? '#F57979' : (tw.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'),
+                                        color: pageNum === currentPage ? 'white' : (tw.isDark ? 'white' : 'black'),
+                                        cursor: 'pointer',
+                                        fontWeight: pageNum === currentPage ? 700 : 400,
+                                    }}
+                                >
+                                    {pageNum}
+                                </button>
+                            );
+                        })}
+                        <button
+                            onClick={() => handlePageChange(null as any, Math.min(totalPages, currentPage + 1))}
+                            disabled={currentPage === totalPages}
+                            style={{
+                                padding: '8px 12px',
+                                borderRadius: '4px',
+                                border: `1px solid ${tw.isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'}`,
+                                backgroundColor: tw.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
+                                color: tw.isDark ? 'white' : 'black',
+                                cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+                                opacity: currentPage === totalPages ? 0.5 : 1,
+                            }}
+                        >
+                            →
+                        </button>
+                    </div>
+                </div>
             )}
 
             {/* Modals for Mobile Only */}
