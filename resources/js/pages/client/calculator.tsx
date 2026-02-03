@@ -202,7 +202,7 @@ export default function LoanTransactions() {
     const header = <HeaderBlock title="Available Loan Products" subtitle="Choose a loan product to apply" />;
 
     const leftSection = (
-        <Box>
+        <div>
             <BoxHeader title="Available Transactions" />
             <ProductList
                 products={products}
@@ -211,11 +211,11 @@ export default function LoanTransactions() {
                 selectedProduct={selectedProduct}
                 onSelectProduct={setSelectedProduct}
             />
-        </Box>
+        </div>
     );
 
     const productDetails = (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <div className="flex flex-col gap-2">
             <BoxHeader title="Loan Calculator" />
             <LoanCalculator
                 selectedProduct={productWithComputed || selectedProduct}
@@ -225,7 +225,7 @@ export default function LoanTransactions() {
                 loading={loading}
                 loanDefaults={loanDefaults}
             />
-        </Box>
+        </div>
     );
 
     if (isMobile) {
@@ -255,12 +255,6 @@ export default function LoanTransactions() {
                         loading={loading}
                     />
                 </FullScreenModalMobile>
-
-                <Snackbar open={!!successMessage} autoHideDuration={6000} onClose={handleCloseSuccess}>
-                    <Alert onClose={handleCloseSuccess} severity="success" sx={{ width: '100%' }}>
-                        {successMessage}
-                    </Alert>
-                </Snackbar>
             </AppLayout>
         );
     }
@@ -268,25 +262,27 @@ export default function LoanTransactions() {
     return (
         <AppLayout>
             <Head title="Available Transactions" />
-            {loading ? <LinearProgress color="primary" sx={{ position: 'fixed', top: 0, left: 0, width: '100%', zIndex: 60 }} /> : null}
+            {loading ? (
+                <div className="fixed top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 to-blue-500 z-50 animate-pulse" />
+            ) : null}
             <div className="fixed top-4 left-1/2 z-50 flex -translate-x-1/2 flex-col items-center gap-2">
-                <Slide in={!!successMessage} direction="down" mountOnEnter unmountOnExit>
-                    <div className="flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-emerald-900/30">
+                {successMessage && (
+                    <div className="flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-emerald-900/30 animate-in slide-in-from-top">
                         <CircleCheckBig className="h-4 w-4" />
                         <span>{successMessage}</span>
                     </div>
-                </Slide>
-                <Slide in={!!loading} direction="down" mountOnEnter unmountOnExit>
-                    <div className="rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-sky-900/30">
+                )}
+                {loading && (
+                    <div className="rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-sky-900/30 animate-in slide-in-from-top">
                         Loading...
                     </div>
-                </Slide>
-                <Slide in={!!error && !loading} direction="down" mountOnEnter unmountOnExit>
-                    <div className="flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-red-900/30">
+                )}
+                {error && !loading && (
+                    <div className="flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-red-900/30 animate-in slide-in-from-top">
                         <CircleX className="h-4 w-4" />
                         <span>{error || 'An error occurred'}</span>
                     </div>
-                </Slide>
+                )}
             </div>
             {header}
             <DesktopViewLayout
@@ -295,11 +291,6 @@ export default function LoanTransactions() {
                 leftSx={{ p: 3, minHeight: 600 }}
                 rightSx={{ p: 3, minHeight: 600 }}
             />
-            <Snackbar open={!!successMessage} autoHideDuration={6000} onClose={handleCloseSuccess}>
-                <Alert onClose={handleCloseSuccess} severity="success" sx={{ width: '100%' }}>
-                    {successMessage}
-                </Alert>
-            </Snackbar>
         </AppLayout>
     );
 }
