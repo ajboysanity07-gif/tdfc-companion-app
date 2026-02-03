@@ -6,7 +6,6 @@ import type { ProductLntype } from '@/types/product-lntype';
 import { LoanCalculatorSkeleton } from './skeletons';
 import CloseIcon from '@mui/icons-material/Close';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-import { Box, Dialog, DialogContent, DialogTitle, IconButton, Stack, TextField, Tooltip, Typography } from '@mui/material';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -81,122 +80,110 @@ export default function LoanCalculator({ selectedProduct, loanDefaults, loading 
     }
 
     return (
-        <Box ref={containerRef}>
-            <Stack spacing={isMobile ? 2.5 : 3}>
+        <div ref={containerRef}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? 10 : 12 }}>
                 {/* Product Display */}
-                <Box>
-                    <Typography
-                        variant="caption"
-                        color="text.secondary"
-                        fontWeight={600}
-                        sx={{
-                            mb: 1.5,
+                <div>
+                    <p
+                        style={{
+                            marginBottom: 6,
                             display: 'block',
                             textTransform: 'uppercase',
                             letterSpacing: 1.2,
                             fontSize: '0.7rem',
                             textAlign: 'center',
+                            color: 'text.secondary',
+                            fontWeight: 600,
                         }}
                     >
                         Product
-                    </Typography>
-                    <TextField
-                        fullWidth
-                        variant="outlined"
+                    </p>
+                    <input
+                        type="text"
                         value={(loanDefaults?.productName || selectedProduct?.product_name || '').trim()}
                         placeholder="Select a product from the list"
-                        InputProps={{
-                            readOnly: true,
-                        }}
-                        sx={{
-                            '& .MuiOutlinedInput-root': {
-                                fontSize: isMobile ? '1rem' : '1.25rem',
-                                fontWeight: 700,
-                                borderRadius: 3,
-                            },
-                            '& .MuiOutlinedInput-input': {
-                                textAlign: 'center !important',
-                                cursor: 'default',
-                                padding: isMobile ? '12px 14px' : '16.5px 14px',
-                            },
+                        readOnly
+                        style={{
+                            width: '100%',
+                            fontSize: isMobile ? '1rem' : '1.25rem',
+                            fontWeight: 700,
+                            borderRadius: 12,
+                            padding: isMobile ? '12px 14px' : '16.5px 14px',
+                            border: '1px solid #ccc',
+                            textAlign: 'center',
+                            cursor: 'default',
                         }}
                     />
-                </Box>
+                </div>
 
                 {/* Term in Months */}
-                <Box>
-                    <Stack direction="row" spacing={0.5} alignItems="center" justifyContent="center" sx={{ mb: 1.5 }}>
-                        <Typography
-                            variant="caption"
-                            color="text.secondary"
-                            fontWeight={600}
-                            sx={{ textTransform: 'uppercase', letterSpacing: 1.2, fontSize: '0.7rem' }}
+                <div>
+                    <div style={{ display: 'flex', flexDirection: 'row', gap: 2, alignItems: 'center', justifyContent: 'center', marginBottom: 6 }}>
+                        <p
+                            style={{
+                                textTransform: 'uppercase',
+                                letterSpacing: 1.2,
+                                fontSize: '0.7rem',
+                                fontWeight: 600,
+                                margin: 0,
+                            }}
                         >
                             Term in Months
-                        </Typography>
+                        </p>
                         {selectedProduct?.is_max_term_editable === false && (
-                            <Tooltip title="• This field is disabled by admin" arrow placement="top" enterTouchDelay={0} leaveTouchDelay={3000}>
+                            <div title="• This field is disabled by admin" style={{ cursor: 'help' }}>
                                 <InfoOutlinedIcon
-                                    sx={{ fontSize: 14, color: 'text.secondary', cursor: 'help', opacity: 0.7, '&:hover': { opacity: 1 } }}
+                                    sx={{ fontSize: 14, opacity: 0.7 }}
                                 />
-                            </Tooltip>
+                            </div>
                         )}
-                    </Stack>
-                    <TextField
-                        fullWidth
-                        variant="outlined"
+                    </div>
+                    <input
                         type="number"
                         value={termMonths || ''}
                         onChange={(e) => setTermMonths(Number(e.target.value))}
                         placeholder="0"
                         disabled={selectedProduct?.is_max_term_editable === false}
-                        inputProps={{ min: 0, max: selectedProduct?.max_term_months || undefined }}
-                        sx={{
-                            '& .MuiOutlinedInput-root': {
-                                fontSize: isMobile ? '1.25rem' : '1.5rem',
-                                fontWeight: 700,
-                                borderRadius: 3,
-                            },
-                            '& .MuiOutlinedInput-input': {
-                                textAlign: 'center',
-                                cursor: selectedProduct?.is_max_term_editable === false ? 'default' : 'text',
-                                padding: isMobile ? '12px 14px' : '16.5px 14px',
-                            },
+                        min="0"
+                        max={selectedProduct?.max_term_months || undefined}
+                        style={{
+                            width: '100%',
+                            fontSize: isMobile ? '1.25rem' : '1.5rem',
+                            fontWeight: 700,
+                            borderRadius: 12,
+                            padding: isMobile ? '12px 14px' : '16.5px 14px',
+                            border: '1px solid #ccc',
+                            textAlign: 'center',
+                            cursor: selectedProduct?.is_max_term_editable === false ? 'default' : 'text',
                         }}
                     />
-                </Box>
+                </div>
 
                 {/* Amortization */}
-                <Box>
-                    <Stack direction="row" spacing={0.5} alignItems="center" justifyContent="center" sx={{ mb: 1.5 }}>
-                        <Typography
-                            variant="caption"
-                            color="text.secondary"
-                            fontWeight={600}
-                            sx={{ textTransform: 'uppercase', letterSpacing: 1.2, fontSize: '0.7rem' }}
+                <div>
+                    <div style={{ display: 'flex', flexDirection: 'row', gap: 2, alignItems: 'center', justifyContent: 'center', marginBottom: 6 }}>
+                        <p
+                            style={{
+                                textTransform: 'uppercase',
+                                letterSpacing: 1.2,
+                                fontSize: '0.7rem',
+                                fontWeight: 600,
+                                margin: 0,
+                            }}
                         >
                             Amortization
-                        </Typography>
+                        </p>
                         {(selectedProduct?.max_amortization_formula || selectedProduct?.is_max_amortization_editable === false) && (
-                            <Tooltip
-                                title={
-                                    <Box component="div" sx={{ whiteSpace: 'pre-line' }}>
-                                        {selectedProduct?.max_amortization_formula && `• Formula: ${selectedProduct.max_amortization_formula}`}
-                                        {selectedProduct?.max_amortization_formula && selectedProduct?.is_max_amortization_editable === false && '\n'}
-                                        {selectedProduct?.is_max_amortization_editable === false && '• This field is disabled by admin'}
-                                    </Box>
-                                }
-                                arrow
-                                placement="top"
-                                enterTouchDelay={0}
-                                leaveTouchDelay={3000}
+                            <div 
+                                title={`${selectedProduct?.max_amortization_formula ? '• Formula: ' + selectedProduct.max_amortization_formula + '\n' : ''}${selectedProduct?.is_max_amortization_editable === false ? '• This field is disabled by admin' : ''}`}
+                                style={{ cursor: 'help' }}
                             >
                                 <InfoOutlinedIcon
-                                    sx={{ fontSize: 14, color: 'text.secondary', cursor: 'help', opacity: 0.7, '&:hover': { opacity: 1 } }}
+                                    sx={{ fontSize: 14, opacity: 0.7 }}
                                 />
-                            </Tooltip>
+                            </div>
                         )}
-                    </Stack>
+                    </div>
                     <CurrencyInputField
                         value={amortization || undefined}
                         onValueChange={setAmortization}
@@ -207,59 +194,59 @@ export default function LoanCalculator({ selectedProduct, loanDefaults, loading 
                         !loanDefaults &&
                         ['BASIC', 'CUSTOM'].includes(selectedProduct.max_amortization_mode) &&
                         selectedProduct.computed_result === 0 && (
-                            <Typography variant="caption" color="error" sx={{ display: 'block', textAlign: 'center', mt: 0.5 }}>
+                            <p style={{ fontSize: '0.75rem', color: '#ef5350', display: 'block', textAlign: 'center', marginTop: 2, margin: 0 }}>
                                 Unable to calculate max amortization. Please ensure your salary record is configured.
-                            </Typography>
+                            </p>
                         )}
-                </Box>
+                </div>
 
                 {/* Results Section */}
                 <CalculationResultBox label="Amortization Amount" value={amortization} />
                 {existingBalance > 0 && (
-                    <Box>
-                        <Typography
-                            variant="caption"
-                            color="text.secondary"
-                            fontWeight={600}
-                            sx={{
-                                mb: 1.5,
+                    <div>
+                        <p
+                            style={{
+                                marginBottom: 6,
                                 display: 'block',
                                 textTransform: 'uppercase',
                                 letterSpacing: 1.2,
                                 fontSize: '0.7rem',
                                 textAlign: 'center',
+                                fontWeight: 600,
                             }}
                         >
                             Existing Balance
-                        </Typography>
-                        <Box
-                            sx={{
-                                bgcolor: styles.cardBg,
-                                borderRadius: 2,
-                                p: 2.5,
+                        </p>
+                        <div
+                            style={{
+                                backgroundColor: styles.cardBg,
+                                borderRadius: 8,
+                                padding: 10,
                                 textAlign: 'center',
                                 border: `2px solid ${styles.cardBorder}`,
                                 opacity: 0.7,
                             }}
                         >
-                            <Typography
-                                variant="h5"
-                                fontWeight={700}
-                                sx={{ fontVariantNumeric: 'tabular-nums', color: 'text.secondary' }}
+                            <h5
+                                style={{
+                                    fontVariantNumeric: 'tabular-nums',
+                                    color: 'text.secondary',
+                                    fontWeight: 700,
+                                    margin: 0,
+                                }}
                             >
                                 ₱ {(existingBalance).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                            </Typography>
-                        </Box>
-                    </Box>
+                            </h5>
+                        </div>
+                    </div>
                 )}
                 <CalculationResultBox label="*Estimated Monthly Payment" value={monthlyPayment} />
                 <CalculationResultBox label="*Estimated Net Proceeds" value={estimatedNetProceeds} isAccent />
 
                 {/* Disclaimer */}
-                <Typography
+                <p
                     ref={disclaimerRef}
-                    variant="caption"
-                    sx={{
+                    style={{
                         display: 'block',
                         fontSize: '0.7rem',
                         color: 'text.secondary',
@@ -267,79 +254,82 @@ export default function LoanCalculator({ selectedProduct, loanDefaults, loading 
                         fontStyle: 'italic',
                         textAlign: 'center',
                         fontWeight: 600,
+                        margin: 0,
                     }}
                 >
                     * Subject to further delinquent balances deduction.
                     <br />
                     Estimated values may vary based on actual processing.
-                </Typography>
+                </p>
 
                 {/* Terms and Conditions - Desktop View */}
                 {!isMobile && !forceModalTerms && selectedProduct?.terms && (
-                    <Box>
-                        <Typography
-                            variant="caption"
-                            color="text.secondary"
-                            fontWeight={600}
-                            sx={{
-                                mb: 1.5,
+                    <div>
+                        <p
+                            style={{
+                                marginBottom: 6,
                                 display: 'block',
                                 textTransform: 'uppercase',
                                 letterSpacing: 1.2,
                                 fontSize: '0.7rem',
                                 textAlign: 'center',
+                                fontWeight: 600,
                             }}
                         >
                             Terms and Conditions
-                        </Typography>
-                        <TextField
-                            fullWidth
-                            multiline
-                            rows={8}
+                        </p>
+                        <textarea
                             value={selectedProduct.terms}
-                            InputProps={{
-                                readOnly: true,
-                            }}
-                            sx={{
-                                '& .MuiOutlinedInput-root': {
-                                    fontSize: '0.875rem',
-                                    lineHeight: 1.6,
-                                    borderRadius: 3,
-                                },
+                            readOnly
+                            rows={8}
+                            style={{
+                                width: '100%',
+                                fontSize: '0.875rem',
+                                lineHeight: 1.6,
+                                borderRadius: 12,
+                                padding: '12px 14px',
+                                border: '1px solid #ccc',
                             }}
                         />
-                    </Box>
+                    </div>
                 )}
-            </Stack>
+            </div>
 
             {/* Floating Info Button */}
             {(isMobile || forceModalTerms) && selectedProduct?.terms && (
-                <IconButton
-                    size="large"
+                <button
                     onClick={() => setTermsModalOpen(true)}
-                    sx={{
+                    style={{
                         position: 'fixed',
                         bottom: 20,
                         right: 24,
                         width: 60,
                         height: 60,
                         color: '#fff',
-                        bgcolor: styles.accentColor,
-                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+                        backgroundColor: styles.accentColor,
                         border: '1px solid rgba(255,255,255,0.2)',
+                        borderRadius: '50%',
                         zIndex: 1000,
                         opacity: showFloatingButton ? 1 : 0,
                         transform: showFloatingButton ? 'scale(1)' : 'scale(0.8)',
                         pointerEvents: showFloatingButton ? 'auto' : 'none',
                         transition: 'all 0.3s ease-in-out',
-                        '&:hover': {
-                            bgcolor: '#e66767',
-                        },
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+                    }}
+                    onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = '#e66767';
+                    }}
+                    onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = styles.accentColor;
                     }}
                     aria-label="More information"
                 >
                     <InfoOutlinedIcon sx={{ fontSize: 28 }} />
-                </IconButton>
+                </button>
             )}
 
             {/* Terms Modal */}
@@ -353,107 +343,127 @@ export default function LoanCalculator({ selectedProduct, loanDefaults, loading 
                     titleSx={{ fontSize: { xs: 18, sm: 22 } }}
                     zIndex={1400}
                 >
-                    <TextField
-                        fullWidth
-                        multiline
-                        rows={20}
+                    <textarea
                         value={selectedProduct?.terms || 'No terms and conditions available.'}
-                        InputProps={{
-                            readOnly: true,
-                        }}
-                        sx={{
-                            '& .MuiOutlinedInput-root': {
-                                fontSize: '1.1rem',
-                                lineHeight: 1.7,
-                            },
+                        readOnly
+                        rows={20}
+                        style={{
+                            width: '100%',
+                            fontSize: '1.1rem',
+                            lineHeight: 1.7,
+                            borderRadius: '4px',
+                            padding: '12px',
+                            border: '1px solid #ccc',
                         }}
                     />
 
-                    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column', gap: 1, mt: 2 }}>
-                        <IconButton
+                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column', gap: 4, marginTop: 8 }}>
+                        <button
                             onClick={() => setTermsModalOpen(false)}
-                            size="large"
-                            sx={{
-                                bgcolor: '#f57373',
+                            style={{
+                                backgroundColor: '#f57373',
                                 color: '#fff',
                                 width: 56,
                                 height: 56,
-                                '&:hover': {
-                                    bgcolor: '#e66767',
-                                },
+                                borderRadius: '50%',
+                                border: 'none',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.backgroundColor = '#e66767';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.backgroundColor = '#f57373';
                             }}
                         >
                             <CloseIcon />
-                        </IconButton>
-                        <Typography variant="caption" fontWeight={600} sx={{ color: '#f57373' }}>
+                        </button>
+                        <p style={{ fontSize: '0.75rem', fontWeight: 600, color: '#f57373', margin: 0 }}>
                             Close
-                        </Typography>
-                    </Box>
+                        </p>
+                    </div>
                 </FullScreenModalMobile>
             ) : forceModalTerms && appContentElement ? createPortal(
-                <Dialog
-                    open={termsModalOpen}
-                    onClose={() => setTermsModalOpen(false)}
-                    maxWidth="md"
-                    fullWidth
-                    container={appContentElement}
-                    disablePortal
-                    BackdropProps={{
-                        sx: {
-                            position: 'absolute',
-                        }
-                    }}
-                    PaperProps={{
-                        sx: {
-                            borderRadius: 2,
-                            maxHeight: '80vh',
-                            position: 'absolute',
-                        }
-                    }}
-                    sx={{
-                        position: 'absolute',
+                <div
+                    style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        backgroundColor: 'rgba(0,0,0,0.5)',
+                        display: termsModalOpen ? 'flex' : 'none',
+                        alignItems: 'center',
+                        justifyContent: 'center',
                         zIndex: 1300,
                     }}
+                    onClick={() => setTermsModalOpen(false)}
                 >
-                    <DialogTitle sx={{ 
-                        bgcolor: '#F57979', 
-                        color: 'white',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        py: 2,
-                    }}>
-                        <Typography variant="h6" component="span">
-                            {selectedProduct?.product_name ? `${selectedProduct.product_name} Terms` : 'Terms and Conditions'}
-                        </Typography>
-                        <IconButton
-                            onClick={() => setTermsModalOpen(false)}
-                            sx={{ color: 'white' }}
-                            size="small"
-                        >
-                            <CloseIcon />
-                        </IconButton>
-                    </DialogTitle>
-                    <DialogContent sx={{ p: 3, mt: 2 }}>
-                        <TextField
-                            fullWidth
-                            multiline
-                            rows={15}
-                            value={selectedProduct?.terms || 'No terms and conditions available.'}
-                            InputProps={{
-                                readOnly: true,
-                            }}
-                            sx={{
-                                '& .MuiOutlinedInput-root': {
+                    <div
+                        style={{
+                            backgroundColor: 'white',
+                            borderRadius: 8,
+                            maxHeight: '80vh',
+                            width: 'min(90vw, 600px)',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div style={{
+                            backgroundColor: '#F57979',
+                            color: 'white',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            padding: 12,
+                            borderRadius: '8px 8px 0 0',
+                        }}>
+                            <h6 style={{ fontSize: '1rem', fontWeight: 600, margin: 0 }}>
+                                {selectedProduct?.product_name ? `${selectedProduct.product_name} Terms` : 'Terms and Conditions'}
+                            </h6>
+                            <button
+                                onClick={() => setTermsModalOpen(false)}
+                                style={{
+                                    backgroundColor: 'transparent',
+                                    color: 'white',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    fontSize: '1.25rem',
+                                    padding: 0,
+                                    width: 28,
+                                    height: 28,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                }}
+                            >
+                                <CloseIcon />
+                            </button>
+                        </div>
+                        <div style={{ padding: 12, overflowY: 'auto', flex: 1 }}>
+                            <textarea
+                                value={selectedProduct?.terms || 'No terms and conditions available.'}
+                                readOnly
+                                rows={15}
+                                style={{
+                                    width: '100%',
                                     fontSize: '0.95rem',
                                     lineHeight: 1.6,
-                                },
-                            }}
-                        />
-                    </DialogContent>
-                </Dialog>,
+                                    border: '1px solid #ccc',
+                                    borderRadius: '4px',
+                                    padding: '8px',
+                                }}
+                            />
+                        </div>
+                    </div>
+                </div>,
                 appContentElement
             ) : null}
-        </Box>
+        </div>
     );
 }
