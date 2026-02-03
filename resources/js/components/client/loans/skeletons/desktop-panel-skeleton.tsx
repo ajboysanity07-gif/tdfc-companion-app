@@ -1,5 +1,4 @@
 import React from 'react';
-import { Box, Stack, Typography } from '@mui/material';
 import { useMyTheme } from '@/hooks/use-mytheme';
 
 type Props = {
@@ -12,84 +11,65 @@ const DesktopPanelSkeleton: React.FC<Props> = ({ showMessage = false }) => {
 
     if (showMessage) {
         return (
-            <Box sx={{ 
-                display: 'flex', 
-                flexDirection: 'column',
-                alignItems: 'center', 
-                justifyContent: 'center', 
-                height: '100%',
-                textAlign: 'center',
-                gap: 1
-            }}>
-                <Typography variant="h6" sx={{ color: 'white', fontWeight: 600 }}>
+            <div className="flex flex-col items-center justify-center h-full text-center gap-4">
+                <h6 className="text-white font-semibold">
                     Select a loan action
-                </Typography>
-                <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.6)' }}>
+                </h6>
+                <p className="text-sm" style={{ color: 'rgba(255,255,255,0.6)' }}>
                     Choose Schedule or Payments to view details.
-                </Typography>
-            </Box>
+                </p>
+            </div>
         );
     }
 
     return (
-        <Box sx={{ width: '100%', p: 2 }}>
+        <div className="w-full p-2">
             {/* Header skeleton */}
-            <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3 }}>
-                <Box 
-                    sx={{ 
+            <div className="flex flex-row gap-2 items-center mb-3">
+                <div 
+                    className="rounded animate-pulse"
+                    style={{ 
                         width: 200,
                         height: 28,
-                        bgcolor: skeletonBg,
-                        borderRadius: 1,
-                        animation: 'pulse 1.5s ease-in-out infinite',
-                        '@keyframes pulse': {
-                            '0%, 100%': { opacity: 1 },
-                            '50%': { opacity: 0.5 },
-                        },
+                        backgroundColor: skeletonBg,
                     }} 
                 />
-                <Box 
-                    sx={{ 
+                <div 
+                    className="rounded animate-pulse"
+                    style={{ 
                         width: 80,
                         height: 36,
-                        bgcolor: skeletonBg,
-                        borderRadius: 1,
-                        animation: 'pulse 1.5s ease-in-out infinite',
-                        animationDelay: '0.1s',
+                        backgroundColor: skeletonBg,
                     }} 
                 />
-            </Stack>
+            </div>
 
             {/* Content skeleton */}
-            <Stack spacing={1}>
+            <div className="space-y-1">
                 {Array.from({ length: 8 }).map((_, idx) => (
-                    <Box
+                    <div
                         key={idx}
-                        sx={{
-                            display: 'grid',
+                        className="grid gap-2 p-2 rounded animate-pulse"
+                        style={{
                             gridTemplateColumns: 'repeat(5, 1fr)',
-                            gap: 2,
-                            p: 2,
-                            bgcolor: tw.isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
-                            borderRadius: 1,
-                            animation: 'pulse 1.5s ease-in-out infinite',
+                            backgroundColor: tw.isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
                             animationDelay: `${idx * 0.05}s`,
                         }}
                     >
                         {Array.from({ length: 5 }).map((_, colIdx) => (
-                            <Box
+                            <div
                                 key={colIdx}
-                                sx={{
+                                className="rounded"
+                                style={{
                                     height: 18,
-                                    bgcolor: skeletonBg,
-                                    borderRadius: 1,
+                                    backgroundColor: skeletonBg,
                                 }}
                             />
                         ))}
-                    </Box>
+                    </div>
                 ))}
-            </Stack>
-        </Box>
+            </div>
+        </div>
     );
 };
 
