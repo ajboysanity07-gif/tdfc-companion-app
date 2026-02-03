@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useMyTheme } from '@/hooks/use-mytheme';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import type { ProductLntype, WlnType, ProductPayload } from '@/types/product-lntype';
@@ -79,13 +79,12 @@ const ProductCRUD: React.FC<Props> = ({
     const labelStyle = {
         fontSize: '0.75rem',
         fontWeight: 700,
-        textTransform: 'uppercase',
+        textTransform: 'uppercase' as const,
         color: tw.isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)',
         marginBottom: '6px',
         display: 'block' as const,
     };
 
-    const borderColorDefault = tw.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)';
     const textColorLight = tw.isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)';
     const textColorDark = tw.isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.9)';
 
