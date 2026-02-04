@@ -344,7 +344,7 @@ export default function CustomerDashboard() {
     const mobileTransactions = (
         <div
             style={{
-                borderRadius: '0.5rem',
+                borderRadius: '25px',
                 border: `1px solid ${borderColor}`,
                 backgroundColor: surface,
                 padding: '2rem',
@@ -438,14 +438,14 @@ export default function CustomerDashboard() {
                                     <div
                                         className="flex flex-row items-center justify-between gap-2 py-1.5 px-1 rounded transition-all duration-200 cursor-pointer"
                                         style={{
-                                            backgroundColor: tw.isDark ? 'rgba(255,255,255,0.03)' : 'transparent',
+                                            backgroundColor: 'transparent',
                                         }}
                                         onMouseEnter={(e) => {
                                             e.currentTarget.style.backgroundColor = tw.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.02)';
                                             e.currentTarget.style.transform = 'translateX(4px)';
                                         }}
                                         onMouseLeave={(e) => {
-                                            e.currentTarget.style.backgroundColor = tw.isDark ? 'rgba(255,255,255,0.03)' : 'transparent';
+                                            e.currentTarget.style.backgroundColor = 'transparent';
                                             e.currentTarget.style.transform = 'translateX(0)';
                                         }}
                                     >
@@ -597,7 +597,7 @@ export default function CustomerDashboard() {
                     key: 'loan',
                     title: 'Loan Apply',
                     description: 'Apply for a loan quickly.',
-                    icon: <Banknote className="h-8 w-8" />,
+                    icon: <Banknote className="h-20 w-20" strokeWidth={2.5} />,
                     bg: tw.isDark ? '#2d2d2d' : '#f6f7f9',
                     iconBg: `${accent}20`,
                     color: tw.isDark ? '#e5e7eb' : '#111827',
@@ -606,7 +606,7 @@ export default function CustomerDashboard() {
                     key: 'savings',
                     title: 'Savings',
                     description: 'Manage and grow your savings.',
-                    icon: <PiggyBank className="h-8 w-8" />,
+                    icon: <PiggyBank className="h-20 w-20" strokeWidth={2.5} />,
                     bg: tw.isDark ? '#2d2d2d' : '#f6f7f9',
                     iconBg: `${accent}20`,
                     color: tw.isDark ? '#e5e7eb' : '#111827',
@@ -615,7 +615,7 @@ export default function CustomerDashboard() {
                     key: 'logout',
                     title: 'Log Out',
                     description: 'End your current session securely.',
-                    icon: <LogOut className="h-8 w-8" />,
+                    icon: <LogOut className="h-20 w-20" strokeWidth={2.5} />,
                     bg: '#f78080',
                     iconBg: 'rgba(255,255,255,0.28)',
                     color: '#ffffff',
@@ -734,7 +734,7 @@ export default function CustomerDashboard() {
                     )}
                 </AnimatePresence>
             </div>
-            <div style={{ minHeight: '100%', backgroundColor: tw.isDark ? '#0b0b0b' : '#f5f5f5', paddingTop: '2rem' }}>
+            <div style={{ minHeight: '100%', backgroundColor: tw.isDark ? '#0b0b0b' : '#f5f5f5', paddingTop: '1rem' }}>
                 <div className="sr-only focus-within:not-sr-only">
                     <a
                         href="#main-content"

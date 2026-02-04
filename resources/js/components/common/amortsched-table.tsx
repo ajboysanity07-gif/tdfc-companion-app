@@ -662,11 +662,11 @@ const AmortschedTable: React.FC<Props> = ({ title = 'Amortization Schedule', row
                         {title}
                     </Typography>
                     {lnnumber && (
-                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+                        <Typography variant="caption" sx={{ display: 'block', mt: 0.5, color: tw.isDark ? '#9ca3af' : '#6b7280' }}>
                             Loan #: {lnnumber}
                         </Typography>
                     )}
-                    <Typography variant="body2" color="text.secondary">
+                    <Typography variant="body2" sx={{ color: tw.isDark ? '#9ca3af' : '#6b7280' }}>
                         Filter, export, or print this amortization schedule.
                     </Typography>
                 </Box>
@@ -683,7 +683,29 @@ const AmortschedTable: React.FC<Props> = ({ title = 'Amortization Schedule', row
                                 </Box>
                             ),
                         }}
-                        sx={{ minWidth: { xs: '100%', sm: 220 } }}
+                        sx={{ 
+                            minWidth: { xs: '100%', sm: 220 },
+                            '& .MuiOutlinedInput-root': {
+                                bgcolor: tw.isDark ? '#2d2d2d' : '#ffffff',
+                                color: tw.isDark ? '#f9fafb' : '#111827',
+                                '& fieldset': {
+                                    borderColor: tw.isDark ? '#374151' : '#d1d5db',
+                                },
+                                '&:hover fieldset': {
+                                    borderColor: tw.isDark ? '#4b5563' : '#9ca3af',
+                                },
+                                '&.Mui-focused fieldset': {
+                                    borderColor: tw.isDark ? '#60a5fa' : '#3b82f6',
+                                },
+                            },
+                            '& .MuiOutlinedInput-input': {
+                                color: tw.isDark ? '#f9fafb' : '#111827',
+                                '&::placeholder': {
+                                    color: tw.isDark ? '#9ca3af' : '#6b7280',
+                                    opacity: 1,
+                                },
+                            },
+                        }}
                     />
                     {!isMobile ? (
                         <>
@@ -804,7 +826,7 @@ const AmortschedTable: React.FC<Props> = ({ title = 'Amortization Schedule', row
                                 minWidth: 0,
                                 border: '1px solid',
                                 borderColor: 'divider',
-                                bgcolor: 'background.paper',
+                                bgcolor: tw.isDark ? '#1e1e1e' : '#ffffff',
                                 display: 'flex',
                                 flexDirection: 'column',
                             }}
@@ -816,9 +838,9 @@ const AmortschedTable: React.FC<Props> = ({ title = 'Amortization Schedule', row
                                     alignItems: 'center',
                                     height: isMobile ? 44 : 52,
                                     px: 2,
-                                    bgcolor: tw.isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.03)',
+                                    bgcolor: tw.isDark ? '#2d2d2d !important' : '#f9fafb !important',
                                     borderBottom: '1px solid',
-                                    borderColor: 'divider',
+                                    borderColor: tw.isDark ? '#374151' : '#e5e7eb',
                                     gap: 2,
                                 }}
                             >
@@ -899,37 +921,50 @@ const AmortschedTable: React.FC<Props> = ({ title = 'Amortization Schedule', row
                                 width: '100%',
                                 minWidth: 0,
                                 border: '1px solid',
-                                borderColor: 'divider',
-                                bgcolor: 'background.paper',
+                                borderColor: tw.isDark ? '#374151' : '#e5e7eb',
+                                bgcolor: tw.isDark ? '#1e1e1e' : '#ffffff',
                                 '& .MuiDataGrid-columnHeaders': {
-                                    bgcolor: tw.isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.03)',
+                                    bgcolor: tw.isDark ? '#2d2d2d !important' : '#f9fafb !important',
                                     fontWeight: 800,
                                     borderBottom: '1px solid',
-                                    borderColor: 'divider',
+                                    borderColor: tw.isDark ? '#374151' : '#e5e7eb',
                                     fontSize: { xs: 12, sm: 13 },
-                                    color: 'text.primary',
+                                    color: tw.isDark ? '#f9fafb' : '#111827',
+                                },
+                                '& .MuiDataGrid-columnHeader': {
+                                    bgcolor: tw.isDark ? '#2d2d2d !important' : '#f9fafb !important',
                                 },
                                 '& .MuiDataGrid-columnHeaderTitle': {
                                     fontWeight: 800,
-                                    color: 'text.primary',
+                                    color: tw.isDark ? '#f9fafb' : '#111827',
                                 },
                                 '& .MuiDataGrid-row': {
                                     borderBottom: '1px solid',
-                                    borderColor: 'divider',
-                                    bgcolor: 'background.paper',
+                                    borderColor: tw.isDark ? '#374151' : '#e5e7eb',
+                                    bgcolor: tw.isDark ? '#1e1e1e' : '#ffffff',
                                 },
                                 '& .MuiDataGrid-cell': {
-                                    borderColor: 'divider',
+                                    borderColor: tw.isDark ? '#374151' : '#e5e7eb',
                                     fontSize: { xs: 12, sm: 13 },
                                     py: { xs: 0.75, sm: 1 },
+                                    color: tw.isDark ? '#f9fafb' : '#111827',
                                 },
                                 '& .MuiDataGrid-row:hover': {
                                     bgcolor: tw.isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.02)',
                                 },
                                 '& .MuiDataGrid-footerContainer': {
                                     borderTop: '1px solid',
-                                    borderColor: 'divider',
-                                    bgcolor: tw.isDark ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.02)',
+                                    borderColor: tw.isDark ? '#374151' : '#e5e7eb',
+                                    bgcolor: tw.isDark ? '#2d2d2d' : '#f9fafb',
+                                },
+                                '& .MuiTablePagination-root': {
+                                    color: tw.isDark ? '#f9fafb' : '#111827',
+                                },
+                                '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
+                                    color: tw.isDark ? '#9ca3af' : '#6b7280',
+                                },
+                                '& .MuiIconButton-root': {
+                                    color: tw.isDark ? '#f9fafb' : '#111827',
                                 },
                             }}
                         />

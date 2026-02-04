@@ -110,9 +110,11 @@ export default function LoanCalculator({ selectedProduct, loanDefaults, loading 
                             fontWeight: 700,
                             borderRadius: 12,
                             padding: isMobile ? '12px 14px' : '16.5px 14px',
-                            border: '1px solid #ccc',
+                            border: styles.inputBorder,
                             textAlign: 'center',
                             cursor: 'default',
+                            backgroundColor: styles.isDark ? '#2d2d2d' : '#ffffff',
+                            color: styles.inputColor,
                         }}
                     />
                 </div>
@@ -153,9 +155,11 @@ export default function LoanCalculator({ selectedProduct, loanDefaults, loading 
                             fontWeight: 700,
                             borderRadius: 12,
                             padding: isMobile ? '12px 14px' : '16.5px 14px',
-                            border: '1px solid #ccc',
+                            border: styles.inputBorder,
                             textAlign: 'center',
                             cursor: selectedProduct?.is_max_term_editable === false ? 'default' : 'text',
+                            backgroundColor: styles.isDark ? '#2d2d2d' : '#ffffff',
+                            color: styles.inputColor,
                         }}
                     />
                 </div>
@@ -289,7 +293,9 @@ export default function LoanCalculator({ selectedProduct, loanDefaults, loading 
                                 lineHeight: 1.6,
                                 borderRadius: 12,
                                 padding: '12px 14px',
-                                border: '1px solid #ccc',
+                                border: styles.inputBorder,
+                                backgroundColor: styles.isDark ? '#2d2d2d' : '#ffffff',
+                                color: styles.inputColor,
                             }}
                         />
                     </div>

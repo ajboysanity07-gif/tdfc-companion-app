@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Box, Button, Divider, Pagination, Skeleton, Stack, Typography } from '@mui/material';
+import { Box, Button, Divider, Skeleton, Stack, Typography } from '@mui/material';
 import type { WSavledRecord } from '@/types/client-dashboard';
 
 const SavingsTransactionTypeMap: Record<string, string> = {
@@ -9,6 +9,7 @@ const SavingsTransactionTypeMap: Record<string, string> = {
     'AJ': 'Adjustment',
     'CK': 'Cheque',
     'RL': 'Released Loan',
+    'CL': 'Cash Loan',
 };
 
 const getSavingsTransactionType = (code: string): string => {
@@ -68,21 +69,21 @@ export default function SavingsTable({
         return paginatedSavings.map((row) => {
             let displayValue = 0;
             let prefix = '';
-            let color = '#000000'; // default black
+            let color = isDark ? '#e5e7eb' : '#111827'; // default text color
 
             if (row.deposit && row.deposit > 0) {
                 displayValue = row.deposit;
                 prefix = '+';
-                color = '#1976d2'; // blue
+                color = isDark ? '#60a5fa' : '#1976d2'; // blue with better contrast
             } else if (row.withdrawal && row.withdrawal > 0) {
                 displayValue = row.withdrawal;
                 prefix = '-';
-                color = '#d32f2f'; // red
+                color = isDark ? '#f87171' : '#dc2626'; // red with better contrast
             }
 
             return { displayValue, prefix, color };
         });
-    }, [paginatedSavings]);
+    }, [paginatedSavings, isDark]);
 
 
     const transactionTypes = useMemo(() => {
@@ -183,15 +184,15 @@ export default function SavingsTable({
                                         <Typography variant="subtitle2" sx={{ fontWeight: 700, fontSize: { xs: '0.875rem', md: '1.125rem' } }}>
                                             {transactionTypes[idx]}
                                         </Typography>
-                                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}>
+                                        <Typography variant="caption" sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' }, color: isDark ? '#9ca3af' : '#6b7280' }}>
                                             {formatDate(row.date_in)}
                                         </Typography>
                                     </Box>
                                     <Box textAlign="right">
-                                        <Typography variant="subtitle2" sx={{ fontWeight: 700, fontSize: { xs: '0.875rem', md: '1.125rem' }, color: amountValues[idx]?.color || '#000000' }}>
+                                        <Typography variant="subtitle2" sx={{ fontWeight: 700, fontSize: { xs: '0.875rem', md: '1.125rem' }, color: amountValues[idx]?.color || (isDark ? '#e5e7eb' : '#111827') }}>
                                             {amountValues[idx]?.prefix}{formatCurrency(Math.abs(amountValues[idx]?.displayValue ?? 0))}
                                         </Typography>
-                                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}>
+                                        <Typography variant="caption" sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' }, color: isDark ? '#9ca3af' : '#6b7280' }}>
                                             {formatCurrency(Math.abs(row.balance ?? 0))}
                                         </Typography>
                                     </Box>
@@ -212,48 +213,50 @@ export default function SavingsTable({
                                     value={pageSize}
                                     onChange={handlePageSizeChange}
                                     style={{
-                                        width: '50px',
-                                        padding: '4px 6px',
+                                        width: '60px',
+                                        padding: '8px 10px',
                                         border: `1px solid ${borderColor}`,
                                         borderRadius: '4px',
                                         backgroundColor: surface,
                                         color: isDark ? '#e5e7eb' : '#000000',
                                         fontFamily: 'inherit',
+                                        fontWeight: 600,
                                         fontSize: '0.875rem',
+                                        textAlign: 'center',
                                     }}
                                 />
                             </Stack>
-                            <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+                            <Typography variant="caption" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' }, color: isDark ? '#9ca3af' : '#6b7280' }}>
                                 Page {currentPage} of {totalPages} ({savings.length} total)
                             </Typography>
                         </Stack>
 
-                        <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%', overflow: 'auto' }}>
-                            <Pagination
-                                count={totalPages}
-                                page={currentPage}
-                                onChange={(_, page) => handlePageChange(page)}
-                                color="standard"
-                                siblingCount={0}
-                                boundaryCount={1}
-                                size="small"
-                                sx={{
-                                    '& .MuiPaginationItem-root': {
-                                        color: isDark ? '#e5e7eb' : '#000000',
-                                        borderColor: borderColor,
-                                    },
-                                    '& .MuiPaginationItem-page.Mui-selected': {
-                                        backgroundColor: accent,
-                                        color: '#ffffff',
-                                        '&:hover': {
-                                            backgroundColor: '#e66767',
-                                        },
-                                    },
-                                    '& .MuiPaginationItem-page:hover': {
-                                        backgroundColor: `${accent}15`,
-                                    },
-                                }}
-                            />
+                        <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+                            <Box sx={{ display: 'flex', gap: 0.5 }}>
+                                {totalPages > 0 && Array.from({ length: totalPages }).map((_, idx) => {
+                                    const pageNum = idx + 1;
+                                    const isActive = pageNum === currentPage;
+                                    return (
+                                        <button
+                                            key={pageNum}
+                                            onClick={() => handlePageChange(pageNum)}
+                                            style={{
+                                                padding: '8px 12px',
+                                                borderRadius: '4px',
+                                                border: `1px solid ${isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'}`,
+                                                backgroundColor: isActive ? accent : (isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'),
+                                                color: isActive ? '#ffffff' : (isDark ? '#e5e7eb' : '#000000'),
+                                                cursor: 'pointer',
+                                                fontWeight: isActive ? 700 : 400,
+                                                fontSize: '0.875rem',
+                                                transition: 'all 0.2s ease',
+                                            }}
+                                        >
+                                            {pageNum}
+                                        </button>
+                                    );
+                                })}
+                            </Box>
                         </Box>
                     </Stack>
                 </>

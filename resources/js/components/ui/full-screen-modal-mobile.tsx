@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
@@ -27,7 +27,7 @@ const FullScreenModalMobile: React.FC<Props> = ({
     title,
     onClose,
     children,
-    headerBg = '#e14e4e',
+    headerBg = '#f57979',
     headerColor = '#fff',
     toolbarContentRight,
     bodySx,
@@ -36,6 +36,65 @@ const FullScreenModalMobile: React.FC<Props> = ({
     titleSx,
 }) => {
     const [isAnimating, setIsAnimating] = React.useState(false);
+    const [isDesktop, setIsDesktop] = useState(false);
+    const [contentLeft, setContentLeft] = useState(0);
+
+    useEffect(() => {
+        const checkDesktop = () => setIsDesktop(window.innerWidth >= 768);
+        checkDesktop();
+        window.addEventListener('resize', checkDesktop);
+        return () => window.removeEventListener('resize', checkDesktop);
+    }, []);
+
+    useEffect(() => {
+        if (!isDesktop) {
+            setContentLeft(0);
+            return;
+        }
+        
+        const updateContentPosition = () => {
+            // Try multiple approaches to find where content starts
+            let leftPosition = 0;
+            
+            // Approach 1: Find sidebar and measure its width
+            const sidebar = document.querySelector('[data-sidebar="sidebar"]');
+            if (sidebar) {
+                const sidebarRect = sidebar.getBoundingClientRect();
+                leftPosition = sidebarRect.right + 16; // Add 16px for the sidebar's padding
+            }
+            
+            // Approach 2: Fallback to finding main content wrapper
+            if (leftPosition === 0) {
+                const contentWrapper = document.querySelector('.flex.min-h-0.w-full.flex-1') ||
+                                      document.querySelector('[class*="flex-1"]');
+                if (contentWrapper) {
+                    leftPosition = contentWrapper.getBoundingClientRect().left;
+                }
+            }
+            
+            console.log('Modal left position:', leftPosition);
+            setContentLeft(leftPosition);
+        };
+
+        // Initial update with a small delay to ensure DOM is ready
+        setTimeout(updateContentPosition, 100);
+        
+        const observer = new MutationObserver(updateContentPosition);
+        const sidebar = document.querySelector('[data-sidebar="sidebar"]');
+        const root = document.querySelector('[data-sidebar-wrapper]') || document.body;
+        
+        if (sidebar) {
+            observer.observe(sidebar, { attributes: true, subtree: true });
+        }
+        observer.observe(root, { attributes: true, subtree: true, attributeFilter: ['class', 'style'] });
+
+        window.addEventListener('resize', updateContentPosition);
+        
+        return () => {
+            observer.disconnect();
+            window.removeEventListener('resize', updateContentPosition);
+        };
+    }, [isDesktop]);
 
     const handleClose = () => {
         setIsAnimating(true);
@@ -81,7 +140,8 @@ const FullScreenModalMobile: React.FC<Props> = ({
                                     animate={{ opacity: 1 }}
                                     exit={{ opacity: 0 }}
                                     transition={{ duration: 0.2 }}
-                                    className="fixed inset-0 z-50 bg-black/20 backdrop-blur-md"
+                                    className="fixed inset-0 bg-black/20 backdrop-blur-md"
+                                    style={{ left: contentLeft, zIndex: 9999 }}
                                     onClick={handleClose}
                                 />
                             </DialogPrimitive.Overlay>
@@ -92,12 +152,13 @@ const FullScreenModalMobile: React.FC<Props> = ({
                                     animate={{ x: 0 }}
                                     exit={{ x: '100%' }}
                                     transition={{ type: 'tween', duration: 0.3, ease: 'easeInOut' }}
-                                    className="fixed z-50 bg-background"
+                                    className="fixed bg-background"
                                     style={{
-                                        position: 'fixed',
-                                        inset: 0,
-                                        width: '100vw',
-                                        height: '100vh',
+                                        top: 0,
+                                        right: 0,
+                                        bottom: 0,
+                                        left: contentLeft,
+                                        zIndex: 10000,
                                         display: 'flex',
                                         flexDirection: 'column',
                                     }}
@@ -109,17 +170,18 @@ const FullScreenModalMobile: React.FC<Props> = ({
                     
                     {/* Header */}
                     <div
-                        className="shrink-0 flex items-center justify-between px-4 py-3 border-b"
+                        className="shrink-0 flex items-center justify-between py-3 border-b"
                         style={{
                             backgroundColor: headerBg,
                             color: headerColor,
+                            paddingRight: '16px',
                         }}
                     >
                         <Button
                             variant="ghost"
                             size="icon"
                             onClick={handleClose}
-                            className="h-10 w-10 -ml-2"
+                            className="h-10 w-10"
                         >
                             <X className="h-5 w-5" />
                         </Button>
