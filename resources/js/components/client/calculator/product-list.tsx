@@ -19,7 +19,7 @@ export default function ProductList({ products, loading, error, selectedProduct,
     const cardBorder = tw.isDark ? '#3a3a3a' : '#d4d4d4';
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, width: '100%' }}>
             {loading && <ProductListSkeleton />}
             
             {error && !loading && (
@@ -56,7 +56,7 @@ export default function ProductList({ products, loading, error, selectedProduct,
             )}
 
             {!loading && !error && products.length > 0 && (
-                <div style={{ width: '100%' }}>
+                <>
                     <AnimatePresence initial={false}>
                         {products.map((product) => {
                             const typeLabels = product.types?.map((t) => t.lntags || t.typecode) ?? [];
@@ -69,32 +69,32 @@ export default function ProductList({ products, loading, error, selectedProduct,
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, y: -16 }}
                                     transition={{ type: 'spring', stiffness: 220, damping: 20, mass: 0.6 }}
+                                    style={{ width: '100%' }}
                                 >
                                     <button
                                         onClick={() => onSelectProduct(product)}
                                         style={{
                                             width: '100%',
-                                            marginBottom: isMobile ? 8 : 10,
-                                            borderRadius: isMobile ? 8 : 10,
+                                            borderRadius: 8,
                                             overflow: 'hidden',
                                             backgroundColor: isSelected 
                                                 ? (tw.isDark ? '#3a3a3a' : '#e3f2fd')
-                                                : cardBg,
+                                                : (tw.isDark ? '#262626' : '#f5f5f5'),
                                             border: `2px solid ${isSelected 
                                                 ? '#F57979' 
-                                                : (tw.isDark ? '#3a3a3a' : '#d4d4d4')}`,
+                                                : (tw.isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.15)')}`,
                                             cursor: 'pointer',
                                             transition: 'all 0.2s ease',
-                                            padding: 0,
+                                            padding: 16,
                                         }}
                                         onMouseEnter={(e) => {
-                                            (e.currentTarget as HTMLButtonElement).style.borderColor = isSelected ? '#F57979' : (tw.isDark ? 'rgba(255,255,255,0.3)' : '#a3a3a3');
+                                            (e.currentTarget as HTMLButtonElement).style.borderColor = isSelected ? '#F57979' : (tw.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.25)');
                                         }}
                                         onMouseLeave={(e) => {
-                                            (e.currentTarget as HTMLButtonElement).style.borderColor = isSelected ? '#F57979' : (tw.isDark ? '#3a3a3a' : '#d4d4d4');
+                                            (e.currentTarget as HTMLButtonElement).style.borderColor = isSelected ? '#F57979' : (tw.isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.15)');
                                         }}
                                     >
-                                        <div style={{ paddingX: isMobile ? 6 : 8, paddingY: isMobile ? 4 : 6, width: '100%', alignItems: 'center', textAlign: 'center' }}>
+                                        <div style={{ width: '100%', alignItems: 'center', textAlign: 'center' }}>
                                             <h6 style={{ fontSize: isMobile ? '1rem' : '1.125rem', fontWeight: 800, margin: 0 }}>
                                                 {product.product_name}
                                             </h6>
@@ -142,7 +142,7 @@ export default function ProductList({ products, loading, error, selectedProduct,
                             );
                         })}
                     </AnimatePresence>
-                </div>
+                </>
             )}
         </div>
     );

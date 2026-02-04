@@ -1,6 +1,9 @@
 import React from 'react';
+import { useMyTheme } from '@/hooks/use-mytheme';
 
 const ClientDetailsSkeleton: React.FC = () => {
+    const tw = useMyTheme();
+    const skeletonColor = tw.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)';
     return (
         <div
             className="flex flex-col gap-3 items-center w-full max-w-3xl mx-auto"
@@ -16,7 +19,7 @@ const ClientDetailsSkeleton: React.FC = () => {
                 style={{
                     width: 220,
                     height: 32,
-                    backgroundColor: 'rgba(255,255,255,0.1)',
+                    backgroundColor: skeletonColor,
                 }}
             />
             <div
@@ -34,7 +37,7 @@ const ClientDetailsSkeleton: React.FC = () => {
                         style={{
                             width: 120,
                             height: 120,
-                            backgroundColor: 'rgba(255,255,255,0.1)',
+                            backgroundColor: skeletonColor,
                         }}
                     />
                     {/* Name skeleton */}
@@ -43,7 +46,7 @@ const ClientDetailsSkeleton: React.FC = () => {
                         style={{
                             width: 160,
                             height: 24,
-                            backgroundColor: 'rgba(255,255,255,0.1)',
+                            backgroundColor: skeletonColor,
                         }}
                     />
                     {/* Input skeleton */}
@@ -52,7 +55,7 @@ const ClientDetailsSkeleton: React.FC = () => {
                         style={{
                             width: '100%',
                             height: 48,
-                            backgroundColor: 'rgba(255,255,255,0.1)',
+                            backgroundColor: skeletonColor,
                         }}
                     />
                     <div className="flex flex-row gap-2 w-full">
@@ -61,7 +64,7 @@ const ClientDetailsSkeleton: React.FC = () => {
                             style={{
                                 width: '50%',
                                 height: 64,
-                                backgroundColor: 'rgba(255,255,255,0.1)',
+                                backgroundColor: skeletonColor,
                             }}
                         />
                         <div
@@ -69,7 +72,7 @@ const ClientDetailsSkeleton: React.FC = () => {
                             style={{
                                 width: '50%',
                                 height: 64,
-                                backgroundColor: 'rgba(255,255,255,0.1)',
+                                backgroundColor: skeletonColor,
                             }}
                         />
                     </div>
@@ -79,7 +82,7 @@ const ClientDetailsSkeleton: React.FC = () => {
                         style={{
                             width: 190,
                             height: 26,
-                            backgroundColor: 'rgba(255,255,255,0.1)',
+                            backgroundColor: skeletonColor,
                         }}
                     />
                     <div className="flex flex-col gap-1.5 w-full">
@@ -97,7 +100,7 @@ const ClientDetailsSkeleton: React.FC = () => {
                                     style={{
                                         width: '40%',
                                         height: 22,
-                                        backgroundColor: 'rgba(255,255,255,0.1)',
+                                        backgroundColor: skeletonColor,
                                     }}
                                 />
                                 <div
@@ -105,7 +108,7 @@ const ClientDetailsSkeleton: React.FC = () => {
                                     style={{
                                         width: '70%',
                                         height: 18,
-                                        backgroundColor: 'rgba(255,255,255,0.1)',
+                                        backgroundColor: skeletonColor,
                                     }}
                                 />
                                 <div
@@ -113,7 +116,7 @@ const ClientDetailsSkeleton: React.FC = () => {
                                     style={{
                                         width: '50%',
                                         height: 18,
-                                        backgroundColor: 'rgba(255,255,255,0.1)',
+                                        backgroundColor: skeletonColor,
                                     }}
                                 />
                                 <div className="flex flex-row gap-1.5 mt-1">
@@ -122,7 +125,7 @@ const ClientDetailsSkeleton: React.FC = () => {
                                         style={{
                                             width: 110,
                                             height: 38,
-                                            backgroundColor: 'rgba(255,255,255,0.1)',
+                                            backgroundColor: skeletonColor,
                                         }}
                                     />
                                     <div
@@ -130,7 +133,7 @@ const ClientDetailsSkeleton: React.FC = () => {
                                         style={{
                                             width: 110,
                                             height: 38,
-                                            backgroundColor: 'rgba(255,255,255,0.1)',
+                                            backgroundColor: skeletonColor,
                                         }}
                                     />
                                 </div>

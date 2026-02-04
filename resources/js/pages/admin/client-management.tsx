@@ -1,5 +1,6 @@
 import ClientDetails from '@/components/admin/client-management/client-details';
 import ClientList from '@/components/admin/client-management/client-list';
+import { ClientDetailsSkeleton } from '@/components/admin/client-management/skeletons';
 import RejectModal from '@/components/admin/client-management/reject-modal';
 import FullScreenModalMobile from '@/components/ui/full-screen-modal-mobile';
 import DesktopViewLayout from '@/components/desktop-view-layout';
@@ -25,12 +26,13 @@ const breadcrumbs = [{ title: 'Client Management', href: '/admin/client-manageme
 
 type ClientDesktopProps = {
     clients: Client[];
+    loading?: boolean;
     rejectionReasons: RejectionReasonEntry[];
     selectedId: number | null;
     onSelect: (userId: number | null) => void;
     onApprove: (userId: number) => Promise<void> | void;
     onReject: (userId: number, reasons: string[]) => Promise<void> | void;
-    onSaveSalary: (acctno: string, salary: number) => Promise<void> | void;
+    onSaveSalary: (acctno: string, salary: number) => Promise<void>;
     fetchWlnMaster: (acctno: string) => Promise<WlnMasterResponse | null>;
     wlnMasterByAcctno: Record<string, WlnMasterRecord[]>;
     wlnMasterLoading: Record<string, boolean>;
@@ -46,6 +48,7 @@ type ClientDesktopProps = {
 
 function ClientDesktopLayoutView({
     clients,
+    loading = false,
     rejectionReasons,
     selectedId,
     onSelect,
@@ -109,43 +112,57 @@ function ClientDesktopLayoutView({
                     <div style={{ flex: 1, overflow: 'hidden' }}>
                         <ClientList
                             clients={filtered}
-                        onSelect={(id) => onSelect(id)}
-                        searchValue={search}
-                        onSearchChange={setSearch}
-                        searchOptions={clients.map((c) => c.name)}
-                        fullHeight
-                        enableStatusTabs
-                        statusTab={statusTab}
-                        onStatusTabChange={onStatusTabChange}
-                    />
+                            loading={loading}
+                            onSelect={(id) => onSelect(id)}
+                            searchValue={search}
+                            onSearchChange={setSearch}
+                            searchOptions={clients.map((c) => c.name)}
+                            fullHeight
+                            enableStatusTabs
+                            statusTab={statusTab}
+                            onStatusTabChange={onStatusTabChange}
+                        />
                 </div>
             </div>
         }
             right={
                 <AnimatePresence mode="wait">
-                    <motion.div
-                        key={activeClient ? activeClient.user_id : 'empty'}
-                        initial={{ opacity: 0, y: 12 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 12 }}
-                        transition={{ type: 'spring', stiffness: 240, damping: 22, mass: 0.7 }}
-                        style={{ display: 'flex', flex: 1 }}
-                    >
-                        <ClientDetails
-                            client={activeClient}
-                            onApprove={onApprove}
-                            onRejectClick={openReject}
-                            onSaveSalary={onSaveSalary}
-                            wlnMasterRecords={wlnMasterRecords}
-                            loading={!!wlnLoading}
-                            fetchAmortsched={fetchAmortsched}
-                            amortschedByLnnumber={amortschedByLnnumber}
-                            amortschedLoading={amortschedLoading}
-                            fetchWlnLed={fetchWlnLed}
-                            wlnLedByLnnumber={wlnLedByLnnumber}
-                            wlnLedLoading={wlnLedLoading}
-                        />
-                    </motion.div>
+                    {loading ? (
+                        <motion.div
+                            key="skeleton"
+                            initial={{ opacity: 0, y: 12 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: 12 }}
+                            transition={{ type: 'spring', stiffness: 240, damping: 22, mass: 0.7 }}
+                            style={{ display: 'flex', flex: 1 }}
+                        >
+                            <ClientDetailsSkeleton />
+                        </motion.div>
+                    ) : (
+                        <motion.div
+                            key={activeClient ? activeClient.user_id : 'empty'}
+                            initial={{ opacity: 0, y: 12 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: 12 }}
+                            transition={{ type: 'spring', stiffness: 240, damping: 22, mass: 0.7 }}
+                            style={{ display: 'flex', flex: 1 }}
+                        >
+                            <ClientDetails
+                                client={activeClient}
+                                onApprove={onApprove}
+                                onRejectClick={openReject}
+                                onSaveSalary={onSaveSalary}
+                                wlnMasterRecords={wlnMasterRecords}
+                                loading={!!wlnLoading}
+                                fetchAmortsched={fetchAmortsched}
+                                amortschedByLnnumber={amortschedByLnnumber}
+                                amortschedLoading={amortschedLoading}
+                                fetchWlnLed={fetchWlnLed}
+                                wlnLedByLnnumber={wlnLedByLnnumber}
+                                wlnLedLoading={wlnLedLoading}
+                            />
+                        </motion.div>
+                    )}
                 </AnimatePresence>
             }
             afterStack={
@@ -158,8 +175,8 @@ function ClientDesktopLayoutView({
                     onSubmit={submitReject}
                 />
             }
-            leftSx={{ p: 4, minHeight: 600, gap: 2 }}
-            rightSx={{ p: 4, minHeight: 1110 }}
+            leftSx={{ padding: 16, minHeight: 600, gap: 8 }}
+            rightSx={{ padding: 16, minHeight: 1110 }}
         />
     );
 }
@@ -171,7 +188,7 @@ type ClientMobileProps = {
     onSelect?: (userId: number | null) => void;
     onApprove: (userId: number) => Promise<void> | void;
     onReject: (userId: number, reasons: string[]) => Promise<void> | void;
-    onSaveSalary: (acctno: string, salary: number) => Promise<void> | void;
+    onSaveSalary: (acctno: string, salary: number) => Promise<void>;
     fetchWlnMaster: (acctno: string) => Promise<WlnMasterResponse | null>;
     wlnMasterByAcctno: Record<string, WlnMasterRecord[]>;
     wlnMasterLoading: Record<string, boolean>;
@@ -183,6 +200,7 @@ type ClientMobileProps = {
     wlnLedLoading: Record<string, boolean>;
     statusTab: RegistrationStatus;
     onStatusTabChange: (value: RegistrationStatus) => void;
+    loading?: boolean;
 };
 
 function ClientMobileLayoutView({
@@ -204,6 +222,7 @@ function ClientMobileLayoutView({
     wlnLedLoading,
     statusTab,
     onStatusTabChange,
+    loading = false,
 }: ClientMobileProps) {
     const [search, setSearch] = useState('');
     const [localSelectedId, setLocalSelectedId] = useState<number | null>(selectedId);
@@ -280,8 +299,7 @@ function ClientMobileLayoutView({
                         title={activeClient ? activeClient.name : 'Client Details'}
                         onClose={closeDetails}
                         bodyClassName="client-details-open"
-                        paperSx={{ pb: 0 }}
-                        bodySx={{ pb: { xs: 10, sm: 6 } }}
+                        bodySx={{ paddingBottom: '2.5rem' }}
                     >
                         <ClientDetails
                             client={activeClient}
@@ -290,7 +308,6 @@ function ClientMobileLayoutView({
                             onSaveSalary={onSaveSalary}
                             wlnMasterRecords={wlnMasterRecords}
                             loading={!!wlnLoading}
-                            showName={false}
                             fetchAmortsched={fetchAmortsched}
                             amortschedByLnnumber={amortschedByLnnumber}
                             amortschedLoading={amortschedLoading}
@@ -313,6 +330,7 @@ function ClientMobileLayoutView({
         >
             <ClientList
                 clients={filtered}
+                loading={loading}
                 onSelect={handleSelect}
                 searchValue={search}
                 onSearchChange={setSearch}
@@ -351,7 +369,6 @@ export default function ClientManagementPage() {
     const [selectedId, setSelectedId] = useState<number | null>(null);
     const [statusTab, setStatusTab] = useState<RegistrationStatus>('approved');
     const isMobile = useMediaQuery('(max-width:900px)');
-    const approvedCount = useMemo(() => clients.filter((c) => c.status === 'approved').length, [clients]);
 
     useEffect(() => {
         fetchClients();
@@ -426,7 +443,7 @@ export default function ClientManagementPage() {
                     )}
                 </AnimatePresence>
             </div>
-            <div className="flex flex-col gap-0 overflow-x-auto bg-[#FAFAFA] transition-colors duration-300 dark:bg-neutral-900">
+            <div className="flex flex-col gap-0 fixed inset-0 overflow-y-auto bg-[#FAFAFA] transition-colors duration-300 dark:bg-neutral-900">
                 {!isMobile || !selectedId ? (
                     <HeaderBlock title="Client Management" subtitle="Review, approve, and manage clients" />
                 ) : null}
@@ -452,10 +469,12 @@ export default function ClientManagementPage() {
                             wlnLedLoading={wlnLedLoading}
                             statusTab={statusTab}
                             onStatusTabChange={setStatusTab}
+                            loading={true}
                         />
                     ) : (
                         <ClientDesktopLayoutView
                             clients={[]}
+                            loading={true}
                             rejectionReasons={rejectionReasons}
                             selectedId={null}
                             onSelect={setSelectedId}
@@ -495,6 +514,7 @@ export default function ClientManagementPage() {
                         wlnLedLoading={wlnLedLoading}
                         statusTab={statusTab}
                         onStatusTabChange={setStatusTab}
+                        loading={false}
                     />
                 ) : (
                     <ClientDesktopLayoutView

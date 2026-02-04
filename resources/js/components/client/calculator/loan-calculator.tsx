@@ -40,7 +40,7 @@ export default function LoanCalculator({ selectedProduct, loanDefaults, loading 
         existingBalance,
         estimatedNetProceeds,
         monthlyPayment,
-    } = useLoanCalculation(selectedProduct, loanDefaults);
+    } = useLoanCalculation(selectedProduct, loanDefaults ?? null);
 
     const [termsModalOpen, setTermsModalOpen] = useState<boolean>(false);
     const [showFloatingButton, setShowFloatingButton] = useState<boolean>(true);
@@ -81,7 +81,7 @@ export default function LoanCalculator({ selectedProduct, loanDefaults, loading 
     }
 
     return (
-        <div ref={containerRef}>
+        <div ref={containerRef} style={{ padding: '10px', paddingBottom: isMobile ? '100px' : '10px' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? 10 : 12 }}>
                 {/* Product Display */}
                 <div>
@@ -340,8 +340,8 @@ export default function LoanCalculator({ selectedProduct, loanDefaults, loading 
                     onClose={() => setTermsModalOpen(false)}
                     title={selectedProduct?.product_name ? `${selectedProduct.product_name} Terms` : 'Terms and Conditions'}
                     headerBg="#F57979"
-                    bodySx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 2 }}
-                    titleSx={{ fontSize: { xs: 18, sm: 22 } }}
+                    bodySx={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}
+                    titleSx={{ fontSize: '18px' }}
                     zIndex={1400}
                 >
                     <textarea

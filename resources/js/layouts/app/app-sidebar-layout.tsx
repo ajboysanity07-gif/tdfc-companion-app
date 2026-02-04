@@ -17,18 +17,23 @@ export default function AppSidebarLayout({ children, breadcrumbs = [] }: PropsWi
 
             {/* Main content area, full width */}
             <div className="relative flex min-h-0 w-full flex-1 flex-col overflow-hidden">
-                <AppContent variant="sidebar" className="min-h-0 flex-1 overflow-hidden md:pb-0">
-                    {/* Sidebar header: visible only on desktop */}
-                    <div className="hidden md:block">
-                        <AppSidebarHeader breadcrumbs={breadcrumbs} />
-                    </div>
+                {/* Content wrapper with flex-1 to take remaining space */}
+                <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+                    <AppContent variant="sidebar" className="min-h-0 flex-1 overflow-hidden md:pb-0">
+                        {/* Sidebar header: visible only on desktop */}
+                        <div className="hidden md:block">
+                            <AppSidebarHeader breadcrumbs={breadcrumbs} />
+                        </div>
 
-                    {/* Page content */}
-                    {children}
-                </AppContent>
+                        {/* Page content */}
+                        {children}
+                    </AppContent>
+                </div>
 
-                {/* Mobile bottom nav */}
-                <NavMobile />
+                {/* Mobile bottom nav - now part of layout flow */}
+                <div className="shrink-0 md:hidden">
+                    <NavMobile />
+                </div>
             </div>
 
             {/* PWA Install Prompt */}

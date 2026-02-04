@@ -17,8 +17,9 @@ const ClientListSkeleton: React.FC<Props> = ({ itemCount = CLIENT_LIST_PAGE_SIZE
 
     const containerBg = tw.isDark ? '#171717' : '#FFFFFF';
     const containerBorder = tw.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.08)';
-    const itemBg = tw.isDark ? '#262626' : '#FFFFFF';
-    const itemBorder = tw.isDark ? '#3a3a3a' : '#e5e5e5';
+    const itemBg = tw.isDark ? '#262626' : '#F5F5F5';
+    const itemBorder = tw.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.1)';
+    const skeletonColor = tw.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)';
     const padding = isMobile ? 8 : 12;
     const gap = isMobile ? 8 : 10;
 
@@ -35,7 +36,7 @@ const ClientListSkeleton: React.FC<Props> = ({ itemCount = CLIENT_LIST_PAGE_SIZE
                             className="animate-pulse rounded w-full"
                             style={{
                                 height: isMobile ? 32 : 36,
-                                backgroundColor: 'rgba(255,255,255,0.1)',
+                                backgroundColor: skeletonColor,
                                 borderRadius: 6,
                             }}
                         />
@@ -60,7 +61,7 @@ const ClientListSkeleton: React.FC<Props> = ({ itemCount = CLIENT_LIST_PAGE_SIZE
                     className="animate-pulse rounded w-full"
                     style={{
                         height: 48,
-                        backgroundColor: 'rgba(255,255,255,0.1)',
+                        backgroundColor: skeletonColor,
                         borderRadius: 6,
                     }}
                 />
@@ -82,11 +83,11 @@ const ClientListSkeleton: React.FC<Props> = ({ itemCount = CLIENT_LIST_PAGE_SIZE
                             }}
                         >
                             <div
-                                className="rounded-full flex-shrink-0 animate-pulse"
+                                className="rounded-full shrink-0 animate-pulse"
                                 style={{
                                     width: isMobile ? 44 : 52,
                                     height: isMobile ? 44 : 52,
-                                    backgroundColor: 'rgba(255,255,255,0.1)',
+                                    backgroundColor: skeletonColor,
                                 }}
                             />
                             <div
@@ -94,15 +95,15 @@ const ClientListSkeleton: React.FC<Props> = ({ itemCount = CLIENT_LIST_PAGE_SIZE
                                 style={{
                                     width: '60%',
                                     height: isMobile ? 24 : 28,
-                                    backgroundColor: 'rgba(255,255,255,0.1)',
+                                    backgroundColor: skeletonColor,
                                 }}
                             />
                             <div
-                                className="rounded-full flex-shrink-0 animate-pulse"
+                                className="rounded-full shrink-0 animate-pulse"
                                 style={{
                                     width: isMobile ? 30 : 34,
                                     height: isMobile ? 30 : 34,
-                                    backgroundColor: 'rgba(255,255,255,0.1)',
+                                    backgroundColor: skeletonColor,
                                     marginLeft: 'auto',
                                 }}
                             />

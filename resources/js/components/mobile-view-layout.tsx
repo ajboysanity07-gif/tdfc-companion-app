@@ -15,10 +15,10 @@ export default function MobileViewLayout({ children, footer, wrapperSx, stackSx 
     return (
         <div
             className={cn(
-                'flex flex-1 flex-col gap-0 p-2 pt-0 pb-24 sm:pb-2 min-h-auto',
+                'flex flex-1 flex-col gap-0 p-4 pt-0 sm:pb-2',
                 tw.isDark ? 'bg-neutral-950' : 'bg-gray-100',
             )}
-            style={wrapperSx}
+            style={{ paddingBottom: '100px', ...wrapperSx }}
         >
             <div
                 className={cn(

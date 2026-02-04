@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMyTheme } from '@/hooks/use-mytheme';
@@ -393,14 +392,14 @@ const PWAInstallPrompt: React.FC = () => {
                         }}
                     >
                         <div
-                            className="w-full max-w-3xl h-96 rounded-lg overflow-hidden flex flex-row shadow-2xl"
+                            className="w-full max-w-4xl h-auto rounded-xl overflow-hidden flex flex-row shadow-2xl"
                             style={{
                                 backgroundColor: tw.isDark ? '#1f1f1f' : '#ffffff',
                             }}
                         >
                             {/* Left Side: Screenshots/Visual */}
                             <div
-                                className="w-5/12 p-2 flex flex-col items-center justify-center gap-2 overflow-auto"
+                                className="w-5/12 p-6 flex flex-col items-center justify-center gap-4 overflow-auto"
                                 style={{
                                     backgroundColor: tw.isDark ? '#2a2a2a' : '#f5f5f5',
                                 }}
@@ -412,7 +411,7 @@ const PWAInstallPrompt: React.FC = () => {
                                     return (
                                         <div
                                             key={i}
-                                            className="w-32 h-64 rounded-lg border overflow-hidden flex items-center justify-center"
+                                            className="w-36 h-72 rounded-lg border overflow-hidden flex items-center justify-center shrink-0"
                                             style={{
                                                 borderColor: tw.isDark ? '#333' : '#e5e5e5',
                                                 backgroundColor: tw.isDark ? '#1f1f1f' : '#ffffff',
@@ -430,39 +429,39 @@ const PWAInstallPrompt: React.FC = () => {
 
                             {/* Right Side: Content */}
                             <div
-                                className="w-7/12 flex flex-col p-6 relative overflow-auto"
+                                className="w-7/12 flex flex-col p-8 relative overflow-auto"
                             >
                                 {/* Close Button */}
                                 <button
                                     onClick={handleDismiss}
-                                    className="absolute top-3 right-3 p-1 text-gray-600 hover:bg-gray-100 rounded"
+                                    className="absolute top-4 right-4 p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
                                     style={{
                                         backgroundColor: tw.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
                                     }}
                                 >
-                                    <X size={18} />
+                                    <X size={20} />
                                 </button>
 
                                 {/* Title */}
-                                <h2 className="text-2xl font-bold mb-1 mt-1">
+                                <h2 className="text-3xl font-bold mb-2 mt-2 pr-8">
                                     TDFC Companion App
                                 </h2>
 
                                 {/* Publisher */}
-                                <p className="text-sm font-semibold mb-3" style={{ color: '#01875f' }}>
+                                <p className="text-sm font-semibold mb-6" style={{ color: '#01875f' }}>
                                     RADS Computer Services
                                 </p>
 
                                 {/* Description */}
-                                <p className="text-sm leading-relaxed mb-4 flex-1 opacity-80">
+                                <p className="text-base leading-relaxed mb-8 flex-1 opacity-80">
                                     Manage your loans, track transactions, view amortization schedules, and stay connected with your cooperative. Access your financial information anytime, anywhere with offline support.
                                 </p>
 
                                 {/* Buttons */}
-                                <div className="flex gap-2">
+                                <div className="flex gap-3 mt-auto">
                                     <button
                                         onClick={handleInstall}
-                                        className="flex-1 py-3 rounded font-bold text-sm cursor-pointer transition-all hover:opacity-90 active:scale-95"
+                                        className="flex-1 py-3.5 rounded-lg font-bold text-base cursor-pointer transition-all hover:opacity-90 active:scale-95"
                                         style={{
                                             backgroundColor: '#01875f',
                                             color: 'white',
@@ -472,7 +471,7 @@ const PWAInstallPrompt: React.FC = () => {
                                     </button>
                                     <button
                                         onClick={handleRemindLater}
-                                        className="flex-1 py-3 rounded font-semibold text-sm cursor-pointer transition-all border hover:opacity-80 active:scale-95"
+                                        className="flex-1 py-3.5 rounded-lg font-semibold text-base cursor-pointer transition-all border hover:opacity-80 active:scale-95"
                                         style={{
                                             borderColor: tw.isDark ? '#333' : '#e5e5e5',
                                             color: tw.isDark ? '#fff' : '#000',

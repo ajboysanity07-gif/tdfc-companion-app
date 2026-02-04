@@ -7,6 +7,7 @@ const ProductDetailsSkeleton: React.FC = () => {
     const isMobile = useMediaQuery('(max-width: 600px)');
     const panelBg = tw.isDark ? '#262626' : '#FFFFFF';
     const panelBorder = tw.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)';
+    const skeletonColor = tw.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)';
 
     return (
         <div
@@ -27,7 +28,7 @@ const ProductDetailsSkeleton: React.FC = () => {
                 style={{
                     width: '55%',
                     height: isMobile ? 32 : 36,
-                    backgroundColor: 'rgba(255,255,255,0.1)',
+                    backgroundColor: skeletonColor,
                 }}
             />
             {/* Divider skeleton */}
@@ -36,7 +37,7 @@ const ProductDetailsSkeleton: React.FC = () => {
                 style={{
                     height: 2,
                     width: '80%',
-                    backgroundColor: 'rgba(255,255,255,0.1)',
+                    backgroundColor: skeletonColor,
                 }}
             />
 
@@ -55,7 +56,7 @@ const ProductDetailsSkeleton: React.FC = () => {
                     style={{
                         width: '70%',
                         height: 24,
-                        backgroundColor: 'rgba(255,255,255,0.1)',
+                        backgroundColor: skeletonColor,
                     }}
                 />
                 {[1, 2, 3, 4].map((idx) => (
@@ -64,7 +65,7 @@ const ProductDetailsSkeleton: React.FC = () => {
                         className="animate-pulse rounded"
                         style={{
                             height: idx === 4 ? 120 : 44,
-                            backgroundColor: 'rgba(255,255,255,0.1)',
+                            backgroundColor: skeletonColor,
                         }}
                     />
                 ))}
@@ -81,7 +82,7 @@ const ProductDetailsSkeleton: React.FC = () => {
                     className="animate-pulse rounded w-full"
                     style={{
                         height: 50,
-                        backgroundColor: 'rgba(255,255,255,0.1)',
+                        backgroundColor: skeletonColor,
                         borderRadius: 999,
                     }}
                 />
@@ -89,7 +90,7 @@ const ProductDetailsSkeleton: React.FC = () => {
                     className="animate-pulse rounded w-full"
                     style={{
                         height: 50,
-                        backgroundColor: 'rgba(255,255,255,0.1)',
+                        backgroundColor: skeletonColor,
                         borderRadius: 999,
                     }}
                 />

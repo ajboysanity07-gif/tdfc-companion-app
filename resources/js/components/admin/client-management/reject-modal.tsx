@@ -1,7 +1,6 @@
 import axiosClient, { getCsrfCookie } from '@/api/axios-client';
 import React, { useEffect, useMemo, useState } from 'react';
-import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
-import BlockIcon from '@mui/icons-material/Block';
+import { X, AlertCircle } from 'lucide-react';
 import type { RejectionReasonEntry } from '@/types/user';
 
 type Props = {
@@ -311,7 +310,7 @@ const RejectModal: React.FC<Props> = ({ open, reasons, selected = [], onClose, o
                             e.currentTarget.style.backgroundColor = 'transparent';
                         }}
                     >
-                        <CancelOutlinedIcon style={{ fontSize: '1.25rem' }} />
+                        <X size={20} />
                         Cancel
                     </button>
                     <button
@@ -345,7 +344,7 @@ const RejectModal: React.FC<Props> = ({ open, reasons, selected = [], onClose, o
                             e.currentTarget.style.boxShadow = '0 10px 24px rgba(220,38,38,0.28)';
                         }}
                     >
-                        <BlockIcon style={{ fontSize: '1.25rem' }} />
+                        <AlertCircle size={20} />
                         Reject
                     </button>
                 </div>

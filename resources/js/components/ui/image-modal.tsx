@@ -1,0 +1,133 @@
+import React from 'react';
+import * as DialogPrimitive from '@radix-ui/react-dialog';
+import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
+import { X } from 'lucide-react';
+
+type ImageModalProps = {
+    open: boolean;
+    onClose: () => void;
+    images: Array<{
+        src: string;
+        label: string;
+    }>;
+};
+
+const ImageModal: React.FC<ImageModalProps> = ({ open, onClose, images }) => {
+    if (!open) return null;
+
+    return (
+        <DialogPrimitive.Root open={open} onOpenChange={onClose}>
+            <DialogPrimitive.Portal container={document.body}>
+                {/* Blurred backdrop */}
+                <DialogPrimitive.Overlay 
+                    style={{
+                        position: 'fixed',
+                        inset: 0,
+                        zIndex: 9999,
+                        backdropFilter: 'blur(16px)',
+                        backgroundColor: 'rgba(0, 0, 0, 0.3)',
+                    }}
+                />
+                {/* Content */}
+                <DialogPrimitive.Content 
+                    style={{ 
+                        position: 'fixed',
+                        inset: 0,
+                        zIndex: 10000,
+                        outline: 'none',
+                        overflow: 'auto',
+                        WebkitOverflowScrolling: 'touch',
+                        background: 'transparent'
+                    }}
+                >
+                    <VisuallyHidden.Root>
+                        <DialogPrimitive.Title>Image Viewer</DialogPrimitive.Title>
+                        <DialogPrimitive.Description>View document images</DialogPrimitive.Description>
+                    </VisuallyHidden.Root>
+                    
+                    {/* Close button */}
+                    <button
+                        onClick={onClose}
+                        style={{
+                            position: 'fixed',
+                            top: '16px',
+                            right: '16px',
+                            zIndex: 10001,
+                            padding: '8px',
+                            borderRadius: '9999px',
+                            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                            color: 'white',
+                            border: 'none',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.7)'}
+                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.5)'}
+                    >
+                        <X style={{ width: '24px', height: '24px' }} />
+                    </button>
+
+                    {/* Images container */}
+                    <div 
+                        style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            minHeight: '100vh',
+                            width: '100%',
+                            padding: '80px 16px',
+                            gap: '32px',
+                            boxSizing: 'border-box'
+                        }}
+                    >
+                        {images.map((image, index) => (
+                            <div 
+                                key={index} 
+                                style={{ 
+                                    display: 'flex', 
+                                    flexDirection: 'column', 
+                                    alignItems: 'center', 
+                                    width: '100%' 
+                                }}
+                            >
+                                {/* Label */}
+                                <div 
+                                    style={{
+                                        marginBottom: '12px',
+                                        padding: '8px 16px',
+                                        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                                        color: 'white',
+                                        fontSize: '14px',
+                                        fontWeight: 600,
+                                        borderRadius: '8px',
+                                        backdropFilter: 'blur(4px)'
+                                    }}
+                                >
+                                    {image.label}
+                                </div>
+                                {/* Image */}
+                                <img
+                                    src={image.src}
+                                    alt={image.label}
+                                    style={{
+                                        width: '90vw',
+                                        height: 'auto',
+                                        maxHeight: '40vh',
+                                        objectFit: 'contain',
+                                        borderRadius: '8px',
+                                        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
+                                    }}
+                                />
+                            </div>
+                        ))}
+                    </div>
+                </DialogPrimitive.Content>
+            </DialogPrimitive.Portal>
+        </DialogPrimitive.Root>
+    );
+};
+
+export default ImageModal;

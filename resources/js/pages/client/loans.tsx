@@ -6,7 +6,7 @@ import AppLayout from '@/layouts/app-layout';
 import FullScreenModalMobile from '@/components/ui/full-screen-modal-mobile';
 import LoanCalculator from '@/components/client/calculator/loan-calculator';
 import { useLoanApply } from '@/hooks/use-loan-apply';
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Head, usePage, router } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { CircleCheckBig, CircleX } from 'lucide-react';
@@ -37,7 +37,7 @@ export default function LoansPage() {
     const urlAcctno = urlMatch ? urlMatch[1] : '';
     const customerAcct = props.acctno ?? props.auth?.user?.acctno ?? urlAcctno ?? '';
     const calculatorHref = customerAcct ? `/client/${customerAcct}/loan-calculator` : '/loan-calculator';
-    const actionButtonRef = useRef<HTMLAnchorElement | null>(null);
+    const actionButtonRef = useRef<HTMLButtonElement | null>(null);
     const [hideFloatingAction, setHideFloatingAction] = useState(false);
     const { products, loading: productsLoading, fetchProducts } = useLoanApply();
     const [selectedProduct, setSelectedProduct] = useState<ProductLntype | null>(null);
@@ -360,7 +360,7 @@ export default function LoansPage() {
     // Floating action button for mobile
     const actionButton = isMobile ? (
         <div
-            className="fixed bottom-24 left-1/2 z-40 flex gap-2 rounded-full shadow-lg px-2 justify-center pointer-events-none"
+            className="fixed bottom-24 left-1/2 z-40 flex gap-2 rounded-full shadow-lg justify-center pointer-events-none"
             style={{
                 opacity: isActionHidden ? 0 : 1,
                 visibility: isActionHidden ? 'hidden' : 'visible',
@@ -374,11 +374,11 @@ export default function LoansPage() {
                     backgroundColor: '#F57979',
                     color: '#fff',
                     borderRadius: '9999px',
-                    paddingLeft: '2rem',
-                    paddingRight: '2rem',
-                    paddingTop: '0.6rem',
-                    paddingBottom: '0.6rem',
-                    minWidth: '220px',
+                    paddingLeft: '1.5rem',
+                    paddingRight: '1.5rem',
+                    paddingTop: '0.75rem',
+                    paddingBottom: '0.75rem',
+                    minWidth: '200px',
                     animation: isActionHidden ? 'none' : 'new-transaction-float 2.6s ease-in-out infinite',
                 }}
                 onClick={() => router.get(calculatorHref)}
@@ -401,7 +401,7 @@ export default function LoansPage() {
     );
 
     const leftPanel = (
-        <div className="h-full flex flex-col">
+        <div className="h-full flex flex-col p-4">
             {content}
         </div>
     );
@@ -516,9 +516,8 @@ export default function LoansPage() {
                     onClose={handleCloseCalculator}
                     title="Loan Calculator"
                     headerBg="#F57979"
-                    bodySx={{ p: 3 }}
+                    bodySx={{ padding: '24px' }}
                     zIndex={1300}
-                    titleSx={{ fontSize: { xs: 20, sm: 24 } }}
                     bodyClassName="calculator-modal-open"
                 >
                     <LoanCalculator selectedProduct={selectedProduct} loading={productsLoading} loanDefaults={loanDefaults} />
@@ -578,20 +577,19 @@ export default function LoansPage() {
             <DesktopViewLayout
                 left={leftPanel}
                 right={rightPanel}
-                stackProps={{ spacing: 3, alignItems: 'stretch' }}
                 leftSx={{ 
                     flex: '0 0 30%',
                     minWidth: 350,
                     maxWidth: 500,
-                    p: 3,
+                    padding: 0,
                     overflowY: 'auto',
                 }}
                 rightSx={{ 
                     flex: '1',
-                    p: 3,
+                    padding: '24px',
                 }}
                 wrapperSx={{
-                    p: 2,
+                    padding: '16px',
                     gap: 2,
                 }}
             />

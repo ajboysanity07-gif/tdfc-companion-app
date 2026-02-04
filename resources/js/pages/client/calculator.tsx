@@ -202,7 +202,7 @@ export default function LoanTransactions() {
     const header = <HeaderBlock title="Available Loan Products" subtitle="Choose a loan product to apply" />;
 
     const leftSection = (
-        <div>
+        <div style={{ padding: '10px', paddingBottom: isMobile ? '100px' : '10px' }}>
             <BoxHeader title="Available Transactions" />
             <ProductList
                 products={products}
@@ -232,7 +232,7 @@ export default function LoanTransactions() {
         return (
             <AppLayout>
                 <Head title="Available Transactions" />
-                {!calculatorModalOpen && header}
+                {header}
                 <MobileViewLayout>
                     {leftSection}
                 </MobileViewLayout>
@@ -243,9 +243,9 @@ export default function LoanTransactions() {
                     onClose={handleCloseCalculatorModal}
                     title="Loan Calculator"
                     headerBg="#F57979"
-                    bodySx={{ p: 3 }}
+                    bodySx={{ padding: '24px' }}
                     zIndex={1300}
-                    titleSx={{ fontSize: { xs: 20, sm: 24 } }}
+                    titleSx={{ fontSize: '20px' }}
                 >
                     <LoanCalculator
                         selectedProduct={selectedProduct}
@@ -288,8 +288,8 @@ export default function LoanTransactions() {
             <DesktopViewLayout
                 left={leftSection}
                 right={productDetails}
-                leftSx={{ p: 3, minHeight: 600 }}
-                rightSx={{ p: 3, minHeight: 600 }}
+                leftSx={{ padding: '24px', minHeight: 600 }}
+                rightSx={{ padding: '24px', minHeight: 600 }}
             />
         </AppLayout>
     );

@@ -71,7 +71,6 @@ export default function CustomerDashboard() {
     const clientClass = user?.class ?? user?.class_name ?? user?.role ?? 'Client';
     const tw = useMyTheme();
     const accent = '#F57979';
-    const accentHighlight = '#FFF172';
     const surface = tw.isDark ? '#2f2f2f' : '#ffffff';
     const borderColor = tw.isDark ? '#3a3a3a' : '#e5e7eb';
     const isMobile = useMediaQuery('(max-width:900px)');
@@ -268,19 +267,53 @@ export default function CustomerDashboard() {
                     </div>
                 </div>
 
-                <div
-                    className="flex sm:hidden shrink-0 items-center justify-center"
-                    style={{
-                        width: '68px',
-                        height: '68px',
-                        borderRadius: '50%',
-                        backgroundColor: 'rgba(255,255,255,0.2)',
-                        fontWeight: 800,
-                        border: '2px solid rgba(255,255,255,0.4)',
-                        boxShadow: '0 8px 16px rgba(0,0,0,0.18)',
-                    }}
-                >
-                    {!avatar ? initials : (avatar && <img src={avatar} alt={fullName} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />)}
+                <div className="flex sm:hidden flex-row gap-3 items-center flex-1">
+                    <div
+                        className="shrink-0 flex items-center justify-center"
+                        style={{
+                            width: '68px',
+                            height: '68px',
+                            borderRadius: '50%',
+                            backgroundColor: 'rgba(255,255,255,0.2)',
+                            fontWeight: 800,
+                            border: '2px solid rgba(255,255,255,0.4)',
+                            boxShadow: '0 8px 16px rgba(0,0,0,0.18)',
+                        }}
+                    >
+                        {!avatar ? initials : (avatar && <img src={avatar} alt={fullName} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />)}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                        <div className="font-bold tracking-wider text-yellow-300" style={{ fontSize: '0.8125rem', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                            Welcome
+                        </div>
+                        <h1
+                            className="font-bold leading-tight capitalize truncate"
+                            style={{
+                                fontWeight: 750,
+                                fontSize: '1.5rem',
+                                textTransform: 'capitalize',
+                                fontFamily: 'system-ui, -apple-system, sans-serif',
+                                marginTop: '-0.125rem',
+                            }}
+                        >
+                            {firstName}
+                        </h1>
+                        <span
+                            className="inline-flex items-center rounded-full"
+                            style={{
+                                marginTop: '0.5rem',
+                                paddingLeft: '1rem',
+                                paddingRight: '1rem',
+                                paddingTop: '0.375rem',
+                                paddingBottom: '0.375rem',
+                                backgroundColor: 'rgba(255,255,255,0.16)',
+                                fontWeight: 700,
+                                fontSize: '11px',
+                            }}
+                        >
+                            Class {loanClass || clientClass}
+                        </span>
+                    </div>
                 </div>
             </div>
             <div className="flex flex-col items-center gap-0.5 w-full sm:w-auto pt-2">
@@ -366,12 +399,12 @@ export default function CustomerDashboard() {
                             className="flex flex-row items-center justify-between gap-2 py-1.5 px-1"
                         >
                             <div className="flex flex-col gap-0.6">
-                                <Skeleton variant="text" width={140} height={20} />
-                                <Skeleton variant="text" width={90} height={16} />
+                                <Skeleton style={{ width: 140, height: 20 }} />
+                                <Skeleton style={{ width: 90, height: 16 }} />
                             </div>
                             <div className="flex flex-col gap-0.6 items-end">
-                                <Skeleton variant="text" width={90} height={20} />
-                                <Skeleton variant="text" width={80} height={16} />
+                                <Skeleton style={{ width: 90, height: 20 }} />
+                                <Skeleton style={{ width: 80, height: 16 }} />
                             </div>
                         </div>
                     ))}
@@ -553,11 +586,10 @@ export default function CustomerDashboard() {
 
     const primaryActions = (
         <div
+            className="grid gap-3"
             style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))',
-                gap: '1.5rem',
-                justifyContent: 'center',
+                gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)',
+                gap: '0.75rem',
             }}
         >
             {[
@@ -584,7 +616,7 @@ export default function CustomerDashboard() {
                     title: 'Log Out',
                     description: 'End your current session securely.',
                     icon: <LogOut className="h-8 w-8" />,
-                    bg: accent,
+                    bg: '#f78080',
                     iconBg: 'rgba(255,255,255,0.28)',
                     color: '#ffffff',
                 },
@@ -603,13 +635,13 @@ export default function CustomerDashboard() {
                     }}
                     style={{
                         height: '100%',
-                        minHeight: '140px',
+                        minHeight: '120px',
                         justifyContent: 'center',
                         textTransform: 'none',
                         borderRadius: '1.5rem',
                         alignItems: 'center',
-                        padding: '2.5rem',
-                        display: action.key === 'logout' ? 'none' : 'flex',
+                        padding: '1.5rem',
+                        display: (action.key === 'logout' && isMobile) ? 'none' : 'flex',
                         backgroundColor: action.bg,
                         color: action.color,
                         border: `1px solid ${action.key === 'logout' ? accent : borderColor}`,
@@ -712,7 +744,7 @@ export default function CustomerDashboard() {
                     </a>
                 </div>
 
-                <div id="main-content" className="flex flex-col gap-2 px-4 sm:px-6 pb-24 sm:pb-2" style={{ backgroundColor: tw.isDark ? '#0b0b0b' : '#f5f5f5' }}>
+                <div id="main-content" className="flex flex-col gap-2 px-4 sm:px-6" style={{ backgroundColor: tw.isDark ? '#0b0b0b' : '#f5f5f5', paddingBottom: isMobile ? '100px' : '2rem' }}>
                     {showDashboardSkeleton ? (
                         <ClientDashboardSkeleton />
                     ) : (
@@ -733,8 +765,7 @@ export default function CustomerDashboard() {
                 headerBg={accent}
                 headerColor="#ffffff"
                 bodySx={{
-                    p: { xs: 1.5, md: 2 },
-                    pb: { xs: 1.5, md: 2 },
+                    padding: '16px',
                     flex: '1 1 auto',
                     overflowY: 'auto',
                 }}

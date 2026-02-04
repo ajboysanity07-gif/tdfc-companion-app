@@ -12,10 +12,11 @@ type Props = {
 const ProductListSkeleton: React.FC<Props> = ({ itemCount = PRODUCT_LIST_PAGE_SIZE, fullHeight = false }) => {
     const tw = useMyTheme();
     const isMobile = useMediaQuery('(max-width: 600px)');
-    const panelBg = tw.isDark ? '#262626' : 'rgba(0,0,0,0.04)';
+    const panelBg = tw.isDark ? '#262626' : '#F5F5F5';
     const panelBorder = tw.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.08)';
-    const cardBg = tw.isDark ? '#2f2f2f' : '#f7f7f7';
-    const cardBorder = tw.isDark ? '#3a3a3a' : '#e5e5e5';
+    const cardBg = tw.isDark ? '#2f2f2f' : '#F5F5F5';
+    const cardBorder = tw.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.1)';
+    const skeletonColor = tw.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)';
     const safeItemCount = Math.max(itemCount ?? PRODUCT_LIST_PAGE_SIZE, 1);
 
     return (
@@ -29,7 +30,7 @@ const ProductListSkeleton: React.FC<Props> = ({ itemCount = PRODUCT_LIST_PAGE_SI
                 style={{
                     width: 140,
                     height: isMobile ? 32 : 38,
-                    backgroundColor: 'rgba(255,255,255,0.1)',
+                    backgroundColor: skeletonColor,
                     borderRadius: 6,
                 }}
             />
@@ -38,7 +39,7 @@ const ProductListSkeleton: React.FC<Props> = ({ itemCount = PRODUCT_LIST_PAGE_SI
                 className="animate-pulse rounded"
                 style={{
                     height: 48,
-                    backgroundColor: 'rgba(255,255,255,0.1)',
+                    backgroundColor: skeletonColor,
                     borderRadius: 6,
                 }}
             />
@@ -73,7 +74,7 @@ const ProductListSkeleton: React.FC<Props> = ({ itemCount = PRODUCT_LIST_PAGE_SI
                                 style={{
                                     width: 36,
                                     height: 22,
-                                    backgroundColor: 'rgba(255,255,255,0.1)',
+                                    backgroundColor: skeletonColor,
                                 }}
                             />
                             {/* Content area */}
@@ -84,7 +85,7 @@ const ProductListSkeleton: React.FC<Props> = ({ itemCount = PRODUCT_LIST_PAGE_SI
                                     style={{
                                         width: '60%',
                                         height: isMobile ? 20 : 24,
-                                        backgroundColor: 'rgba(255,255,255,0.1)',
+                                        backgroundColor: skeletonColor,
                                     }}
                                 />
                                 {/* Tags skeleton */}
@@ -94,7 +95,7 @@ const ProductListSkeleton: React.FC<Props> = ({ itemCount = PRODUCT_LIST_PAGE_SI
                                         style={{
                                             width: 52,
                                             height: 18,
-                                            backgroundColor: 'rgba(255,255,255,0.1)',
+                                            backgroundColor: skeletonColor,
                                         }}
                                     />
                                     <div
@@ -102,7 +103,7 @@ const ProductListSkeleton: React.FC<Props> = ({ itemCount = PRODUCT_LIST_PAGE_SI
                                         style={{
                                             width: 64,
                                             height: 18,
-                                            backgroundColor: 'rgba(255,255,255,0.1)',
+                                            backgroundColor: skeletonColor,
                                         }}
                                     />
                                 </div>
@@ -113,7 +114,7 @@ const ProductListSkeleton: React.FC<Props> = ({ itemCount = PRODUCT_LIST_PAGE_SI
                                 style={{
                                     width: isMobile ? 30 : 34,
                                     height: isMobile ? 30 : 34,
-                                    backgroundColor: 'rgba(255,255,255,0.1)',
+                                    backgroundColor: skeletonColor,
                                 }}
                             />
                         </div>

@@ -239,7 +239,13 @@ export default function LoanList({ onOpenCalculator, onScheduleClick, onLedgerCl
 
     if (error) {
         return (
-            <div style={{ textAlign: 'center', paddingY: 16 }}>
+            <div
+                style={{
+                    textAlign: 'center',
+                    paddingTop: 16,
+                    paddingBottom: 16,
+                }}
+            >
                 <div style={{ color: '#ef5350' }}>{error}</div>
             </div>
         );
@@ -250,8 +256,10 @@ export default function LoanList({ onOpenCalculator, onScheduleClick, onLedgerCl
             <div
                 style={{
                     textAlign: 'center',
-                    paddingY: 24,
-                    paddingX: 12,
+                    paddingTop: 24,
+                    paddingBottom: 24,
+                    paddingLeft: 12,
+                    paddingRight: 12,
                     borderRadius: 8,
                     border: `1px dashed ${borderColor}`,
                     backgroundColor: panelBg,
@@ -268,7 +276,7 @@ export default function LoanList({ onOpenCalculator, onScheduleClick, onLedgerCl
     }
 
     return (
-        <>
+        <div style={{ padding: '10px', paddingBottom: isMobile ? '100px' : '10px' }}>
             {/* Header */}
             <div style={{ marginBottom: 16 }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
@@ -284,8 +292,10 @@ export default function LoanList({ onOpenCalculator, onScheduleClick, onLedgerCl
                                 fontWeight: 600,
                                 textTransform: 'none',
                                 borderRadius: 12,
-                                paddingX: isMobile ? 8 : 12,
-                                paddingY: isMobile ? 6 : 10,
+                                paddingLeft: isMobile ? 8 : 12,
+                                paddingRight: isMobile ? 8 : 12,
+                                paddingTop: isMobile ? 6 : 10,
+                                paddingBottom: isMobile ? 6 : 10,
                                 fontSize: isMobile ? '0.813rem' : '0.875rem',
                                 border: 'none',
                                 cursor: 'pointer',
@@ -349,7 +359,7 @@ export default function LoanList({ onOpenCalculator, onScheduleClick, onLedgerCl
                                 borderRadius: 8,
                                 backgroundColor: tw.isDark ? '#262626' : '#f5f5f5',
                                 border: `2px solid ${tw.isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.15)'}`,
-                                padding: 10,
+                                padding: 16,
                                 transition: 'all 0.2s ease',
                             }}
                             onMouseEnter={(e) => {
@@ -423,7 +433,7 @@ export default function LoanList({ onOpenCalculator, onScheduleClick, onLedgerCl
                                 </div>
 
                                 {/* Action buttons */}
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: 4, minWidth: 120 }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 4, minWidth: 100 }}>
                                     {(() => {
                                         const tooltipInfo = getDisableReasonTooltip(rec);
                                         return (
@@ -438,9 +448,11 @@ export default function LoanList({ onOpenCalculator, onScheduleClick, onLedgerCl
                                                         fontWeight: 700,
                                                         fontSize: '0.7rem',
                                                         textTransform: 'uppercase',
-                                                        borderRadius: 12,
-                                                        paddingX: 12,
-                                                        paddingY: 3,
+                                                        borderRadius: 999,
+                                                        paddingLeft: 8,
+                                                        paddingRight: 8,
+                                                        paddingTop: 8,
+                                                        paddingBottom: 8,
                                                         border: 'none',
                                                         cursor: rec.is_renew_disabled ? 'not-allowed' : 'pointer',
                                                         boxShadow: 'none',
@@ -471,9 +483,11 @@ export default function LoanList({ onOpenCalculator, onScheduleClick, onLedgerCl
                                             fontWeight: 700,
                                             fontSize: '0.7rem',
                                             textTransform: 'uppercase',
-                                            borderRadius: 12,
-                                            paddingX: 12,
-                                            paddingY: 3,
+                                            borderRadius: 999,
+                                            paddingLeft: 8,
+                                            paddingRight: 8,
+                                            paddingTop: 8,
+                                            paddingBottom: 8,
                                             backgroundColor: 'transparent',
                                             color: tw.isDark ? 'white' : 'black',
                                             cursor: (schedLoadingThis || !hasSchedule) ? 'not-allowed' : 'pointer',
@@ -503,9 +517,11 @@ export default function LoanList({ onOpenCalculator, onScheduleClick, onLedgerCl
                                             fontWeight: 700,
                                             fontSize: '0.7rem',
                                             textTransform: 'uppercase',
-                                            borderRadius: 12,
-                                            paddingX: 12,
-                                            paddingY: 3,
+                                            borderRadius: 999,
+                                            paddingLeft: 8,
+                                            paddingRight: 8,
+                                            paddingTop: 8,
+                                            paddingBottom: 8,
                                             backgroundColor: 'transparent',
                                             color: tw.isDark ? 'white' : 'black',
                                             cursor: 'pointer',
@@ -534,7 +550,7 @@ export default function LoanList({ onOpenCalculator, onScheduleClick, onLedgerCl
                 <div style={{ display: 'flex', justifyContent: 'center', marginTop: 16 }}>
                     <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center' }}>
                         <button
-                            onClick={() => handlePageChange(null as any, Math.max(1, currentPage - 1))}
+                            onClick={() => handlePageChange({} as React.ChangeEvent<unknown>, Math.max(1, currentPage - 1))}
                             disabled={currentPage === 1}
                             style={{
                                 padding: '8px 12px',
@@ -553,7 +569,7 @@ export default function LoanList({ onOpenCalculator, onScheduleClick, onLedgerCl
                             return (
                                 <button
                                     key={pageNum}
-                                    onClick={() => handlePageChange(null as any, pageNum)}
+                                    onClick={() => handlePageChange({} as React.ChangeEvent<unknown>, pageNum)}
                                     style={{
                                         padding: '8px 12px',
                                         borderRadius: '4px',
@@ -569,7 +585,7 @@ export default function LoanList({ onOpenCalculator, onScheduleClick, onLedgerCl
                             );
                         })}
                         <button
-                            onClick={() => handlePageChange(null as any, Math.min(totalPages, currentPage + 1))}
+                            onClick={() => handlePageChange({} as React.ChangeEvent<unknown>, Math.min(totalPages, currentPage + 1))}
                             disabled={currentPage === totalPages}
                             style={{
                                 padding: '8px 12px',
@@ -632,6 +648,6 @@ export default function LoanList({ onOpenCalculator, onScheduleClick, onLedgerCl
             )}
 
 
-        </>
+        </div>
     );
 }

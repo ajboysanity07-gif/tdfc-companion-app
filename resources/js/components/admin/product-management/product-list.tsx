@@ -6,11 +6,12 @@ import SearchIcon from '@mui/icons-material/Search';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import React, { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { PRODUCT_LIST_PAGE_SIZE } from './skeletons';
+import { PRODUCT_LIST_PAGE_SIZE, ProductListSkeleton } from './skeletons';
 import BoxHeader from '@/components/box-header';
 
 type Props = {
     products: ProductLntype[];
+    loading?: boolean;
     onSelect?: (product_id: number) => void;
     onToggleActive?: (productId: number, value: boolean) => void;
     onAdd?: () => void;
@@ -22,6 +23,7 @@ type Props = {
 
 const ProductList: React.FC<Props> = ({
     products,
+    loading = false,
     onSelect,
     onToggleActive,
     searchValue = '',
@@ -107,7 +109,9 @@ const ProductList: React.FC<Props> = ({
                     </datalist>
                 </div>
 
-                {paginated.length === 0 ? (
+                {loading ? (
+                    <ProductListSkeleton fullHeight={fullHeight} />
+                ) : paginated.length === 0 ? (
                     <div
                         style={{
                             border: `1px dashed ${tw.isDark ? '#3a3a3a' : '#e5e5e5'}`,
@@ -272,15 +276,19 @@ const ProductList: React.FC<Props> = ({
                                 paddingBottom: '8px',
                                 borderRadius: '6px',
                                 border: `1px solid ${tw.isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.3)'}`,
-                                backgroundColor: clampedPage <= 1 ? 'rgba(255,255,255,0.12)' : (tw.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)'),
-                                color: clampedPage <= 1 ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.9)',
+                                backgroundColor: clampedPage <= 1 
+                                    ? (tw.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)') 
+                                    : (tw.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)'),
+                                color: clampedPage <= 1 
+                                    ? (tw.isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)') 
+                                    : (tw.isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.9)'),
                                 fontWeight: 700,
                                 cursor: clampedPage <= 1 ? 'not-allowed' : 'pointer',
                                 fontSize: '0.875rem',
                                 transition: 'all 120ms ease',
                             }}
-                            onMouseEnter={(e) => !e.disabled && (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.2)')}
-                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = clampedPage <= 1 ? 'rgba(255,255,255,0.12)' : (tw.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)'))}
+                            onMouseEnter={(e) => !e.currentTarget.disabled && (e.currentTarget.style.backgroundColor = tw.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)')}
+                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = clampedPage <= 1 ? (tw.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)') : (tw.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)'))}
                         >
                             Prev
                         </button>
@@ -292,8 +300,8 @@ const ProductList: React.FC<Props> = ({
                                 paddingBottom: '8px',
                                 borderRadius: '6px',
                                 border: `1px solid ${tw.isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.3)'}`,
-                                backgroundColor: tw.isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)',
-                                color: 'rgba(255,255,255,0.9)',
+                                backgroundColor: tw.isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.1)',
+                                color: tw.isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.9)',
                                 fontWeight: 700,
                                 fontSize: '0.875rem',
                             }}
@@ -310,15 +318,19 @@ const ProductList: React.FC<Props> = ({
                                 paddingBottom: '8px',
                                 borderRadius: '6px',
                                 border: `1px solid ${tw.isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.3)'}`,
-                                backgroundColor: clampedPage >= totalPages ? 'rgba(255,255,255,0.12)' : (tw.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)'),
-                                color: clampedPage >= totalPages ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.9)',
+                                backgroundColor: clampedPage >= totalPages 
+                                    ? (tw.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)') 
+                                    : (tw.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)'),
+                                color: clampedPage >= totalPages 
+                                    ? (tw.isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)') 
+                                    : (tw.isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.9)'),
                                 fontWeight: 700,
                                 cursor: clampedPage >= totalPages ? 'not-allowed' : 'pointer',
                                 fontSize: '0.875rem',
                                 transition: 'all 120ms ease',
                             }}
-                            onMouseEnter={(e) => !e.disabled && (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.2)')}
-                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = clampedPage >= totalPages ? 'rgba(255,255,255,0.12)' : (tw.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)'))}
+                            onMouseEnter={(e) => !e.currentTarget.disabled && (e.currentTarget.style.backgroundColor = tw.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)')}
+                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = clampedPage >= totalPages ? (tw.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)') : (tw.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)'))}
                         >
                             Next
                         </button>

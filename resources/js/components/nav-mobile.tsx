@@ -193,7 +193,7 @@ export default function NavMobile() {
       {/* FLOATING SETTINGS BUTTON */}
       {!productModalOpen && !anyModalOpen && !isProfilePage && (
         <div
-          className="fixed right-4 bottom-20 md:hidden flex flex-col items-end gap-1.5"
+          className="fixed right-4 bottom-20 flex flex-col items-end gap-1.5 md:hidden"
           style={{ zIndex: floatingZIndex }}
         >
           <div

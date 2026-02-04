@@ -15,7 +15,7 @@ const LoanListSkeleton: React.FC<Props> = ({ itemCount = LOAN_LIST_SKELETON_COUN
     const safeItemCount = Math.max(itemCount, 1);
 
     return (
-        <>
+        <div style={{ padding: '10px' }}>
             {/* Header skeleton */}
             <div style={{ marginBottom: 24 }}>
                 <div 
@@ -100,26 +100,26 @@ const LoanListSkeleton: React.FC<Props> = ({ itemCount = LOAN_LIST_SKELETON_COUN
                             </div>
 
                             {/* Right side - Action buttons */}
-                            <div className="flex flex-col gap-1" style={{ minWidth: 120 }}>
+                            <div className="flex flex-col gap-1" style={{ minWidth: 100 }}>
                                 <div 
                                     style={{
                                         height: 32,
                                         backgroundColor: skeletonBg,
-                                        borderRadius: 24,
+                                        borderRadius: 999,
                                     }}
                                 />
                                 <div 
                                     style={{
                                         height: 32,
                                         backgroundColor: skeletonBg,
-                                        borderRadius: 24,
+                                        borderRadius: 999,
                                     }}
                                 />
                                 <div 
                                     style={{
                                         height: 32,
                                         backgroundColor: skeletonBg,
-                                        borderRadius: 24,
+                                        borderRadius: 999,
                                     }}
                                 />
                             </div>
@@ -127,7 +127,7 @@ const LoanListSkeleton: React.FC<Props> = ({ itemCount = LOAN_LIST_SKELETON_COUN
                     </div>
                 ))}
             </div>
-        </>
+        </div>
     );
 };
 

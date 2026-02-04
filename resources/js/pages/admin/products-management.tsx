@@ -3,6 +3,7 @@ import MobileViewLayout from '@/components/mobile-view-layout';
 import ProductCrud from '@/components/admin/product-management/product-crud';
 import FullScreenModalMobile from '@/components/ui/full-screen-modal-mobile';
 import ProductList from '@/components/admin/product-management/product-list';
+import { ProductDetailsSkeleton } from '@/components/admin/product-management/skeletons';
 import { useProductManagement } from '@/hooks/use-product-management';
 import AppLayout from '@/layouts/app-layout';
 import { ProductLntype, ProductPayload, WlnType } from '@/types/product-lntype';
@@ -18,6 +19,7 @@ const breadcrumbs = [{ title: 'Product Management', href: '/admin/products' }];
 type ProductDesktopProps = {
     products: ProductLntype[];
     selected: ProductLntype | null;
+    loading?: boolean;
     availableTypes?: WlnType[];
     isAdding?: boolean;
     onSelect?: (product_id: number) => void;
@@ -30,6 +32,7 @@ type ProductDesktopProps = {
 function ProductDesktopLayoutView({
     products,
     selected,
+    loading = false,
     availableTypes = [],
     isAdding = false,
     onSelect,
@@ -85,6 +88,7 @@ function ProductDesktopLayoutView({
             left={
                 <ProductList
                     products={filtered}
+                    loading={loading}
                     onSelect={handleSelect}
                     searchValue={search}
                     onSearchChange={setSearch}
@@ -95,30 +99,46 @@ function ProductDesktopLayoutView({
             }
             right={
                 <AnimatePresence mode="wait">
-                    <motion.div
-                        key={activeProduct?.product_id ?? 'new'}
-                        initial={{ opacity: 0, y: 12 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 12 }}
-                        transition={{ type: 'spring', stiffness: 240, damping: 22, mass: 0.7 }}
-                    >
-                        <ProductCrud
+                    {loading ? (
+                        <motion.div
+                            key="skeleton"
+                            initial={{ opacity: 0, y: 12 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: 12 }}
+                            transition={{ type: 'spring', stiffness: 240, damping: 22, mass: 0.7 }}
+                        >
+                            <ProductDetailsSkeleton />
+                        </motion.div>
+                    ) : (
+                        <motion.div
                             key={activeProduct?.product_id ?? 'new'}
-                            product={activeProduct}
-                            availableTypes={availableTypes}
-                            onCancel={() => {
-                                setLocalSelected(null);
-                                onAdd();
-                            }}
-                            onSave={onSave}
-                            onDelete={() => onDelete()}
-                            onToggleActive={handleToggleActive}
-                        />
-                    </motion.div>
+                            initial={{ opacity: 0, y: 12 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: 12 }}
+                            transition={{ type: 'spring', stiffness: 240, damping: 22, mass: 0.7 }}
+                        >
+                            <ProductCrud
+                                key={activeProduct?.product_id ?? 'new'}
+                                product={activeProduct ?? undefined}
+                                availableTypes={availableTypes}
+                                onCancel={() => {
+                                    setLocalSelected(null);
+                                    onAdd();
+                                }}
+                                onSave={async (payload) => {
+                                    await onSave(payload);
+                                }}
+                                onDelete={async () => {
+                                    await onDelete();
+                                }}
+                                onToggleActive={handleToggleActive}
+                            />
+                        </motion.div>
+                    )}
                 </AnimatePresence>
             }
-            leftSx={{ p: 5, minHeight: 1100 }}
-            rightSx={{ p: 5, minHeight: 1100 }}
+            leftSx={{ padding: 5, minHeight: 1100 }}
+            rightSx={{ padding: 5, minHeight: 1100 }}
         />
     );
 }
@@ -173,11 +193,11 @@ function ProductMobileLayoutView({ products, availableTypes = [], onSave, onDele
                         onClose={closeModal}
                         headerBg="#f57979"
                         headerColor="#fff"
-                        bodySx={{ pb: { xs: 4, sm: 4 } }}
+                        bodySx={{ paddingBottom: '4.5rem' }}
                     >
                         <ProductCrud
                             key={selected?.product_id ?? 'new-mobile'}
-                            product={selected}
+                            product={selected ?? undefined}
                             availableTypes={availableTypes}
                             onCancel={closeModal}
                             onSave={async (payload) => {
@@ -308,7 +328,7 @@ export default function ProductsManagementPage() {
                     )}
                 </AnimatePresence>
             </div>
-            <div className="flex flex-col  overflow-x-auto bg-[#FAFAFA] transition-colors duration-300 dark:bg-neutral-900">
+            <div className="flex flex-col gap-0 fixed inset-0 overflow-y-auto  bg-[#FAFAFA] transition-colors duration-300 dark:bg-neutral-900">
                 <HeaderBlock title="Product Management" subtitle="Activate and manage product listings" />
 
                 {loading ? (
@@ -324,6 +344,7 @@ export default function ProductsManagementPage() {
                         <ProductDesktopLayoutView
                             key="loading"
                             products={[]}
+                            loading={true}
                             availableTypes={types}
                             selected={null}
                             isAdding={false}

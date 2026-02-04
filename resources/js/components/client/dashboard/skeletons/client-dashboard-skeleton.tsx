@@ -7,6 +7,7 @@ const ClientDashboardSkeleton: React.FC = () => {
     const isMobile = useMediaQuery('(max-width:900px)');
     const surface = tw.isDark ? '#2f2f2f' : '#f5f5f5';
     const borderColor = tw.isDark ? '#3a3a3a' : '#e5e7eb';
+    const skeletonColor = tw.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)';
     const actionCount = isMobile ? 2 : 3;
     const rowCount = isMobile ? 4 : 5;
 
@@ -29,7 +30,7 @@ const ClientDashboardSkeleton: React.FC = () => {
                             style={{
                                 width: isMobile ? 56 : 72,
                                 height: isMobile ? 56 : 72,
-                                backgroundColor: 'rgba(255,255,255,0.1)',
+                                backgroundColor: skeletonColor,
                                 animation: 'pulse 1.5s ease-in-out infinite',
                             }}
                         />
@@ -38,7 +39,7 @@ const ClientDashboardSkeleton: React.FC = () => {
                                 style={{
                                     width: 90,
                                     height: 16,
-                                    backgroundColor: 'rgba(255,255,255,0.1)',
+                                    backgroundColor: skeletonColor,
                                     borderRadius: 4,
                                     animation: 'pulse 1.5s ease-in-out infinite',
                                 }}
@@ -47,7 +48,7 @@ const ClientDashboardSkeleton: React.FC = () => {
                                 style={{
                                     width: isMobile ? 120 : 160,
                                     height: isMobile ? 28 : 32,
-                                    backgroundColor: 'rgba(255,255,255,0.1)',
+                                    backgroundColor: skeletonColor,
                                     borderRadius: 4,
                                     animation: 'pulse 1.5s ease-in-out infinite',
                                 }}
@@ -56,7 +57,7 @@ const ClientDashboardSkeleton: React.FC = () => {
                                 style={{
                                     width: 110,
                                     height: 22,
-                                    backgroundColor: 'rgba(255,255,255,0.1)',
+                                    backgroundColor: skeletonColor,
                                     borderRadius: 999,
                                     animation: 'pulse 1.5s ease-in-out infinite',
                                 }}
@@ -69,7 +70,7 @@ const ClientDashboardSkeleton: React.FC = () => {
                             style={{
                                 width: 64,
                                 height: 64,
-                                backgroundColor: 'rgba(255,255,255,0.1)',
+                                backgroundColor: skeletonColor,
                                 animation: 'pulse 1.5s ease-in-out infinite',
                             }}
                         />
@@ -88,7 +89,7 @@ const ClientDashboardSkeleton: React.FC = () => {
                         style={{
                             width: isMobile ? 160 : 200,
                             height: isMobile ? 34 : 40,
-                            backgroundColor: 'rgba(255,255,255,0.1)',
+                            backgroundColor: skeletonColor,
                             borderRadius: 4,
                             animation: 'pulse 1.5s ease-in-out infinite',
                         }}
@@ -97,7 +98,7 @@ const ClientDashboardSkeleton: React.FC = () => {
                         style={{
                             width: 120,
                             height: 16,
-                            backgroundColor: 'rgba(255,255,255,0.1)',
+                            backgroundColor: skeletonColor,
                             borderRadius: 4,
                             animation: 'pulse 1.5s ease-in-out infinite',
                         }}
@@ -175,7 +176,7 @@ const ClientDashboardSkeleton: React.FC = () => {
                         style={{
                             width: '45%',
                             height: 26,
-                            backgroundColor: 'rgba(255,255,255,0.1)',
+                            backgroundColor: skeletonColor,
                             borderRadius: 4,
                             animation: 'pulse 1.5s ease-in-out infinite',
                         }}
@@ -184,7 +185,7 @@ const ClientDashboardSkeleton: React.FC = () => {
                         style={{
                             width: 70,
                             height: 28,
-                            backgroundColor: 'rgba(255,255,255,0.1)',
+                            backgroundColor: skeletonColor,
                             borderRadius: 999,
                             animation: 'pulse 1.5s ease-in-out infinite',
                         }}
@@ -247,7 +248,7 @@ const ClientDashboardSkeleton: React.FC = () => {
                                     style={{
                                         width: 140,
                                         height: 20,
-                                        backgroundColor: 'rgba(255,255,255,0.1)',
+                                        backgroundColor: skeletonColor,
                                         borderRadius: 4,
                                         animation: 'pulse 1.5s ease-in-out infinite',
                                     }}
@@ -256,7 +257,7 @@ const ClientDashboardSkeleton: React.FC = () => {
                                     style={{
                                         width: 100,
                                         height: 16,
-                                        backgroundColor: 'rgba(255,255,255,0.1)',
+                                        backgroundColor: skeletonColor,
                                         borderRadius: 4,
                                         animation: 'pulse 1.5s ease-in-out infinite',
                                     }}
@@ -267,7 +268,7 @@ const ClientDashboardSkeleton: React.FC = () => {
                                     style={{
                                         width: 90,
                                         height: 20,
-                                        backgroundColor: 'rgba(255,255,255,0.1)',
+                                        backgroundColor: skeletonColor,
                                         borderRadius: 4,
                                         animation: 'pulse 1.5s ease-in-out infinite',
                                     }}
@@ -276,7 +277,7 @@ const ClientDashboardSkeleton: React.FC = () => {
                                     style={{
                                         width: 80,
                                         height: 16,
-                                        backgroundColor: 'rgba(255,255,255,0.1)',
+                                        backgroundColor: skeletonColor,
                                         borderRadius: 4,
                                         animation: 'pulse 1.5s ease-in-out infinite',
                                     }}
@@ -295,7 +296,7 @@ const ClientDashboardSkeleton: React.FC = () => {
                             style={{
                                 width: 140,
                                 height: 32,
-                                backgroundColor: 'rgba(255,255,255,0.1)',
+                                backgroundColor: skeletonColor,
                                 borderRadius: 4,
                                 animation: 'pulse 1.5s ease-in-out infinite',
                             }}
@@ -304,7 +305,7 @@ const ClientDashboardSkeleton: React.FC = () => {
                             style={{
                                 width: 140,
                                 height: 16,
-                                backgroundColor: 'rgba(255,255,255,0.1)',
+                                backgroundColor: skeletonColor,
                                 borderRadius: 4,
                                 animation: 'pulse 1.5s ease-in-out infinite',
                             }}
@@ -315,7 +316,7 @@ const ClientDashboardSkeleton: React.FC = () => {
                             style={{
                                 width: 180,
                                 height: 32,
-                                backgroundColor: 'rgba(255,255,255,0.1)',
+                                backgroundColor: skeletonColor,
                                 borderRadius: 999,
                                 animation: 'pulse 1.5s ease-in-out infinite',
                             }}
