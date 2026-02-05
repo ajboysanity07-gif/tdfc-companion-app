@@ -156,6 +156,7 @@ function ProductMobileLayoutView({ products, loading = false, availableTypes = [
     const [search, setSearch] = useState('');
     const [selected, setSelected] = useState<ProductLntype | null>(null);
     const [modalOpen, setModalOpen] = useState(false);
+    const tw = useMyTheme();
 
     const filtered = useMemo(() => {
         const term = search.toLowerCase();
