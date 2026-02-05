@@ -589,7 +589,9 @@ export default function LoansPage() {
                     padding: '24px',
                 }}
                 wrapperSx={{
-                    padding: '16px',
+                    paddingLeft: '16px',
+                    paddingRight: '16px',
+                    paddingBottom: '16px',
                     gap: 2,
                 }}
             />
