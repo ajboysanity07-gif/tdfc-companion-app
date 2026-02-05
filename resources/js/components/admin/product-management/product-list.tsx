@@ -1,8 +1,9 @@
 import { Switch } from '@/components/ui/switch';
+import { Input } from '@/components/ui/input';
 import { useMyTheme } from '@/hooks/use-mytheme';
 import type { ProductLntype } from '@/types/product-lntype';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
-import SearchIcon from '@mui/icons-material/Search';
+import { Search } from 'lucide-react';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import React, { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -83,7 +84,7 @@ const ProductList: React.FC<Props> = ({
                 </div>
 
                 <div style={{ paddingLeft: '16px', paddingRight: '16px' }}>
-                    <div className="relative w-full">
+                    <div className="relative mb-4">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
                             type="text"
@@ -94,14 +95,14 @@ const ProductList: React.FC<Props> = ({
                                 setPage(1);
                             }}
                             list="product-search-options"
-                            className="pl-9 h-9"
+                            className="pl-9"
                         />
+                        <datalist id="product-search-options">
+                            {searchOptions.map((option) => (
+                                <option key={option} value={option} />
+                            ))}
+                        </datalist>
                     </div>
-                    <datalist id="product-search-options">
-                        {searchOptions.map((option) => (
-                            <option key={option} value={option} />
-                        ))}
-                    </datalist>
                 </div>
 
                 {loading ? (
