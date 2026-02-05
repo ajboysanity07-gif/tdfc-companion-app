@@ -142,9 +142,9 @@ const ProductList: React.FC<Props> = ({
                             display: 'flex',
                             flexDirection: 'column',
                             gap: '8px',
-                            padding: 0,
                             paddingLeft: '16px',
                             paddingRight: '16px',
+                            paddingBottom: '16px',
                         }}
                     >
                         <AnimatePresence initial={false}>
