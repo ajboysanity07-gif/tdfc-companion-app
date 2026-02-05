@@ -310,18 +310,18 @@ const ClientListContent: React.FC<ClientListContentProps> = ({
                                     alignItems: 'center',
                                     backgroundColor: selectedId === client.user_id 
                                         ? tw.isDark ? 'rgba(59, 130, 246, 0.15)' : 'rgba(59, 130, 246, 0.08)'
-                                        : tw.isDark ? '#262626' : '#FFFFFF',
+                                        : tw.isDark ? '#262626' : '#F5F5F5',
                                     transition: 'all 120ms ease',
                                     cursor: 'pointer',
                                 }}
                                 onMouseEnter={(e) => {
                                     if (selectedId !== client.user_id) {
-                                        e.currentTarget.style.backgroundColor = tw.isDark ? '#2f2f2f' : '#F5F5F5';
+                                        e.currentTarget.style.backgroundColor = tw.isDark ? '#2f2f2f' : '#E5E5E5';
                                     }
                                 }}
                                 onMouseLeave={(e) => {
                                     if (selectedId !== client.user_id) {
-                                        e.currentTarget.style.backgroundColor = tw.isDark ? '#262626' : '#FFFFFF';
+                                        e.currentTarget.style.backgroundColor = tw.isDark ? '#262626' : '#F5F5F5';
                                     }
                                 }}
                             >
