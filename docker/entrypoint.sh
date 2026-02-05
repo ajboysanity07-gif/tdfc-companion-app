@@ -314,11 +314,27 @@ warmup_db_connection() {
     local max_retries=5
     local retry=0
     while [ $retry -lt $max_retries ]; do
-        if gosu www-data php artisan tinker --execute="try { DB::connection()->getPdo(); echo 'DB connection established'; } catch (\Exception \$e) { echo 'DB warmup attempt failed: ' . \$e->getMessage(); exit(1); }" 2>/dev/null; then
+        # Use a simple PHP script instead of tinker to avoid psysh config issues
+        if gosu www-data php -r "
+            require '/var/www/html/vendor/autoload.php';
+            \$app = require_once '/var/www/html/bootstrap/app.php';
+            \$kernel = \$app->make(Illuminate\Contracts\Console\Kernel::class);
+            \$kernel->bootstrap();
+            try {
+                \Illuminate\Support\Facades\DB::connection()->getPdo();
+                echo 'DB connection established';
+                exit(0);
+            } catch (Exception \$e) {
+                echo 'Failed: ' . \$e->getMessage();
+                exit(1);
+            }
+        " 2>&1; then
+            echo ""
             echo "Database connection warmed up successfully."
             return 0
         fi
         retry=$((retry + 1))
+        echo ""
         echo "Database warmup attempt $retry/$max_retries failed, retrying in 2s..."
         sleep 2
     done
