@@ -113,8 +113,13 @@ return [
             'trust_server_certificate' => 'yes',
             'MultiSubnetFailover' => 'no',
             // Extended timeout for Tailscale network latency
-            'connectionTimeout' => 60,
-            'timeout' => 60,
+            'connectionTimeout' => 120,
+            'timeout' => 120,
+            // Connection retry settings
+            'options' => [
+                \PDO::ATTR_TIMEOUT => 120,
+                \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+            ],
         ],
 
     ],

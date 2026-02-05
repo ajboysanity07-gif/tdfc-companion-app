@@ -11,6 +11,10 @@ interface BeforeInstallPromptEvent extends Event {
 
 type BrowserType = 'chrome' | 'firefox' | 'safari' | 'mobile' | 'unknown';
 
+// Global flag to track if beforeinstallprompt has fired (persists across component remounts)
+let globalPromptEventFired = false;
+let globalDeferredPrompt: BeforeInstallPromptEvent | null = null;
+
 const detectBrowser = (): BrowserType => {
     const ua = navigator.userAgent;
     
@@ -76,14 +80,31 @@ const PWAInstallPrompt: React.FC = () => {
         // For Chrome/Chromium browsers
         if (browser === 'chrome') {
             console.log('[PWA] Chrome detected, setting up beforeinstallprompt listener...');
-            let promptEventFired = false;
+            
+            // Check if we already have a deferred prompt from a previous mount
+            if (globalDeferredPrompt) {
+                console.log('[PWA] Using cached deferred prompt from previous mount');
+                setDeferredPrompt(globalDeferredPrompt);
+                setTimeout(() => {
+                    console.log('[PWA] Setting showPrompt to TRUE (from cached prompt)');
+                    setShowPrompt(true);
+                }, 2000);
+                return;
+            }
+            
+            // Check if prompt event already fired but wasn't captured (component remounted)
+            if (globalPromptEventFired) {
+                console.log('[PWA] beforeinstallprompt already fired on previous mount, not showing fallback');
+                return;
+            }
             
             const handler = (e: Event) => {
                 console.log('[PWA] ✓ beforeinstallprompt event FIRED!');
-                promptEventFired = true;
+                globalPromptEventFired = true;
                 e.preventDefault();
                 
                 const promptEvent = e as BeforeInstallPromptEvent;
+                globalDeferredPrompt = promptEvent;
                 setDeferredPrompt(promptEvent);
                 
                 setTimeout(() => {
@@ -97,7 +118,7 @@ const PWAInstallPrompt: React.FC = () => {
 
             // Fallback: if no beforeinstallprompt event after 3 seconds, show fallback (for dev/localhost)
             const fallbackTimer = setTimeout(() => {
-                if (!promptEventFired) {
+                if (!globalPromptEventFired) {
                     console.log('[PWA] beforeinstallprompt event did not fire (likely on localhost/dev), showing fallback prompt');
                     sessionStorage.setItem('pwa-prompt-shown-this-session', 'true');
                     setShowPrompt(true);
@@ -137,6 +158,8 @@ const PWAInstallPrompt: React.FC = () => {
                 console.log('[PWA] User dismissed the install prompt');
             }
 
+            // Clear both local and global references
+            globalDeferredPrompt = null;
             setDeferredPrompt(null);
             setShowPrompt(false);
             return;

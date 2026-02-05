@@ -61,6 +61,7 @@ COPY --from=composer-build /var/www/html/vendor /var/www/html/vendor
 COPY --from=node-build /app/public/build /var/www/html/public/build
 
 COPY docker/nginx.conf.template /etc/nginx/nginx.conf.template
+COPY docker/php-fpm.conf /usr/local/etc/php-fpm.d/www.conf
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint
 
 RUN chmod +x /usr/local/bin/entrypoint \
