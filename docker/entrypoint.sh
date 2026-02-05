@@ -320,7 +320,8 @@ warmup_db_connection() {
     fi
     while [ $retry -lt $max_retries ]; do
         # Use a simple PHP script instead of tinker to avoid psysh config issues
-        if "${timeout_cmd[@]}" gosu www-data php -r "
+        set +e
+        warmup_output="$("${timeout_cmd[@]}" gosu www-data php -r "
             require '/var/www/html/vendor/autoload.php';
             \$app = require_once '/var/www/html/bootstrap/app.php';
             \$kernel = \$app->make(Illuminate\Contracts\Console\Kernel::class);
@@ -333,14 +334,21 @@ warmup_db_connection() {
                 echo 'Failed: ' . \$e->getMessage();
                 exit(1);
             }
-        " 2>&1; then
+        " 2>&1)"
+        warmup_exit=$?
+        set -e
+
+        if [ "${warmup_exit}" -eq 0 ]; then
             echo ""
+            echo "${warmup_output}"
             echo "Database connection warmed up successfully."
             return 0
         fi
+
         retry=$((retry + 1))
         echo ""
-        echo "Database warmup attempt $retry/$max_retries failed, retrying in 2s..."
+        echo "Database warmup attempt $retry/$max_retries failed (exit ${warmup_exit}): ${warmup_output}"
+        echo "Retrying in 2s..."
         sleep 2
     done
     echo "WARNING: Database warmup failed after $max_retries attempts. First requests may be slow."

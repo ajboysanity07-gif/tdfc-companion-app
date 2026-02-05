@@ -108,16 +108,16 @@ return [
             'charset' => env('DB_CHARSET', 'utf8'),
             'prefix' => '',
             'prefix_indexes' => true,
-            // ODBC Driver 18 settings for direct Tailscale connections
-            'encrypt' => 'no',
-            'trust_server_certificate' => 'yes',
-            'MultiSubnetFailover' => 'no',
-            // Extended timeout for Tailscale network latency
-            'connectionTimeout' => 120,
-            'timeout' => 120,
-            // Connection retry settings
+            // ODBC Driver 18 settings for Tailscale connections
+            'encrypt' => env('DB_ENCRYPT', 'no'),
+            'trust_server_certificate' => env('DB_TRUST_SERVER_CERTIFICATE', 'yes'),
+            'MultiSubnetFailover' => env('DB_MULTI_SUBNET_FAILOVER', 'no'),
+            // Fail fast instead of hanging when DB is unreachable
+            'loginTimeout' => env('DB_LOGIN_TIMEOUT', 15),
+            'connectionTimeout' => env('DB_CONNECTION_TIMEOUT', 15),
+            'timeout' => env('DB_QUERY_TIMEOUT', 30),
             'options' => [
-                \PDO::ATTR_TIMEOUT => 120,
+                \PDO::ATTR_TIMEOUT => env('DB_PDO_TIMEOUT', 15),
                 \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
             ],
         ],
