@@ -77,19 +77,34 @@ const ClientDetails: React.FC<Props> = ({
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                style={{
-                    borderRadius: '24px',
-                    backgroundColor: tw.isDark ? '#171717' : '#FAFAFA',
-                    padding: '32px',
-                    textAlign: 'center',
-                    color: tw.isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)',
-                    height: '100%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                }}
+                className="rounded-3xl bg-muted/50 h-full flex flex-col items-center justify-center gap-4 p-8"
             >
-                {isLoading || loading ? 'Loading...' : 'Select a client to view details'}
+                <div className="text-muted-foreground text-center">
+                    {isLoading || loading ? (
+                        <>
+                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+                            <p className="text-lg font-medium">Loading client details...</p>
+                        </>
+                    ) : (
+                        <>
+                            <svg
+                                className="mx-auto h-16 w-16 mb-4 opacity-50"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={1.5}
+                                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                                />
+                            </svg>
+                            <p className="text-lg font-medium">Select a client to view details</p>
+                            <p className="text-sm mt-2 opacity-70">Choose a client from the list to review their information</p>
+                        </>
+                    )}
+                </div>
             </motion.div>
         );
     }
