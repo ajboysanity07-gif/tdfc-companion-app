@@ -164,22 +164,16 @@ const ClientList: React.FC<Props> = ({
 
                         {tabs.map((tab) => (
                             <TabsContent key={tab.value} value={tab.value} style={{ marginTop: '12px', padding: '0 16px' }}>
-                                <input
-                                    type="text"
-                                    placeholder="Search clients"
-                                    value={localSearchValue || searchValue}
-                                    onChange={(e) => handleSearchChange(e.target.value)}
-                                    style={{
-                                        width: '100%',
-                                        padding: '6px 12px',
-                                        borderRadius: '8px',
-                                        border: `1px solid ${tw.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)'}`,
-                                        backgroundColor: tw.isDark ? 'rgba(255,255,255,0.05)' : '#FFFFFF',
-                                        color: tw.isDark ? '#ffffff' : '#000000',
-                                        fontSize: '0.875rem',
-                                        marginBottom: '12px',
-                                    }}
-                                />
+                                <div className="relative w-full" style={{ marginBottom: '12px' }}>
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                    <Input
+                                        type="text"
+                                        placeholder="Search clients"
+                                        value={localSearchValue || searchValue}
+                                        onChange={(e) => handleSearchChange(e.target.value)}
+                                        className="pl-9 h-9"
+                                    />
+                                </div>
 
                                 <ClientListContent 
                                     loading={loading}
@@ -200,22 +194,16 @@ const ClientList: React.FC<Props> = ({
                     </Tabs>
                 ) : (
                     <div style={{ paddingLeft: '16px', paddingRight: '16px' }}>
-                        <input
-                            type="text"
-                            placeholder="Search clients"
-                            value={localSearchValue || searchValue}
-                            onChange={(e) => handleSearchChange(e.target.value)}
-                            style={{
-                                width: '100%',
-                                padding: '6px 12px',
-                                borderRadius: '8px',
-                                border: `1px solid ${tw.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)'}`,
-                                backgroundColor: tw.isDark ? 'rgba(255,255,255,0.05)' : '#FFFFFF',
-                                color: tw.isDark ? '#ffffff' : '#000000',
-                                fontSize: '0.875rem',
-                                marginBottom: '12px',
-                            }}
-                        />
+                        <div className="relative w-full" style={{ marginBottom: '12px' }}>
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Input
+                                type="text"
+                                placeholder="Search clients"
+                                value={localSearchValue || searchValue}
+                                onChange={(e) => handleSearchChange(e.target.value)}
+                                className="pl-9 h-9"
+                            />
+                        </div>
                         <ClientListContent 
                             loading={loading}
                             paginated={paginated}

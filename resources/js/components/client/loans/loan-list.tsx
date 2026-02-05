@@ -319,30 +319,14 @@ export default function LoanList({ onOpenCalculator, onScheduleClick, onLedgerCl
                         </button>
                     )}
                 </div>
-                <div style={{
-                    width: '100%',
-                    padding: '6px 12px',
-                    border: `1px solid ${tw.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)'}`,
-                    borderRadius: 8,
-                    backgroundColor: tw.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 8,
-                }}>
-                    <SearchIcon style={{ color: tw.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }} />
-                    <input
+                <div className="relative w-full">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
                         type="text"
                         placeholder="Search loans"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        style={{
-                            flex: 1,
-                            border: 'none',
-                            backgroundColor: 'transparent',
-                            color: tw.isDark ? 'white' : 'black',
-                            fontSize: '0.875rem',
-                            outline: 'none',
-                        }}
+                        className="pl-9 h-9"
                     />
                 </div>
             </div>

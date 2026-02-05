@@ -83,25 +83,20 @@ const ProductList: React.FC<Props> = ({
                 </div>
 
                 <div style={{ paddingLeft: '16px', paddingRight: '16px' }}>
-                    <input
-                        type="text"
-                        placeholder="Search products"
-                        value={searchValue}
-                        onChange={(e) => {
-                            onSearchChange?.(e.target.value);
-                            setPage(1);
-                        }}
-                        list="product-search-options"
-                        style={{
-                            width: '100%',
-                            padding: '6px 12px',
-                            borderRadius: '8px',
-                            border: '1px solid rgba(255,255,255,0.2)',
-                            backgroundColor: 'rgba(255,255,255,0.05)',
-                            color: '#ffffff',
-                            fontSize: '0.875rem',
-                        }}
-                    />
+                    <div className="relative w-full">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            type="text"
+                            placeholder="Search products"
+                            value={searchValue}
+                            onChange={(e) => {
+                                onSearchChange?.(e.target.value);
+                                setPage(1);
+                            }}
+                            list="product-search-options"
+                            className="pl-9 h-9"
+                        />
+                    </div>
                     <datalist id="product-search-options">
                         {searchOptions.map((option) => (
                             <option key={option} value={option} />

@@ -5,12 +5,13 @@ import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import ListAltOutlinedIcon from '@mui/icons-material/ListAltOutlined';
 import PictureAsPdfOutlinedIcon from '@mui/icons-material/PictureAsPdfOutlined';
 import SimCardDownloadOutlinedIcon from '@mui/icons-material/SimCardDownloadOutlined';
-import { Box, IconButton, Skeleton, Stack, TextField, Tooltip, Typography } from '@mui/material';
+import { Box, IconButton, Skeleton, Stack, Tooltip, Typography } from '@mui/material';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { DataGrid, type GridColDef } from '@mui/x-data-grid';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { Printer, RefreshCw, Search } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 import React, { useEffect, useMemo, useState } from 'react';
 
 type Props = {
@@ -607,42 +608,16 @@ const PaymentLedgerTable: React.FC<Props> = ({ title = 'Payment Ledger', rows, l
                     </Typography>
                 </Box>
                 <Stack direction="row" spacing={1} alignItems="center" width={{ xs: '100%', sm: 'auto' }}>
-                    <TextField
-                        size="small"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        placeholder="Search ledger"
-                        InputProps={{
-                            startAdornment: (
-                                <Box sx={{ display: 'flex', alignItems: 'center', pl: 1 }}>
-                                    <Search size={16} />
-                                </Box>
-                            ),
-                        }}
-                        sx={{ 
-                            minWidth: { xs: '100%', sm: 220 },
-                            '& .MuiOutlinedInput-root': {
-                                bgcolor: tw.isDark ? '#2d2d2d' : '#ffffff',
-                                color: tw.isDark ? '#f9fafb' : '#111827',
-                                '& fieldset': {
-                                    borderColor: tw.isDark ? '#374151' : '#d1d5db',
-                                },
-                                '&:hover fieldset': {
-                                    borderColor: tw.isDark ? '#4b5563' : '#9ca3af',
-                                },
-                                '&.Mui-focused fieldset': {
-                                    borderColor: tw.isDark ? '#60a5fa' : '#3b82f6',
-                                },
-                            },
-                            '& .MuiOutlinedInput-input': {
-                                color: tw.isDark ? '#f9fafb' : '#111827',
-                                '&::placeholder': {
-                                    color: tw.isDark ? '#9ca3af' : '#6b7280',
-                                    opacity: 1,
-                                },
-                            },
-                        }}
-                    />
+                    <div className="relative w-full sm:w-[300px]">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            type="text"
+                            placeholder="Search ledger"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="pl-9 h-9"
+                        />
+                    </div>
                     {!isMobile ? (
                         <>
                             <Tooltip title="Refresh">
