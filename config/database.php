@@ -114,12 +114,13 @@ return [
             'MultiSubnetFailover' => env('DB_MULTI_SUBNET_FAILOVER', 'no'),
             // Fail fast instead of hanging when DB is unreachable
             'loginTimeout' => env('DB_LOGIN_TIMEOUT', 15),
-            'connectionTimeout' => env('DB_CONNECTION_TIMEOUT', 15),
             'timeout' => env('DB_QUERY_TIMEOUT', 30),
-            'options' => [
-                \PDO::ATTR_TIMEOUT => env('DB_PDO_TIMEOUT', 15),
+            'options' => array_filter([
+                // Use the sqlsrv driver-specific query timeout if available
+                defined('\\PDO::SQLSRV_ATTR_QUERY_TIMEOUT') ? \PDO::SQLSRV_ATTR_QUERY_TIMEOUT : null
+                    => env('DB_QUERY_TIMEOUT', 30),
                 \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
-            ],
+            ], fn($value) => $value !== null),
         ],
 
     ],
