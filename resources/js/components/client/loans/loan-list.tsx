@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-import SearchIcon from '@mui/icons-material/Search';
 import CalculateIcon from '@mui/icons-material/Calculate';
 import BlockIcon from '@mui/icons-material/Block';
+import { Search } from 'lucide-react';
 import { router, usePage } from '@inertiajs/react';
 import { useMyTheme } from '@/hooks/use-mytheme';
 import { useMediaQuery } from '@/hooks/use-media-query';
+import { Input } from '@/components/ui/input';
 import AmortschedTable from '@/components/common/amortsched-table';
 import PaymentLedgerTable from '@/components/common/payment-ledger-table';
 import FullScreenModalMobile from '@/components/ui/full-screen-modal-mobile';

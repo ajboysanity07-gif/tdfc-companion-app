@@ -12,6 +12,8 @@ import { createPortal } from 'react-dom';
 import { useLoanCalculation } from '@/hooks/use-loan-calculation';
 import { useCalculatorStyles } from '@/hooks/use-calculator-styles';
 import CurrencyInput from 'react-currency-input-field';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 
 type Props = {
     selectedProduct: ProductLntype | null;
@@ -99,22 +101,15 @@ export default function LoanCalculator({ selectedProduct, loanDefaults, loading 
                     >
                         Product
                     </p>
-                    <input
+                    <Input
                         type="text"
                         value={(loanDefaults?.productName || selectedProduct?.product_name || '').trim()}
                         placeholder="Select a product from the list"
                         readOnly
+                        className="text-center font-bold cursor-default h-auto"
                         style={{
-                            width: '100%',
                             fontSize: isMobile ? '1rem' : '1.25rem',
-                            fontWeight: 700,
-                            borderRadius: 12,
-                            padding: isMobile ? '12px 14px' : '16.5px 14px',
-                            border: styles.inputBorder,
-                            textAlign: 'center',
-                            cursor: 'default',
-                            backgroundColor: styles.isDark ? '#2d2d2d' : '#ffffff',
-                            color: styles.inputColor,
+                            padding: isMobile ? '8px 12px' : '10px 12px',
                         }}
                     />
                 </div>
@@ -149,17 +144,10 @@ export default function LoanCalculator({ selectedProduct, loanDefaults, loading 
                         decimalsLimit={0}
                         prefix=""
                         allowNegativeValue={false}
+                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm font-bold text-center"
                         style={{
-                            width: '100%',
                             fontSize: isMobile ? '1.25rem' : '1.5rem',
-                            fontWeight: 700,
-                            borderRadius: 12,
-                            padding: isMobile ? '12px 14px' : '16.5px 14px',
-                            border: styles.inputBorder,
-                            textAlign: 'center',
-                            cursor: selectedProduct?.is_max_term_editable === false ? 'default' : 'text',
-                            backgroundColor: styles.isDark ? '#2d2d2d' : '#ffffff',
-                            color: styles.inputColor,
+                            padding: isMobile ? '8px 12px' : '10px 12px',
                         }}
                     />
                 </div>
@@ -283,20 +271,11 @@ export default function LoanCalculator({ selectedProduct, loanDefaults, loading 
                         >
                             Terms and Conditions
                         </p>
-                        <textarea
+                        <Textarea
                             value={selectedProduct.terms}
                             readOnly
                             rows={8}
-                            style={{
-                                width: '100%',
-                                fontSize: '0.875rem',
-                                lineHeight: 1.6,
-                                borderRadius: 12,
-                                padding: '12px 14px',
-                                border: styles.inputBorder,
-                                backgroundColor: styles.isDark ? '#2d2d2d' : '#ffffff',
-                                color: styles.inputColor,
-                            }}
+                            className="text-sm leading-relaxed"
                         />
                     </div>
                 )}
@@ -350,18 +329,11 @@ export default function LoanCalculator({ selectedProduct, loanDefaults, loading 
                     titleSx={{ fontSize: '18px' }}
                     zIndex={1400}
                 >
-                    <textarea
+                    <Textarea
                         value={selectedProduct?.terms || 'No terms and conditions available.'}
                         readOnly
                         rows={20}
-                        style={{
-                            width: '100%',
-                            fontSize: '1.1rem',
-                            lineHeight: 1.7,
-                            borderRadius: '4px',
-                            padding: '12px',
-                            border: '1px solid #ccc',
-                        }}
+                        className="text-lg leading-relaxed"
                     />
 
                     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column', gap: 4, marginTop: 8 }}>
@@ -453,18 +425,11 @@ export default function LoanCalculator({ selectedProduct, loanDefaults, loading 
                             </button>
                         </div>
                         <div style={{ padding: 12, overflowY: 'auto', flex: 1 }}>
-                            <textarea
+                            <Textarea
                                 value={selectedProduct?.terms || 'No terms and conditions available.'}
                                 readOnly
                                 rows={15}
-                                style={{
-                                    width: '100%',
-                                    fontSize: '0.95rem',
-                                    lineHeight: 1.6,
-                                    border: '1px solid #ccc',
-                                    borderRadius: '4px',
-                                    padding: '8px',
-                                }}
+                                className="text-sm leading-relaxed"
                             />
                         </div>
                     </div>
