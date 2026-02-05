@@ -1,6 +1,6 @@
 import DesktopViewLayout from '@/components/desktop-view-layout';
 import MobileViewLayout from '@/components/mobile-view-layout';
-import ProductCrud from '@/components/admin/product-management/product-crud';
+import ProductCrud, { ProductCRUDRef } from '@/components/admin/product-management/product-crud';
 import FullScreenModalMobile from '@/components/ui/full-screen-modal-mobile';
 import ProductList from '@/components/admin/product-management/product-list';
 import { ProductDetailsSkeleton } from '@/components/admin/product-management/skeletons';
@@ -10,7 +10,7 @@ import { ProductLntype, ProductPayload, WlnType } from '@/types/product-lntype';
 import { Button } from '@/components/ui/button';
 import { AnimatePresence, motion } from 'framer-motion';
 import { CircleCheckBig, CircleX, Plus } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useRef } from 'react';
 import HeaderBlock from '@/components/management/header-block';
 import { useMediaQuery } from '@/hooks/use-media-query';
 
@@ -172,24 +172,53 @@ function ProductMobileLayoutView({ products, loading = false, availableTypes = [
         setSelected(null);
     };
 
-    const [productSaveHandler, setProductSaveHandler] = useState<(() => Promise<void>) | null>(null);
-    const [productDeleteHandler, setProductDeleteHandler] = useState<(() => Promise<void>) | null>(null);
+    const productCrudRef = useRef<ProductCRUDRef>(null);
 
     return (
         <MobileViewLayout
             footer={
                 <>
-                    <Button
-                        variant="default"
-                        onClick={() => {
-                            setSelected(null);
-                            setModalOpen(true);
-                        }}
-                        className="fixed bottom-20 left-1/2 -translate-x-1/2 rounded-full px-4 py-2 shadow-lg z-40"
-                    >
-                        <Plus className="mr-2 h-4 w-4" />
-                        Add New
-                    </Button>
+                    {!modalOpen && (
+                        <Button
+                            variant="default"
+                            onClick={() => {
+                                setSelected(null);
+                                setModalOpen(true);
+                            }}
+                            className="fixed bottom-20 left-1/2 -translate-x-1/2 rounded-full px-4 py-2 shadow-lg z-40"
+                        >
+                            <Plus className="mr-2 h-4 w-4" />
+                            Add New
+                        </Button>
+                    )}
+
+                    {modalOpen && (
+                        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 flex gap-3">
+                            <Button
+                                variant="outline"
+                                onClick={closeModal}
+                                className="rounded-full px-6 py-2 shadow-lg"
+                            >
+                                Cancel
+                            </Button>
+                            {selected && (
+                                <Button
+                                    variant="destructive"
+                                    onClick={() => productCrudRef.current?.delete()}
+                                    className="rounded-full px-6 py-2 shadow-lg"
+                                >
+                                    Delete
+                                </Button>
+                            )}
+                            <Button
+                                onClick={() => productCrudRef.current?.save()}
+                                className="rounded-full px-6 py-2 shadow-lg"
+                                style={{ backgroundColor: '#3b82f6' }}
+                            >
+                                Save
+                            </Button>
+                        </div>
+                    )}
 
                     <FullScreenModalMobile
                         open={modalOpen}
@@ -197,9 +226,10 @@ function ProductMobileLayoutView({ products, loading = false, availableTypes = [
                         onClose={closeModal}
                         headerBg="#f57979"
                         headerColor="#fff"
-                        bodySx={{ paddingBottom: '5rem' }}
+                        bodySx={{ paddingBottom: '2rem' }}
                     >
                         <ProductCrud
+                            ref={productCrudRef}
                             key={selected?.product_id ?? 'new-mobile'}
                             product={selected ?? undefined}
                             availableTypes={availableTypes}
@@ -214,46 +244,7 @@ function ProductMobileLayoutView({ products, loading = false, availableTypes = [
                             }}
                             onToggleActive={onToggleActive}
                             hideActionsOnMobile
-                            onSaveRef={(handler) => setProductSaveHandler(() => handler)}
-                            onDeleteRef={(handler) => setProductDeleteHandler(() => handler)}
                         />
-                        
-                        {/* Floating Action Buttons for Mobile Modal */}
-                        {modalOpen && (
-                            <div
-                                className="fixed left-0 right-0 z-50 flex gap-2 px-4 pb-4"
-                                style={{
-                                    bottom: '60px',
-                                    justifyContent: 'center',
-                                }}
-                            >
-                                <Button
-                                    variant="outline"
-                                    onClick={closeModal}
-                                    className="flex-1 max-w-[120px]"
-                                >
-                                    Cancel
-                                </Button>
-                                {selected && productDeleteHandler && (
-                                    <Button
-                                        variant="destructive"
-                                        onClick={productDeleteHandler}
-                                        className="flex-1 max-w-[120px]"
-                                    >
-                                        Delete
-                                    </Button>
-                                )}
-                                <Button
-                                    variant="default"
-                                    onClick={productSaveHandler || undefined}
-                                    disabled={!productSaveHandler}
-                                    className="flex-1 max-w-[120px]"
-                                    style={{ backgroundColor: '#3b82f6' }}
-                                >
-                                    Save
-                                </Button>
-                            </div>
-                        )}
                     </FullScreenModalMobile>
                 </>
             }

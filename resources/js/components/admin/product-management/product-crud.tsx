@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useImperativeHandle, forwardRef } from 'react';
 import { useMyTheme } from '@/hooks/use-mytheme';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import type { ProductLntype, WlnType, ProductPayload } from '@/types/product-lntype';
@@ -16,11 +16,14 @@ type Props = {
     onDelete?: () => Promise<void>;
     onToggleActive?: (productId: number, value: boolean) => void;
     hideActionsOnMobile?: boolean;
-    onSaveRef?: (saveHandler: () => Promise<void>) => void;
-    onDeleteRef?: (deleteHandler: () => Promise<void>) => void;
 };
 
-const ProductCRUD: React.FC<Props> = ({
+export type ProductCRUDRef = {
+    save: () => Promise<void>;
+    delete: () => Promise<void>;
+};
+
+const ProductCRUD = forwardRef<ProductCRUDRef, Props>(({
     product,
     availableTypes = [],
     onSave,
@@ -28,9 +31,7 @@ const ProductCRUD: React.FC<Props> = ({
     onDelete,
     onToggleActive,
     hideActionsOnMobile,
-    onSaveRef,
-    onDeleteRef,
-}) => {
+}, ref) => {
     const tw = useMyTheme();
     const isMobile = useMediaQuery('(max-width: 600px)');
 
@@ -78,18 +79,11 @@ const ProductCRUD: React.FC<Props> = ({
         }
     };
 
-    // Expose save and delete handlers to parent via refs
-    useEffect(() => {
-        if (onSaveRef) {
-            onSaveRef(handleSave);
-        }
-    }, [onSaveRef, formData, onSave]);
-
-    useEffect(() => {
-        if (onDeleteRef) {
-            onDeleteRef(handleDelete);
-        }
-    }, [onDeleteRef, onDelete]);
+    // Expose methods to parent via ref
+    useImperativeHandle(ref, () => ({
+        save: handleSave,
+        delete: handleDelete,
+    }));
 
     const inputStyle = {
         width: '100%',
@@ -705,6 +699,8 @@ const ProductCRUD: React.FC<Props> = ({
             </motion.div>
         </AnimatePresence>
     );
-};
+});
+
+ProductCRUD.displayName = 'ProductCRUD';
 
 export default ProductCRUD;
