@@ -313,9 +313,14 @@ warmup_db_connection() {
     echo "Warming up database connection..."
     local max_retries=5
     local retry=0
+    local attempt_timeout="${DB_WARMUP_ATTEMPT_TIMEOUT:-15}"
+    local timeout_cmd=()
+    if command -v timeout >/dev/null 2>&1; then
+        timeout_cmd=(timeout "${attempt_timeout}")
+    fi
     while [ $retry -lt $max_retries ]; do
         # Use a simple PHP script instead of tinker to avoid psysh config issues
-        if gosu www-data php -r "
+        if "${timeout_cmd[@]}" gosu www-data php -r "
             require '/var/www/html/vendor/autoload.php';
             \$app = require_once '/var/www/html/bootstrap/app.php';
             \$kernel = \$app->make(Illuminate\Contracts\Console\Kernel::class);
@@ -360,10 +365,6 @@ else
 fi
 
 # Warmup DB connection if we're using the DB proxy
-if [ "${TS_DB_PROXY:-0}" = "1" ] || [ -n "${DB_HOST:-}" ]; then
-    warmup_db_connection
-fi
-
 case "${RUN_MIGRATIONS:-}" in
     1|true|TRUE|yes|YES)
         echo "Running migrations..."
@@ -372,4 +373,8 @@ case "${RUN_MIGRATIONS:-}" in
 esac
 
 php-fpm -D
+if [ "${TS_DB_PROXY:-0}" = "1" ] || [ -n "${DB_HOST:-}" ]; then
+    echo "Starting database warmup in background..."
+    warmup_db_connection &
+fi
 exec gosu www-data nginx -g "daemon off;"
