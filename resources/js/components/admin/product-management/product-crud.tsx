@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useMyTheme } from '@/hooks/use-mytheme';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import type { ProductLntype, WlnType, ProductPayload } from '@/types/product-lntype';
@@ -16,6 +16,8 @@ type Props = {
     onDelete?: () => Promise<void>;
     onToggleActive?: (productId: number, value: boolean) => void;
     hideActionsOnMobile?: boolean;
+    onSaveRef?: (saveHandler: () => Promise<void>) => void;
+    onDeleteRef?: (deleteHandler: () => Promise<void>) => void;
 };
 
 const ProductCRUD: React.FC<Props> = ({
@@ -26,6 +28,8 @@ const ProductCRUD: React.FC<Props> = ({
     onDelete,
     onToggleActive,
     hideActionsOnMobile,
+    onSaveRef,
+    onDeleteRef,
 }) => {
     const tw = useMyTheme();
     const isMobile = useMediaQuery('(max-width: 600px)');
@@ -65,6 +69,27 @@ const ProductCRUD: React.FC<Props> = ({
             setIsSaving(false);
         }
     };
+
+    const handleDelete = async () => {
+        if (!onDelete) return;
+        if (confirm('Are you sure you want to delete this product?')) {
+            await onDelete();
+            onCancel?.();
+        }
+    };
+
+    // Expose save and delete handlers to parent via refs
+    useEffect(() => {
+        if (onSaveRef) {
+            onSaveRef(handleSave);
+        }
+    }, [onSaveRef, formData, onSave]);
+
+    useEffect(() => {
+        if (onDeleteRef) {
+            onDeleteRef(handleDelete);
+        }
+    }, [onDeleteRef, onDelete]);
 
     const inputStyle = {
         width: '100%',
@@ -634,12 +659,7 @@ const ProductCRUD: React.FC<Props> = ({
                         </button>
                         {product && onDelete && (
                             <button
-                                onClick={async () => {
-                                    if (confirm('Are you sure you want to delete this product?')) {
-                                        await onDelete();
-                                        onCancel?.();
-                                    }
-                                }}
+                                onClick={handleDelete}
                                 style={{
                                     flex: 1,
                                     padding: '12px 20px',

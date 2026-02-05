@@ -145,13 +145,14 @@ function ProductDesktopLayoutView({
 
 type ProductMobileProps = {
     products: ProductLntype[];
+    loading?: boolean;
     availableTypes?: WlnType[];
     onSave: (payload: ProductPayload, productId?: number | null) => Promise<void> | void;
     onDelete: (productId?: number | null) => Promise<void> | void;
     onToggleActive?: (productId: number, value: boolean) => void;
 };
 
-function ProductMobileLayoutView({ products, availableTypes = [], onSave, onDelete, onToggleActive }: ProductMobileProps) {
+function ProductMobileLayoutView({ products, loading = false, availableTypes = [], onSave, onDelete, onToggleActive }: ProductMobileProps) {
     const [search, setSearch] = useState('');
     const [selected, setSelected] = useState<ProductLntype | null>(null);
     const [modalOpen, setModalOpen] = useState(false);
@@ -170,6 +171,9 @@ function ProductMobileLayoutView({ products, availableTypes = [], onSave, onDele
         setModalOpen(false);
         setSelected(null);
     };
+
+    const [productSaveHandler, setProductSaveHandler] = useState<(() => Promise<void>) | null>(null);
+    const [productDeleteHandler, setProductDeleteHandler] = useState<(() => Promise<void>) | null>(null);
 
     return (
         <MobileViewLayout
@@ -193,7 +197,7 @@ function ProductMobileLayoutView({ products, availableTypes = [], onSave, onDele
                         onClose={closeModal}
                         headerBg="#f57979"
                         headerColor="#fff"
-                        bodySx={{ paddingBottom: '4.5rem' }}
+                        bodySx={{ paddingBottom: '5rem' }}
                     >
                         <ProductCrud
                             key={selected?.product_id ?? 'new-mobile'}
@@ -210,13 +214,53 @@ function ProductMobileLayoutView({ products, availableTypes = [], onSave, onDele
                             }}
                             onToggleActive={onToggleActive}
                             hideActionsOnMobile
+                            onSaveRef={(handler) => setProductSaveHandler(() => handler)}
+                            onDeleteRef={(handler) => setProductDeleteHandler(() => handler)}
                         />
+                        
+                        {/* Floating Action Buttons for Mobile Modal */}
+                        {modalOpen && (
+                            <div
+                                className="fixed left-0 right-0 z-50 flex gap-2 px-4 pb-4"
+                                style={{
+                                    bottom: '60px',
+                                    justifyContent: 'center',
+                                }}
+                            >
+                                <Button
+                                    variant="outline"
+                                    onClick={closeModal}
+                                    className="flex-1 max-w-[120px]"
+                                >
+                                    Cancel
+                                </Button>
+                                {selected && productDeleteHandler && (
+                                    <Button
+                                        variant="destructive"
+                                        onClick={productDeleteHandler}
+                                        className="flex-1 max-w-[120px]"
+                                    >
+                                        Delete
+                                    </Button>
+                                )}
+                                <Button
+                                    variant="default"
+                                    onClick={productSaveHandler || undefined}
+                                    disabled={!productSaveHandler}
+                                    className="flex-1 max-w-[120px]"
+                                    style={{ backgroundColor: '#3b82f6' }}
+                                >
+                                    Save
+                                </Button>
+                            </div>
+                        )}
                     </FullScreenModalMobile>
                 </>
             }
         >
             <ProductList
                 products={filtered}
+                loading={loading}
                 onSelect={(id) => {
                     const found = products.find((p) => p.product_id === id) ?? null;
                     setSelected(found);
@@ -330,33 +374,10 @@ export default function ProductsManagementPage() {
             </div>
             <HeaderBlock title="Product Management" subtitle="Activate and manage product listings" />
 
-            {loading ? (
-                isMobile ? (
-                    <ProductMobileLayoutView
-                        products={[]}
-                        availableTypes={types}
-                        onSave={(payload, id) => handleSave(payload, id)}
-                        onDelete={(id) => handleDelete(id)}
-                        onToggleActive={handleToggleActive}
-                    />
-                ) : (
-                    <ProductDesktopLayoutView
-                        key="loading"
-                        products={[]}
-                        loading={true}
-                        availableTypes={types}
-                        selected={null}
-                        isAdding={false}
-                        onSelect={() => {}}
-                        onAdd={() => {}}
-                        onSave={() => {}}
-                        onDelete={() => {}}
-                        onToggleActive={() => {}}
-                    />
-                )
-            ) : isMobile ? (
+            {isMobile ? (
                 <ProductMobileLayoutView
                     products={products}
+                    loading={loading}
                     availableTypes={types}
                     onSave={(payload, id) => handleSave(payload, id)}
                     onDelete={(id) => handleDelete(id)}
@@ -366,6 +387,7 @@ export default function ProductsManagementPage() {
                 <ProductDesktopLayoutView
                     key={isAdding ? 'adding' : selected?.product_id ?? 'new'}
                     products={products}
+                    loading={loading}
                     availableTypes={types}
                     selected={selected}
                     isAdding={isAdding}
