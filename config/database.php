@@ -108,6 +108,7 @@ return [
             'charset' => env('DB_CHARSET', 'utf8'),
             'prefix' => '',
             'prefix_indexes' => true,
+<<<<<<< ours
             // ODBC Driver 18 settings for Tailscale connections
             'encrypt' => env('DB_ENCRYPT', 'no'),
             'trust_server_certificate' => env('DB_TRUST_SERVER_CERTIFICATE', 'yes'),
@@ -121,6 +122,14 @@ return [
                     => env('DB_QUERY_TIMEOUT', 30),
                 \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
             ], fn($value) => $value !== null),
+=======
+            'encrypt' => env('DB_ENCRYPT', 'yes'),
+            'trust_server_certificate' => env('DB_TRUST_SERVER_CERTIFICATE', false),
+            'options' => array_filter([
+                PDO::ATTR_TIMEOUT => env('DB_CONNECT_TIMEOUT', 10),
+                'LoginTimeout' => env('DB_LOGIN_TIMEOUT', 10),
+            ]),
+>>>>>>> theirs
         ],
 
     ],
