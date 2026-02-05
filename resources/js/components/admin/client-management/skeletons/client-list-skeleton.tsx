@@ -8,9 +8,10 @@ type Props = {
     itemCount?: number;
     fullHeight?: boolean;
     showTabs?: boolean;
+    showSearch?: boolean;
 };
 
-const ClientListSkeleton: React.FC<Props> = ({ itemCount = CLIENT_LIST_PAGE_SIZE, fullHeight = false, showTabs = true }) => {
+const ClientListSkeleton: React.FC<Props> = ({ itemCount = CLIENT_LIST_PAGE_SIZE, fullHeight = false, showTabs = true, showSearch = true }) => {
     const tw = useMyTheme();
     const isMobile = useMediaQuery('(max-width: 600px)');
     const safeItemCount = Math.max(itemCount ?? CLIENT_LIST_PAGE_SIZE, 1);
@@ -46,29 +47,31 @@ const ClientListSkeleton: React.FC<Props> = ({ itemCount = CLIENT_LIST_PAGE_SIZE
 
             <div
                 style={{
-                    padding: `${padding}px`,
-                    borderRadius: 8,
-                    backgroundColor: containerBg,
-                    border: `1px solid ${containerBorder}`,
-                    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.02)',
+                    padding: showSearch ? `${padding}px` : 0,
+                    borderRadius: showSearch ? 8 : 0,
+                    backgroundColor: showSearch ? containerBg : 'transparent',
+                    border: showSearch ? `1px solid ${containerBorder}` : 'none',
+                    boxShadow: showSearch ? 'inset 0 1px 0 rgba(255,255,255,0.02)' : 'none',
                     flex: fullHeight ? 1 : 'unset',
                     display: 'flex',
                     flexDirection: 'column',
                     gap: `${gap}px`,
                 }}
             >
-                <div
-                    className="animate-pulse rounded w-full"
-                    style={{
-                        height: 48,
-                        backgroundColor: skeletonColor,
-                        borderRadius: 6,
-                    }}
-                />
+                {showSearch && (
+                    <div
+                        className="animate-pulse rounded w-full"
+                        style={{
+                            height: 48,
+                            backgroundColor: skeletonColor,
+                            borderRadius: 6,
+                        }}
+                    />
+                )}
 
                 <div
                     className="flex flex-col"
-                    style={{ gap: isMobile ? 8 : 8, marginTop: 4 }}
+                    style={{ gap: isMobile ? 8 : 8, marginTop: showSearch ? 4 : 0 }}
                 >
                     {Array.from({ length: safeItemCount }).map((_, idx) => (
                         <div

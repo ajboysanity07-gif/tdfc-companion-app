@@ -259,7 +259,7 @@ const ClientListContent: React.FC<ClientListContentProps> = ({
     return (
         <>
             {loading ? (
-                <ClientListSkeleton fullHeight={fullHeight} itemCount={10} />
+                <ClientListSkeleton fullHeight={fullHeight} itemCount={10} showTabs={false} showSearch={false} />
             ) : paginated.length === 0 ? (
                 <div
                     style={{
