@@ -350,7 +350,7 @@ const ClientListContent: React.FC<ClientListContentProps> = ({
                                         <div style={{ fontSize: '0.875rem', fontWeight: 600, color: tw.isDark ? '#ffffff' : '#000000', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                             {client.name ?? 'Unknown'}
                                         </div>
-                                        <div style={{ fontSize: '0.75rem', color: tw.isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                        <div style={{ fontSize: '0.75rem', color: tw.isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.75)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                             {client.email ?? 'No email'}
                                         </div>
                                     </div>

@@ -77,7 +77,8 @@ const ClientDetails: React.FC<Props> = ({
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="rounded-3xl bg-muted/50 h-full flex flex-col items-center justify-center gap-4 p-8"
+                className="w-full h-full flex flex-col items-center justify-center gap-4 p-8"
+                style={{ backgroundColor: '#ffffff' }}
             >
                 <div className="text-muted-foreground text-center">
                     {isLoading || loading ? (
