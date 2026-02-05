@@ -94,7 +94,7 @@ const ProductList: React.FC<Props> = ({
                         list="product-search-options"
                         style={{
                             width: '100%',
-                            padding: '8px 12px',
+                            padding: '6px 12px',
                             borderRadius: '8px',
                             border: '1px solid rgba(255,255,255,0.2)',
                             backgroundColor: 'rgba(255,255,255,0.05)',

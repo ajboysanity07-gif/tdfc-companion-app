@@ -321,7 +321,7 @@ export default function LoanList({ onOpenCalculator, onScheduleClick, onLedgerCl
                 </div>
                 <div style={{
                     width: '100%',
-                    padding: '8px 12px',
+                    padding: '6px 12px',
                     border: `1px solid ${tw.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)'}`,
                     borderRadius: 8,
                     backgroundColor: tw.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
