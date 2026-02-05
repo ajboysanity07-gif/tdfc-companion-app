@@ -13,6 +13,7 @@ import { CircleCheckBig, CircleX, Plus, Save, Trash2, X, ChevronUp } from 'lucid
 import { useEffect, useMemo, useState, useRef } from 'react';
 import HeaderBlock from '@/components/management/header-block';
 import { useMediaQuery } from '@/hooks/use-media-query';
+import { useMyTheme } from '@/hooks/use-mytheme';
 
 const breadcrumbs = [{ title: 'Product Management', href: '/admin/products' }];
 

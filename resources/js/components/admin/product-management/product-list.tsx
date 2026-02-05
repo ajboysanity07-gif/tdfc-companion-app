@@ -79,35 +79,60 @@ const ProductList: React.FC<Props> = ({
                     gap: isMobile ? '12px' : '16px',
                 }}
             >
-                <div style={{ paddingLeft: '16px', paddingRight: '16px', paddingTop: '16px' }}>
-                    <BoxHeader title="Available Products" />
-                </div>
-
-                <div style={{ paddingLeft: '16px', paddingRight: '16px' }}>
-                    <div className="relative mb-4">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input
-                            type="text"
-                            placeholder="Search products"
-                            value={searchValue}
-                            onChange={(e) => {
-                                onSearchChange?.(e.target.value);
-                                setPage(1);
-                            }}
-                            list="product-search-options"
-                            className="pl-9"
-                        />
-                        <datalist id="product-search-options">
-                            {searchOptions.map((option) => (
-                                <option key={option} value={option} />
-                            ))}
-                        </datalist>
-                    </div>
-                </div>
-
                 {loading ? (
-                    <ProductListSkeleton fullHeight={fullHeight} />
-                ) : paginated.length === 0 ? (
+                    <>
+                        <div style={{ paddingLeft: '16px', paddingRight: '16px', paddingTop: '16px' }}>
+                            <BoxHeader title="Available Products" />
+                        </div>
+
+                        <div style={{ paddingLeft: '16px', paddingRight: '16px' }}>
+                            <div className="relative mb-4">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                <Input
+                                    type="text"
+                                    placeholder="Search products"
+                                    value={searchValue}
+                                    onChange={(e) => {
+                                        onSearchChange?.(e.target.value);
+                                        setPage(1);
+                                    }}
+                                    list="product-search-options"
+                                    className="pl-9"
+                                />
+                            </div>
+                        </div>
+                        
+                        <ProductListSkeleton fullHeight={fullHeight} />
+                    </>
+                ) : (
+                    <>
+                        <div style={{ paddingLeft: '16px', paddingRight: '16px', paddingTop: '16px' }}>
+                            <BoxHeader title="Available Products" />
+                        </div>
+
+                        <div style={{ paddingLeft: '16px', paddingRight: '16px' }}>
+                            <div className="relative mb-4">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                <Input
+                                    type="text"
+                                    placeholder="Search products"
+                                    value={searchValue}
+                                    onChange={(e) => {
+                                        onSearchChange?.(e.target.value);
+                                        setPage(1);
+                                    }}
+                                    list="product-search-options"
+                                    className="pl-9"
+                                />
+                                <datalist id="product-search-options">
+                                    {searchOptions.map((option) => (
+                                        <option key={option} value={option} />
+                                    ))}
+                                </datalist>
+                            </div>
+                        </div>
+
+                        {paginated.length === 0 ? (
                     <div style={{ paddingLeft: '16px', paddingRight: '16px', paddingBottom: '16px' }}>
                         <div
                             style={{
@@ -260,9 +285,9 @@ const ProductList: React.FC<Props> = ({
                     </div>
                 )}
 
-                {list.length > 0 && (
-                    <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginTop: '16px', paddingLeft: '16px', paddingRight: '16px', paddingBottom: '16px' }}>
-                        <button
+                        {list.length > 0 && (
+                            <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginTop: '16px', paddingLeft: '16px', paddingRight: '16px', paddingBottom: '16px' }}>
+                                <button
                             onClick={() => setPage((p) => Math.max(p - 1, 1))}
                             disabled={clampedPage <= 1}
                             style={{
@@ -331,6 +356,8 @@ const ProductList: React.FC<Props> = ({
                             Next
                         </button>
                     </div>
+                        )}
+                    </>
                 )}
             </div>
         </div>

@@ -9,9 +9,19 @@ export default function ProductListSkeleton({ itemCount = 5, fullHeight = false 
     const tw = useMyTheme();
     
     return (
-        <div style={{ paddingLeft: '16px', paddingRight: '16px', paddingBottom: '16px' }}>
+        <>
             {/* List items skeleton */}
-            <div className={`flex flex-col gap-2 ${fullHeight ? 'flex-1' : 'auto'}`}>
+            <div 
+                style={{
+                    flex: fullHeight ? 1 : 'auto',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '8px',
+                    paddingLeft: '16px',
+                    paddingRight: '16px',
+                    paddingBottom: '16px',
+                }}
+            >
                 {Array.from({ length: itemCount }).map((_, i) => (
                     <div
                         key={i}
@@ -19,7 +29,8 @@ export default function ProductListSkeleton({ itemCount = 5, fullHeight = false 
                         style={{ 
                             backgroundColor: tw.isDark ? '#262626' : '#F5F5F5',
                             padding: '16px',
-                            gap: '16px'
+                            gap: '16px',
+                            border: '1px solid rgba(255,255,255,0.1)',
                         }}
                     >
                         {/* Toggle switch skeleton */}
@@ -45,10 +56,12 @@ export default function ProductListSkeleton({ itemCount = 5, fullHeight = false 
                                 }}
                             />
                             {/* Tags skeleton */}
-                            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                            <div style={{ display: 'flex', gap: '4px', alignItems: 'center', flexWrap: 'wrap', marginTop: '4px' }}>
                                 <span style={{ 
-                                    fontSize: '0.875rem', 
-                                    color: tw.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' 
+                                    fontSize: '0.75rem', 
+                                    fontWeight: 600,
+                                    marginRight: '4px',
+                                    color: tw.isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)' 
                                 }}>
                                     Tags:
                                 </span>
@@ -56,7 +69,7 @@ export default function ProductListSkeleton({ itemCount = 5, fullHeight = false 
                                     className="rounded animate-pulse" 
                                     style={{
                                         backgroundColor: tw.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
-                                        height: '16px',
+                                        height: '18px',
                                         width: '50px'
                                     }}
                                 />
@@ -64,7 +77,7 @@ export default function ProductListSkeleton({ itemCount = 5, fullHeight = false 
                                     className="rounded animate-pulse" 
                                     style={{
                                         backgroundColor: tw.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
-                                        height: '16px',
+                                        height: '18px',
                                         width: '50px'
                                     }}
                                 />
@@ -86,7 +99,7 @@ export default function ProductListSkeleton({ itemCount = 5, fullHeight = false 
             </div>
 
             {/* Pagination skeleton */}
-            <div className="flex flex-row justify-center gap-2 mt-4">
+            <div className="flex flex-row justify-center gap-2" style={{ paddingBottom: '16px' }}>
                 <div 
                     className="rounded animate-pulse" 
                     style={{
@@ -112,6 +125,6 @@ export default function ProductListSkeleton({ itemCount = 5, fullHeight = false 
                     }}
                 />
             </div>
-        </div>
+        </>
     );
 }

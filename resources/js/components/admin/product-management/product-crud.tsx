@@ -415,7 +415,15 @@ const ProductCRUD = forwardRef<ProductCRUDRef, Props>(({
                         <label style={labelStyle}>Max Amortization Mode *</label>
                         <select
                             value={formData.max_amortization_mode || 'FIXED'}
-                            onChange={(e) => setFormData({ ...formData, max_amortization_mode: e.target.value as 'FIXED' | 'BASIC' | 'CUSTOM' })}
+                            onChange={(e) => {
+                                const newMode = e.target.value as 'FIXED' | 'BASIC' | 'CUSTOM';
+                                setFormData({ 
+                                    ...formData, 
+                                    max_amortization_mode: newMode,
+                                    // Set max_amortization to 0 when switching to CUSTOM or BASIC
+                                    max_amortization: newMode === 'FIXED' ? formData.max_amortization : 0,
+                                });
+                            }}
                             style={{
                                 ...inputStyle,
                                 appearance: 'none',
@@ -439,7 +447,7 @@ const ProductCRUD = forwardRef<ProductCRUDRef, Props>(({
                                 type="text"
                                 value={formData.max_amortization_formula || ''}
                                 onChange={(e) => setFormData({ ...formData, max_amortization_formula: e.target.value })}
-                                placeholder="e.g., (salary * 0.5) * months"
+                                placeholder="e.g., (basic * 0.5) * months"
                                 style={inputStyle as React.CSSProperties}
                             />
                         </div>
