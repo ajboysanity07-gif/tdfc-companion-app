@@ -108,31 +108,31 @@ const ProductList: React.FC<Props> = ({
                 {loading ? (
                     <ProductListSkeleton fullHeight={fullHeight} />
                 ) : paginated.length === 0 ? (
-                    <div
-                        style={{
-                            border: `1px dashed ${tw.isDark ? '#3a3a3a' : '#e5e5e5'}`,
-                            borderRadius: '8px',
-                            padding: isMobile ? '20px' : '32px',
-                            minHeight: fullHeight ? '100%' : isMobile ? '75%' : '360px',
-                            height: fullHeight ? '100%' : 'auto',
-                            flexGrow: fullHeight ? 1 : 0,
-                            width: '100%',
-                            maxWidth: '100%',
-                            margin: '0 auto',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            textAlign: 'center',
-                            color: 'rgba(255,255,255,0.6)',
-                            gap: isMobile ? '4px' : '6px',
-                        }}
-                    >
-                        <div style={{ fontWeight: 800, fontSize: isMobile ? '1rem' : '1.25rem' }}>
-                            No product available.
-                        </div>
-                        <div style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.5)' }}>
-                            You can always add a new product.
+                    <div style={{ paddingLeft: '16px', paddingRight: '16px', paddingBottom: '16px' }}>
+                        <div
+                            style={{
+                                border: `1px dashed ${tw.isDark ? '#3a3a3a' : '#e5e5e5'}`,
+                                borderRadius: '8px',
+                                padding: isMobile ? '20px' : '32px',
+                                minHeight: fullHeight ? '100%' : isMobile ? '75%' : '360px',
+                                height: fullHeight ? '100%' : 'auto',
+                                flexGrow: fullHeight ? 1 : 0,
+                                width: '100%',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                textAlign: 'center',
+                                color: tw.isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)',
+                                gap: isMobile ? '4px' : '6px',
+                            }}
+                        >
+                            <div style={{ fontWeight: 800, fontSize: isMobile ? '1rem' : '1.25rem' }}>
+                                No product available.
+                            </div>
+                            <div style={{ fontSize: '0.875rem', color: tw.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
+                                You can always add a new product.
+                            </div>
                         </div>
                     </div>
                 ) : (
