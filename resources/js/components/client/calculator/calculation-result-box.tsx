@@ -1,4 +1,5 @@
-import { useCalculatorStyles } from '@/hooks/use-calculator-styles';
+import { Card, CardContent } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
 
 type Props = {
     label: string;
@@ -16,88 +17,37 @@ const formatCurrency = (amount: number): string => {
 };
 
 export default function CalculationResultBox({ label, value, isAccent = false }: Props) {
-    const styles = useCalculatorStyles();
     const formattedValue = formatCurrency(value).replace('PHP', '').replace('₱', '').trim();
 
     if (isAccent) {
         return (
-            <div style={{ marginTop: 16 }}>
-                <div
-                    style={{
-                        marginBottom: 12,
-                        display: 'block',
-                        textTransform: 'uppercase',
-                        letterSpacing: '1.2px',
-                        color: styles.accentColor,
-                        fontSize: '0.7rem',
-                        textAlign: 'center',
-                        fontWeight: 900,
-                    }}
-                >
+            <div className="mt-4">
+                <div className="mb-3 block uppercase tracking-wider text-[0.7rem] text-center font-black text-[#F57979]">
                     {label}
                 </div>
-                <div
-                    style={{
-                        background: styles.isDark
-                            ? 'linear-gradient(135deg, #2a4a4a 0%, #1e3a3a 100%)'
-                            : 'linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%)',
-                        borderRadius: 8,
-                        padding: 24,
-                        textAlign: 'center',
-                        border: `2px solid ${styles.accentColor}`,
-                    }}
-                >
-                    <h4
-                        style={{
-                            color: styles.accentColor,
-                            fontVariantNumeric: 'tabular-nums',
-                            letterSpacing: '-0.02em',
-                            fontWeight: 700,
-                            fontSize: '2rem',
-                        }}
-                    >
-                        ₱ {formattedValue}*
-                    </h4>
-                </div>
+                <Card className="border-2 border-[#F57979] bg-gradient-to-br from-teal-50 to-teal-100 dark:from-teal-950/30 dark:to-teal-900/30">
+                    <CardContent className="p-4 text-center">
+                        <h4 className="text-[#F57979] font-variant-numeric-tabular text-2xl font-bold tracking-tight">
+                            ₱ {formattedValue}*
+                        </h4>
+                    </CardContent>
+                </Card>
             </div>
         );
     }
 
     return (
         <div>
-            <div
-                style={{
-                    marginBottom: 12,
-                    display: 'block',
-                    textTransform: 'uppercase',
-                    letterSpacing: '1.2px',
-                    fontSize: '0.7rem',
-                    textAlign: 'center',
-                    fontWeight: 600,
-                    color: '#666',
-                }}
-            >
+            <div className="mb-3 block uppercase tracking-wider text-[0.7rem] text-center font-semibold text-muted-foreground">
                 {label}
             </div>
-            <div
-                style={{
-                    backgroundColor: styles.cardBg,
-                    borderRadius: 8,
-                    padding: 20,
-                    textAlign: 'center',
-                    border: `2px solid ${styles.cardBorder}`,
-                }}
-            >
-                <h5
-                    style={{
-                        fontWeight: 700,
-                        fontVariantNumeric: 'tabular-nums',
-                        fontSize: '1.5rem',
-                    }}
-                >
-                    ₱ {formattedValue}
-                </h5>
-            </div>
+            <Card className="border-2">
+                <CardContent className="p-3 text-center">
+                    <h5 className="font-bold font-variant-numeric-tabular text-xl">
+                        ₱ {formattedValue}
+                    </h5>
+                </CardContent>
+            </Card>
         </div>
     );
 }

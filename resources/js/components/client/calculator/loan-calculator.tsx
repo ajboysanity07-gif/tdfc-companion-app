@@ -14,6 +14,7 @@ import { useCalculatorStyles } from '@/hooks/use-calculator-styles';
 import CurrencyInput from 'react-currency-input-field';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { motion, AnimatePresence } from 'framer-motion';
 
 type Props = {
     selectedProduct: ProductLntype | null;
@@ -84,7 +85,21 @@ export default function LoanCalculator({ selectedProduct, loanDefaults, loading 
 
     return (
         <div ref={containerRef} style={{ padding: '10px', paddingBottom: isMobile ? '100px' : '10px' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? 10 : 12 }}>
+            <AnimatePresence mode="wait">
+                {selectedProduct && (
+                    <motion.div
+                        key={selectedProduct.product_id}
+                        initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -20, scale: 0.95 }}
+                        transition={{
+                            type: 'spring',
+                            stiffness: 260,
+                            damping: 20,
+                            mass: 0.8,
+                        }}
+                        style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? 10 : 12 }}
+                    >
                 {/* Product Display */}
                 <div>
                     <p
@@ -279,7 +294,9 @@ export default function LoanCalculator({ selectedProduct, loanDefaults, loading 
                         />
                     </div>
                 )}
-            </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {/* Floating Info Button */}
             {(isMobile || forceModalTerms) && selectedProduct?.terms && (
