@@ -443,14 +443,13 @@ export default function ClientManagementPage() {
                     )}
                 </AnimatePresence>
             </div>
-            <div className="flex flex-col gap-0 fixed inset-0 overflow-y-auto bg-[#FAFAFA] transition-colors duration-300 dark:bg-neutral-900">
-                {!isMobile || !selectedId ? (
-                    <HeaderBlock title="Client Management" subtitle="Review, approve, and manage clients" />
-                ) : null}
+            {!isMobile || !selectedId ? (
+                <HeaderBlock title="Client Management" subtitle="Review, approve, and manage clients" />
+            ) : null}
 
-                {loading ? (
-                    isMobile ? (
-                        <ClientMobileLayoutView
+            {loading ? (
+                isMobile ? (
+                    <ClientMobileLayoutView
                             clients={[]}
                             rejectionReasons={rejectionReasons}
                             selectedId={selectedId}
@@ -538,7 +537,6 @@ export default function ClientManagementPage() {
                         onStatusTabChange={setStatusTab}
                     />
                 )}
-            </div>
         </AppLayout>
     );
 }

@@ -328,36 +328,12 @@ export default function ProductsManagementPage() {
                     )}
                 </AnimatePresence>
             </div>
-            <div className="flex flex-col gap-0 fixed inset-0 overflow-y-auto  bg-[#FAFAFA] transition-colors duration-300 dark:bg-neutral-900">
-                <HeaderBlock title="Product Management" subtitle="Activate and manage product listings" />
+            <HeaderBlock title="Product Management" subtitle="Activate and manage product listings" />
 
-                {loading ? (
-                    isMobile ? (
-                        <ProductMobileLayoutView
-                            products={[]}
-                            availableTypes={types}
-                            onSave={(payload, id) => handleSave(payload, id)}
-                            onDelete={(id) => handleDelete(id)}
-                            onToggleActive={handleToggleActive}
-                        />
-                    ) : (
-                        <ProductDesktopLayoutView
-                            key="loading"
-                            products={[]}
-                            loading={true}
-                            availableTypes={types}
-                            selected={null}
-                            isAdding={false}
-                            onSelect={() => {}}
-                            onAdd={() => {}}
-                            onSave={() => {}}
-                            onDelete={() => {}}
-                            onToggleActive={() => {}}
-                        />
-                    )
-                ) : isMobile ? (
+            {loading ? (
+                isMobile ? (
                     <ProductMobileLayoutView
-                        products={products}
+                        products={[]}
                         availableTypes={types}
                         onSave={(payload, id) => handleSave(payload, id)}
                         onDelete={(id) => handleDelete(id)}
@@ -365,28 +341,50 @@ export default function ProductsManagementPage() {
                     />
                 ) : (
                     <ProductDesktopLayoutView
-                        key={isAdding ? 'adding' : selected?.product_id ?? 'new'}
-                        products={products}
+                        key="loading"
+                        products={[]}
+                        loading={true}
                         availableTypes={types}
-                        selected={selected}
-                        isAdding={isAdding}
-                        onSelect={(product_id) => {
-                            const found = products.find((p) => p.product_id === product_id);
-                            if (found) {
-                                setSelected(found);
-                                setIsAdding(false);
-                            }
-                        }}
-                        onSave={handleSave}
-                        onDelete={handleDelete}
-                        onToggleActive={handleToggleActive}
-                        onAdd={() => {
-                            setSelected(null);
-                            setIsAdding(true);
-                        }}
+                        selected={null}
+                        isAdding={false}
+                        onSelect={() => {}}
+                        onAdd={() => {}}
+                        onSave={() => {}}
+                        onDelete={() => {}}
+                        onToggleActive={() => {}}
                     />
-                )}
-            </div>
+                )
+            ) : isMobile ? (
+                <ProductMobileLayoutView
+                    products={products}
+                    availableTypes={types}
+                    onSave={(payload, id) => handleSave(payload, id)}
+                    onDelete={(id) => handleDelete(id)}
+                    onToggleActive={handleToggleActive}
+                />
+            ) : (
+                <ProductDesktopLayoutView
+                    key={isAdding ? 'adding' : selected?.product_id ?? 'new'}
+                    products={products}
+                    availableTypes={types}
+                    selected={selected}
+                    isAdding={isAdding}
+                    onSelect={(product_id) => {
+                        const found = products.find((p) => p.product_id === product_id);
+                        if (found) {
+                            setSelected(found);
+                            setIsAdding(false);
+                        }
+                    }}
+                    onSave={handleSave}
+                    onDelete={handleDelete}
+                    onToggleActive={handleToggleActive}
+                    onAdd={() => {
+                        setSelected(null);
+                        setIsAdding(true);
+                    }}
+                />
+            )}
         </AppLayout>
     );
 }
