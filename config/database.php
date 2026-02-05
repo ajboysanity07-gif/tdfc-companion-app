@@ -119,6 +119,7 @@ return [
             'options' => [
                 \PDO::ATTR_TIMEOUT => 120,
                 \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+                \PDO::ATTR_PERSISTENT => true, // Reuse connections across requests
             ],
         ],
 

@@ -308,6 +308,24 @@ if [ "${TS_DISABLE:-}" != "1" ]; then
     fi
 fi
 
+# Warmup database connection through Tailscale to reduce first-request latency
+warmup_db_connection() {
+    echo "Warming up database connection..."
+    local max_retries=5
+    local retry=0
+    while [ $retry -lt $max_retries ]; do
+        if gosu www-data php artisan tinker --execute="try { DB::connection()->getPdo(); echo 'DB connection established'; } catch (\Exception \$e) { echo 'DB warmup attempt failed: ' . \$e->getMessage(); exit(1); }" 2>/dev/null; then
+            echo "Database connection warmed up successfully."
+            return 0
+        fi
+        retry=$((retry + 1))
+        echo "Database warmup attempt $retry/$max_retries failed, retrying in 2s..."
+        sleep 2
+    done
+    echo "WARNING: Database warmup failed after $max_retries attempts. First requests may be slow."
+    return 0  # Don't fail startup, just warn
+}
+
 gosu www-data php artisan config:cache
 if [ -f "${APP_DIR}/config/view.php" ]; then
     if [ -d "${APP_DIR}/resources/views" ]; then
@@ -323,6 +341,11 @@ if [ -f "${APP_DIR}/config/view.php" ]; then
     fi
 else
     echo "View config not found; skipping view:cache."
+fi
+
+# Warmup DB connection if we're using the DB proxy
+if [ "${TS_DB_PROXY:-0}" = "1" ] || [ -n "${DB_HOST:-}" ]; then
+    warmup_db_connection
 fi
 
 case "${RUN_MIGRATIONS:-}" in
