@@ -110,6 +110,11 @@ return [
             'prefix_indexes' => true,
             'encrypt' => env('DB_ENCRYPT', 'yes'),
             'trust_server_certificate' => env('DB_TRUST_SERVER_CERTIFICATE', 'false'),
+            'options' => array_filter([
+                'LoginTimeout' => env('DB_LOGIN_TIMEOUT', 10),
+                'ConnectTimeout' => env('DB_CONNECT_TIMEOUT', 10),
+                // Query timeout can be set per-connection if needed: PDO::SQLSRV_ATTR_QUERY_TIMEOUT
+            ]),
         ],
 
     ],
