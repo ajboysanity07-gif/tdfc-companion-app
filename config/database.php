@@ -108,19 +108,8 @@ return [
             'charset' => env('DB_CHARSET', 'utf8'),
             'prefix' => '',
             'prefix_indexes' => true,
-            // ODBC Driver 18 settings for Tailscale connections
-            'encrypt' => env('DB_ENCRYPT', 'no'),
-            'trust_server_certificate' => env('DB_TRUST_SERVER_CERTIFICATE', 'yes'),
-            'MultiSubnetFailover' => env('DB_MULTI_SUBNET_FAILOVER', 'no'),
-            // Fail fast instead of hanging when DB is unreachable
-            'loginTimeout' => env('DB_LOGIN_TIMEOUT', 15),
-            'timeout' => env('DB_QUERY_TIMEOUT', 30),
-            'options' => array_filter([
-                // Use the sqlsrv driver-specific query timeout if available
-                defined('\\PDO::SQLSRV_ATTR_QUERY_TIMEOUT') ? \PDO::SQLSRV_ATTR_QUERY_TIMEOUT : null
-                    => env('DB_QUERY_TIMEOUT', 30),
-                \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
-            ], fn($value) => $value !== null),
+            // 'encrypt' => env('DB_ENCRYPT', 'yes'),
+            // 'trust_server_certificate' => env('DB_TRUST_SERVER_CERTIFICATE', 'false'),
         ],
 
     ],
