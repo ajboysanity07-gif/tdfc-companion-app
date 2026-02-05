@@ -413,7 +413,14 @@ export default function LoansPage() {
     ) : activeView === 'ledger' && ledgerLoading ? (
         <DesktopPanelSkeleton showMessage={false} />
     ) : activeView === 'calculator' ? (
-        <div className="h-full overflow-auto flex flex-col relative">
+        <motion.div
+            key="calculator"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.3, ease: 'easeOut' }}
+            className="h-full overflow-auto flex flex-col relative"
+        >
             <BoxHeader
                 title="Loan Calculator"
                 subtitle="Renew your loan application"
@@ -426,9 +433,16 @@ export default function LoansPage() {
                     forceModalTerms={true}
                 />
             </div>
-        </div>
+        </motion.div>
     ) : (
-        <div className="h-full overflow-auto">
+        <motion.div
+            key={activeView}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.3, ease: 'easeOut' }}
+            className="h-full overflow-auto"
+        >
             {activeView === 'schedule' ? (
                 <AmortschedTable 
                     rows={amortschedRows} 
@@ -453,7 +467,7 @@ export default function LoansPage() {
                     }}
                 />
             )}
-        </div>
+        </motion.div>
     );
 
     if (isMobile) {
