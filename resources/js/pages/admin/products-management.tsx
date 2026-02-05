@@ -9,7 +9,7 @@ import AppLayout from '@/layouts/app-layout';
 import { ProductLntype, ProductPayload, WlnType } from '@/types/product-lntype';
 import { Button } from '@/components/ui/button';
 import { AnimatePresence, motion } from 'framer-motion';
-import { CircleCheckBig, CircleX, Plus } from 'lucide-react';
+import { CircleCheckBig, CircleX, Plus, Save, Trash2, X, ChevronUp } from 'lucide-react';
 import { useEffect, useMemo, useState, useRef } from 'react';
 import HeaderBlock from '@/components/management/header-block';
 import { useMediaQuery } from '@/hooks/use-media-query';
@@ -173,52 +173,23 @@ function ProductMobileLayoutView({ products, loading = false, availableTypes = [
     };
 
     const productCrudRef = useRef<ProductCRUDRef>(null);
+    const [fabOpen, setFabOpen] = useState(false);
 
     return (
         <MobileViewLayout
             footer={
                 <>
-                    {!modalOpen && (
-                        <Button
-                            variant="default"
-                            onClick={() => {
-                                setSelected(null);
-                                setModalOpen(true);
-                            }}
-                            className="fixed bottom-20 left-1/2 -translate-x-1/2 rounded-full px-4 py-2 shadow-lg z-40"
-                        >
-                            <Plus className="mr-2 h-4 w-4" />
-                            Add New
-                        </Button>
-                    )}
-
-                    {modalOpen && (
-                        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 flex gap-3">
-                            <Button
-                                variant="outline"
-                                onClick={closeModal}
-                                className="rounded-full px-6 py-2 shadow-lg"
-                            >
-                                Cancel
-                            </Button>
-                            {selected && (
-                                <Button
-                                    variant="destructive"
-                                    onClick={() => productCrudRef.current?.delete()}
-                                    className="rounded-full px-6 py-2 shadow-lg"
-                                >
-                                    Delete
-                                </Button>
-                            )}
-                            <Button
-                                onClick={() => productCrudRef.current?.save()}
-                                className="rounded-full px-6 py-2 shadow-lg"
-                                style={{ backgroundColor: '#3b82f6' }}
-                            >
-                                Save
-                            </Button>
-                        </div>
-                    )}
+                    <Button
+                        variant="default"
+                        onClick={() => {
+                            setSelected(null);
+                            setModalOpen(true);
+                        }}
+                        className="fixed bottom-20 left-1/2 -translate-x-1/2 rounded-full px-4 py-2 shadow-lg z-40"
+                    >
+                        <Plus className="mr-2 h-4 w-4" />
+                        Add New
+                    </Button>
 
                     <FullScreenModalMobile
                         open={modalOpen}
@@ -245,6 +216,80 @@ function ProductMobileLayoutView({ products, loading = false, availableTypes = [
                             onToggleActive={onToggleActive}
                             hideActionsOnMobile
                         />
+                        
+                        {/* Collapsible Floating Action Menu for mobile modal */}
+                        {modalOpen && (
+                            <div className="fixed right-4 z-50 flex flex-col items-center gap-3" style={{ bottom: '80px' }}>
+                                {/* Action buttons - shown when expanded */}
+                                <div
+                                    style={{
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        gap: 12,
+                                        opacity: fabOpen ? 1 : 0,
+                                        transform: fabOpen ? 'translateY(0)' : 'translateY(12px)',
+                                        pointerEvents: fabOpen ? 'auto' : 'none',
+                                        transition: 'opacity 140ms ease, transform 180ms ease',
+                                    }}
+                                >
+                                    {selected && (
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                productCrudRef.current?.delete();
+                                                setFabOpen(false);
+                                            }}
+                                            className="rounded-full shadow-lg p-3 flex items-center justify-center"
+                                            style={{
+                                                width: 52,
+                                                height: 52,
+                                                boxShadow: "0 3px 16px 0 rgba(239,68,68,0.3)",
+                                                backgroundColor: '#ef4444',
+                                            }}
+                                            title="Delete Product"
+                                        >
+                                            <Trash2 className="w-5 h-5 text-white" />
+                                        </button>
+                                    )}
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            productCrudRef.current?.save();
+                                            setFabOpen(false);
+                                        }}
+                                        className="rounded-full shadow-lg p-3 flex items-center justify-center"
+                                        style={{
+                                            width: 52,
+                                            height: 52,
+                                            boxShadow: "0 3px 16px 0 rgba(59,130,246,0.3)",
+                                            backgroundColor: '#3b82f6',
+                                        }}
+                                        title="Save Product"
+                                    >
+                                        <Save className="w-5 h-5 text-white" />
+                                    </button>
+                                </div>
+                                
+                                {/* Main toggle button */}
+                                <button
+                                    type="button"
+                                    onClick={() => setFabOpen(!fabOpen)}
+                                    className="rounded-full shadow-lg p-3 transition-transform flex items-center justify-center"
+                                    style={{
+                                        width: 52,
+                                        height: 52,
+                                        boxShadow: "0 10px 24px rgba(0,0,0,0.22)",
+                                        transform: fabOpen ? 'rotate(90deg)' : 'rotate(0deg)',
+                                        backgroundColor: tw.isDark ? 'rgba(17,24,39,0.9)' : '#ffffff',
+                                        border: tw.isDark ? '1px solid rgba(255,255,255,0.2)' : '1px solid rgba(0,0,0,0.08)',
+                                        color: tw.isDark ? '#fff' : '#111827',
+                                    }}
+                                    aria-label={fabOpen ? 'Close actions' : 'Open actions'}
+                                >
+                                    {fabOpen ? <X className="h-5 w-5" /> : <ChevronUp className="h-5 w-5" />}
+                                </button>
+                            </div>
+                        )}
                     </FullScreenModalMobile>
                 </>
             }
