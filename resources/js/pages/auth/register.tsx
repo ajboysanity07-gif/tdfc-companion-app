@@ -14,24 +14,7 @@ import { register as apiRegister } from '../../api/auth-api';
 
 type Props = { adminMode?: boolean };
 
-const stepVariants = {
-    enter: { x: 28 },
-    center: { x: 0 },
-    exit: { x: -28 },
-};
-
-const Step = ({ children }: { children: React.ReactNode }) => (
-    <motion.div
-        layout
-        variants={stepVariants}
-        initial="enter"
-        animate="center"
-        exit="exit"
-        transition={{ duration: 0.25, ease: 'easeOut' }}
-    >
-        {children}
-    </motion.div>
-);
+const Step = ({ children }: { children: React.ReactNode }) => <div>{children}</div>;
 
 type LookupStatus = 'idle' | 'searching' | 'found' | 'not_found';
 
@@ -390,6 +373,13 @@ export default function Register({ adminMode = false }: Props) {
                 description={stepDescription}
                 descriptionClassName="min-h-[7.5rem] sm:min-h-[5.25rem]"
                 align="start"
+                cardMotionKey={step}
+                cardMotionProps={{
+                    initial: { x: 32 },
+                    animate: { x: 0 },
+                    exit: { x: -32 },
+                    transition: { duration: 0.25, ease: 'easeOut' },
+                }}
                 footer={
                     <>
                         Already have an account?{' '}
@@ -399,14 +389,6 @@ export default function Register({ adminMode = false }: Props) {
                     </>
                 }
             >
-                <AnimatePresence mode="wait" initial={false}>
-                    <motion.div
-                        key={`card-step-${step}`}
-                        initial={{ x: 28 }}
-                        animate={{ x: 0 }}
-                        exit={{ x: -28 }}
-                        transition={{ duration: 0.25, ease: 'easeOut' }}
-                    >
                 <form onSubmit={handleSubmit} className="flex w-full flex-col items-stretch">
                     <div className="relative w-full overflow-hidden">
                         <AnimatePresence mode="wait" initial={false}>
@@ -680,8 +662,6 @@ export default function Register({ adminMode = false }: Props) {
                     </AnimatePresence>
                     </div>
                 </form>
-                    </motion.div>
-                </AnimatePresence>
             </AuthCardLayout>
        
 
