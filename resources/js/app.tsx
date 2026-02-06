@@ -10,7 +10,7 @@ import axios from 'axios'; // ✅ Import axios
 
 axios.defaults.withCredentials = true; // ✅ Always send credentials/cookies
 
-const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+const appName = import.meta.env.VITE_APP_NAME || 'TDFC Companion App';
 
 const queryClient = new QueryClient({
   defaultOptions: {
