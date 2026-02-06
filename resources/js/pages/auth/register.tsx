@@ -15,9 +15,9 @@ import { register as apiRegister } from '../../api/auth-api';
 type Props = { adminMode?: boolean };
 
 const stepVariants = {
-    enter: { opacity: 0, x: 28 },
-    center: { opacity: 1, x: 0 },
-    exit: { opacity: 0, x: -28 },
+    enter: { x: 28 },
+    center: { x: 0 },
+    exit: { x: -28 },
 };
 
 const Step = ({ children }: { children: React.ReactNode }) => (
@@ -402,10 +402,10 @@ export default function Register({ adminMode = false }: Props) {
                 <AnimatePresence mode="wait" initial={false}>
                     <motion.div
                         key={`card-step-${step}`}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.25 }}
+                        initial={{ x: 28 }}
+                        animate={{ x: 0 }}
+                        exit={{ x: -28 }}
+                        transition={{ duration: 0.25, ease: 'easeOut' }}
                     >
                 <form onSubmit={handleSubmit} className="flex w-full flex-col items-stretch">
                     <div className="relative w-full overflow-hidden">
