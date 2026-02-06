@@ -6,16 +6,20 @@ export default function AuthCardLayout({
     title,
     description,
     descriptionClassName,
+    align = 'center',
     footer,
 }: PropsWithChildren<{
     name?: string;
     title?: string;
     description?: ReactNode;
     descriptionClassName?: string;
+    align?: 'center' | 'start';
     footer?: React.ReactNode;
 }>) {
+    const alignClass = align === 'start' ? 'items-start' : 'items-center';
+
     return (
-        <div className="h-screen overflow-hidden bg-linear-to-br from-gray-100 via-white to-gray-200 px-6 py-6 sm:px-4 sm:py-10 flex items-center justify-center">
+        <div className={`h-screen overflow-hidden bg-linear-to-br from-gray-100 via-white to-gray-200 px-6 py-6 sm:px-4 sm:py-10 flex ${alignClass} justify-center`}>
             <div className="mx-auto w-full max-w-[320px] sm:max-w-[560px]">
                 {(title || description) && (
                     <div className="mb-4 sm:mb-6 text-center">
