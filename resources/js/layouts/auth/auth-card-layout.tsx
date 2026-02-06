@@ -1,15 +1,17 @@
 import { motion } from 'framer-motion';
-import { type PropsWithChildren } from 'react';
+import { type PropsWithChildren, type ReactNode } from 'react';
 
 export default function AuthCardLayout({
     children,
     title,
     description,
+    descriptionClassName,
     footer,
 }: PropsWithChildren<{
     name?: string;
     title?: string;
-    description?: string;
+    description?: ReactNode;
+    descriptionClassName?: string;
     footer?: React.ReactNode;
 }>) {
     return (
@@ -18,7 +20,11 @@ export default function AuthCardLayout({
                 {(title || description) && (
                     <div className="mb-4 sm:mb-6 text-center">
                         {title && <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-[#F57979]">{title}</h1>}
-                        {description && <p className="mt-3 text-[15px] leading-6 text-black/70">{description}</p>}
+                        {description && (
+                            <p className={`mt-3 text-[15px] leading-6 text-black/70${descriptionClassName ? ` ${descriptionClassName}` : ''}`}>
+                                {description}
+                            </p>
+                        )}
                     </div>
                 )}
 

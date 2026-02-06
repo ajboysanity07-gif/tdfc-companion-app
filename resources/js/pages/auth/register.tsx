@@ -9,7 +9,7 @@ import { Head } from '@inertiajs/react';
 import { AxiosError } from 'axios';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowLeft, Check, CircleCheckBig, CircleX, Eye, EyeOff, Plus } from 'lucide-react';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { register as apiRegister } from '../../api/auth-api';
 
 type Props = { adminMode?: boolean };
@@ -65,6 +65,8 @@ const initialFormState: RegisterFormState = {
 
 export default function Register({ adminMode = false }: Props) {
     const [step, setStep] = useState<1 | 2>(1);
+    const stepContainerRef = useRef<HTMLDivElement | null>(null);
+    const [minStepHeight, setMinStepHeight] = useState<number | null>(null);
     const [lookupStatus, setLookupStatus] = useState<LookupStatus>('idle');
     const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
     const [pendingAvatarSrc, setPendingAvatarSrc] = useState<string | null>(null);
@@ -145,6 +147,12 @@ export default function Register({ adminMode = false }: Props) {
         setPwValid(form.password.length === 0 ? null : form.password.length >= 8);
         setPwMatch(form.password_confirmation.length === 0 ? null : form.password_confirmation === form.password);
     }, [form.password, form.password_confirmation]);
+
+    useLayoutEffect(() => {
+        if (!stepContainerRef.current) return;
+        const height = stepContainerRef.current.getBoundingClientRect().height;
+        setMinStepHeight((prev) => (prev === null ? height : Math.max(prev, height)));
+    }, [step]);
 
     // duplicate checks (same as your useEffect logic)
     useEffect(() => {
@@ -388,6 +396,7 @@ export default function Register({ adminMode = false }: Props) {
             <AuthCardLayout
                 title="Register"
                 description={stepDescription}
+                descriptionClassName="min-h-[9rem] sm:min-h-[6rem]"
                 footer={
                     <>
                         Already have an account?{' '}
@@ -406,7 +415,11 @@ export default function Register({ adminMode = false }: Props) {
                         transition={{ duration: 0.25 }}
                     >
                 <form onSubmit={handleSubmit} className="flex w-full flex-col items-stretch">
-                    <div className="relative w-full overflow-hidden">
+                    <div
+                        className="relative w-full overflow-hidden"
+                        ref={stepContainerRef}
+                        style={minStepHeight !== null ? { minHeight: minStepHeight } : undefined}
+                    >
                         <AnimatePresence mode="wait" initial={false}>
                             {step === 1 ? (
                                 <Step key="s1">
