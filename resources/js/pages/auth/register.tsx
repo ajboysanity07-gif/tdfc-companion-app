@@ -15,9 +15,9 @@ import { register as apiRegister } from '../../api/auth-api';
 type Props = { adminMode?: boolean };
 
 const stepVariants = {
-    enter: { opacity: 0, y: 18 },
-    center: { opacity: 1, y: 0 },
-    exit: { opacity: 0, y: -18 },
+    enter: { opacity: 0, x: 28 },
+    center: { opacity: 1, x: 0 },
+    exit: { opacity: 0, x: -28 },
 };
 
 const Step = ({ children }: { children: React.ReactNode }) => (
