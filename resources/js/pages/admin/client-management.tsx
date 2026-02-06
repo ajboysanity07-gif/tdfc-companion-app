@@ -443,9 +443,7 @@ export default function ClientManagementPage() {
                     )}
                 </AnimatePresence>
             </div>
-            {!isMobile || !selectedId ? (
-                <HeaderBlock title="Client Management" subtitle="Review, approve, and manage clients" />
-            ) : null}
+            <HeaderBlock title="Client Management" subtitle="Review, approve, and manage clients" />
 
             {loading ? (
                 isMobile ? (
