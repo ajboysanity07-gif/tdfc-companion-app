@@ -375,9 +375,9 @@ export default function Register({ adminMode = false }: Props) {
                 align="start"
                 cardMotionKey={step}
                 cardMotionProps={{
-                    initial: { y: 32 },
-                    animate: { y: 0 },
-                    exit: { y: -32 },
+                    initial: { opacity: 0 },
+                    animate: { opacity: 1 },
+                    exit: { opacity: 0 },
                     transition: { duration: 0.25, ease: 'easeOut' },
                 }}
                 footer={
