@@ -32,7 +32,7 @@
         }
     </style>
 
-    <title inertia>{{ config('app.name', 'Laravel') }}</title>
+    <title inertia>{{ config('app.name', 'TDFC Companion App') }}</title>
 
     {{-- PWA Meta Tags --}}
     <meta name="application-name" content="TDFC Companion App">
