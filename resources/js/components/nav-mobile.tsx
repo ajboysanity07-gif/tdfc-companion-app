@@ -58,8 +58,8 @@ export default function NavMobile() {
   //   pathname === customerDashboardHref ||
   //   pathname === adminDashboardHref;
 
-  const navZIndex = 3050;  // MUI modal zIndex is 1300, we need higher
-  const floatingZIndex = navZIndex + 20;
+  const navZIndex = 20000;  // Keep the mobile nav above any modal/overlay.
+  const floatingZIndex = navZIndex - 10;
   const [productModalOpen, setProductModalOpen] = useState(false);
   const [anyModalOpen, setAnyModalOpen] = useState(false);
   const [actionsOpen, setActionsOpen] = useState(false);
