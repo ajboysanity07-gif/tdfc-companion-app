@@ -1,4 +1,4 @@
-﻿import PayslipFileRow from '@/components/auth/register/payslip-filerow';
+import PayslipFileRow from '@/components/auth/register/payslip-filerow';
 import PayslipWizard from '@/components/auth/register/payslip-wizard';
 import PRCFileRow from '@/components/auth/register/prc-filerow';
 import PrcWizard from '@/components/auth/register/prc-wizard';
@@ -8,16 +8,16 @@ import AuthCardLayout from '@/layouts/auth/auth-card-layout';
 import { Head } from '@inertiajs/react';
 import { AxiosError } from 'axios';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Eye, EyeOff, Plus, Check, CircleCheckBig, CircleX } from 'lucide-react';
+import { ArrowLeft, Check, CircleCheckBig, CircleX, Eye, EyeOff, Plus } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
 import { register as apiRegister } from '../../api/auth-api';
 
 type Props = { adminMode?: boolean };
 
 const stepVariants = {
-    enter: { opacity: 0 },
-    center: { opacity: 1 },
-    exit: { opacity: 0 },
+    enter: { opacity: 0, y: 18 },
+    center: { opacity: 1, y: 0 },
+    exit: { opacity: 0, y: -18 },
 };
 
 const Step = ({ children }: { children: React.ReactNode }) => (
@@ -27,7 +27,7 @@ const Step = ({ children }: { children: React.ReactNode }) => (
         initial="enter"
         animate="center"
         exit="exit"
-        transition={{ duration: 0.2 }}
+        transition={{ duration: 0.25, ease: 'easeOut' }}
     >
         {children}
     </motion.div>
@@ -359,7 +359,7 @@ export default function Register({ adminMode = false }: Props) {
 
     return (
         <>
-            <Head title="Register - TDFC App`" />
+            <Head title="Register" />
             <AnimatePresence>
                 {(success || globalError) && (
                     <motion.div
@@ -661,7 +661,8 @@ export default function Register({ adminMode = false }: Props) {
                                             onClick={() => setStep(1)}
                                             className="inline-flex items-center gap-2 rounded-full border border-gray-300 bg-white px-5 py-3 text-sm font-semibold text-black/80 hover:bg-black/5"
                                         >
-                                            â† Back
+                                            <ArrowLeft className="h-4 w-4" />
+                                            Back
                                         </button>
                                         <button
                                             type="submit"
