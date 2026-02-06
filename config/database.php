@@ -2,6 +2,15 @@
 
 use Illuminate\Support\Str;
 
+$sqlsrvOptions = [
+    'LoginTimeout' => env('DB_LOGIN_TIMEOUT', 10),
+    'ConnectTimeout' => env('DB_CONNECT_TIMEOUT', 10),
+];
+
+if (defined('PDO::SQLSRV_ATTR_QUERY_TIMEOUT')) {
+    $sqlsrvOptions[PDO::SQLSRV_ATTR_QUERY_TIMEOUT] = env('DB_QUERY_TIMEOUT', 30);
+}
+
 return [
 
     /*
@@ -110,11 +119,7 @@ return [
             'prefix_indexes' => true,
             'encrypt' => env('DB_ENCRYPT', 'yes'),
             'trust_server_certificate' => env('DB_TRUST_SERVER_CERTIFICATE', 'false'),
-            'options' => array_filter([
-                'LoginTimeout' => env('DB_LOGIN_TIMEOUT', 10),
-                'ConnectTimeout' => env('DB_CONNECT_TIMEOUT', 10),
-                // Query timeout can be set per-connection if needed: PDO::SQLSRV_ATTR_QUERY_TIMEOUT
-            ]),
+            'options' => array_filter($sqlsrvOptions),
         ],
 
     ],
