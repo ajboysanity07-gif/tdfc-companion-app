@@ -113,6 +113,7 @@ return [
             'options' => array_filter([
                 'LoginTimeout' => env('DB_LOGIN_TIMEOUT', 5),
                 'ConnectTimeout' => env('DB_CONNECT_TIMEOUT', 5),
+                'QueryTimeout' => env('DB_QUERY_TIMEOUT', 15),
                 'ConnectionPooling' => env('DB_CONNECTION_POOLING', false),
             ], static fn ($value) => $value !== null && $value !== ''),
         ],

@@ -20,6 +20,8 @@ TS_DB_LOCAL_PORT="${TS_DB_LOCAL_PORT:-}"
 TS_SOCKS5_HOST="${TS_SOCKS5_HOST:-}"
 TS_SOCKS5_PORT="${TS_SOCKS5_PORT:-}"
 TS_WATCHDOG_INTERVAL="${TS_WATCHDOG_INTERVAL:-20}"
+DB_HEALTHCHECK_INTERVAL="${DB_HEALTHCHECK_INTERVAL:-30}"
+DB_HEALTHCHECK_ATTEMPT_TIMEOUT="${DB_HEALTHCHECK_ATTEMPT_TIMEOUT:-5}"
 DB_WAIT_FOR_CONNECTION="${DB_WAIT_FOR_CONNECTION:-}"
 DB_WAIT_MAX_RETRIES="${DB_WAIT_MAX_RETRIES:-12}"
 DB_WAIT_SLEEP_SECONDS="${DB_WAIT_SLEEP_SECONDS:-2}"
@@ -77,6 +79,8 @@ TS_DB_LOCAL_PORT="$(strip_wrapping_quotes "${TS_DB_LOCAL_PORT}")"
 TS_SOCKS5_HOST="$(strip_wrapping_quotes "${TS_SOCKS5_HOST}")"
 TS_SOCKS5_PORT="$(strip_wrapping_quotes "${TS_SOCKS5_PORT}")"
 TS_WATCHDOG_INTERVAL="$(strip_wrapping_quotes "${TS_WATCHDOG_INTERVAL}")"
+DB_HEALTHCHECK_INTERVAL="$(strip_wrapping_quotes "${DB_HEALTHCHECK_INTERVAL}")"
+DB_HEALTHCHECK_ATTEMPT_TIMEOUT="$(strip_wrapping_quotes "${DB_HEALTHCHECK_ATTEMPT_TIMEOUT}")"
 DB_WAIT_FOR_CONNECTION="$(strip_wrapping_quotes "${DB_WAIT_FOR_CONNECTION}")"
 DB_WAIT_MAX_RETRIES="$(strip_wrapping_quotes "${DB_WAIT_MAX_RETRIES}")"
 DB_WAIT_SLEEP_SECONDS="$(strip_wrapping_quotes "${DB_WAIT_SLEEP_SECONDS}")"
@@ -232,6 +236,8 @@ start_db_proxy() {
         return 1
     fi
 
+    stop_db_proxy
+
     echo "Starting Tailscale DB proxy on 127.0.0.1:${TS_DB_LOCAL_PORT}..."
     ncat --listen 127.0.0.1 "${TS_DB_LOCAL_PORT}" --keep-open \
         --sh-exec "ncat --proxy ${TS_SOCKS5_HOST}:${TS_SOCKS5_PORT} --proxy-type socks5 ${TS_DB_REMOTE_HOST} ${TS_DB_REMOTE_PORT:-1433}" &
@@ -240,6 +246,74 @@ start_db_proxy() {
     DB_HOST="127.0.0.1"
     DB_PORT="${TS_DB_LOCAL_PORT}"
     export DB_HOST DB_PORT
+}
+
+stop_db_proxy() {
+    if [ -n "${TS_DB_PROXY_PID:-}" ] && kill -0 "${TS_DB_PROXY_PID}" 2>/dev/null; then
+        kill "${TS_DB_PROXY_PID}" 2>/dev/null || true
+        wait "${TS_DB_PROXY_PID}" 2>/dev/null || true
+    fi
+    TS_DB_PROXY_PID=""
+}
+
+db_connection_check() {
+    local attempt_timeout="${DB_HEALTHCHECK_ATTEMPT_TIMEOUT}"
+    local timeout_cmd=()
+    if command -v timeout >/dev/null 2>&1; then
+        timeout_cmd=(timeout "${attempt_timeout}")
+    fi
+
+    set +e
+    check_output="$("${timeout_cmd[@]}" gosu www-data php -r "
+        require '/var/www/html/vendor/autoload.php';
+        \$app = require_once '/var/www/html/bootstrap/app.php';
+        \$kernel = \$app->make(Illuminate\Contracts\Console\Kernel::class);
+        \$kernel->bootstrap();
+        try {
+            \Illuminate\Support\Facades\DB::connection()->getPdo();
+            echo 'DB connection established';
+            exit(0);
+        } catch (Exception \$e) {
+            echo 'Failed: ' . \$e->getMessage();
+            exit(1);
+        }
+    " 2>&1)"
+    check_exit=$?
+    set -e
+
+    if [ "${check_exit}" -eq 0 ]; then
+        return 0
+    fi
+
+    echo "DB healthcheck failed (exit ${check_exit}): ${check_output}"
+    return 1
+}
+
+start_db_healthcheck() {
+    if [ "${DB_HEALTHCHECK_INTERVAL}" = "0" ]; then
+        return 0
+    fi
+    if [ -z "${DB_HOST:-}" ]; then
+        return 0
+    fi
+
+    (
+        while true; do
+            sleep "${DB_HEALTHCHECK_INTERVAL}"
+
+            if ! db_connection_check; then
+                echo "DB healthcheck failed; refreshing Tailscale DB proxy..."
+                if [ -n "${TS_AUTHKEY}" ]; then
+                    tailscale_up || true
+                    wait_for_auth "${TS_AUTH_TIMEOUT}" || true
+                fi
+                if [ "${TS_DB_PROXY}" = "1" ]; then
+                    stop_db_proxy
+                    start_db_proxy || true
+                fi
+            fi
+        done
+    ) &
 }
 
 start_tailscale_watchdog() {
@@ -393,6 +467,7 @@ if [ "${TS_DISABLE:-}" != "1" ]; then
     fi
 
     start_tailscale_watchdog
+    start_db_healthcheck
 fi
 
 # Warmup database connection through Tailscale to reduce first-request latency
