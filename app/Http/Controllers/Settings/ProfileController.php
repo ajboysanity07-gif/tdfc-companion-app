@@ -28,8 +28,15 @@ class ProfileController extends Controller
 
         if ($request->hasFile('avatar')) {
             // Delete old avatar if it exists
-            if ($user->profile_picture_path && Storage::exists($user->profile_picture_path)) {
-                Storage::delete($user->profile_picture_path);
+            if ($user->profile_picture_path) {
+                try {
+                    Storage::delete($user->profile_picture_path);
+                } catch (\Throwable $e) {
+                    \Log::warning('Failed to delete old avatar.', [
+                        'path' => $user->profile_picture_path,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
             }
 
             // Store the new avatar
