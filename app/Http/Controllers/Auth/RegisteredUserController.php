@@ -16,10 +16,10 @@ class RegisteredUserController extends Controller
     {
         // Handles file uploads
         $paths = [
-            'profile_picture_path' => $request->file('profilepicture')?->store('uploads', 'public'),
-            'prc_id_photo_front'   => $request->file('prcidphotofront')?->store('uploads', 'public'),
-            'prc_id_photo_back'    => $request->file('prcidphotoback')?->store('uploads', 'public'),
-            'payslip_photo_path'   => $request->file('payslipphoto')?->store('uploads', 'public'),
+            'profile_picture_path' => $request->file('profilepicture')?->store('uploads'),
+            'prc_id_photo_front'   => $request->file('prcidphotofront')?->store('uploads'),
+            'prc_id_photo_back'    => $request->file('prcidphotoback')?->store('uploads'),
+            'payslip_photo_path'   => $request->file('payslipphoto')?->store('uploads'),
         ];
 
         // Prepare user data

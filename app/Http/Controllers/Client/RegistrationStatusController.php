@@ -99,13 +99,13 @@ class RegistrationStatusController extends Controller
 
         // Store any new uploads
         if ($request->hasFile('prc_id_photo_front')) {
-            $user->prc_id_photo_front = $request->file('prc_id_photo_front')->store('uploads/prc', 'public');
+            $user->prc_id_photo_front = $request->file('prc_id_photo_front')->store('uploads/prc');
         }
         if ($request->hasFile('prc_id_photo_back')) {
-            $user->prc_id_photo_back = $request->file('prc_id_photo_back')->store('uploads/prc', 'public');
+            $user->prc_id_photo_back = $request->file('prc_id_photo_back')->store('uploads/prc');
         }
         if ($request->hasFile('payslip_photo_path')) {
-            $user->payslip_photo_path = $request->file('payslip_photo_path')->store('uploads/payslips', 'public');
+            $user->payslip_photo_path = $request->file('payslip_photo_path')->store('uploads/payslips');
         }
 
         // Reset status for review

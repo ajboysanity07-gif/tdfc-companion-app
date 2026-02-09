@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Middleware;
 use Tighten\Ziggy\Ziggy;
 use App\Services\Client\LoanClassificationService;
@@ -38,12 +39,10 @@ class HandleInertiaRequests extends Middleware
                 $loanClass = $loanClassificationService->classify($loanRows->get($user->acctno));
             }
             
-            // Extract filename from profile_picture_path and use public/images/ directory
-            // This ensures avatars are loaded from git-tracked location for both admin and client users
+            // Build avatar URL from the active filesystem disk.
             $avatarUrl = null;
             if ($user->profile_picture_path) {
-                $filename = basename($user->profile_picture_path);
-                $avatarUrl = asset('images/' . $filename);
+                $avatarUrl = Storage::url($user->profile_picture_path);
             }
             
             $authUser = [
