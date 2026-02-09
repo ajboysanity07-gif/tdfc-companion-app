@@ -19,6 +19,7 @@ TS_DB_PROXY="${TS_DB_PROXY:-auto}"
 TS_DB_LOCAL_PORT="${TS_DB_LOCAL_PORT:-}"
 TS_SOCKS5_HOST="${TS_SOCKS5_HOST:-}"
 TS_SOCKS5_PORT="${TS_SOCKS5_PORT:-}"
+TS_WATCHDOG_INTERVAL="${TS_WATCHDOG_INTERVAL:-20}"
 DB_WAIT_FOR_CONNECTION="${DB_WAIT_FOR_CONNECTION:-}"
 DB_WAIT_MAX_RETRIES="${DB_WAIT_MAX_RETRIES:-12}"
 DB_WAIT_SLEEP_SECONDS="${DB_WAIT_SLEEP_SECONDS:-2}"
@@ -75,10 +76,14 @@ TS_DB_PROXY="$(strip_wrapping_quotes "${TS_DB_PROXY}")"
 TS_DB_LOCAL_PORT="$(strip_wrapping_quotes "${TS_DB_LOCAL_PORT}")"
 TS_SOCKS5_HOST="$(strip_wrapping_quotes "${TS_SOCKS5_HOST}")"
 TS_SOCKS5_PORT="$(strip_wrapping_quotes "${TS_SOCKS5_PORT}")"
+TS_WATCHDOG_INTERVAL="$(strip_wrapping_quotes "${TS_WATCHDOG_INTERVAL}")"
 DB_WAIT_FOR_CONNECTION="$(strip_wrapping_quotes "${DB_WAIT_FOR_CONNECTION}")"
 DB_WAIT_MAX_RETRIES="$(strip_wrapping_quotes "${DB_WAIT_MAX_RETRIES}")"
 DB_WAIT_SLEEP_SECONDS="$(strip_wrapping_quotes "${DB_WAIT_SLEEP_SECONDS}")"
 DB_WAIT_ATTEMPT_TIMEOUT="$(strip_wrapping_quotes "${DB_WAIT_ATTEMPT_TIMEOUT}")"
+
+TAILSCALED_PID=""
+TS_DB_PROXY_PID=""
 
 if [ -n "${DB_HOST:-}" ]; then
     export DB_HOST
@@ -159,6 +164,123 @@ wait_for_auth() {
     return 1
 }
 
+build_tailscale_up_args() {
+    TS_UP_COMMON_ARGS=(--hostname="${TS_HOSTNAME}" --accept-dns="${TS_ACCEPT_DNS}")
+    if [ -n "${TS_NETFILTER}" ]; then
+        TS_UP_COMMON_ARGS+=(--netfilter-mode="${TS_NETFILTER}")
+    else
+        TS_UP_COMMON_ARGS+=(--netfilter-mode=off)
+    fi
+
+    TS_UP_ARGS=("${TS_UP_COMMON_ARGS[@]}")
+    if [ -n "${TS_TAGS}" ]; then
+        TS_UP_ARGS+=(--advertise-tags="${TS_TAGS}")
+    fi
+}
+
+tailscale_up() {
+    if [ -z "${TS_AUTHKEY}" ]; then
+        echo "TS_AUTHKEY not set and no existing login detected. Cannot bring Tailscale up."
+        return 1
+    fi
+
+    build_tailscale_up_args
+
+    echo "Authenticating Tailscale..."
+    set +e
+    TS_UP_OUTPUT="$(tailscale --socket="${TS_SOCKET}" up --authkey="${TS_AUTHKEY}" "${TS_UP_ARGS[@]}" 2>&1)"
+    TS_UP_EXIT=$?
+    set -e
+
+    if [ "${TS_UP_EXIT}" -ne 0 ]; then
+        echo "${TS_UP_OUTPUT}"
+        if [ -n "${TS_TAGS}" ] && echo "${TS_UP_OUTPUT}" | grep -Eqi "requested tags|invalid or not permitted"; then
+            echo "Tailscale tags were rejected; retrying without tags."
+            echo "To use tags, configure tagOwners for tag:railway in the Tailscale ACL, use an auth key permitted for that tag, or omit TS_TAGS."
+            TS_UP_ARGS=("${TS_UP_COMMON_ARGS[@]}")
+            set +e
+            TS_UP_OUTPUT="$(tailscale --socket="${TS_SOCKET}" up --authkey="${TS_AUTHKEY}" "${TS_UP_ARGS[@]}" 2>&1)"
+            TS_UP_EXIT=$?
+            set -e
+            if [ "${TS_UP_EXIT}" -ne 0 ]; then
+                echo "${TS_UP_OUTPUT}"
+                return "${TS_UP_EXIT}"
+            fi
+        else
+            return "${TS_UP_EXIT}"
+        fi
+    fi
+
+    return 0
+}
+
+start_tailscaled() {
+    tailscaled "${TAILSCALED_ARGS[@]}" &
+    TAILSCALED_PID=$!
+}
+
+start_db_proxy() {
+    if [ -z "${TS_DB_REMOTE_HOST:-}" ]; then
+        echo "TS_DB_PROXY enabled but DB_HOST is empty; skipping DB proxy."
+        return 0
+    fi
+    if [ -z "${TS_DB_LOCAL_PORT}" ]; then
+        TS_DB_LOCAL_PORT="${TS_DB_REMOTE_PORT:-1433}"
+    fi
+    if ! command -v ncat >/dev/null 2>&1; then
+        echo "ncat not available; cannot start DB proxy."
+        return 1
+    fi
+
+    echo "Starting Tailscale DB proxy on 127.0.0.1:${TS_DB_LOCAL_PORT}..."
+    ncat --listen 127.0.0.1 "${TS_DB_LOCAL_PORT}" --keep-open \
+        --sh-exec "ncat --proxy ${TS_SOCKS5_HOST}:${TS_SOCKS5_PORT} --proxy-type socks5 ${TS_DB_REMOTE_HOST} ${TS_DB_REMOTE_PORT:-1433}" &
+    TS_DB_PROXY_PID=$!
+
+    DB_HOST="127.0.0.1"
+    DB_PORT="${TS_DB_LOCAL_PORT}"
+    export DB_HOST DB_PORT
+}
+
+start_tailscale_watchdog() {
+    if [ "${TS_WATCHDOG_INTERVAL}" = "0" ]; then
+        return 0
+    fi
+
+    (
+        while true; do
+            sleep "${TS_WATCHDOG_INTERVAL}"
+
+            if [ -n "${TAILSCALED_PID:-}" ] && ! kill -0 "${TAILSCALED_PID}" 2>/dev/null; then
+                echo "tailscaled stopped; restarting..."
+                start_tailscaled
+                if ! wait_for_localapi "${TS_READY_TIMEOUT}"; then
+                    echo "Tailscaled did not become ready in time."
+                    continue
+                fi
+            fi
+
+            if [ -S "${TS_SOCKET}" ]; then
+                local ip
+                ip="$(tailscale --socket="${TS_SOCKET}" ip -4 2>/dev/null | head -n 1 || true)"
+                if [ -z "${ip}" ] && [ -n "${TS_AUTHKEY}" ]; then
+                    echo "Tailscale IP missing; re-authenticating..."
+                    if tailscale_up; then
+                        wait_for_auth "${TS_AUTH_TIMEOUT}" || true
+                    fi
+                fi
+            fi
+
+            if [ "${TS_DB_PROXY}" = "1" ]; then
+                if [ -n "${TS_DB_PROXY_PID:-}" ] && ! kill -0 "${TS_DB_PROXY_PID}" 2>/dev/null; then
+                    echo "DB proxy stopped; restarting..."
+                    start_db_proxy || true
+                fi
+            fi
+        done
+    ) &
+}
+
 TS_HOSTNAME_ORIG="${TS_HOSTNAME}"
 if [ -z "${TS_HOSTNAME}" ]; then
     if [ -n "${RAILWAY_SERVICE_NAME:-}" ]; then
@@ -236,7 +358,7 @@ if [ "${TS_DISABLE:-}" != "1" ]; then
         TAILSCALED_ARGS+=(--socks5-server="${TS_SOCKS5_HOST}:${TS_SOCKS5_PORT}")
     fi
 
-    tailscaled "${TAILSCALED_ARGS[@]}" &
+    start_tailscaled
 
     if ! wait_for_localapi "${TS_READY_TIMEOUT}"; then
         echo "Tailscaled did not become ready in time."
@@ -247,54 +369,14 @@ if [ "${TS_DISABLE:-}" != "1" ]; then
     if [ -n "${TS_IP}" ]; then
         echo "Tailscale already authenticated with IP ${TS_IP}."
     else
-        if [ -z "${TS_AUTHKEY}" ]; then
-            echo "TS_AUTHKEY not set and no existing login detected. Cannot bring Tailscale up."
+        if ! tailscale_up; then
             exit 1
-        else
-            TS_UP_COMMON_ARGS=()
-            TS_UP_COMMON_ARGS+=(--hostname="${TS_HOSTNAME}")
-            TS_UP_COMMON_ARGS+=(--accept-dns="${TS_ACCEPT_DNS}")
-            if [ -n "${TS_NETFILTER}" ]; then
-                TS_UP_COMMON_ARGS+=(--netfilter-mode="${TS_NETFILTER}")
-            else
-                TS_UP_COMMON_ARGS+=(--netfilter-mode=off)
-            fi
+        fi
 
-            TS_UP_ARGS=("${TS_UP_COMMON_ARGS[@]}")
-            if [ -n "${TS_TAGS}" ]; then
-                TS_UP_ARGS+=(--advertise-tags="${TS_TAGS}")
-            fi
-
-            echo "Authenticating Tailscale..."
-            set +e
-            TS_UP_OUTPUT="$(tailscale --socket="${TS_SOCKET}" up --authkey="${TS_AUTHKEY}" "${TS_UP_ARGS[@]}" 2>&1)"
-            TS_UP_EXIT=$?
-            set -e
-
-            if [ "${TS_UP_EXIT}" -ne 0 ]; then
-                echo "${TS_UP_OUTPUT}"
-                if [ -n "${TS_TAGS}" ] && echo "${TS_UP_OUTPUT}" | grep -Eqi "requested tags|invalid or not permitted"; then
-                    echo "Tailscale tags were rejected; retrying without tags."
-                    echo "To use tags, configure tagOwners for tag:railway in the Tailscale ACL, use an auth key permitted for that tag, or omit TS_TAGS."
-                    TS_UP_ARGS=("${TS_UP_COMMON_ARGS[@]}")
-                    set +e
-                    TS_UP_OUTPUT="$(tailscale --socket="${TS_SOCKET}" up --authkey="${TS_AUTHKEY}" "${TS_UP_ARGS[@]}" 2>&1)"
-                    TS_UP_EXIT=$?
-                    set -e
-                    if [ "${TS_UP_EXIT}" -ne 0 ]; then
-                        echo "${TS_UP_OUTPUT}"
-                        exit "${TS_UP_EXIT}"
-                    fi
-                else
-                    exit "${TS_UP_EXIT}"
-                fi
-            fi
-
-            if ! wait_for_auth "${TS_AUTH_TIMEOUT}"; then
-                echo "Tailscale did not authenticate in time."
-                tailscale --socket="${TS_SOCKET}" status || true
-                exit 1
-            fi
+        if ! wait_for_auth "${TS_AUTH_TIMEOUT}"; then
+            echo "Tailscale did not authenticate in time."
+            tailscale --socket="${TS_SOCKET}" status || true
+            exit 1
         fi
     fi
 
@@ -304,24 +386,13 @@ if [ "${TS_DISABLE:-}" != "1" ]; then
         else
             TS_DB_REMOTE_HOST="${DB_HOST}"
             TS_DB_REMOTE_PORT="${DB_PORT:-1433}"
-            if [ -z "${TS_DB_LOCAL_PORT}" ]; then
-                TS_DB_LOCAL_PORT="${TS_DB_REMOTE_PORT}"
-            fi
-
-            if ! command -v ncat >/dev/null 2>&1; then
-                echo "ncat not available; cannot start DB proxy."
+            if ! start_db_proxy; then
                 exit 1
             fi
-
-            echo "Starting Tailscale DB proxy on 127.0.0.1:${TS_DB_LOCAL_PORT}..."
-            ncat --listen 127.0.0.1 "${TS_DB_LOCAL_PORT}" --keep-open \
-                --sh-exec "ncat --proxy ${TS_SOCKS5_HOST}:${TS_SOCKS5_PORT} --proxy-type socks5 ${TS_DB_REMOTE_HOST} ${TS_DB_REMOTE_PORT}" &
-
-            DB_HOST="127.0.0.1"
-            DB_PORT="${TS_DB_LOCAL_PORT}"
-            export DB_HOST DB_PORT
         fi
     fi
+
+    start_tailscale_watchdog
 fi
 
 # Warmup database connection through Tailscale to reduce first-request latency

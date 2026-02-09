@@ -111,9 +111,10 @@ return [
             'encrypt' => env('DB_ENCRYPT', 'yes'),
             'trust_server_certificate' => env('DB_TRUST_SERVER_CERTIFICATE', 'false'),
             'options' => array_filter([
-                'LoginTimeout' => env('DB_LOGIN_TIMEOUT', 10),
-                'ConnectTimeout' => env('DB_CONNECT_TIMEOUT', 10),
-            ]),
+                'LoginTimeout' => env('DB_LOGIN_TIMEOUT', 5),
+                'ConnectTimeout' => env('DB_CONNECT_TIMEOUT', 5),
+                'ConnectionPooling' => env('DB_CONNECTION_POOLING', false),
+            ], static fn ($value) => $value !== null && $value !== ''),
         ],
 
     ],
