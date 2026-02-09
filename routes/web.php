@@ -1,16 +1,21 @@
 <?php
 
-use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
+
+Route::get('/health', function () {
+    return response()->noContent();
+})->name('health');
 
 // --- Controllers ---
+use App\Http\Controllers\Api\LoanTransactionController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
-use App\Http\Controllers\Api\LoanTransactionController;
 use App\Http\Controllers\Client\RegistrationStatusController;
+
 // --- Welcome / Landing Page ---
 Route::get('/', function () {
     if (config('app.debug')) {
@@ -22,10 +27,9 @@ Route::get('/', function () {
             Log::error('Database test failed', ['error' => $e->getMessage()]);
         }
     }
-    
+
     return Inertia::render('welcome'); // or your SPA root component
 })->name('welcome');
-
 
 // --- Auth / Registration: Public (Guest) ---
 Route::middleware('guest')->group(function () {
@@ -62,8 +66,8 @@ Route::middleware('guest')->group(function () {
 // });
 
 // --- Modular Route Include ---
-require __DIR__ . '/settings.php';
-require __DIR__ . '/auth.php';
+require __DIR__.'/settings.php';
+require __DIR__.'/auth.php';
 
 Route::get('/{any}', function () {
     return Inertia::render('welcome'); // or your SPA root, e.g. 'app' or main SPA page

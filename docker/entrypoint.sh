@@ -19,6 +19,10 @@ TS_DB_PROXY="${TS_DB_PROXY:-auto}"
 TS_DB_LOCAL_PORT="${TS_DB_LOCAL_PORT:-}"
 TS_SOCKS5_HOST="${TS_SOCKS5_HOST:-}"
 TS_SOCKS5_PORT="${TS_SOCKS5_PORT:-}"
+DB_WAIT_FOR_CONNECTION="${DB_WAIT_FOR_CONNECTION:-}"
+DB_WAIT_MAX_RETRIES="${DB_WAIT_MAX_RETRIES:-12}"
+DB_WAIT_SLEEP_SECONDS="${DB_WAIT_SLEEP_SECONDS:-2}"
+DB_WAIT_ATTEMPT_TIMEOUT="${DB_WAIT_ATTEMPT_TIMEOUT:-15}"
 
 cd "${APP_DIR}"
 
@@ -71,6 +75,10 @@ TS_DB_PROXY="$(strip_wrapping_quotes "${TS_DB_PROXY}")"
 TS_DB_LOCAL_PORT="$(strip_wrapping_quotes "${TS_DB_LOCAL_PORT}")"
 TS_SOCKS5_HOST="$(strip_wrapping_quotes "${TS_SOCKS5_HOST}")"
 TS_SOCKS5_PORT="$(strip_wrapping_quotes "${TS_SOCKS5_PORT}")"
+DB_WAIT_FOR_CONNECTION="$(strip_wrapping_quotes "${DB_WAIT_FOR_CONNECTION}")"
+DB_WAIT_MAX_RETRIES="$(strip_wrapping_quotes "${DB_WAIT_MAX_RETRIES}")"
+DB_WAIT_SLEEP_SECONDS="$(strip_wrapping_quotes "${DB_WAIT_SLEEP_SECONDS}")"
+DB_WAIT_ATTEMPT_TIMEOUT="$(strip_wrapping_quotes "${DB_WAIT_ATTEMPT_TIMEOUT}")"
 
 if [ -n "${DB_HOST:-}" ]; then
     export DB_HOST
@@ -111,6 +119,14 @@ if [ "${TS_DB_PROXY}" = "1" ]; then
     fi
     if [ -z "${TS_SOCKS5_PORT}" ]; then
         TS_SOCKS5_PORT="1055"
+    fi
+fi
+
+if [ -z "${DB_WAIT_FOR_CONNECTION}" ]; then
+    if [ "${TS_DB_PROXY}" = "1" ] && [ -n "${DB_HOST:-}" ]; then
+        DB_WAIT_FOR_CONNECTION="1"
+    else
+        DB_WAIT_FOR_CONNECTION="0"
     fi
 fi
 
@@ -310,11 +326,18 @@ fi
 
 # Warmup database connection through Tailscale to reduce first-request latency
 warmup_db_connection() {
+    local strict="${1:-0}"
     echo "Warming up database connection..."
     local max_retries=5
+    local sleep_seconds=2
     local retry=0
     local attempt_timeout="${DB_WARMUP_ATTEMPT_TIMEOUT:-15}"
     local timeout_cmd=()
+    if [ "${strict}" = "1" ]; then
+        max_retries="${DB_WAIT_MAX_RETRIES}"
+        sleep_seconds="${DB_WAIT_SLEEP_SECONDS}"
+        attempt_timeout="${DB_WAIT_ATTEMPT_TIMEOUT}"
+    fi
     if command -v timeout >/dev/null 2>&1; then
         timeout_cmd=(timeout "${attempt_timeout}")
     fi
@@ -348,11 +371,15 @@ warmup_db_connection() {
         retry=$((retry + 1))
         echo ""
         echo "Database warmup attempt $retry/$max_retries failed (exit ${warmup_exit}): ${warmup_output}"
-        echo "Retrying in 2s..."
-        sleep 2
+        echo "Retrying in ${sleep_seconds}s..."
+        sleep "${sleep_seconds}"
     done
+    if [ "${strict}" = "1" ]; then
+        echo "ERROR: Database wait failed after $max_retries attempts."
+        return 1
+    fi
     echo "WARNING: Database warmup failed after $max_retries attempts. First requests may be slow."
-    return 0  # Don't fail startup, just warn
+    return 0
 }
 
 gosu www-data php artisan config:cache
@@ -372,6 +399,13 @@ else
     echo "View config not found; skipping view:cache."
 fi
 
+# Ensure DB is reachable before serving traffic when enabled
+if [ "${DB_WAIT_FOR_CONNECTION}" = "1" ] && [ -n "${DB_HOST:-}" ]; then
+    if ! warmup_db_connection 1; then
+        exit 1
+    fi
+fi
+
 # Warmup DB connection if we're using the DB proxy
 case "${RUN_MIGRATIONS:-}" in
     1|true|TRUE|yes|YES)
@@ -381,7 +415,7 @@ case "${RUN_MIGRATIONS:-}" in
 esac
 
 php-fpm -D
-if [ "${TS_DB_PROXY:-0}" = "1" ] || [ -n "${DB_HOST:-}" ]; then
+if [ "${DB_WAIT_FOR_CONNECTION}" != "1" ] && { [ "${TS_DB_PROXY:-0}" = "1" ] || [ -n "${DB_HOST:-}" ]; }; then
     echo "Starting database warmup in background..."
     warmup_db_connection &
 fi
