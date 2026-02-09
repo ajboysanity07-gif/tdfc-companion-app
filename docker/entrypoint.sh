@@ -172,6 +172,24 @@ wait_for_auth() {
     return 1
 }
 
+ensure_tailscale_auth() {
+    if [ -z "${TS_AUTHKEY}" ]; then
+        return 0
+    fi
+    if [ ! -S "${TS_SOCKET}" ]; then
+        return 0
+    fi
+
+    local ip
+    ip="$(tailscale --socket="${TS_SOCKET}" ip -4 2>/dev/null | head -n 1 || true)"
+    if [ -z "${ip}" ]; then
+        echo "Tailscale IP missing; re-authenticating..."
+        if tailscale_up; then
+            wait_for_auth "${TS_AUTH_TIMEOUT}" || true
+        fi
+    fi
+}
+
 build_tailscale_up_args() {
     TS_UP_COMMON_ARGS=(--hostname="${TS_HOSTNAME}" --accept-dns="${TS_ACCEPT_DNS}")
     if [ -n "${TS_NETFILTER}" ]; then
@@ -252,6 +270,22 @@ db_proxy_is_running() {
     return 1
 }
 
+db_proxy_port_is_listening() {
+    if [ -z "${TS_DB_LOCAL_PORT:-}" ]; then
+        return 1
+    fi
+    if command -v ss >/dev/null 2>&1; then
+        if ss -H -ltn "sport = :${TS_DB_LOCAL_PORT}" 2>/dev/null | grep -q .; then
+            return 0
+        fi
+    elif command -v netstat >/dev/null 2>&1; then
+        if netstat -ltn 2>/dev/null | awk '{print $4}' | grep -q ":${TS_DB_LOCAL_PORT}$"; then
+            return 0
+        fi
+    fi
+    return 1
+}
+
 kill_db_proxy_by_port() {
     if [ -z "${TS_DB_LOCAL_PORT:-}" ]; then
         return 0
@@ -289,6 +323,13 @@ start_db_proxy() {
     trap 'release_db_proxy_lock' RETURN
 
     stop_db_proxy
+    if db_proxy_port_is_listening; then
+        echo "DB proxy port ${TS_DB_LOCAL_PORT} already in use; skipping restart."
+        DB_HOST="127.0.0.1"
+        DB_PORT="${TS_DB_LOCAL_PORT}"
+        export DB_HOST DB_PORT
+        return 0
+    fi
 
     echo "Starting Tailscale DB proxy on 127.0.0.1:${TS_DB_LOCAL_PORT}..."
     ncat --listen 127.0.0.1 "${TS_DB_LOCAL_PORT}" --keep-open \
@@ -363,11 +404,8 @@ start_db_healthcheck() {
             sleep "${DB_HEALTHCHECK_INTERVAL}"
 
             if ! db_connection_check; then
-                echo "DB healthcheck failed; refreshing Tailscale DB proxy..."
-                if [ -n "${TS_AUTHKEY}" ]; then
-                    tailscale_up || true
-                    wait_for_auth "${TS_AUTH_TIMEOUT}" || true
-                fi
+                echo "DB healthcheck failed; verifying Tailscale and DB proxy..."
+                ensure_tailscale_auth
                 if [ "${TS_DB_PROXY}" = "1" ]; then
                     start_db_proxy || true
                 fi
