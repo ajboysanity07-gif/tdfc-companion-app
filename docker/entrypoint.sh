@@ -20,6 +20,8 @@ TS_DB_LOCAL_PORT="${TS_DB_LOCAL_PORT:-}"
 TS_SOCKS5_HOST="${TS_SOCKS5_HOST:-}"
 TS_SOCKS5_PORT="${TS_SOCKS5_PORT:-}"
 TS_WATCHDOG_INTERVAL="${TS_WATCHDOG_INTERVAL:-20}"
+TS_DB_PROXY_PID_FILE="${TS_DB_PROXY_PID_FILE:-${TS_STATE_DIR}/db-proxy.pid}"
+TS_DB_PROXY_LOCK_DIR="${TS_DB_PROXY_LOCK_DIR:-${TS_STATE_DIR}/db-proxy.lock}"
 DB_HEALTHCHECK_INTERVAL="${DB_HEALTHCHECK_INTERVAL:-30}"
 DB_HEALTHCHECK_ATTEMPT_TIMEOUT="${DB_HEALTHCHECK_ATTEMPT_TIMEOUT:-5}"
 DB_WAIT_FOR_CONNECTION="${DB_WAIT_FOR_CONNECTION:-}"
@@ -79,6 +81,8 @@ TS_DB_LOCAL_PORT="$(strip_wrapping_quotes "${TS_DB_LOCAL_PORT}")"
 TS_SOCKS5_HOST="$(strip_wrapping_quotes "${TS_SOCKS5_HOST}")"
 TS_SOCKS5_PORT="$(strip_wrapping_quotes "${TS_SOCKS5_PORT}")"
 TS_WATCHDOG_INTERVAL="$(strip_wrapping_quotes "${TS_WATCHDOG_INTERVAL}")"
+TS_DB_PROXY_PID_FILE="$(strip_wrapping_quotes "${TS_DB_PROXY_PID_FILE}")"
+TS_DB_PROXY_LOCK_DIR="$(strip_wrapping_quotes "${TS_DB_PROXY_LOCK_DIR}")"
 DB_HEALTHCHECK_INTERVAL="$(strip_wrapping_quotes "${DB_HEALTHCHECK_INTERVAL}")"
 DB_HEALTHCHECK_ATTEMPT_TIMEOUT="$(strip_wrapping_quotes "${DB_HEALTHCHECK_ATTEMPT_TIMEOUT}")"
 DB_WAIT_FOR_CONNECTION="$(strip_wrapping_quotes "${DB_WAIT_FOR_CONNECTION}")"
@@ -223,6 +227,48 @@ start_tailscaled() {
     TAILSCALED_PID=$!
 }
 
+acquire_db_proxy_lock() {
+    if [ -z "${TS_DB_PROXY_LOCK_DIR}" ]; then
+        return 0
+    fi
+    mkdir "${TS_DB_PROXY_LOCK_DIR}" 2>/dev/null
+}
+
+release_db_proxy_lock() {
+    if [ -n "${TS_DB_PROXY_LOCK_DIR}" ]; then
+        rmdir "${TS_DB_PROXY_LOCK_DIR}" 2>/dev/null || true
+    fi
+}
+
+db_proxy_is_running() {
+    if [ -n "${TS_DB_PROXY_PID_FILE}" ] && [ -f "${TS_DB_PROXY_PID_FILE}" ]; then
+        local pid
+        pid="$(cat "${TS_DB_PROXY_PID_FILE}" 2>/dev/null || true)"
+        if [ -n "${pid}" ] && kill -0 "${pid}" 2>/dev/null; then
+            return 0
+        fi
+        rm -f "${TS_DB_PROXY_PID_FILE}" 2>/dev/null || true
+    fi
+    return 1
+}
+
+kill_db_proxy_by_port() {
+    if [ -z "${TS_DB_LOCAL_PORT:-}" ]; then
+        return 0
+    fi
+    if ! command -v ss >/dev/null 2>&1; then
+        return 0
+    fi
+
+    local pids
+    pids="$(ss -ltnp "sport = :${TS_DB_LOCAL_PORT}" 2>/dev/null | awk -F 'pid=' 'NR>1 {print $2}' | awk -F ',' '{print $1}')"
+    if [ -n "${pids}" ]; then
+        for pid in ${pids}; do
+            kill "${pid}" 2>/dev/null || true
+        done
+    fi
+}
+
 start_db_proxy() {
     if [ -z "${TS_DB_REMOTE_HOST:-}" ]; then
         echo "TS_DB_PROXY enabled but DB_HOST is empty; skipping DB proxy."
@@ -236,12 +282,21 @@ start_db_proxy() {
         return 1
     fi
 
+    if ! acquire_db_proxy_lock; then
+        echo "DB proxy lock held; skipping restart."
+        return 0
+    fi
+    trap 'release_db_proxy_lock' RETURN
+
     stop_db_proxy
 
     echo "Starting Tailscale DB proxy on 127.0.0.1:${TS_DB_LOCAL_PORT}..."
     ncat --listen 127.0.0.1 "${TS_DB_LOCAL_PORT}" --keep-open \
         --sh-exec "ncat --proxy ${TS_SOCKS5_HOST}:${TS_SOCKS5_PORT} --proxy-type socks5 ${TS_DB_REMOTE_HOST} ${TS_DB_REMOTE_PORT:-1433}" &
     TS_DB_PROXY_PID=$!
+    if [ -n "${TS_DB_PROXY_PID_FILE}" ]; then
+        echo "${TS_DB_PROXY_PID}" > "${TS_DB_PROXY_PID_FILE}" 2>/dev/null || true
+    fi
 
     DB_HOST="127.0.0.1"
     DB_PORT="${TS_DB_LOCAL_PORT}"
@@ -249,11 +304,17 @@ start_db_proxy() {
 }
 
 stop_db_proxy() {
-    if [ -n "${TS_DB_PROXY_PID:-}" ] && kill -0 "${TS_DB_PROXY_PID}" 2>/dev/null; then
-        kill "${TS_DB_PROXY_PID}" 2>/dev/null || true
-        wait "${TS_DB_PROXY_PID}" 2>/dev/null || true
+    if [ -n "${TS_DB_PROXY_PID_FILE}" ] && [ -f "${TS_DB_PROXY_PID_FILE}" ]; then
+        local pid
+        pid="$(cat "${TS_DB_PROXY_PID_FILE}" 2>/dev/null || true)"
+        if [ -n "${pid}" ] && kill -0 "${pid}" 2>/dev/null; then
+            kill "${pid}" 2>/dev/null || true
+            wait "${pid}" 2>/dev/null || true
+        fi
+        rm -f "${TS_DB_PROXY_PID_FILE}" 2>/dev/null || true
     fi
     TS_DB_PROXY_PID=""
+    kill_db_proxy_by_port
 }
 
 db_connection_check() {
@@ -308,7 +369,6 @@ start_db_healthcheck() {
                     wait_for_auth "${TS_AUTH_TIMEOUT}" || true
                 fi
                 if [ "${TS_DB_PROXY}" = "1" ]; then
-                    stop_db_proxy
                     start_db_proxy || true
                 fi
             fi
@@ -346,7 +406,7 @@ start_tailscale_watchdog() {
             fi
 
             if [ "${TS_DB_PROXY}" = "1" ]; then
-                if [ -n "${TS_DB_PROXY_PID:-}" ] && ! kill -0 "${TS_DB_PROXY_PID}" 2>/dev/null; then
+                if ! db_proxy_is_running; then
                     echo "DB proxy stopped; restarting..."
                     start_db_proxy || true
                 fi
@@ -401,6 +461,12 @@ if [ "${TS_DISABLE:-}" != "1" ]; then
     echo "Starting tailscaled..."
     TS_SOCKET_DIR="$(dirname "${TS_SOCKET}")"
     mkdir -p "${TS_STATE_DIR}" "${TS_SOCKET_DIR}"
+    if [ -n "${TS_DB_PROXY_LOCK_DIR}" ]; then
+        rm -rf "${TS_DB_PROXY_LOCK_DIR}" 2>/dev/null || true
+    fi
+    if [ -n "${TS_DB_PROXY_PID_FILE}" ]; then
+        rm -f "${TS_DB_PROXY_PID_FILE}" 2>/dev/null || true
+    fi
     chown -R root:root "${TS_STATE_DIR}" "${TS_SOCKET_DIR}" 2>/dev/null || true
     chmod 700 "${TS_STATE_DIR}" 2>/dev/null || true
     chmod 755 "${TS_SOCKET_DIR}" 2>/dev/null || true
