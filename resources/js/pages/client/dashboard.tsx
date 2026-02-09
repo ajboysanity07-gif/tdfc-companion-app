@@ -14,6 +14,7 @@ import SavingsTable from '@/components/dashboard/savings-table';
 import FullScreenModalMobile from '@/components/ui/full-screen-modal-mobile';
 import { ClientDashboardSkeleton } from '@/components/client/dashboard/skeletons';
 import { PAGINATION, DUMMY_VALUES } from '@/lib/constants';
+import { buildPaginationWindow } from '@/lib/pagination';
 
 type UserShape = {
     name?: string;
@@ -129,6 +130,10 @@ export default function CustomerDashboard() {
     const totalPages = useMemo(() => {
         return Math.ceil(transactions.length / pageSize);
     }, [transactions.length, pageSize]);
+
+    const visiblePages = useMemo(() => {
+        return buildPaginationWindow(currentPage, totalPages, 5);
+    }, [currentPage, totalPages]);
 
     const amountValues = useMemo(() => {
         return paginatedTransactions.map(t => {
@@ -546,8 +551,7 @@ export default function CustomerDashboard() {
 
                         <div className="flex justify-center w-full">
                             <div className="flex gap-1">
-                                {totalPages > 0 && Array.from({ length: totalPages }).map((_, idx) => {
-                                    const pageNum = idx + 1;
+                                {visiblePages.map((pageNum) => {
                                     const isActive = pageNum === currentPage;
                                     return (
                                         <button
