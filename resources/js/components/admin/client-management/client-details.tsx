@@ -113,6 +113,13 @@ const ClientDetails: React.FC<Props> = ({
     const profileImage = getProfileImage(client);
     const initials = getInitials(client.name);
     const isPending = client.status === 'pending';
+    const selectedAmortRows = selectedLoanNumber ? amortschedByLnnumber?.[selectedLoanNumber] ?? [] : [];
+    const selectedAmortLoading =
+        !!selectedLoanNumber &&
+        (amortschedLoading?.[selectedLoanNumber] ?? amortschedByLnnumber?.[selectedLoanNumber] === undefined);
+    const selectedLedgerRows = selectedLoanNumber ? wlnLedByLnnumber?.[selectedLoanNumber] ?? [] : [];
+    const selectedLedgerLoading =
+        !!selectedLoanNumber && (wlnLedLoading?.[selectedLoanNumber] ?? wlnLedByLnnumber?.[selectedLoanNumber] === undefined);
 
     return (
         <>
@@ -647,10 +654,10 @@ const ClientDetails: React.FC<Props> = ({
             title="Amortization Schedule"
             headerBg="#e14e4e"
         >
-            {selectedLoanNumber && amortschedByLnnumber?.[selectedLoanNumber] && (
+            {selectedLoanNumber ? (
                 <AmortschedTable
-                    rows={amortschedByLnnumber[selectedLoanNumber] || []}
-                    loading={amortschedLoading?.[selectedLoanNumber] || false}
+                    rows={selectedAmortRows}
+                    loading={selectedAmortLoading}
                     lnnumber={selectedLoanNumber}
                     onRefresh={() => {
                         if (selectedLoanNumber && fetchAmortsched) {
@@ -658,7 +665,7 @@ const ClientDetails: React.FC<Props> = ({
                         }
                     }}
                 />
-            )}
+            ) : null}
         </FullScreenModalMobile>
 
         {/* Payments Modal */}
@@ -671,10 +678,10 @@ const ClientDetails: React.FC<Props> = ({
             title="Payment Ledger"
             headerBg="#e14e4e"
         >
-            {selectedLoanNumber && wlnLedByLnnumber?.[selectedLoanNumber] && (
+            {selectedLoanNumber ? (
                 <PaymentLedgerTable
-                    rows={wlnLedByLnnumber[selectedLoanNumber] || []}
-                    loading={wlnLedLoading?.[selectedLoanNumber] || false}
+                    rows={selectedLedgerRows}
+                    loading={selectedLedgerLoading}
                     lnnumber={selectedLoanNumber}
                     onRefresh={() => {
                         if (selectedLoanNumber && fetchWlnLed) {
@@ -682,7 +689,7 @@ const ClientDetails: React.FC<Props> = ({
                         }
                     }}
                 />
-            )}
+            ) : null}
         </FullScreenModalMobile>
     </>
 );
