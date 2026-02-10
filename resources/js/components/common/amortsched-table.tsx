@@ -73,6 +73,12 @@ const AmortschedTable: React.FC<Props> = ({ title = 'Amortization Schedule', row
     const [logoDataUrl, setLogoDataUrl] = useState<string | null>(null);
     const tw = useMyTheme();
     const isMobile = useMediaQuery('(max-width: 600px)');
+    const actionButtonSx = tw.isDark
+        ? {
+              color: '#f9fafb',
+              '&:hover': { color: '#ffffff' },
+          }
+        : undefined;
 
     const generatedOn = useMemo(() => new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date()), []);
 
@@ -711,28 +717,28 @@ const AmortschedTable: React.FC<Props> = ({ title = 'Amortization Schedule', row
                         <>
                             <Tooltip title="Refresh">
                                 <span>
-                                    <IconButton onClick={onRefresh} disabled={!onRefresh}>
+                                    <IconButton onClick={onRefresh} disabled={!onRefresh} sx={actionButtonSx}>
                                         <RefreshCw size={18} />
                                     </IconButton>
                                 </span>
                             </Tooltip>
                             <Tooltip title="Print">
-                                <IconButton onClick={handlePrint}>
+                                <IconButton onClick={handlePrint} sx={actionButtonSx}>
                                     <Printer size={18} />
                                 </IconButton>
                             </Tooltip>
                             <Tooltip title="Export CSV">
-                                <IconButton onClick={handleExportCsv}>
+                                <IconButton onClick={handleExportCsv} sx={actionButtonSx}>
                                     <ListAltOutlinedIcon fontSize="small" />
                                 </IconButton>
                             </Tooltip>
                             <Tooltip title="Export Excel">
-                                <IconButton onClick={handleExportExcel}>
+                                <IconButton onClick={handleExportExcel} sx={actionButtonSx}>
                                     <SimCardDownloadOutlinedIcon fontSize="small" />
                                 </IconButton>
                             </Tooltip>
                             <Tooltip title="Export PDF">
-                                <IconButton onClick={handleExportPdf}>
+                                <IconButton onClick={handleExportPdf} sx={actionButtonSx}>
                                     <PictureAsPdfOutlinedIcon fontSize="small" />
                                 </IconButton>
                             </Tooltip>
