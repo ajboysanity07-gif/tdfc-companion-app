@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { useMyTheme } from '@/hooks/use-mytheme';
-import type { Client } from '@/types/user';
+import type { Client, AmortschedDisplayEntry, WlnLedEntry } from '@/types/user';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CircleCheck, CircleX } from 'lucide-react';
 import ImageModal from '@/components/ui/image-modal';
@@ -14,15 +14,23 @@ type Props = {
     onApprove?: (userId: number) => void;
     onRejectClick?: () => void;
     onSaveSalary?: (acctno: string, salary: number) => Promise<void>;
-    wlnMasterRecords?: unknown[];
+    wlnMasterRecords?: WlnMasterRecord[];
     loading?: boolean;
     fetchAmortsched?: (lnnumber: string) => void;
-    amortschedByLnnumber?: Record<string, unknown[]>;
+    amortschedByLnnumber?: Record<string, AmortschedDisplayEntry[]>;
     amortschedLoading?: Record<string, boolean>;
     fetchWlnLed?: (lnnumber: string) => void;
-    wlnLedByLnnumber?: Record<string, unknown[]>;
+    wlnLedByLnnumber?: Record<string, WlnLedEntry[]>;
     wlnLedLoading?: Record<string, boolean>;
     isLoading?: boolean;
+};
+
+type WlnMasterRecord = {
+    lnnumber?: string | null;
+    principal?: number | null;
+    remarks?: string | null;
+    typecode?: string | null;
+    date_end?: string | null;
 };
 
 const DetailField: React.FC<{ label: string; value?: React.ReactNode }> = ({ label, value }) => {
@@ -155,11 +163,15 @@ const ClientDetails: React.FC<Props> = ({
     const isPending = client.status === 'pending';
     const isRejected = client.status === 'rejected';
     const isPendingOrRejected = isPending || isRejected;
-    const selectedAmortRows = selectedLoanNumber ? amortschedByLnnumber?.[selectedLoanNumber] ?? [] : [];
+    const selectedAmortRows: AmortschedDisplayEntry[] = selectedLoanNumber
+        ? amortschedByLnnumber?.[selectedLoanNumber] ?? []
+        : [];
     const selectedAmortLoading =
         !!selectedLoanNumber &&
         (amortschedLoading?.[selectedLoanNumber] ?? amortschedByLnnumber?.[selectedLoanNumber] === undefined);
-    const selectedLedgerRows = selectedLoanNumber ? wlnLedByLnnumber?.[selectedLoanNumber] ?? [] : [];
+    const selectedLedgerRows: WlnLedEntry[] = selectedLoanNumber
+        ? wlnLedByLnnumber?.[selectedLoanNumber] ?? []
+        : [];
     const selectedLedgerLoading =
         !!selectedLoanNumber && (wlnLedLoading?.[selectedLoanNumber] ?? wlnLedByLnnumber?.[selectedLoanNumber] === undefined);
 
