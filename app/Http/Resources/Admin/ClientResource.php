@@ -8,14 +8,25 @@ use Illuminate\Support\Facades\Storage;
 
 class ClientResource extends JsonResource
 {
+    private function fileUrl(?string $path): ?string
+    {
+        if (!$path) {
+            return null;
+        }
+
+        if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+            return $path;
+        }
+
+        return Storage::url($path);
+    }
+
     /**
      * Transform the resource into an array.
      */
     public function toArray(Request $request): array
     {
-        $profileUrl = $this->profile_picture_path
-            ? Storage::url($this->profile_picture_path)
-            : null;
+        $profileUrl = $this->fileUrl($this->profile_picture_path);
         
         // Debug logging
         \Log::info('ClientResource avatar', [
@@ -36,17 +47,11 @@ class ClientResource extends JsonResource
             'status' => $this->status,
             'class' => $this->when(isset($this->loan_class), $this->loan_class),
             'prc_id_photo_front' => $this->prc_id_photo_front,
-            'prc_id_photo_front_url' => $this->prc_id_photo_front
-                ? Storage::url($this->prc_id_photo_front)
-                : null,
+            'prc_id_photo_front_url' => $this->fileUrl($this->prc_id_photo_front),
             'prc_id_photo_back' => $this->prc_id_photo_back,
-            'prc_id_photo_back_url' => $this->prc_id_photo_back
-                ? Storage::url($this->prc_id_photo_back)
-                : null,
+            'prc_id_photo_back_url' => $this->fileUrl($this->prc_id_photo_back),
             'payslip_photo_path' => $this->payslip_photo_path,
-            'payslip_photo_url' => $this->payslip_photo_path
-                ? Storage::url($this->payslip_photo_path)
-                : null,
+            'payslip_photo_url' => $this->fileUrl($this->payslip_photo_path),
             'created_at' => $this->created_at?->toISOString(),
             'reviewed_at' => $this->reviewed_at?->toISOString(),
             'reviewed_by' => $this->reviewed_by,
