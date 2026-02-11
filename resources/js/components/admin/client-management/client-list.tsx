@@ -90,11 +90,14 @@ const ClientList: React.FC<Props> = ({
         setLocalSearchValue(value);
     };
 
+    const resolveImagePath = (path?: string | null): string | null => {
+        if (!path) return null;
+        if (path.startsWith('http') || path.startsWith('data:') || path.startsWith('/storage')) return path;
+        return `/storage/${path.replace(/^\/+/, '')}`;
+    };
+
     const getProfileImage = (client: Client): string | null => {
-        const picture = client.profile_picture_url ?? client.profile_picture_path;
-        if (!picture) return null;
-        if (picture.startsWith('http') || picture.startsWith('data:') || picture.startsWith('/storage')) return picture;
-        return `/storage/${picture.replace(/^\/+/, '')}`;
+        return resolveImagePath(client.profile_picture_url ?? client.profile_picture_path);
     };
 
     return (

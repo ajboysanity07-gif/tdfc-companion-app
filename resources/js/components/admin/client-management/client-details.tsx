@@ -297,8 +297,8 @@ const ClientDetails: React.FC<Props> = ({
                                 PRC ID
                             </label>
                             {(() => {
-                                const front = resolveImagePath(client.prc_id_photo_front);
-                                const back = resolveImagePath(client.prc_id_photo_back);
+                                const front = resolveImagePath(client.prc_id_photo_front_url ?? client.prc_id_photo_front);
+                                const back = resolveImagePath(client.prc_id_photo_back_url ?? client.prc_id_photo_back);
                                 if (!front && !back) return null;
                                 return (
                             <div
@@ -384,8 +384,8 @@ const ClientDetails: React.FC<Props> = ({
                         </div>
                     )}
 
-                    {client.payslip_photo_path && (() => {
-                        const payslipPath = resolveImagePath(client.payslip_photo_path);
+                    {(client.payslip_photo_url || client.payslip_photo_path) && (() => {
+                        const payslipPath = resolveImagePath(client.payslip_photo_url ?? client.payslip_photo_path);
                         if (!payslipPath) return null;
                         return (
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', gap: '12px' }}>

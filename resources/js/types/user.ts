@@ -18,8 +18,11 @@ export interface Client {
     status: RegistrationStatus;
     class: string | null; // A/B/C/D or null
     prc_id_photo_front: string | null;
+    prc_id_photo_front_url?: string | null;
     prc_id_photo_back: string | null;
+    prc_id_photo_back_url?: string | null;
     payslip_photo_path: string | null;
+    payslip_photo_url?: string | null;
     profile_picture_path: string | null;
     profile_picture_url?: string | null; // optional fully-qualified URL from API
     created_at: string;       // ISO string
