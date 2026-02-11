@@ -96,11 +96,14 @@ const ClientDetails: React.FC<Props> = ({
     const [paymentsModalOpen, setPaymentsModalOpen] = useState(false);
     const [selectedLoanNumber, setSelectedLoanNumber] = useState<string | null>(null);
 
+    const resolveImagePath = (path?: string | null): string | null => {
+        if (!path) return null;
+        if (path.startsWith('http') || path.startsWith('data:') || path.startsWith('/storage')) return path;
+        return `/storage/${path.replace(/^\/+/, '')}`;
+    };
+
     const getProfileImage = (client: Client): string | null => {
-        const picture = client.profile_picture_url ?? client.profile_picture_path;
-        if (!picture) return null;
-        if (picture.startsWith('http') || picture.startsWith('data:') || picture.startsWith('/storage')) return picture;
-        return `/storage/${picture.replace(/^\/+/, '')}`;
+        return resolveImagePath(client.profile_picture_url ?? client.profile_picture_path);
     };
 
     const getInitials = (name?: string): string => {
@@ -293,6 +296,11 @@ const ClientDetails: React.FC<Props> = ({
                             <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', color: tw.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', letterSpacing: '0.5px' }}>
                                 PRC ID
                             </label>
+                            {(() => {
+                                const front = resolveImagePath(client.prc_id_photo_front);
+                                const back = resolveImagePath(client.prc_id_photo_back);
+                                if (!front && !back) return null;
+                                return (
                             <div
                                 style={{
                                     width: '200px',
@@ -307,15 +315,15 @@ const ClientDetails: React.FC<Props> = ({
                                 }}
                                 onClick={() => {
                                     const images: Array<{ src: string; label: string }> = [];
-                                    if (client.prc_id_photo_front) {
+                                    if (front) {
                                         images.push({
-                                            src: `/storage/${client.prc_id_photo_front.replace(/^\/+/, '')}`,
+                                            src: front,
                                             label: 'Front',
                                         });
                                     }
-                                    if (client.prc_id_photo_back) {
+                                    if (back) {
                                         images.push({
-                                            src: `/storage/${client.prc_id_photo_back.replace(/^\/+/, '')}`,
+                                            src: back,
                                             label: 'Back',
                                         });
                                     }
@@ -331,19 +339,19 @@ const ClientDetails: React.FC<Props> = ({
                                     e.currentTarget.style.boxShadow = 'none';
                                 }}
                             >
-                                {client.prc_id_photo_front && (
+                                {front && (
                                     <div
                                         style={{
                                             flex: 1,
                                             height: '100%',
-                                            backgroundImage: `url('/storage/${client.prc_id_photo_front.replace(/^\/+/, '')}')`,
+                                            backgroundImage: `url('${front}')`,
                                             backgroundSize: 'cover',
                                             backgroundPosition: 'center',
                                             position: 'relative',
                                             display: 'flex',
                                             alignItems: 'flex-end',
                                             justifyContent: 'center',
-                                            borderRight: client.prc_id_photo_back ? `1px solid ${tw.isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.1)'}` : 'none',
+                                            borderRight: back ? `1px solid ${tw.isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.1)'}` : 'none',
                                         }}
                                     >
                                         <div style={{ fontSize: '0.7rem', fontWeight: 700, backgroundColor: 'rgba(0,0,0,0.8)', color: '#ffffff', padding: '2px 6px', borderRadius: '4px', marginBottom: '6px' }}>
@@ -351,12 +359,12 @@ const ClientDetails: React.FC<Props> = ({
                                         </div>
                                     </div>
                                 )}
-                                {client.prc_id_photo_back && (
+                                {back && (
                                     <div
                                         style={{
                                             flex: 1,
                                             height: '100%',
-                                            backgroundImage: `url('/storage/${client.prc_id_photo_back.replace(/^\/+/, '')}')`,
+                                            backgroundImage: `url('${back}')`,
                                             backgroundSize: 'cover',
                                             backgroundPosition: 'center',
                                             position: 'relative',
@@ -371,11 +379,14 @@ const ClientDetails: React.FC<Props> = ({
                                     </div>
                                 )}
                             </div>
+                                );
+                            })()}
                         </div>
                     )}
 
                     {client.payslip_photo_path && (() => {
-                        const payslipPath = client.payslip_photo_path || '';
+                        const payslipPath = resolveImagePath(client.payslip_photo_path);
+                        if (!payslipPath) return null;
                         return (
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', gap: '12px' }}>
                             <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', color: tw.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', letterSpacing: '0.5px' }}>
@@ -388,7 +399,7 @@ const ClientDetails: React.FC<Props> = ({
                                     borderRadius: '12px',
                                     backgroundColor: tw.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)',
                                     border: `1px solid ${tw.isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.1)'}`,
-                                    backgroundImage: `url('/storage/${payslipPath.replace(/^\/+/, '')}')`,
+                                    backgroundImage: `url('${payslipPath}')`,
                                     backgroundSize: 'cover',
                                     backgroundPosition: 'center',
                                     cursor: 'pointer',
@@ -397,7 +408,7 @@ const ClientDetails: React.FC<Props> = ({
                                 onClick={() => {
                                     setModalImages([
                                         {
-                                            src: `/storage/${payslipPath.replace(/^\/+/, '')}`,
+                                            src: payslipPath,
                                             label: 'Payslip',
                                         },
                                     ]);
