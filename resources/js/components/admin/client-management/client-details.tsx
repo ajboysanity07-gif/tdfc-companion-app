@@ -299,13 +299,13 @@ const ClientDetails: React.FC<Props> = ({
                                     const images: Array<{ src: string; label: string }> = [];
                                     if (client.prc_id_photo_front) {
                                         images.push({
-                                            src: `/storage/${client.prc_id_photo_front.replace(/^\\/+/, '')}`,
+                                            src: `/storage/${client.prc_id_photo_front.replace(/^\/+/, '')}`,
                                             label: 'Front',
                                         });
                                     }
                                     if (client.prc_id_photo_back) {
                                         images.push({
-                                            src: `/storage/${client.prc_id_photo_back.replace(/^\\/+/, '')}`,
+                                            src: `/storage/${client.prc_id_photo_back.replace(/^\/+/, '')}`,
                                             label: 'Back',
                                         });
                                     }
@@ -326,7 +326,7 @@ const ClientDetails: React.FC<Props> = ({
                                         style={{
                                             flex: 1,
                                             height: '100%',
-                                            backgroundImage: `url('/storage/${client.prc_id_photo_front.replace(/^\\/+/, '')}')`,
+                                            backgroundImage: `url('/storage/${client.prc_id_photo_front.replace(/^\/+/, '')}')`,
                                             backgroundSize: 'cover',
                                             backgroundPosition: 'center',
                                             position: 'relative',
@@ -346,7 +346,7 @@ const ClientDetails: React.FC<Props> = ({
                                         style={{
                                             flex: 1,
                                             height: '100%',
-                                            backgroundImage: `url('/storage/${client.prc_id_photo_back.replace(/^\\/+/, '')}')`,
+                                            backgroundImage: `url('/storage/${client.prc_id_photo_back.replace(/^\/+/, '')}')`,
                                             backgroundSize: 'cover',
                                             backgroundPosition: 'center',
                                             position: 'relative',
@@ -376,7 +376,7 @@ const ClientDetails: React.FC<Props> = ({
                                     borderRadius: '12px',
                                     backgroundColor: tw.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)',
                                     border: `1px solid ${tw.isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.1)'}`,
-                                    backgroundImage: `url('/storage/${client.payslip_photo_path.replace(/^\\/+/, '')}')`,
+                                    backgroundImage: `url('/storage/${client.payslip_photo_path.replace(/^\/+/, '')}')`,
                                     backgroundSize: 'cover',
                                     backgroundPosition: 'center',
                                     cursor: 'pointer',
@@ -385,7 +385,7 @@ const ClientDetails: React.FC<Props> = ({
                                 onClick={() => {
                                     setModalImages([
                                         {
-                                            src: `/storage/${client.payslip_photo_path.replace(/^\\/+/, '')}`,
+                                            src: `/storage/${client.payslip_photo_path.replace(/^\/+/, '')}`,
                                             label: 'Payslip',
                                         },
                                     ]);
