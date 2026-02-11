@@ -4,7 +4,6 @@ import { useMyTheme } from '@/hooks/use-mytheme';
 import type { Client } from '@/types/user';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CircleCheck, CircleX } from 'lucide-react';
-import BoxHeader from '@/components/box-header';
 import ImageModal from '@/components/ui/image-modal';
 import FullScreenModalMobile from '@/components/ui/full-screen-modal-mobile';
 import AmortschedTable from '@/components/common/amortsched-table';
@@ -25,6 +24,42 @@ type Props = {
     wlnLedByLnnumber?: Record<string, any[]>;
     wlnLedLoading?: Record<string, boolean>;
     isLoading?: boolean;
+};
+
+const DetailField: React.FC<{ label: string; value?: React.ReactNode }> = ({ label, value }) => {
+    const tw = useMyTheme();
+    return (
+        <div style={{ width: '100%' }}>
+            <label
+                style={{
+                    display: 'block',
+                    fontSize: '0.75rem',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    color: tw.isDark ? 'rgba(255,255,255,0.55)' : 'rgba(0,0,0,0.55)',
+                    marginBottom: '8px',
+                    letterSpacing: '0.5px',
+                    textAlign: 'center',
+                }}
+            >
+                {label}
+            </label>
+            <div
+                style={{
+                    padding: '14px 16px',
+                    borderRadius: '14px',
+                    backgroundColor: tw.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)',
+                    border: `1px solid ${tw.isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.1)'}`,
+                    color: tw.isDark ? '#ffffff' : '#000000',
+                    fontSize: '1rem',
+                    fontWeight: 700,
+                    textAlign: 'center',
+                }}
+            >
+                {value ?? 'N/A'}
+            </div>
+        </div>
+    );
 };
 
 const ClientDetails: React.FC<Props> = ({ 
@@ -72,6 +107,13 @@ const ClientDetails: React.FC<Props> = ({
             .toUpperCase();
     };
 
+    const formatCurrency = (value?: number | string | null) => {
+        if (value === null || value === undefined || value === "") return "PHP 0";
+        const num = typeof value === "number" ? value : parseFloat(value);
+        if (Number.isNaN(num)) return "PHP 0";
+        return `PHP ${num.toLocaleString("en-US")}`;
+    };
+
     if ((isLoading || loading) || !client) {
         return (
             <motion.div
@@ -113,6 +155,8 @@ const ClientDetails: React.FC<Props> = ({
     const profileImage = getProfileImage(client);
     const initials = getInitials(client.name);
     const isPending = client.status === 'pending';
+    const isRejected = client.status === 'rejected';
+    const isPendingOrRejected = isPending || isRejected;
     const selectedAmortRows = selectedLoanNumber ? amortschedByLnnumber?.[selectedLoanNumber] ?? [] : [];
     const selectedAmortLoading =
         !!selectedLoanNumber &&
@@ -227,6 +271,197 @@ const ClientDetails: React.FC<Props> = ({
                 </div>
             </div>
 
+            {isPendingOrRejected && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', alignItems: 'center' }}>
+                    <DetailField label="Email" value={client.email || 'N/A'} />
+                    <DetailField label="Account No." value={client.acctno || 'N/A'} />
+                    <DetailField label="Class" value={client.class || 'N/A'} />
+                    <DetailField label="Salary" value={formatCurrency(client.salary_amount)} />
+
+                    {(client.prc_id_photo_front || client.prc_id_photo_back) && (
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', gap: '12px' }}>
+                            <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', color: tw.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', letterSpacing: '0.5px' }}>
+                                PRC ID
+                            </label>
+                            <div
+                                style={{
+                                    width: '200px',
+                                    height: '96px',
+                                    borderRadius: '12px',
+                                    backgroundColor: tw.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)',
+                                    border: `1px solid ${tw.isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.1)'}`,
+                                    display: 'flex',
+                                    overflow: 'hidden',
+                                    cursor: 'pointer',
+                                    transition: 'transform 0.2s, box-shadow 0.2s',
+                                }}
+                                onClick={() => {
+                                    const images: Array<{ src: string; label: string }> = [];
+                                    if (client.prc_id_photo_front) {
+                                        images.push({
+                                            src: `/storage/${client.prc_id_photo_front.replace(/^\\/+/, '')}`,
+                                            label: 'Front',
+                                        });
+                                    }
+                                    if (client.prc_id_photo_back) {
+                                        images.push({
+                                            src: `/storage/${client.prc_id_photo_back.replace(/^\\/+/, '')}`,
+                                            label: 'Back',
+                                        });
+                                    }
+                                    setModalImages(images);
+                                    setImageModalOpen(true);
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.transform = 'scale(1.05)';
+                                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.transform = 'scale(1)';
+                                    e.currentTarget.style.boxShadow = 'none';
+                                }}
+                            >
+                                {client.prc_id_photo_front && (
+                                    <div
+                                        style={{
+                                            flex: 1,
+                                            height: '100%',
+                                            backgroundImage: `url('/storage/${client.prc_id_photo_front.replace(/^\\/+/, '')}')`,
+                                            backgroundSize: 'cover',
+                                            backgroundPosition: 'center',
+                                            position: 'relative',
+                                            display: 'flex',
+                                            alignItems: 'flex-end',
+                                            justifyContent: 'center',
+                                            borderRight: client.prc_id_photo_back ? `1px solid ${tw.isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.1)'}` : 'none',
+                                        }}
+                                    >
+                                        <div style={{ fontSize: '0.7rem', fontWeight: 700, backgroundColor: 'rgba(0,0,0,0.8)', color: '#ffffff', padding: '2px 6px', borderRadius: '4px', marginBottom: '6px' }}>
+                                            Front
+                                        </div>
+                                    </div>
+                                )}
+                                {client.prc_id_photo_back && (
+                                    <div
+                                        style={{
+                                            flex: 1,
+                                            height: '100%',
+                                            backgroundImage: `url('/storage/${client.prc_id_photo_back.replace(/^\\/+/, '')}')`,
+                                            backgroundSize: 'cover',
+                                            backgroundPosition: 'center',
+                                            position: 'relative',
+                                            display: 'flex',
+                                            alignItems: 'flex-end',
+                                            justifyContent: 'center',
+                                        }}
+                                    >
+                                        <div style={{ fontSize: '0.7rem', fontWeight: 700, backgroundColor: 'rgba(0,0,0,0.8)', color: '#ffffff', padding: '2px 6px', borderRadius: '4px', marginBottom: '6px' }}>
+                                            Back
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {client.payslip_photo_path && (
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', gap: '12px' }}>
+                            <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', color: tw.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', letterSpacing: '0.5px' }}>
+                                Payslip
+                            </label>
+                            <div
+                                style={{
+                                    width: '200px',
+                                    height: '96px',
+                                    borderRadius: '12px',
+                                    backgroundColor: tw.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)',
+                                    border: `1px solid ${tw.isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.1)'}`,
+                                    backgroundImage: `url('/storage/${client.payslip_photo_path.replace(/^\\/+/, '')}')`,
+                                    backgroundSize: 'cover',
+                                    backgroundPosition: 'center',
+                                    cursor: 'pointer',
+                                    transition: 'transform 0.2s, box-shadow 0.2s',
+                                }}
+                                onClick={() => {
+                                    setModalImages([
+                                        {
+                                            src: `/storage/${client.payslip_photo_path.replace(/^\\/+/, '')}`,
+                                            label: 'Payslip',
+                                        },
+                                    ]);
+                                    setImageModalOpen(true);
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.transform = 'scale(1.05)';
+                                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.transform = 'scale(1)';
+                                    e.currentTarget.style.boxShadow = 'none';
+                                }}
+                            />
+                        </div>
+                    )}
+
+                    {isPending && (onRejectClick || onApprove) && (
+                        <div style={{ display: 'flex', gap: '12px', marginTop: 'auto', paddingTop: '12px', flexDirection: 'column', width: '100%' }}>
+                            <button
+                                onClick={() => onRejectClick?.()}
+                                style={{
+                                    width: '100%',
+                                    padding: '14px 16px',
+                                    borderRadius: '12px',
+                                    border: `2px solid #ef4444`,
+                                    backgroundColor: 'transparent',
+                                    color: '#ef4444',
+                                    cursor: 'pointer',
+                                    fontSize: '0.875rem',
+                                    fontWeight: 700,
+                                    transition: 'all 120ms ease',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.5px',
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.backgroundColor = tw.isDark ? 'rgba(239, 68, 68, 0.1)' : 'rgba(239, 68, 68, 0.05)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.backgroundColor = 'transparent';
+                                }}
+                            >
+                                Reject
+                            </button>
+                            <button
+                                onClick={() => onApprove?.(client.user_id)}
+                                style={{
+                                    width: '100%',
+                                    padding: '14px 16px',
+                                    borderRadius: '12px',
+                                    border: 'none',
+                                    backgroundColor: '#ef4444',
+                                    color: '#ffffff',
+                                    cursor: 'pointer',
+                                    fontSize: '0.875rem',
+                                    fontWeight: 700,
+                                    transition: 'all 120ms ease',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.5px',
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.backgroundColor = '#dc2626';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.backgroundColor = '#ef4444';
+                                }}
+                            >
+                                Accept
+                            </button>
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {!isPendingOrRejected && (
+                <>
             {/* Class and Salary - Side by Side */}
             <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
                 {/* Class */}
@@ -323,7 +558,7 @@ const ClientDetails: React.FC<Props> = ({
                                 e.currentTarget.style.backgroundColor = tw.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)';
                             }}
                         >
-                            ₱ {client.salary_amount ? client.salary_amount.toLocaleString() : '0'}
+                            {formatCurrency(client.salary_amount)}
                         </div>
                     )}
                 </div>
@@ -376,7 +611,7 @@ const ClientDetails: React.FC<Props> = ({
                                 }}>
                                     <div>
                                         <span style={{ fontWeight: 600 }}>Amount: </span>
-                                        <span>₱{typeof loan.principal === 'number' ? loan.principal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : loan.principal || '0.00'}</span>
+                                        <span>PHP {typeof loan.principal === 'number' ? loan.principal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : loan.principal || '0.00'}</span>
                                     </div>
                                     <div>
                                         <span style={{ fontWeight: 600 }}>Last Transaction: </span>
@@ -455,185 +690,7 @@ const ClientDetails: React.FC<Props> = ({
                 </div>
             )}
 
-            {/* PRC ID Section - Only for pending */}
-            {isPending && (client.prc_id_photo_front || client.prc_id_photo_back) && (
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', color: tw.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', marginBottom: '12px', letterSpacing: '0.5px' }}>
-                        PRC ID
-                    </label>
-                    <div 
-                        style={{
-                            width: '160px',
-                            height: '80px',
-                            borderRadius: '12px',
-                            backgroundColor: tw.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)',
-                            border: `1px solid ${tw.isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.1)'}`,
-                            display: 'flex',
-                            overflow: 'hidden',
-                            cursor: 'pointer',
-                            transition: 'transform 0.2s, box-shadow 0.2s',
-                        }}
-                        onClick={() => {
-                            const images = [];
-                            if (client.prc_id_photo_front) {
-                                images.push({
-                                    src: `/storage/${client.prc_id_photo_front.replace(/^\/+/, '')}`,
-                                    label: 'Front'
-                                });
-                            }
-                            if (client.prc_id_photo_back) {
-                                images.push({
-                                    src: `/storage/${client.prc_id_photo_back.replace(/^\/+/, '')}`,
-                                    label: 'Back'
-                                });
-                            }
-                            setModalImages(images);
-                            setImageModalOpen(true);
-                        }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.transform = 'scale(1.05)';
-                            e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.transform = 'scale(1)';
-                            e.currentTarget.style.boxShadow = 'none';
-                        }}
-                    >
-                        {client.prc_id_photo_front && (
-                            <div
-                                style={{
-                                    flex: 1,
-                                    height: '100%',
-                                    backgroundImage: `url('/storage/${client.prc_id_photo_front.replace(/^\/+/, '')}')`,
-                                    backgroundSize: 'cover',
-                                    backgroundPosition: 'center',
-                                    position: 'relative',
-                                    display: 'flex',
-                                    alignItems: 'flex-end',
-                                    justifyContent: 'center',
-                                    borderRight: client.prc_id_photo_back ? `1px solid ${tw.isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.1)'}` : 'none',
-                                }}
-                            >
-                                <div style={{ fontSize: '0.6rem', fontWeight: 700, backgroundColor: 'rgba(0,0,0,0.8)', color: '#ffffff', padding: '2px 6px', borderRadius: '4px', marginBottom: '4px' }}>
-                                    Front
-                                </div>
-                            </div>
-                        )}
-                        {client.prc_id_photo_back && (
-                            <div
-                                style={{
-                                    flex: 1,
-                                    height: '100%',
-                                    backgroundImage: `url('/storage/${client.prc_id_photo_back.replace(/^\/+/, '')}')`,
-                                    backgroundSize: 'cover',
-                                    backgroundPosition: 'center',
-                                    position: 'relative',
-                                    display: 'flex',
-                                    alignItems: 'flex-end',
-                                    justifyContent: 'center',
-                                }}
-                            >
-                                <div style={{ fontSize: '0.6rem', fontWeight: 700, backgroundColor: 'rgba(0,0,0,0.8)', color: '#ffffff', padding: '2px 6px', borderRadius: '4px', marginBottom: '4px' }}>
-                                    Back
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            )}
-
-            {/* Payslip Section - Only for pending */}
-            {isPending && client.payslip_photo_path && (
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', color: tw.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', marginBottom: '12px', letterSpacing: '0.5px' }}>
-                        Payslip
-                    </label>
-                    <div
-                        style={{
-                            width: '160px',
-                            height: '80px',
-                            borderRadius: '12px',
-                            backgroundColor: tw.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)',
-                            border: `1px solid ${tw.isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.1)'}`,
-                            backgroundImage: `url('/storage/${client.payslip_photo_path.replace(/^\/+/, '')}')`,
-                            backgroundSize: 'cover',
-                            backgroundPosition: 'center',
-                            cursor: 'pointer',
-                            transition: 'transform 0.2s, box-shadow 0.2s',
-                        }}
-                        onClick={() => {
-                            setModalImages([{
-                                src: `/storage/${client.payslip_photo_path.replace(/^\/+/, '')}`,
-                                label: 'Payslip'
-                            }]);
-                            setImageModalOpen(true);
-                        }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.transform = 'scale(1.05)';
-                            e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.transform = 'scale(1)';
-                            e.currentTarget.style.boxShadow = 'none';
-                        }}
-                    />
-                </div>
-            )}
-
-            {/* Action Buttons - Only show if pending */}
-            {isPending && (onRejectClick || onApprove) && (
-                <div style={{ display: 'flex', gap: '12px', marginTop: 'auto', paddingTop: '24px', flexDirection: 'column' }}>
-                    <button
-                        onClick={() => onRejectClick?.()}
-                        style={{
-                            width: '100%',
-                            padding: '14px 16px',
-                            borderRadius: '12px',
-                            border: `2px solid #ef4444`,
-                            backgroundColor: 'transparent',
-                            color: '#ef4444',
-                            cursor: 'pointer',
-                            fontSize: '0.875rem',
-                            fontWeight: 700,
-                            transition: 'all 120ms ease',
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.5px',
-                        }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = tw.isDark ? 'rgba(239, 68, 68, 0.1)' : 'rgba(239, 68, 68, 0.05)';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = 'transparent';
-                        }}
-                    >
-                        ❤️ Reject
-                    </button>
-                    <button
-                        onClick={() => onApprove?.(client.user_id)}
-                        style={{
-                            width: '100%',
-                            padding: '14px 16px',
-                            borderRadius: '12px',
-                            border: 'none',
-                            backgroundColor: '#ef4444',
-                            color: '#ffffff',
-                            cursor: 'pointer',
-                            fontSize: '0.875rem',
-                            fontWeight: 700,
-                            transition: 'all 120ms ease',
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.5px',
-                        }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = '#dc2626';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = '#ef4444';
-                        }}
-                    >
-                        👍 Accept
-                    </button>
-                </div>
+                </>
             )}
         </motion.div>
 
@@ -696,3 +753,7 @@ const ClientDetails: React.FC<Props> = ({
 };
 
 export default ClientDetails;
+
+
+
+
