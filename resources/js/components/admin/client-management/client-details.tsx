@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { useMyTheme } from '@/hooks/use-mytheme';
 import type { Client } from '@/types/user';
@@ -13,15 +13,14 @@ type Props = {
     client?: Client | null;
     onApprove?: (userId: number) => void;
     onRejectClick?: () => void;
-    onReject?: (userId: number) => void;
     onSaveSalary?: (acctno: string, salary: number) => Promise<void>;
-    wlnMasterRecords?: any[];
+    wlnMasterRecords?: unknown[];
     loading?: boolean;
     fetchAmortsched?: (lnnumber: string) => void;
-    amortschedByLnnumber?: Record<string, any[]>;
+    amortschedByLnnumber?: Record<string, unknown[]>;
     amortschedLoading?: Record<string, boolean>;
     fetchWlnLed?: (lnnumber: string) => void;
-    wlnLedByLnnumber?: Record<string, any[]>;
+    wlnLedByLnnumber?: Record<string, unknown[]>;
     wlnLedLoading?: Record<string, boolean>;
     isLoading?: boolean;
 };
@@ -66,7 +65,6 @@ const ClientDetails: React.FC<Props> = ({
     client, 
     onApprove, 
     onRejectClick,
-    onReject,
     isLoading = false,
     wlnMasterRecords,
     onSaveSalary,
@@ -364,7 +362,9 @@ const ClientDetails: React.FC<Props> = ({
                         </div>
                     )}
 
-                    {client.payslip_photo_path && (
+                    {client.payslip_photo_path && (() => {
+                        const payslipPath = client.payslip_photo_path || '';
+                        return (
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', gap: '12px' }}>
                             <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', color: tw.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', letterSpacing: '0.5px' }}>
                                 Payslip
@@ -376,7 +376,7 @@ const ClientDetails: React.FC<Props> = ({
                                     borderRadius: '12px',
                                     backgroundColor: tw.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)',
                                     border: `1px solid ${tw.isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.1)'}`,
-                                    backgroundImage: `url('/storage/${client.payslip_photo_path.replace(/^\/+/, '')}')`,
+                                    backgroundImage: `url('/storage/${payslipPath.replace(/^\/+/, '')}')`,
                                     backgroundSize: 'cover',
                                     backgroundPosition: 'center',
                                     cursor: 'pointer',
@@ -385,7 +385,7 @@ const ClientDetails: React.FC<Props> = ({
                                 onClick={() => {
                                     setModalImages([
                                         {
-                                            src: `/storage/${client.payslip_photo_path.replace(/^\/+/, '')}`,
+                                            src: `/storage/${payslipPath.replace(/^\/+/, '')}`,
                                             label: 'Payslip',
                                         },
                                     ]);
@@ -401,7 +401,8 @@ const ClientDetails: React.FC<Props> = ({
                                 }}
                             />
                         </div>
-                    )}
+                        );
+                    })()}
 
                     {isPending && (onRejectClick || onApprove) && (
                         <div style={{ display: 'flex', gap: '12px', marginTop: 'auto', paddingTop: '12px', flexDirection: 'column', width: '100%' }}>
