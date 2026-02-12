@@ -18,7 +18,9 @@ class ClientResource extends JsonResource
             return $path;
         }
 
-        return Storage::url($path);
+        $disk = env('FILESYSTEM_DISK', 'local');
+
+        return Storage::disk($disk)->url($path);
     }
 
     /**

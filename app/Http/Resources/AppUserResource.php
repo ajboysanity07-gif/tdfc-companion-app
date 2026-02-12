@@ -9,6 +9,8 @@ class AppUserResource extends JsonResource
 {
     public function toArray($request)
     {
+        $disk = env('FILESYSTEM_DISK', 'local');
+
         return [
             // Basic info
             'user_id' => $this->user_id,
@@ -23,22 +25,22 @@ class AppUserResource extends JsonResource
 
             // Public URLs for SPA rendering (future-proof: supports custom CDN, S3, etc.)
             'profile_picture_url' => $this->profile_picture_path
-                ? Storage::url($this->profile_picture_path)
+                ? Storage::disk($disk)->url($this->profile_picture_path)
                 : null,
 
             'prc_id_photo_front' => $this->prc_id_photo_front,
             'prc_id_photo_front_url' => $this->prc_id_photo_front
-                ? Storage::url($this->prc_id_photo_front)
+                ? Storage::disk($disk)->url($this->prc_id_photo_front)
                 : null,
 
             'prc_id_photo_back' => $this->prc_id_photo_back,
             'prc_id_photo_back_url' => $this->prc_id_photo_back
-                ? Storage::url($this->prc_id_photo_back)
+                ? Storage::disk($disk)->url($this->prc_id_photo_back)
                 : null,
 
             'payslip_photo_path' => $this->payslip_photo_path,
             'payslip_photo_url' => $this->payslip_photo_path
-                ? Storage::url($this->payslip_photo_path)
+                ? Storage::disk($disk)->url($this->payslip_photo_path)
                 : null,
 
             // SPA navigation redirect
