@@ -58,10 +58,16 @@ truncate_hostname() {
 normalize_int() {
     local value="${1:-}"
     local default="${2:-0}"
-    case "${value}" in
-        ''|*[!0-9]*) echo "${default}" ;;
-        *) echo "${value}" ;;
-    esac
+    value="${value%\"}"
+    value="${value#\"}"
+    value="${value%\'}"
+    value="${value#\'}"
+    value="$(printf '%s' "${value}" | tr -cd '0-9')"
+    if [ -z "${value}" ]; then
+        echo "${default}"
+    else
+        echo "${value}"
+    fi
 }
 
 is_tailscale_ip() {
