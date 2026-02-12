@@ -100,21 +100,62 @@ return [
         'sqlsrv' => [
             'driver' => 'sqlsrv',
             'url' => env('DB_URL'),
-            'host' => env('DB_HOST', 'localhost'),
-            'port' => env('DB_PORT', 1433),
+            'host' => (static function () {
+                $useProxy = filter_var(env('TS_DB_PROXY', false), FILTER_VALIDATE_BOOLEAN);
+                if ($useProxy) {
+                    return env('TS_DB_HOST', env('TS_DB_REMOTE_HOST', '127.0.0.1'));
+                }
+                return env('DB_HOST', 'localhost');
+            })(),
+            'port' => (static function () {
+                $useProxy = filter_var(env('TS_DB_PROXY', false), FILTER_VALIDATE_BOOLEAN);
+                if ($useProxy) {
+                    return env('TS_DB_LOCAL_PORT', 11433);
+                }
+                return env('DB_PORT', 1433);
+            })(),
             'database' => env('DB_DATABASE', 'laravel'),
             'username' => env('DB_USERNAME', 'root'),
             'password' => env('DB_PASSWORD', ''),
             'charset' => env('DB_CHARSET', 'utf8'),
             'prefix' => '',
             'prefix_indexes' => true,
-            'encrypt' => env('DB_ENCRYPT', 'yes'),
-            'trust_server_certificate' => env('DB_TRUST_SERVER_CERTIFICATE', 'false'),
+            'encrypt' => (static function () {
+                $value = env('DB_ENCRYPT', 'yes');
+                if (is_bool($value)) {
+                    return $value ? 'yes' : 'no';
+                }
+                $value = strtolower((string) $value);
+                if (in_array($value, ['1', 'true', 'yes'], true)) {
+                    return 'yes';
+                }
+                if (in_array($value, ['0', 'false', 'no', ''], true)) {
+                    return 'no';
+                }
+                return $value;
+            })(),
+            'trust_server_certificate' => (static function () {
+                $value = env('DB_TRUST_SERVER_CERTIFICATE', 'false');
+                if (is_bool($value)) {
+                    return $value ? 'true' : 'false';
+                }
+                $value = strtolower((string) $value);
+                return in_array($value, ['1', 'true', 'yes'], true) ? 'true' : 'false';
+            })(),
             'options' => array_filter([
-                'LoginTimeout' => env('DB_LOGIN_TIMEOUT', 5),
-                'ConnectTimeout' => env('DB_CONNECT_TIMEOUT', 5),
-                'QueryTimeout' => env('DB_QUERY_TIMEOUT', 15),
-                'ConnectionPooling' => env('DB_CONNECTION_POOLING', false),
+                'LoginTimeout' => (int) env('DB_LOGIN_TIMEOUT', 5),
+                'ConnectTimeout' => (int) env('DB_CONNECT_TIMEOUT', 5),
+                'QueryTimeout' => (int) env('DB_QUERY_TIMEOUT', 15),
+                'ConnectionPooling' => (static function () {
+                    $value = env('DB_CONNECTION_POOLING', false);
+                    if (is_bool($value)) {
+                        return $value;
+                    }
+                    $value = strtolower((string) $value);
+                    return in_array($value, ['1', 'true', 'yes'], true);
+                })(),
+                PDO::SQLSRV_ATTR_QUERY_TIMEOUT => (int) env('DB_QUERY_TIMEOUT', 30),
+                PDO::ATTR_TIMEOUT => (int) env('DB_PDO_TIMEOUT', 5),
             ], static fn ($value) => $value !== null && $value !== ''),
         ],
 
