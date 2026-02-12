@@ -79,7 +79,7 @@ const ImageModal: React.FC<ImageModalProps> = ({ open, onClose, images }) => {
                             minHeight: '100vh',
                             width: '100%',
                             padding: '80px 16px',
-                            gap: '32px',
+                            gap: '24px',
                             boxSizing: 'border-box'
                         }}
                     >
@@ -89,8 +89,10 @@ const ImageModal: React.FC<ImageModalProps> = ({ open, onClose, images }) => {
                                 style={{ 
                                     display: 'flex', 
                                     flexDirection: 'column', 
-                                    alignItems: 'center', 
-                                    width: '100%' 
+                                    alignItems: 'center',
+                                    gap: '12px',
+                                    maxWidth: 'min(1100px, 95vw)',
+                                    width: '100%',
                                 }}
                             >
                                 {/* Label */}
@@ -113,12 +115,13 @@ const ImageModal: React.FC<ImageModalProps> = ({ open, onClose, images }) => {
                                     src={image.src}
                                     alt={image.label}
                                     style={{
-                                        width: '90vw',
+                                        width: '100%',
                                         height: 'auto',
-                                        maxHeight: '40vh',
+                                        maxHeight: '80vh',
                                         objectFit: 'contain',
-                                        borderRadius: '8px',
-                                        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
+                                        borderRadius: '12px',
+                                        backgroundColor: '#ffffff',
+                                        boxShadow: '0 20px 35px rgba(0, 0, 0, 0.35)',
                                     }}
                                 />
                             </div>
