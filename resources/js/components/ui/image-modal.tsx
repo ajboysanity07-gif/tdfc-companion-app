@@ -19,13 +19,14 @@ const ImageModal: React.FC<ImageModalProps> = ({ open, onClose, images }) => {
         <DialogPrimitive.Root open={open} onOpenChange={onClose}>
             <DialogPrimitive.Portal container={document.body}>
                 {/* Blurred backdrop */}
-                <DialogPrimitive.Overlay 
+                <DialogPrimitive.Overlay
                     style={{
                         position: 'fixed',
                         inset: 0,
                         zIndex: 9999,
-                        backdropFilter: 'blur(16px)',
-                        backgroundColor: 'rgba(0, 0, 0, 0.3)',
+                        backdropFilter: 'blur(14px)',
+                        WebkitBackdropFilter: 'blur(14px)',
+                        backgroundColor: 'rgba(0, 0, 0, 0.45)',
                     }}
                 />
                 {/* Content */}
@@ -83,45 +84,51 @@ const ImageModal: React.FC<ImageModalProps> = ({ open, onClose, images }) => {
                             boxSizing: 'border-box'
                         }}
                     >
+                        <style>{`
+                            @keyframes slideIn {
+                                from { opacity: 0; transform: translateX(20px); }
+                                to { opacity: 1; transform: translateX(0); }
+                            }
+                        `}</style>
                         {images.map((image, index) => (
-                            <div 
-                                key={index} 
-                                style={{ 
-                                    display: 'flex', 
-                                    flexDirection: 'column', 
+                            <div
+                                key={index}
+                                style={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
                                     alignItems: 'center',
                                     gap: '12px',
-                                    maxWidth: 'min(1100px, 95vw)',
+                                    maxWidth: 'min(900px, 90vw)',
                                     width: '100%',
+                                    animation: 'slideIn 240ms ease both',
                                 }}
                             >
-                                {/* Label */}
                                 <div 
                                     style={{
-                                        marginBottom: '12px',
+                                        marginBottom: '4px',
                                         padding: '8px 16px',
                                         backgroundColor: 'rgba(0, 0, 0, 0.6)',
                                         color: 'white',
                                         fontSize: '14px',
                                         fontWeight: 600,
                                         borderRadius: '8px',
-                                        backdropFilter: 'blur(4px)'
+                                        backdropFilter: 'blur(4px)',
+                                        WebkitBackdropFilter: 'blur(4px)',
                                     }}
                                 >
                                     {image.label}
                                 </div>
-                                {/* Image */}
                                 <img
                                     src={image.src}
                                     alt={image.label}
                                     style={{
                                         width: '100%',
                                         height: 'auto',
-                                        maxHeight: '80vh',
+                                        maxHeight: '70vh',
                                         objectFit: 'contain',
                                         borderRadius: '12px',
                                         backgroundColor: '#ffffff',
-                                        boxShadow: '0 20px 35px rgba(0, 0, 0, 0.35)',
+                                        boxShadow: '0 18px 30px rgba(0, 0, 0, 0.32)',
                                     }}
                                 />
                             </div>
