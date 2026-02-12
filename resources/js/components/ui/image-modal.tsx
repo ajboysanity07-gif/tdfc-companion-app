@@ -24,9 +24,9 @@ const ImageModal: React.FC<ImageModalProps> = ({ open, onClose, images }) => {
                         position: 'fixed',
                         inset: 0,
                         zIndex: 9999,
-                        backdropFilter: 'blur(14px)',
-                        WebkitBackdropFilter: 'blur(14px)',
-                        backgroundColor: 'rgba(0, 0, 0, 0.45)',
+                        backdropFilter: 'blur(18px)',
+                        WebkitBackdropFilter: 'blur(18px)',
+                        backgroundColor: 'rgba(0, 0, 0, 0.5)',
                     }}
                 />
                 {/* Content */}
@@ -79,7 +79,7 @@ const ImageModal: React.FC<ImageModalProps> = ({ open, onClose, images }) => {
                             justifyContent: 'center',
                             minHeight: '100vh',
                             width: '100%',
-                            padding: '80px 16px',
+                            padding: '64px 12px',
                             gap: '24px',
                             boxSizing: 'border-box'
                         }}
@@ -98,7 +98,7 @@ const ImageModal: React.FC<ImageModalProps> = ({ open, onClose, images }) => {
                                     flexDirection: 'column',
                                     alignItems: 'center',
                                     gap: '12px',
-                                    maxWidth: 'min(900px, 90vw)',
+                                    maxWidth: 'min(800px, 90vw)',
                                     width: '100%',
                                     animation: 'slideIn 240ms ease both',
                                 }}
@@ -124,7 +124,7 @@ const ImageModal: React.FC<ImageModalProps> = ({ open, onClose, images }) => {
                                     style={{
                                         width: '100%',
                                         height: 'auto',
-                                        maxHeight: '70vh',
+                                        maxHeight: '65vh',
                                         objectFit: 'contain',
                                         borderRadius: '12px',
                                         backgroundColor: '#ffffff',
