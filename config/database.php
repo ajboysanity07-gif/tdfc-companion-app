@@ -33,7 +33,7 @@ return [
 
         'sqlite' => [
             'driver' => 'sqlite',
-            'url' => env('DB_URL'),
+            'url' => env('DATABASE_URL', env('DB_URL')),
             'database' => env('DB_DATABASE', database_path('database.sqlite')),
             'prefix' => '',
             'foreign_key_constraints' => env('DB_FOREIGN_KEYS', true),
@@ -44,7 +44,7 @@ return [
 
         'mysql' => [
             'driver' => 'mysql',
-            'url' => env('DB_URL'),
+            'url' => env('DATABASE_URL', env('DB_URL')),
             'host' => env('DB_HOST', '127.0.0.1'),
             'port' => env('DB_PORT', '3306'),
             'database' => env('DB_DATABASE', 'laravel'),
@@ -64,7 +64,7 @@ return [
 
         'mariadb' => [
             'driver' => 'mariadb',
-            'url' => env('DB_URL'),
+            'url' => env('DATABASE_URL', env('DB_URL')),
             'host' => env('DB_HOST', '127.0.0.1'),
             'port' => env('DB_PORT', '3306'),
             'database' => env('DB_DATABASE', 'laravel'),
@@ -84,7 +84,7 @@ return [
 
         'pgsql' => [
             'driver' => 'pgsql',
-            'url' => env('DB_URL'),
+            'url' => env('DATABASE_URL', env('DB_URL')),
             'host' => env('DB_HOST', '127.0.0.1'),
             'port' => env('DB_PORT', '5432'),
             'database' => env('DB_DATABASE', 'laravel'),
@@ -99,21 +99,9 @@ return [
 
         'sqlsrv' => [
             'driver' => 'sqlsrv',
-            'url' => env('DB_URL'),
-            'host' => (static function () {
-                $useProxy = filter_var(env('TS_DB_PROXY', false), FILTER_VALIDATE_BOOLEAN);
-                if ($useProxy) {
-                    return env('TS_DB_HOST', env('TS_DB_REMOTE_HOST', '127.0.0.1'));
-                }
-                return env('DB_HOST', 'localhost');
-            })(),
-            'port' => (static function () {
-                $useProxy = filter_var(env('TS_DB_PROXY', false), FILTER_VALIDATE_BOOLEAN);
-                if ($useProxy) {
-                    return env('TS_DB_LOCAL_PORT', 11433);
-                }
-                return env('DB_PORT', 1433);
-            })(),
+            'url' => env('DATABASE_URL', env('DB_URL')),
+            'host' => env('DB_HOST', env('TAILNET_DB_HOST', 'localhost')),
+            'port' => env('DB_PORT', env('LOCAL_DB_PORT', env('TAILNET_DB_PORT', 1433))),
             'database' => env('DB_DATABASE', 'laravel'),
             'username' => env('DB_USERNAME', 'root'),
             'password' => env('DB_PASSWORD', ''),
@@ -132,6 +120,7 @@ return [
                 if (in_array($value, ['0', 'false', 'no', ''], true)) {
                     return 'no';
                 }
+
                 return $value;
             })(),
             'trust_server_certificate' => (static function () {
@@ -140,6 +129,7 @@ return [
                     return $value ? 'true' : 'false';
                 }
                 $value = strtolower((string) $value);
+
                 return in_array($value, ['1', 'true', 'yes'], true) ? 'true' : 'false';
             })(),
             'options' => array_filter([
@@ -152,10 +142,10 @@ return [
                         return $value;
                     }
                     $value = strtolower((string) $value);
+
                     return in_array($value, ['1', 'true', 'yes'], true);
                 })(),
                 PDO::SQLSRV_ATTR_QUERY_TIMEOUT => (int) env('DB_QUERY_TIMEOUT', 30),
-                PDO::ATTR_TIMEOUT => (int) env('DB_PDO_TIMEOUT', 5),
             ], static fn ($value) => $value !== null && $value !== ''),
         ],
 
