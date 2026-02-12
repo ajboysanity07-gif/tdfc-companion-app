@@ -511,6 +511,12 @@ if [ -z "${TS_HOSTNAME_ORIG}" ]; then
     echo "TS_HOSTNAME not set; using derived hostname: ${TS_HOSTNAME}"
 fi
 TS_TUN="${TS_TUN:-userspace-networking}"
+if [ "${TS_TUN}" != "userspace-networking" ]; then
+    if [ ! -e /dev/net/tun ] || [ ! -c /dev/net/tun ]; then
+        echo "TS_TUN=${TS_TUN} not available; forcing TS_TUN=userspace-networking for Railway."
+        TS_TUN="userspace-networking"
+    fi
+fi
 if [ "${TS_ACCEPT_DNS}" != "false" ]; then
     echo "Ignoring TS_ACCEPT_DNS=${TS_ACCEPT_DNS}; Railway Hobbyist uses accept-dns=false."
     TS_ACCEPT_DNS="false"
