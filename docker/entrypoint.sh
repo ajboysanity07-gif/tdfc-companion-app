@@ -3,6 +3,7 @@ set -euo pipefail
 
 APP_DIR="/var/www/html"
 PORT="${PORT:-8080}"
+APP_ENV="${APP_ENV:-}"
 
 TS_STATE_DIR="${TS_STATE_DIR:-/var/lib/tailscale}"
 TS_STATE_FILE="${TS_STATE_DIR}/tailscaled.state"
@@ -17,6 +18,8 @@ TS_READY_TIMEOUT="${TS_READY_TIMEOUT:-60}"
 TS_AUTH_TIMEOUT="${TS_AUTH_TIMEOUT:-60}"
 TS_DB_PROXY="${TS_DB_PROXY:-auto}"
 TS_DB_LOCAL_PORT="${TS_DB_LOCAL_PORT:-}"
+TS_DB_REMOTE_HOST="${TS_DB_REMOTE_HOST:-}"
+TS_DB_REMOTE_PORT="${TS_DB_REMOTE_PORT:-}"
 TS_SOCKS5_HOST="${TS_SOCKS5_HOST:-}"
 TS_SOCKS5_PORT="${TS_SOCKS5_PORT:-}"
 TS_WATCHDOG_INTERVAL="${TS_WATCHDOG_INTERVAL:-20}"
@@ -24,6 +27,7 @@ TS_DB_PROXY_PID_FILE="${TS_DB_PROXY_PID_FILE:-${TS_STATE_DIR}/db-proxy.pid}"
 TS_DB_PROXY_LOCK_DIR="${TS_DB_PROXY_LOCK_DIR:-${TS_STATE_DIR}/db-proxy.lock}"
 DB_HEALTHCHECK_INTERVAL="${DB_HEALTHCHECK_INTERVAL:-30}"
 DB_HEALTHCHECK_ATTEMPT_TIMEOUT="${DB_HEALTHCHECK_ATTEMPT_TIMEOUT:-5}"
+DB_STRICT_MODE="${DB_STRICT_MODE:-}"
 DB_WAIT_FOR_CONNECTION="${DB_WAIT_FOR_CONNECTION:-}"
 DB_WAIT_MAX_RETRIES="${DB_WAIT_MAX_RETRIES:-12}"
 DB_WAIT_SLEEP_SECONDS="${DB_WAIT_SLEEP_SECONDS:-2}"
@@ -51,6 +55,15 @@ truncate_hostname() {
     echo "$1" | cut -c1-63
 }
 
+normalize_int() {
+    local value="${1:-}"
+    local default="${2:-0}"
+    case "${value}" in
+        ''|*[!0-9]*) echo "${default}" ;;
+        *) echo "${value}" ;;
+    esac
+}
+
 is_tailscale_ip() {
     local host="$1"
     case "$host" in
@@ -68,6 +81,15 @@ is_tailscale_ip() {
     return 1
 }
 
+is_local_host() {
+    case "$1" in
+        127.0.0.1|localhost)
+            return 0
+            ;;
+    esac
+    return 1
+}
+
 TS_HOSTNAME="$(strip_wrapping_quotes "${TS_HOSTNAME}")"
 TS_TAGS="$(strip_wrapping_quotes "${TS_TAGS}")"
 TS_AUTHKEY="$(strip_wrapping_quotes "${TS_AUTHKEY}")"
@@ -78,6 +100,8 @@ TS_READY_TIMEOUT="$(strip_wrapping_quotes "${TS_READY_TIMEOUT}")"
 TS_AUTH_TIMEOUT="$(strip_wrapping_quotes "${TS_AUTH_TIMEOUT}")"
 TS_DB_PROXY="$(strip_wrapping_quotes "${TS_DB_PROXY}")"
 TS_DB_LOCAL_PORT="$(strip_wrapping_quotes "${TS_DB_LOCAL_PORT}")"
+TS_DB_REMOTE_HOST="$(strip_wrapping_quotes "${TS_DB_REMOTE_HOST}")"
+TS_DB_REMOTE_PORT="$(strip_wrapping_quotes "${TS_DB_REMOTE_PORT}")"
 TS_SOCKS5_HOST="$(strip_wrapping_quotes "${TS_SOCKS5_HOST}")"
 TS_SOCKS5_PORT="$(strip_wrapping_quotes "${TS_SOCKS5_PORT}")"
 TS_WATCHDOG_INTERVAL="$(strip_wrapping_quotes "${TS_WATCHDOG_INTERVAL}")"
@@ -85,6 +109,7 @@ TS_DB_PROXY_PID_FILE="$(strip_wrapping_quotes "${TS_DB_PROXY_PID_FILE}")"
 TS_DB_PROXY_LOCK_DIR="$(strip_wrapping_quotes "${TS_DB_PROXY_LOCK_DIR}")"
 DB_HEALTHCHECK_INTERVAL="$(strip_wrapping_quotes "${DB_HEALTHCHECK_INTERVAL}")"
 DB_HEALTHCHECK_ATTEMPT_TIMEOUT="$(strip_wrapping_quotes "${DB_HEALTHCHECK_ATTEMPT_TIMEOUT}")"
+DB_STRICT_MODE="$(strip_wrapping_quotes "${DB_STRICT_MODE}")"
 DB_WAIT_FOR_CONNECTION="$(strip_wrapping_quotes "${DB_WAIT_FOR_CONNECTION}")"
 DB_WAIT_MAX_RETRIES="$(strip_wrapping_quotes "${DB_WAIT_MAX_RETRIES}")"
 DB_WAIT_SLEEP_SECONDS="$(strip_wrapping_quotes "${DB_WAIT_SLEEP_SECONDS}")"
@@ -135,8 +160,16 @@ if [ "${TS_DB_PROXY}" = "1" ]; then
     fi
 fi
 
+if [ -z "${DB_STRICT_MODE}" ]; then
+    if [ "${APP_ENV}" = "production" ]; then
+        DB_STRICT_MODE="1"
+    else
+        DB_STRICT_MODE="0"
+    fi
+fi
+
 if [ -z "${DB_WAIT_FOR_CONNECTION}" ]; then
-    if [ "${TS_DB_PROXY}" = "1" ] && [ -n "${DB_HOST:-}" ]; then
+    if [ "${DB_STRICT_MODE}" = "1" ] && [ "${TS_DB_PROXY}" = "1" ] && [ -n "${DB_HOST:-}" ]; then
         DB_WAIT_FOR_CONNECTION="1"
     else
         DB_WAIT_FOR_CONNECTION="0"
@@ -305,8 +338,12 @@ kill_db_proxy_by_port() {
 
 start_db_proxy() {
     if [ -z "${TS_DB_REMOTE_HOST:-}" ]; then
-        echo "TS_DB_PROXY enabled but DB_HOST is empty; skipping DB proxy."
+        echo "TS_DB_PROXY enabled but TS_DB_REMOTE_HOST is empty; skipping DB proxy."
         return 0
+    fi
+    if is_local_host "${TS_DB_REMOTE_HOST}"; then
+        echo "TS_DB_PROXY enabled but TS_DB_REMOTE_HOST is local; skipping DB proxy."
+        return 1
     fi
     if [ -z "${TS_DB_LOCAL_PORT}" ]; then
         TS_DB_LOCAL_PORT="${TS_DB_REMOTE_PORT:-1433}"
@@ -405,6 +442,11 @@ start_db_healthcheck() {
 
             if ! db_connection_check; then
                 echo "DB healthcheck failed; verifying Tailscale and DB proxy..."
+                if [ "${DB_STRICT_MODE}" = "1" ]; then
+                    echo "DB healthcheck failed in strict mode; shutting down."
+                    kill -TERM 1 2>/dev/null || true
+                    exit 1
+                fi
                 ensure_tailscale_auth
                 if [ "${TS_DB_PROXY}" = "1" ]; then
                     start_db_proxy || true
@@ -468,9 +510,7 @@ TS_HOSTNAME="$(truncate_hostname "${TS_HOSTNAME}")"
 if [ -z "${TS_HOSTNAME_ORIG}" ]; then
     echo "TS_HOSTNAME not set; using derived hostname: ${TS_HOSTNAME}"
 fi
-if [ -n "${TS_TUN}" ] && [ "${TS_TUN}" != "userspace" ]; then
-    echo "Ignoring TS_TUN=${TS_TUN}; Railway Hobbyist requires userspace networking."
-fi
+TS_TUN="${TS_TUN:-userspace-networking}"
 if [ "${TS_ACCEPT_DNS}" != "false" ]; then
     echo "Ignoring TS_ACCEPT_DNS=${TS_ACCEPT_DNS}; Railway Hobbyist uses accept-dns=false."
     TS_ACCEPT_DNS="false"
@@ -531,7 +571,7 @@ if [ "${TS_DISABLE:-}" != "1" ]; then
         exit 1
     fi
 
-    TAILSCALED_ARGS=(--state="${TS_STATE_FILE}" --socket="${TS_SOCKET}" --tun=userspace-networking)
+    TAILSCALED_ARGS=(--state="${TS_STATE_FILE}" --socket="${TS_SOCKET}" --tun="${TS_TUN}")
     if [ -n "${TS_SOCKS5_HOST}" ] && [ -n "${TS_SOCKS5_PORT}" ]; then
         TAILSCALED_ARGS+=(--socks5-server="${TS_SOCKS5_HOST}:${TS_SOCKS5_PORT}")
     fi
@@ -559,14 +599,14 @@ if [ "${TS_DISABLE:-}" != "1" ]; then
     fi
 
     if [ "${TS_DB_PROXY}" = "1" ]; then
-        if [ -z "${DB_HOST:-}" ]; then
-            echo "TS_DB_PROXY enabled but DB_HOST is empty; skipping DB proxy."
-        else
+        if [ -z "${TS_DB_REMOTE_HOST:-}" ] && [ -n "${DB_HOST:-}" ]; then
             TS_DB_REMOTE_HOST="${DB_HOST}"
-            TS_DB_REMOTE_PORT="${DB_PORT:-1433}"
-            if ! start_db_proxy; then
-                exit 1
-            fi
+        fi
+        if [ -z "${TS_DB_REMOTE_PORT:-}" ] && [ -n "${DB_PORT:-}" ]; then
+            TS_DB_REMOTE_PORT="${DB_PORT}"
+        fi
+        if ! start_db_proxy; then
+            exit 1
         fi
     fi
 
@@ -578,20 +618,44 @@ fi
 warmup_db_connection() {
     local strict="${1:-0}"
     echo "Warming up database connection..."
-    local max_retries=5
-    local sleep_seconds=2
+    local max_retries
+    local sleep_seconds
     local retry=0
-    local attempt_timeout="${DB_WARMUP_ATTEMPT_TIMEOUT:-15}"
-    local timeout_cmd=()
+    local base_attempt_timeout
     if [ "${strict}" = "1" ]; then
-        max_retries="${DB_WAIT_MAX_RETRIES}"
-        sleep_seconds="${DB_WAIT_SLEEP_SECONDS}"
-        attempt_timeout="${DB_WAIT_ATTEMPT_TIMEOUT}"
+        max_retries="$(normalize_int "${DB_WAIT_MAX_RETRIES:-}" 5)"
+        sleep_seconds="$(normalize_int "${DB_WAIT_SLEEP_SECONDS:-}" 2)"
+        base_attempt_timeout="$(normalize_int "${DB_WAIT_ATTEMPT_TIMEOUT:-}" 15)"
+    else
+        max_retries=5
+        sleep_seconds=2
+        base_attempt_timeout="$(normalize_int "${DB_WARMUP_ATTEMPT_TIMEOUT:-}" 15)"
     fi
-    if command -v timeout >/dev/null 2>&1; then
+    local attempt_timeout="${base_attempt_timeout}"
+    local candidate_timeout
+
+    candidate_timeout="$(normalize_int "${DB_CONNECT_TIMEOUT:-}" 0)"
+    if [ "${candidate_timeout}" -gt "${attempt_timeout}" ]; then
+        attempt_timeout="${candidate_timeout}"
+    fi
+    candidate_timeout="$(normalize_int "${DB_LOGIN_TIMEOUT:-}" 0)"
+    if [ "${candidate_timeout}" -gt "${attempt_timeout}" ]; then
+        attempt_timeout="${candidate_timeout}"
+    fi
+    candidate_timeout="$(normalize_int "${DB_PDO_TIMEOUT:-}" 0)"
+    if [ "${candidate_timeout}" -gt "${attempt_timeout}" ]; then
+        attempt_timeout="${candidate_timeout}"
+    fi
+    candidate_timeout="$(normalize_int "${DB_QUERY_TIMEOUT:-}" 0)"
+    if [ "${candidate_timeout}" -gt "${attempt_timeout}" ]; then
+        attempt_timeout="${candidate_timeout}"
+    fi
+
+    local timeout_cmd=()
+    if command -v timeout >/dev/null 2>&1 && [ "${attempt_timeout}" -gt 0 ]; then
         timeout_cmd=(timeout "${attempt_timeout}")
     fi
-    while [ $retry -lt $max_retries ]; do
+    while [ "${retry}" -lt "${max_retries}" ]; do
         # Use a simple PHP script instead of tinker to avoid psysh config issues
         set +e
         warmup_output="$("${timeout_cmd[@]}" gosu www-data php -r "
