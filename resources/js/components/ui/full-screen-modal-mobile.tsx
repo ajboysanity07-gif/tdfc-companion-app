@@ -140,8 +140,13 @@ const FullScreenModalMobile: React.FC<Props> = ({
                                     animate={{ opacity: 1 }}
                                     exit={{ opacity: 0 }}
                                     transition={{ duration: 0.2 }}
-                                    className="fixed inset-0 bg-black/20 backdrop-blur-md"
-                                    style={{ left: contentLeft, zIndex: 9999 }}
+                                    className="fixed inset-0 bg-black/55 backdrop-blur-lg"
+                                    style={{ 
+                                        left: contentLeft, 
+                                        zIndex: 9999,
+                                        backdropFilter: 'blur(14px)',
+                                        WebkitBackdropFilter: 'blur(14px)',
+                                    }}
                                     onClick={handleClose}
                                 />
                             </DialogPrimitive.Overlay>

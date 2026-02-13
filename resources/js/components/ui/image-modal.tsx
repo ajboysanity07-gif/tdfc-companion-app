@@ -24,9 +24,9 @@ const ImageModal: React.FC<ImageModalProps> = ({ open, onClose, images }) => {
                         position: 'fixed',
                         inset: 0,
                         zIndex: 9999,
-                        backdropFilter: 'blur(18px)',
-                        WebkitBackdropFilter: 'blur(18px)',
-                        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                        backdropFilter: 'blur(22px)',
+                        WebkitBackdropFilter: 'blur(22px)',
+                        backgroundColor: 'rgba(0, 0, 0, 0.65)',
                     }}
                 />
                 {/* Content */}
@@ -79,7 +79,7 @@ const ImageModal: React.FC<ImageModalProps> = ({ open, onClose, images }) => {
                             justifyContent: 'center',
                             minHeight: '100vh',
                             width: '100%',
-                            padding: '56px 12px',
+                            padding: '40px 12px',
                             gap: '24px',
                             boxSizing: 'border-box'
                         }}
@@ -98,7 +98,7 @@ const ImageModal: React.FC<ImageModalProps> = ({ open, onClose, images }) => {
                                     flexDirection: 'column',
                                     alignItems: 'center',
                                     gap: '12px',
-                                    maxWidth: 'min(720px, 85vw)',
+                                    maxWidth: 'min(560px, 78vw)',
                                     width: '100%',
                                     animation: 'slideIn 240ms ease both',
                                 }}
@@ -124,11 +124,11 @@ const ImageModal: React.FC<ImageModalProps> = ({ open, onClose, images }) => {
                                     style={{
                                         width: '100%',
                                         height: 'auto',
-                                        maxHeight: '55vh',
+                                        maxHeight: '42vh',
                                         objectFit: 'contain',
                                         borderRadius: '12px',
                                         backgroundColor: '#ffffff',
-                                        boxShadow: '0 14px 24px rgba(0, 0, 0, 0.28)',
+                                        boxShadow: '0 12px 24px rgba(0, 0, 0, 0.2)',
                                     }}
                                 />
                             </div>
