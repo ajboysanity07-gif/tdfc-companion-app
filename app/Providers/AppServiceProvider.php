@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -21,7 +23,13 @@ class AppServiceProvider extends ServiceProvider
     {
         // Force HTTPS in production (Railway uses HTTPS proxy)
         if (config('app.env') === 'production') {
-            \Illuminate\Support\Facades\URL::forceScheme('https');
+            URL::forceScheme('https');
         }
+
+        // Reconnect automatically on dropped SQL Server connections
+        DB::reconnector(function ($connection) {
+            $connection->disconnect();
+            $connection->connect();
+        });
     }
 }
