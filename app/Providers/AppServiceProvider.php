@@ -25,11 +25,5 @@ class AppServiceProvider extends ServiceProvider
         if (config('app.env') === 'production') {
             URL::forceScheme('https');
         }
-
-        // Reconnect automatically on dropped SQL Server connections
-        DB::reconnector(function ($connection) {
-            $connection->disconnect();
-            $connection->connect();
-        });
     }
 }
