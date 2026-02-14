@@ -1,56 +1,48 @@
-# TDFCapp
+# TDFCapp – Railway Pro Deployment (Laravel 12 + Inertia React)
 
-## Deploying to Railway + SQL Server over Tailscale
+Production-focused Docker setup for Laravel 12 (PHP 8.3) with Inertia React, optional SSR, Cloudflare R2 storage, and SQL Server over Tailscale userspace networking.
 
-1. Create a Railway project and choose Dockerfile-based deployment.
-2. Add a Railway persistent volume mounted at `/var/lib/tailscale` so the Tailscale machine identity survives redeploys.
-3. Set Railway variables (secrets go in the Secrets tab) using the tables below.
-4. Create a reusable or pre-authorized Tailscale auth key and (optionally) restrict it with tags (for example `tag:railway`).
-5. Deploy. The container will start Tailscale, cache Laravel config/views, and then start nginx + php-fpm.
+## What the container does
+- Builds frontend (Vite) and SSR bundle during the Docker build.
+- Requires `APP_KEY` (no runtime key generation), defaults to `APP_ENV=production`, `APP_DEBUG=false`, `LOG_CHANNEL=stderr`.
+- Makes `storage/` and `bootstrap/cache/` writable and caches config/views.
+- Optionally starts Inertia SSR (`php artisan inertia:start-ssr`) when enabled via env.
+- Starts Tailscale in userspace mode when `TS_AUTHKEY` is provided, forwards SQL Server traffic from the tailnet to `127.0.0.1:LOCAL_DB_PORT` (default `11433`) via SOCKS5, and pins Laravel DB env to the local forward.
+- Keeps all state ephemeral (no reliance on persistent disk).
 
-Environment variables
+## Deploying to Railway (Dockerfile)
+1) Create a Railway service using the repo Dockerfile.
+2) Set the environment variables below (Secrets tab for sensitive values).
+3) Deploy. The container listens on `0.0.0.0:$PORT` (Railway injects `PORT`).
 
-Laravel
-- `APP_KEY`: Laravel app key (generate with `php artisan key:generate` locally).
-- `APP_ENV`: `production`.
-- `APP_URL`: public Railway URL.
-- `LOG_CHANNEL`: `stack` (or your preferred channel).
-- `CACHE_STORE`: `file` or `database` (CACHE setting).
-- `QUEUE_CONNECTION`: `sync` or `database` (QUEUE setting).
-- `SESSION_DRIVER`: `cookie` or `database` (SESSION setting).
-- `RUN_MIGRATIONS`: set to `true` only when you want migrations to run on deploy.
+### Required Railway variables
+- Laravel: `APP_KEY` (generated locally), `APP_ENV=production`, `APP_DEBUG=false`, `APP_URL=<public-url>`, `LOG_CHANNEL=stderr`.
+- Caching: `CACHE_STORE=database` (or your preference), `QUEUE_CONNECTION=database`, `SESSION_DRIVER=database` (or cookie).
+- Database (SQL Server): `DB_CONNECTION=sqlsrv`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`. `DB_HOST`/`DB_PORT` are set by the start script when Tailscale forwarding is active.
+- Optional migrations: set `RUN_MIGRATIONS=true` only when you explicitly want migrations to run on deploy.
 
-SQL Server (over Tailscale)
-- `DB_CONNECTION`: `sqlsrv`.
-- `DB_HOST`: Tailscale IP or MagicDNS name of the SQL Server.
-- `DB_PORT`: `1433`.
-- `DB_DATABASE`: database name.
-- `DB_USERNAME`: SQL Server username.
-- `DB_PASSWORD`: SQL Server password (secret).
+### Tailscale + SQL Server forward (userspace)
+- Env needed: `TS_AUTHKEY`, optional `TS_HOSTNAME` (default `railway-app`), `TS_TAGS` (default `tag:railway-app`), `TAILNET_DB_HOST` (MagicDNS or 100.x), `TAILNET_DB_PORT` (default `1433`), `LOCAL_DB_PORT` (default `11433`), `TS_SOCKS5_PORT` (default `1055`).
+- Flow: `tailscaled --tun=userspace-networking` → `tailscale up --accept-routes=false --accept-dns=true --advertise-tags` → `socat TCP-LISTEN:${LOCAL_DB_PORT} SOCKS4A:127.0.0.1:${TAILNET_DB_HOST}:${TAILNET_DB_PORT},socksport=${TS_SOCKS5_PORT}`.
+- DB env forced to local forward when Tailscale runs: `DB_CONNECTION=sqlsrv`, `DB_HOST=127.0.0.1`, `DB_PORT=${LOCAL_DB_PORT}`; `DATABASE_URL` is rewritten to use the local host/port.
+- If `TS_AUTHKEY` is absent, Tailscale and forwarding are skipped so you can connect directly using `DB_HOST/DB_PORT`.
 
-Tailscale
-- `TS_AUTHKEY`: auth key (secret).
-- `TS_HOSTNAME`: stable hostname (example: `tdfc-railway-6`). If unset, a deterministic name is derived from the Railway service or project name.
-- `TS_TAGS`: optional comma-separated tags (example: `tag:railway`).
-- `TS_STATE_DIR`: persistent state path (default `/var/lib/tailscale`).
-- `TS_DB_PROXY`: `auto` (default) to enable a local DB proxy when `DB_HOST` is a Tailscale IP; set `1` to force or `0` to disable.
-- `TS_DB_LOCAL_PORT`: local port for the DB proxy (defaults to `DB_PORT`).
-- `TS_SOCKS5_HOST` / `TS_SOCKS5_PORT`: SOCKS5 bind host/port for userspace networking (defaults to `127.0.0.1:1055` when proxying).
+### Cloudflare R2 (S3-compatible)
+- Set: `FILESYSTEM_DISK=r2`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_DEFAULT_REGION=auto`, `AWS_BUCKET`, `AWS_ENDPOINT=https://<accountid>.r2.cloudflarestorage.com`, `AWS_USE_PATH_STYLE_ENDPOINT=true`, optional `AWS_URL` for public base URL. `R2_*` envs remain as fallbacks.
+- R2 uses the S3 driver with private visibility by default; use signed URLs when public access is required.
+- Production uploads should not assume persistent local disk; use R2 for durable storage.
 
-## Railway Hobbyist + Tailscale
+### Inertia SSR (optional toggle)
+- Default: disabled. Env to enable: `INERTIA_SSR_ENABLED=true`, `SSR_HOST=127.0.0.1`, `SSR_PORT=13714`, `INERTIA_SSR_URL=http://127.0.0.1:13714`. Bundle path can be overridden with `INERTIA_SSR_BUNDLE` if needed.
+- Docker build already runs `npm run build` and `npm run build --ssr`; the start script will launch `php artisan inertia:start-ssr` when SSR is enabled.
 
-1. Set `TS_AUTHKEY`, `TS_HOSTNAME`, and optional `TS_TAGS`.
-2. Mount a Railway persistent volume at `/var/lib/tailscale` (or match your `TS_STATE_DIR`) to keep the same Tailscale node across redeploys. If volumes are unavailable, persistent identity cannot be guaranteed.
-3. If using tags, ensure `tag:railway` is allowed in Tailscale ACL `tagOwners` or the auth key permits it; otherwise omit `TS_TAGS`.
+### Runtime hardening
+- `APP_KEY` is mandatory; container exits if missing.
+- Uses `config:cache` and `view:cache`; route caching is intentionally skipped because routes still include closures.
+- Logs to stderr; nginx access/error logs go to stdout/stderr.
+- No reliance on persistent volumes; Tailscale state lives in `/tmp/tailscale`.
 
-## Railway Hobbyist + Tailscale troubleshooting
+## Local notes
+- If you do not see frontend changes in the UI, run `npm run build` or `npm run dev` locally.
+- For production-like checks, run `npm run build && npm run build --ssr` and `composer install --no-dev` before building the image.
 
-- `WantRunning=false` means `tailscaled` is running but `tailscale up` has not been applied. Ensure `TS_AUTHKEY` is set and watch logs for the `tailscale up` invocation.
-- Required env vars: `TS_AUTHKEY`, `TS_HOSTNAME`. Optional: `TS_TAGS`.
-- If you see `requested tags ... invalid or not permitted`, the entrypoint retries once without tags. To use tags, allow `tag:railway` in the Tailscale ACL `tagOwners` or use an auth key permitted to apply that tag.
-
-Notes
-- This setup runs Tailscale in userspace networking mode on Railway Hobbyist (no `/dev/net/tun`).
-- The entrypoint forces `--accept-dns=false` to avoid DNS changes inside the container.
-- When `DB_HOST` is a Tailscale IP, the entrypoint forwards DB traffic through a local SOCKS5 proxy so SQL Server connections work without a TUN device.
-- Secrets must be injected via Railway variables. Do not commit `.env` files with credentials.

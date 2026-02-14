@@ -8,6 +8,7 @@ node_modules
 vendor
 storage
 bootstrap/cache
+bootstrap/ssr
 public/build
 .env
 .env.*
