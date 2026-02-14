@@ -2,6 +2,7 @@ import axiosClient, { getCsrfCookie } from '@/api/axios-client';
 import React, { useEffect, useMemo, useState } from 'react';
 import { X, AlertCircle } from 'lucide-react';
 import type { RejectionReasonEntry } from '@/types/user';
+import { useMyTheme } from '@/hooks/use-mytheme';
 
 type Props = {
     open: boolean;
@@ -16,6 +17,19 @@ const RejectModal: React.FC<Props> = ({ open, reasons, selected = [], onClose, o
     const [fallbackReasons, setFallbackReasons] = useState<RejectionReasonEntry[]>([]);
     const [loadingReasons, setLoadingReasons] = useState(false);
     const [localSelected, setLocalSelected] = useState<string[]>(selected ?? []);
+    const tw = useMyTheme();
+
+    const brand = tw.colors.red;
+    const brandHover = tw.colors.redLight;
+    const surface = tw.isDark ? 'rgba(17,17,20,0.96)' : 'rgba(255,255,255,0.98)';
+    const surfaceMuted = tw.isDark ? 'rgba(255,255,255,0.04)' : 'rgba(15,23,42,0.03)';
+    const borderColor = tw.isDark ? 'rgba(255,255,255,0.12)' : 'rgba(15,23,42,0.12)';
+    const borderSoft = tw.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(15,23,42,0.08)';
+    const textPrimary = tw.isDark ? '#e5e7eb' : '#0f172a';
+    const textSecondary = tw.isDark ? 'rgba(226,232,240,0.78)' : 'rgba(55,65,81,0.82)';
+    const backdrop = tw.isDark ? 'rgba(0,0,0,0.65)' : 'rgba(15,23,42,0.42)';
+    const listBackground = tw.isDark ? 'rgba(255,255,255,0.02)' : 'rgba(15,23,42,0.02)';
+    const skeletonShade = tw.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(15,23,42,0.08)';
 
     const normalizeReasons = (body: unknown): RejectionReasonEntry[] => {
         if (Array.isArray(body)) return body as RejectionReasonEntry[];
@@ -87,20 +101,22 @@ const RejectModal: React.FC<Props> = ({ open, reasons, selected = [], onClose, o
             style={{
                 position: 'fixed',
                 inset: 0,
-                backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                backgroundColor: backdrop,
+                backdropFilter: 'blur(12px)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 zIndex: 1300,
+                padding: '20px',
             }}
             onClick={onClose}
         >
             <div
                 style={{
-                    backgroundColor: 'rgba(18, 18, 20, 0.9)',
-                    backdropFilter: 'blur(22px)',
-                    boxShadow: '0 26px 70px rgba(0,0,0,0.35)',
-                    border: '1px solid rgba(255,255,255,0.08)',
+                    backgroundColor: surface,
+                    backdropFilter: 'blur(18px)',
+                    boxShadow: tw.isDark ? '0 32px 72px rgba(0,0,0,0.55)' : '0 32px 72px rgba(15,23,42,0.16)',
+                    border: `1px solid ${borderColor}`,
                     borderRadius: '20px',
                     maxWidth: '540px',
                     width: '100%',
@@ -119,8 +135,9 @@ const RejectModal: React.FC<Props> = ({ open, reasons, selected = [], onClose, o
                     paddingRight: '24px',
                     paddingTop: '20px',
                     paddingBottom: '20px',
-                    borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+                    borderBottom: `1px solid ${borderSoft}`,
                     fontSize: '1.125rem',
+                    color: textPrimary,
                 }}>
                     Reject Client
                 </div>
@@ -132,13 +149,14 @@ const RejectModal: React.FC<Props> = ({ open, reasons, selected = [], onClose, o
                     paddingRight: '24px',
                     paddingTop: '16px',
                     paddingBottom: '16px',
-                    borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+                    borderBottom: `1px solid ${borderSoft}`,
                 }}>
                     <p style={{
                         margin: '0 0 4px 0',
                         fontSize: '0.875rem',
                         fontWeight: 700,
                         textAlign: 'center',
+                        color: textPrimary,
                     }}>
                         Select rejection reasons for {clientName ?? 'this client'}.
                     </p>
@@ -146,7 +164,7 @@ const RejectModal: React.FC<Props> = ({ open, reasons, selected = [], onClose, o
                         margin: '0 0 24px 0',
                         fontSize: '0.875rem',
                         textAlign: 'center',
-                        color: 'rgba(255, 255, 255, 0.7)',
+                        color: textSecondary,
                     }}>
                         You can choose more than one reason.
                     </p>
@@ -155,8 +173,8 @@ const RejectModal: React.FC<Props> = ({ open, reasons, selected = [], onClose, o
                         <div style={{
                             padding: '8px',
                             borderRadius: '12px',
-                            backgroundColor: 'rgba(255,255,255,0.03)',
-                            border: '1px solid rgba(255,255,255,0.08)',
+                            backgroundColor: listBackground,
+                            border: `1px solid ${borderSoft}`,
                             display: 'grid',
                             gridTemplateColumns: '1fr',
                             gap: '6px',
@@ -172,20 +190,20 @@ const RejectModal: React.FC<Props> = ({ open, reasons, selected = [], onClose, o
                                     paddingTop: '8px',
                                     paddingBottom: '8px',
                                     borderRadius: '8px',
-                                    border: '1px solid rgba(255,255,255,0.06)',
-                                    backgroundColor: 'rgba(255,255,255,0.03)',
+                                    border: `1px solid ${borderSoft}`,
+                                    backgroundColor: surfaceMuted,
                                 }}>
                                     <div style={{
                                         width: '18px',
                                         height: '18px',
                                         borderRadius: '4px',
-                                        backgroundColor: 'rgba(255,255,255,0.15)',
+                                        backgroundColor: skeletonShade,
                                     }} />
                                     <div style={{
                                         width: '72%',
                                         height: '18px',
                                         borderRadius: '4px',
-                                        backgroundColor: 'rgba(255,255,255,0.15)',
+                                        backgroundColor: skeletonShade,
                                     }} />
                                 </div>
                             ))}
@@ -194,7 +212,7 @@ const RejectModal: React.FC<Props> = ({ open, reasons, selected = [], onClose, o
                         <p style={{
                             margin: 0,
                             fontSize: '0.875rem',
-                            color: 'rgba(255, 255, 255, 0.7)',
+                            color: textSecondary,
                         }}>
                             No rejection reasons configured.
                         </p>
@@ -202,8 +220,8 @@ const RejectModal: React.FC<Props> = ({ open, reasons, selected = [], onClose, o
                         <div style={{
                             padding: '8px',
                             borderRadius: '12px',
-                            backgroundColor: 'rgba(255,255,255,0.03)',
-                            border: '1px solid rgba(255,255,255,0.08)',
+                            backgroundColor: listBackground,
+                            border: `1px solid ${borderSoft}`,
                             display: 'grid',
                             gridTemplateColumns: '1fr',
                             gap: '6px',
@@ -224,22 +242,18 @@ const RejectModal: React.FC<Props> = ({ open, reasons, selected = [], onClose, o
                                             paddingTop: '8px',
                                             paddingBottom: '8px',
                                             borderRadius: '8px',
-                                            border: selectedReason ? '1px solid #ef4444' : '1px solid rgba(255,255,255,0.14)',
-                                            backgroundColor: selectedReason ? 'rgba(239,68,68,0.10)' : 'rgba(255,255,255,0.02)',
+                                            border: selectedReason ? `1px solid ${brand}` : `1px solid ${borderColor}`,
+                                            backgroundColor: selectedReason
+                                                ? tw.isDark
+                                                    ? 'rgba(225,78,78,0.16)'
+                                                    : 'rgba(225,78,78,0.1)'
+                                                : surfaceMuted,
                                             transition: 'all 140ms ease',
                                             cursor: 'pointer',
+                                            boxShadow: selectedReason ? '0 12px 30px rgba(225,78,78,0.18)' : 'none',
                                         }}
                                         onClick={() => toggle(code)}
-                                        onMouseEnter={(e) => {
-                                            const el = e.currentTarget as HTMLDivElement;
-                                            el.style.borderColor = '#ef4444';
-                                            el.style.backgroundColor = 'rgba(239,68,68,0.06)';
-                                        }}
-                                        onMouseLeave={(e) => {
-                                            const el = e.currentTarget as HTMLDivElement;
-                                            el.style.borderColor = selectedReason ? '#ef4444' : 'rgba(255,255,255,0.14)';
-                                            el.style.backgroundColor = selectedReason ? 'rgba(239,68,68,0.10)' : 'rgba(255,255,255,0.02)';
-                                        }}
+                                        className="hover:border-[#e14e4e] hover:bg-[#e14e4e]/8"
                                     >
                                         <label style={{
                                             display: 'flex',
@@ -257,13 +271,13 @@ const RejectModal: React.FC<Props> = ({ open, reasons, selected = [], onClose, o
                                                     width: '18px',
                                                     height: '18px',
                                                     cursor: 'pointer',
-                                                    accentColor: '#ef4444',
+                                                    accentColor: brand,
                                                 }}
                                             />
                                             <span style={{
                                                 fontSize: '0.875rem',
                                                 fontWeight: 700,
-                                                color: '#ffffff',
+                                                color: textPrimary,
                                             }}>
                                                 {label}
                                             </span>
@@ -289,9 +303,9 @@ const RejectModal: React.FC<Props> = ({ open, reasons, selected = [], onClose, o
                             flex: 1,
                             padding: '8px 16px',
                             borderRadius: '999px',
-                            border: '1px solid rgba(255,255,255,0.25)',
-                            backgroundColor: 'transparent',
-                            color: '#ffffff',
+                            border: `1px solid ${borderColor}`,
+                            backgroundColor: tw.isDark ? 'rgba(255,255,255,0.04)' : '#f4f4f5',
+                            color: textPrimary,
                             fontWeight: 700,
                             cursor: 'pointer',
                             display: 'flex',
@@ -302,12 +316,12 @@ const RejectModal: React.FC<Props> = ({ open, reasons, selected = [], onClose, o
                             transition: 'all 120ms ease',
                         }}
                         onMouseEnter={(e) => {
-                            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.5)';
-                            e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.08)';
+                            e.currentTarget.style.borderColor = tw.isDark ? 'rgba(255,255,255,0.4)' : 'rgba(15,23,42,0.2)';
+                            e.currentTarget.style.backgroundColor = tw.isDark ? 'rgba(255,255,255,0.08)' : '#e5e7eb';
                         }}
                         onMouseLeave={(e) => {
-                            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.25)';
-                            e.currentTarget.style.backgroundColor = 'transparent';
+                            e.currentTarget.style.borderColor = borderColor;
+                            e.currentTarget.style.backgroundColor = tw.isDark ? 'rgba(255,255,255,0.04)' : '#f4f4f5';
                         }}
                     >
                         <X size={20} />
@@ -323,7 +337,7 @@ const RejectModal: React.FC<Props> = ({ open, reasons, selected = [], onClose, o
                             padding: '8px 16px',
                             borderRadius: '999px',
                             border: 'none',
-                            backgroundColor: '#ef4444',
+                            backgroundColor: brand,
                             color: '#ffffff',
                             fontWeight: 700,
                             cursor: 'pointer',
@@ -332,16 +346,16 @@ const RejectModal: React.FC<Props> = ({ open, reasons, selected = [], onClose, o
                             justifyContent: 'center',
                             gap: '8px',
                             fontSize: '0.875rem',
-                            boxShadow: '0 10px 24px rgba(220,38,38,0.28)',
+                            boxShadow: '0 12px 28px rgba(225,78,78,0.32)',
                             transition: 'all 120ms ease',
                         }}
                         onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = '#dc2626';
-                            e.currentTarget.style.boxShadow = '0 14px 32px rgba(220,38,38,0.4)';
+                            e.currentTarget.style.backgroundColor = brandHover;
+                            e.currentTarget.style.boxShadow = '0 16px 32px rgba(225,78,78,0.42)';
                         }}
                         onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = '#ef4444';
-                            e.currentTarget.style.boxShadow = '0 10px 24px rgba(220,38,38,0.28)';
+                            e.currentTarget.style.backgroundColor = brand;
+                            e.currentTarget.style.boxShadow = '0 12px 28px rgba(225,78,78,0.32)';
                         }}
                     >
                         <AlertCircle size={20} />
