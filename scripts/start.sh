@@ -92,8 +92,7 @@ wait_for_tailscale_socket() {
 
 wait_for_tailscale_login() {
     for _ in $(seq 1 30); do
-        status_output="$(tailscale --socket="${TS_SOCKET}" status --peers=false 2>/dev/null || true)"
-        if echo "${status_output}" | grep -qi 'logged in'; then
+        if tailscale --socket="${TS_SOCKET}" status --peers=false >/dev/null 2>&1; then
             return 0
         fi
         sleep 1
