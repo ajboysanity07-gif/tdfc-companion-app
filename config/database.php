@@ -146,9 +146,6 @@ return [
                     return in_array($value, ['1', 'true', 'yes'], true);
                 })(),
                 PDO::SQLSRV_ATTR_QUERY_TIMEOUT => (int) env('DB_QUERY_TIMEOUT', 30),
-                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                PDO::ATTR_TIMEOUT => (int) env('DB_PDO_TIMEOUT', 5),
-                'retry_on_failure' => (int) env('DB_RETRY_ON_FAILURE', 5),
             ], static fn ($value) => $value !== null && $value !== ''),
         ],
 
