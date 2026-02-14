@@ -236,18 +236,23 @@ start_db_proxy() {
     rewrite_db_url "DATABASE_URL"
 }
 
-wait_for_tailnet_db() {
+wait_for_tailnet_db_via_proxy() {
     if [ -z "${TAILNET_DB_HOST}" ]; then
         return
     fi
 
-    log "Waiting for tailnet DB ${TAILNET_DB_HOST}:${TAILNET_DB_PORT} to become reachable..."
-    if wait_for_tcp "${TAILNET_DB_HOST}" "${TAILNET_DB_PORT}" 30 2; then
-        log "Tailnet DB is reachable."
-    else
-        warn "Tailnet DB not reachable after waiting; aborting startup."
-        return 1
-    fi
+    log "Waiting for tailnet DB ${TAILNET_DB_HOST}:${TAILNET_DB_PORT} via proxy 127.0.0.1:${LOCAL_DB_PORT}..."
+    # Hitting the local proxy triggers a real connection attempt over Tailscale; timeout keeps us from hanging.
+    for _ in $(seq 1 30); do
+        if timeout 3 bash -c "cat < /dev/null > /dev/tcp/127.0.0.1/${LOCAL_DB_PORT}" >/dev/null 2>&1; then
+            log "Tailnet DB is reachable through proxy."
+            return 0
+        fi
+        sleep 2
+    done
+
+    warn "Tailnet DB not reachable after waiting; aborting startup."
+    return 1
 }
 
 cache_config() {
@@ -308,10 +313,10 @@ render_nginx_config
 TAILSCALE_READY=0
 if start_tailscale; then
     TAILSCALE_READY=1
-    if ! wait_for_tailnet_db; then
+    start_db_proxy
+    if ! wait_for_tailnet_db_via_proxy; then
         exit 1
     fi
-    start_db_proxy
 else
     warn "Tailscale failed to start; aborting."
     exit 1
