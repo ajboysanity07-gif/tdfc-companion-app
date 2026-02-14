@@ -29,6 +29,11 @@ TAILSCALED_PID=""
 DB_PROXY_PID=""
 SSR_PID=""
 
+# If no explicit tailnet DB host is provided, fall back to DB_HOST.
+if [ -z "${TAILNET_DB_HOST}" ] && [ -n "${DB_HOST:-}" ]; then
+    TAILNET_DB_HOST="${DB_HOST}"
+fi
+
 log() {
     echo "[start] $*"
 }
@@ -273,7 +278,7 @@ start_ssr() {
     fi
 
     log "Starting Inertia SSR server at ${SSR_HOST}:${SSR_PORT}..."
-    gosu www-data php artisan inertia:start-ssr --host="${SSR_HOST}" --port="${SSR_PORT}" &
+    gosu www-data php artisan inertia:start-ssr --url="${INERTIA_SSR_URL}" &
     SSR_PID=$!
 }
 
