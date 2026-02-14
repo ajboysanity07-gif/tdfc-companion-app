@@ -110,6 +110,8 @@ check_tcp() {
     if ! timeout "${timeout_seconds}" bash -c "cat < /dev/null > /dev/tcp/${host}/${port}" >/dev/null 2>&1; then
         return 1
     fi
+
+    return 0
 }
 
 wait_for_tcp() {
@@ -130,7 +132,7 @@ wait_for_tcp() {
 
 start_tailscale() {
     if [ -z "${TS_AUTHKEY}" ]; then
-        log "TS_AUTHKEY not set; skipping Tailscale and DB forwarding."
+        warn "TS_AUTHKEY not set; refusing to start without Tailscale."
         return 1
     fi
 
@@ -149,7 +151,6 @@ start_tailscale() {
         --hostname="${TS_HOSTNAME}"
         --accept-routes=false
         --accept-dns=true
-        --socks5-server="${TS_SOCKS5_HOST}:${TS_SOCKS5_PORT}"
     )
 
     if [ -n "${TS_TAGS}" ]; then
@@ -157,12 +158,13 @@ start_tailscale() {
     fi
 
     if ! tailscale --socket="${TS_SOCKET}" up "${tailscale_args[@]}"; then
-        warn "tailscale up failed; continuing without Tailscale."
+        warn "tailscale up failed; aborting startup."
         return 1
     fi
 
     if ! wait_for_tailscale_login; then
-        warn "Tailscale did not report a logged-in state; DB forwarding may fail."
+        warn "Tailscale did not report a logged-in state; aborting startup."
+        return 1
     fi
 
     ts_ip="$(tailscale --socket="${TS_SOCKET}" ip -4 2>/dev/null | head -n 1 || true)"
@@ -239,7 +241,8 @@ wait_for_tailnet_db() {
     if wait_for_tcp "${TAILNET_DB_HOST}" "${TAILNET_DB_PORT}" 30 2; then
         log "Tailnet DB is reachable."
     else
-        warn "Tailnet DB not reachable after waiting; continuing startup."
+        warn "Tailnet DB not reachable after waiting; aborting startup."
+        return 1
     fi
 }
 
@@ -301,10 +304,13 @@ render_nginx_config
 TAILSCALE_READY=0
 if start_tailscale; then
     TAILSCALE_READY=1
-    wait_for_tailnet_db
+    if ! wait_for_tailnet_db; then
+        exit 1
+    fi
     start_db_proxy
 else
-    log "Tailscale not running; DB traffic will use configured host directly."
+    warn "Tailscale failed to start; aborting."
+    exit 1
 fi
 
 cache_config
