@@ -107,7 +107,9 @@ check_tcp() {
     local port="${2}"
     local timeout_seconds="${3:-2}"
 
-    timeout "${timeout_seconds}" bash -c "cat < /dev/null > /dev/tcp/${host}/${port}" >/dev/null 2>&1
+    if ! timeout "${timeout_seconds}" bash -c "cat < /dev/null > /dev/tcp/${host}/${port}" >/dev/null 2>&1; then
+        return 1
+    fi
 }
 
 wait_for_tcp() {
@@ -154,7 +156,10 @@ start_tailscale() {
         tailscale_args+=(--advertise-tags="${TS_TAGS}")
     fi
 
-    tailscale --socket="${TS_SOCKET}" up "${tailscale_args[@]}"
+    if ! tailscale --socket="${TS_SOCKET}" up "${tailscale_args[@]}"; then
+        warn "tailscale up failed; continuing without Tailscale."
+        return 1
+    fi
 
     if ! wait_for_tailscale_login; then
         warn "Tailscale did not report a logged-in state; DB forwarding may fail."
