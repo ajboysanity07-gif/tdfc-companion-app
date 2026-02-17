@@ -65,7 +65,7 @@ export default function CustomerDashboard() {
     const route = useRoute();
     const { props } = usePage<PageProps>();
     const user = props.auth?.user ?? null;
-    const acctno = route().params?.acctno as string | undefined;
+    const acctno = (route().params?.acctno as string | undefined) ?? user?.acctno ?? '';
     const fullName = user?.name ?? 'Customer';
     const avatar = user?.avatar ?? null;
     const clientName = user?.bname ?? fullName;
@@ -369,6 +369,7 @@ export default function CustomerDashboard() {
                         backgroundColor: 'transparent',
                         transition: 'all 0.2s ease'
                     }}
+                    onClick={() => router.get(route('client.loans', { acctno }))} 
                 >
                     View All
                 </Button>
