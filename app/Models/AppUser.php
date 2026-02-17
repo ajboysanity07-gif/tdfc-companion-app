@@ -94,9 +94,9 @@ class AppUser extends AuthenticatableUser
 
     public function getNameAttribute(): string
     {
-        return $this->username
-            ?? $this->wmaster?->bname
-            ?? (string) str($this->email)->before('@');
+        return $this->wmaster?->bname
+            ?? (string) str($this->email)->before('@')
+            ?? (string) $this->username;
     }
 
     public function isPending(): bool

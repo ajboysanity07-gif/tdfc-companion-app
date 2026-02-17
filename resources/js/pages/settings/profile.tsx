@@ -171,7 +171,12 @@ export default function Profile() {
                 <input type="file" accept="image/*" onChange={handleAvatarSelect} className="hidden" id="avatar-upload" />
 
                 {fullName ? (
-                  <div className="mt-3 text-center font-sans text-3xl font-bold text-white drop-shadow-sm">{fullName}</div>
+                  <div className="mt-3 text-center font-sans text-3xl font-bold text-white drop-shadow-sm">
+                    {fullName}
+                    {username ? (
+                      <div className="mt-1 text-sm font-normal text-white/80">@{username}</div>
+                    ) : null}
+                  </div>
                 ) : null}
               </div>
             </div>
@@ -320,7 +325,12 @@ export default function Profile() {
                     </span>
                   </div>
 
-                  {fullName && <h1 className="mb-4 text-3xl font-bold tracking-tight text-white lg:text-4xl">{fullName}</h1>}
+                  {fullName && (
+                    <div className="mb-4">
+                      <h1 className="text-3xl font-bold tracking-tight text-white lg:text-4xl">{fullName}</h1>
+                      {username ? <p className="mt-1 text-base font-normal text-white/80">@{username}</p> : null}
+                    </div>
+                  )}
 
                   <div className="flex items-center space-x-6">
                     <button
