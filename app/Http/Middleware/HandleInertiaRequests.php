@@ -2,13 +2,13 @@
 
 namespace App\Http\Middleware;
 
+use App\Repositories\Client\LoanRepository;
+use App\Services\Client\LoanClassificationService;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Middleware;
 use Tighten\Ziggy\Ziggy;
-use App\Services\Client\LoanClassificationService;
-use App\Repositories\Client\LoanRepository;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -29,7 +29,7 @@ class HandleInertiaRequests extends Middleware
         if ($user) {
             // Fetch salary record
             $salaryRecord = $user->acctno ? \App\Models\WSalaryRecord::where('acctno', $user->acctno)->first() : null;
-            
+
             // Calculate loan class using LoanClassificationService
             $loanClass = null;
             if ($user->acctno) {
@@ -38,32 +38,33 @@ class HandleInertiaRequests extends Middleware
                 $loanRows = $loanRepository->getLoanRowsGroupedByAccounts([$user->acctno]);
                 $loanClass = $loanClassificationService->classify($loanRows->get($user->acctno));
             }
-            
+
             // Build avatar URL from the active filesystem disk.
             $avatarUrl = null;
             if ($user->profile_picture_path) {
                 $avatarUrl = Storage::url($user->profile_picture_path);
             }
-            
+
             $authUser = [
-                'id'            => $user->user_id ?? $user->id ?? null,
-                'name'          => $user->name,
-                'email'         => $user->email,
-                'role'          => $user->role ?? 'client',
-                'acctno'        => $user->acctno ?? null,
-                'avatar'        => $avatarUrl,
+                'id' => $user->user_id ?? $user->id ?? null,
+                'name' => $user->name,
+                'email' => $user->email,
+                'username' => $user->username,
+                'role' => $user->role ?? 'client',
+                'acctno' => $user->acctno ?? null,
+                'avatar' => $avatarUrl,
                 'salary_amount' => $salaryRecord ? (float) $salaryRecord->salary_amount : null,
-                'class'         => $loanClass,
+                'class' => $loanClass,
             ];
         }
 
         return [
             ...parent::share($request),
 
-            'name'  => config('app.name'),
+            'name' => config('app.name'),
             'quote' => ['message' => trim($message), 'author' => trim($author)],
 
-            'auth'  => [
+            'auth' => [
                 'user' => $authUser,
             ],
 

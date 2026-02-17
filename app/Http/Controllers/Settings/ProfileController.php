@@ -3,15 +3,15 @@
 namespace App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Settings\ProfileUpdateRequest;
+use App\Models\AppUser;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
-use App\Models\AppUser;
 
 class ProfileController extends Controller
 {
@@ -71,12 +71,34 @@ class ProfileController extends Controller
         $userId = Auth::id();
 
         $validated = $request->validate([
-            'email' => ['required', 'email', "unique:app_user_table,email,{$userId},user_id"],
+            'email' => [
+                'sometimes',
+                'email',
+                'max:255',
+                Rule::unique('app_user_table', 'email')->ignore($userId, 'user_id'),
+            ],
+            'username' => [
+                'sometimes',
+                'string',
+                'min:3',
+                'max:30',
+                'regex:/^[A-Za-z0-9._-]+$/',
+                Rule::unique('app_user_table', 'username')->ignore($userId, 'user_id'),
+            ],
             'name' => 'sometimes|string|max:255', // Add if you have a name field
         ]);
 
+        $updates = collect($validated)
+            ->map(fn ($value) => is_string($value) ? trim($value) : $value)
+            ->filter(fn ($value) => $value !== null && $value !== '')
+            ->all();
+
+        if (empty($updates)) {
+            return back()->with('success', 'Profile updated successfully');
+        }
+
         // Update using AppUser model with correct primary key
-        AppUser::where('user_id', $userId)->update($validated);
+        AppUser::where('user_id', $userId)->update($updates);
 
         return back()->with('success', 'Profile updated successfully');
     }

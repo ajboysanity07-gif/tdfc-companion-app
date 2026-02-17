@@ -18,6 +18,7 @@ export type User = {
     acctno?: string | null;
     name?: string;
     email?: string;
+    username?: string;
     role?: string;
     avatar?: string | null;
     status?: string;

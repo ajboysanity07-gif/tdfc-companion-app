@@ -13,6 +13,7 @@ import { useState, type ChangeEvent } from 'react';
 import Modal from '@/components/ui/modal';
 import EmailModal from '@/components/modals/email-modal';
 import PasswordModal from '@/components/modals/password-modal';
+import UsernameModal from '@/components/modals/username-modal';
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
@@ -39,8 +40,10 @@ export default function Profile() {
   
   const [showEmailModal, setShowEmailModal] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [showUsernameModal, setShowUsernameModal] = useState(false);
   
   const email: string = auth.user.email ?? '';
+  const username: string = auth.user.username ?? '';
 
   const handleAvatarSelect = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -176,15 +179,41 @@ export default function Profile() {
             <div className="w-full px-6">
               <div className="flex flex-col items-end space-y-1">
                 <button
-                  onClick={() => setShowEmailModal(true)}
-                  className="rounded-md px-2 py-1 text-sm text-white/90 transition-all duration-200 hover:bg-white/10 hover:text-white hover:underline"
+                  onClick={() => setShowUsernameModal(true)}
+                  className="inline-flex items-center gap-2 rounded-md px-2 py-1 text-sm text-white/90 transition-all duration-200 hover:bg-white/10 hover:text-white hover:underline"
                 >
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14c-4 0-7 2-7 4v1h14v-1c0-2-3-4-7-4z" />
+                  </svg>
+                  Edit Username
+                </button>
+                <button
+                  onClick={() => setShowEmailModal(true)}
+                  className="inline-flex items-center gap-2 rounded-md px-2 py-1 text-sm text-white/90 transition-all duration-200 hover:bg-white/10 hover:text-white hover:underline"
+                >
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                    />
+                  </svg>
                   Change Email
                 </button>
                 <button
                   onClick={() => setShowPasswordModal(true)}
-                  className="rounded-md px-2 py-1 text-sm text-white/90 transition-all duration-200 hover:bg-white/10 hover:text-white hover:underline"
+                  className="inline-flex items-center gap-2 rounded-md px-2 py-1 text-sm text-white/90 transition-all duration-200 hover:bg-white/10 hover:text-white hover:underline"
                 >
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
+                    />
+                  </svg>
                   Reset Password
                 </button>
               </div>
@@ -294,6 +323,26 @@ export default function Profile() {
                   {fullName && <h1 className="mb-4 text-3xl font-bold tracking-tight text-white lg:text-4xl">{fullName}</h1>}
 
                   <div className="flex items-center space-x-6">
+                    <button
+                      onClick={() => setShowUsernameModal(true)}
+                      className="inline-flex items-center rounded-lg px-3 py-2 text-sm font-medium text-white/90 transition-all duration-200 hover:bg-white/10 hover:text-white"
+                    >
+                      <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0z"
+                        />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 14c-4 0-7 2-7 4v1h14v-1c0-2-3-4-7-4z"
+                        />
+                      </svg>
+                      Edit Username
+                    </button>
                     <button
                       onClick={() => setShowEmailModal(true)}
                       className="inline-flex items-center rounded-lg px-3 py-2 text-sm font-medium text-white/90 transition-all duration-200 hover:bg-white/10 hover:text-white"
@@ -417,6 +466,14 @@ export default function Profile() {
           currentEmail={email}
           onClose={() => setShowEmailModal(false)}
         />
+      </Modal>
+
+      <Modal
+        isOpen={showUsernameModal}
+        onClose={() => setShowUsernameModal(false)}
+        title="Update Username"
+      >
+        <UsernameModal currentUsername={username} onClose={() => setShowUsernameModal(false)} />
       </Modal>
 
       <Modal
