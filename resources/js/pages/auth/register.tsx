@@ -23,6 +23,7 @@ type RegisterFormState = {
     full_name: string;
     phone_no: string;
     email: string;
+    username: string;
     password: string;
     password_confirmation: string;
     profile_picture: File | null;
@@ -37,6 +38,7 @@ const initialFormState: RegisterFormState = {
     full_name: '',
     phone_no: '',
     email: '',
+    username: '',
     password: '',
     password_confirmation: '',
     profile_picture: null,
@@ -62,6 +64,9 @@ export default function Register({ adminMode = false }: Props) {
     const [phoneStatus, setPhoneStatus] = useState<'idle' | 'checking' | 'duplicate' | 'ok' | 'error'>('idle');
     const emailReqIdRef = useRef(0);
     const [emailStatus, setEmailStatus] = useState<'idle' | 'checking' | 'duplicate' | 'invalid' | 'ok' | 'error'>('idle');
+    const usernameReqIdRef = useRef(0);
+    const [usernameStatus, setUsernameStatus] = useState<'idle' | 'checking' | 'duplicate' | 'invalid' | 'ok' | 'error'>('idle');
+    const [usernameSuggestions, setUsernameSuggestions] = useState<string[]>([]);
 
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -176,6 +181,51 @@ export default function Register({ adminMode = false }: Props) {
 
         return () => clearTimeout(timer);
     }, [form.email]);
+
+    useEffect(() => {
+        const value = form.username.trim();
+        const thisReqId = ++usernameReqIdRef.current;
+        setUsernameSuggestions([]);
+
+        if (value.length === 0) {
+            setUsernameStatus('idle');
+            return;
+        }
+
+        const usernamePattern = /^[A-Za-z0-9._-]{3,30}$/;
+        if (!usernamePattern.test(value)) {
+            setUsernameStatus('invalid');
+            return;
+        }
+
+        setUsernameStatus('checking');
+        const timer = setTimeout(async () => {
+            try {
+                const params = new URLSearchParams({
+                    username: value.toLowerCase(),
+                });
+                if (form.email.trim()) params.append('email', form.email.trim().toLowerCase());
+                if (form.full_name.trim()) params.append('full_name', form.full_name.trim());
+                if (form.accntno.trim()) params.append('accntno', form.accntno.trim());
+
+                const res = await fetch(`/api/check-register-duplicate?${params.toString()}`, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                });
+                if (thisReqId !== usernameReqIdRef.current) return;
+                if (!res.ok) throw new Error('dup-check-failed');
+
+                const json = await res.json();
+                const exists = json.usernameExists === true;
+                setUsernameStatus(exists ? 'duplicate' : 'ok');
+                setUsernameSuggestions(Array.isArray(json.suggestions) ? json.suggestions : []);
+            } catch {
+                if (thisReqId !== usernameReqIdRef.current) return;
+                setUsernameStatus('error');
+            }
+        }, 300);
+
+        return () => clearTimeout(timer);
+    }, [form.username, form.email, form.full_name, form.accntno]);
     const clearStep1State = () => {
         setFieldErrors({});
         setDuplicateAccount(false);
@@ -262,6 +312,7 @@ export default function Register({ adminMode = false }: Props) {
             fd.append('fullname', form.full_name ?? '');
             fd.append('phoneno', form.phone_no);
             fd.append('email', form.email);
+            fd.append('username', form.username);
             fd.append('password', form.password);
             fd.append('password_confirmation', form.password_confirmation);
             if (form.profile_picture) fd.append('profilepicture', form.profile_picture);
@@ -285,6 +336,10 @@ export default function Register({ adminMode = false }: Props) {
                 ...initialFormState,
                 admin_registration: adminMode,
             });
+            setUsernameStatus('idle');
+            setUsernameSuggestions([]);
+            setEmailStatus('idle');
+            setPhoneStatus('idle');
             setAvatarUrl(null);
             setPayName(null);
             setPrcFront(null);
@@ -309,6 +364,7 @@ export default function Register({ adminMode = false }: Props) {
         'mt-2 w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-black placeholder:text-gray-400 outline-none focus:border-[#F57979] focus:ring-2 focus:ring-[#F57979]/50';
     const phoneValid = phoneError === null && form.phone_no.trim().length === 11;
     const emailValid = emailStatus === 'ok';
+    const usernameValid = usernameStatus === 'ok';
 
     const canProceed =
         lookupStatus === 'found' &&
@@ -317,6 +373,7 @@ export default function Register({ adminMode = false }: Props) {
         phoneValid &&
         phoneStatus === 'ok' &&
         emailValid &&
+        usernameValid &&
         !loading &&
         !duplicateAccount;
 
@@ -469,7 +526,7 @@ export default function Register({ adminMode = false }: Props) {
                                             placeholder="you@example.com"
                                             className={inputBase}
                                         />
-                                        <div className="mt-1 min-h-[18px] text-xs" role="status" aria-live="polite">
+                                    <div className="mt-1 min-h-[18px] text-xs" role="status" aria-live="polite">
                                             {fieldErrors.email ? (
                                                 <span className="text-red-500">{fieldErrors.email.join(', ')}</span>
                                             ) : emailStatus === 'checking' ? (
@@ -484,6 +541,48 @@ export default function Register({ adminMode = false }: Props) {
                                                 <span className="text-emerald-600">Email looks good.</span>
                                             ) : null}
                                         </div>
+                                    </div>
+                                    {/* Username */}
+                                    <div>
+                                        <label className="text-[14px] font-bold text-[#F57979]">Username</label>
+                                        <input
+                                            name="username"
+                                            type="text"
+                                            value={form.username}
+                                            onChange={handleChange}
+                                            placeholder="Choose a username"
+                                            className={inputBase}
+                                            autoComplete="username"
+                                        />
+                                        <div className="mt-1 min-h-[18px] text-xs" role="status" aria-live="polite">
+                                            {fieldErrors.username ? (
+                                                <span className="text-red-500">{fieldErrors.username.join(', ')}</span>
+                                            ) : usernameStatus === 'checking' ? (
+                                                <span className="text-black/70">Checking...</span>
+                                            ) : usernameStatus === 'duplicate' ? (
+                                                <span className="text-red-500">Username is already taken.</span>
+                                            ) : usernameStatus === 'invalid' ? (
+                                                <span className="text-red-500">Use 3-30 letters, numbers, dots, underscores, or hyphens.</span>
+                                            ) : usernameStatus === 'error' ? (
+                                                <span className="text-red-500">Could not verify username. Please try again.</span>
+                                            ) : usernameStatus === 'ok' ? (
+                                                <span className="text-emerald-600">Username is available.</span>
+                                            ) : null}
+                                        </div>
+                                        {usernameSuggestions.length > 0 ? (
+                                            <div className="mt-1 flex flex-wrap gap-2">
+                                                {usernameSuggestions.map((suggestion) => (
+                                                    <button
+                                                        key={suggestion}
+                                                        type="button"
+                                                        onClick={() => setForm((prev) => ({ ...prev, username: suggestion }))}
+                                                        className="rounded-full border border-gray-200 bg-white px-3 py-1 text-xs font-semibold text-black hover:border-[#F57979] hover:text-[#F57979]"
+                                                    >
+                                                        {suggestion}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        ) : null}
                                     </div>
                                     {/* Password */}
                                     <div>

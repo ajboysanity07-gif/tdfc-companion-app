@@ -1,47 +1,25 @@
 <?php
 
-use App\Models\AppUser;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
-
-// Admin Controllers
 use App\Http\Controllers\Api\Admin\AdminDashboardController;
+// Admin Controllers
 use App\Http\Controllers\Api\Admin\ClientManagementController;
 use App\Http\Controllers\Api\Admin\ProductManagementController;
 use App\Http\Controllers\Api\Admin\UserRejectionController;
-
+use App\Http\Controllers\Api\Auth\RegistrationDuplicateController;
 // Client Controllers
 use App\Http\Controllers\Api\Client\ClientDashboardController;
 use App\Http\Controllers\Api\Client\LoansApplyController;
 use App\Http\Controllers\Api\Client\LoanTransactionController;
 use App\Http\Controllers\Api\Client\RecentTransactionController;
 use App\Http\Controllers\Api\Client\WmasterLookupController;
-
 // Auth Controllers
-use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Client\RegistrationStatusController;
+use Illuminate\Support\Facades\Route;
 
 // Registration duplicate check if needed (public or auth)
-Route::get('/check-register-duplicate', function (Request $request) {
-    $accntnoExists = false;
-    $emailExists = false;
-    $phoneExists = false;
-    if ($request->has('accntno')) {
-        $accntnoExists = AppUser::where('acctno', $request->string('accntno'))->exists();
-    }
-    if ($request->has('email')) {
-        $emailExists = AppUser::where('email', $request->string('email'))->exists();
-    }
-    if ($request->has('phone_no')) {
-        $phoneExists = AppUser::where('phone_no', $request->string('phone_no'))->exists();
-    }
-    return [
-        'accntnoExists' => $accntnoExists,
-        'emailExists'   => $emailExists,
-        'phoneExists'   => $phoneExists,
-    ];
-});
+Route::get('/check-register-duplicate', RegistrationDuplicateController::class);
 // REGISTER & LOGIN ROUTES (API ENDPOINTS) — SANCTUM SECURE
 Route::post('/register', [RegisteredUserController::class, 'store']);
 
@@ -55,7 +33,7 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
     Route::get('/admin/dashboard/summary', [AdminDashboardController::class, 'summary']);
     Route::get('/admin/dashboard/recent-users', [AdminDashboardController::class, 'recentUsers']);
 
-    // Product Management - fetch all products with tags  
+    // Product Management - fetch all products with tags
     Route::apiResource('products', ProductManagementController::class)->except(['create', 'edit']);
     Route::get('/product-types', [ProductManagementController::class, 'typesIndex']);
 });
@@ -63,7 +41,6 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
 // Public & utility APIs (keep as needed)
 Route::get('/wmaster-lookup', [WmasterLookupController::class, '__invoke'])
     ->middleware('throttle:60,1');
-
 
 // Protect recent transaction, loan, and client-management APIs
 Route::middleware(['auth:sanctum'])->group(function () {
@@ -94,18 +71,18 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // --- CLIENT registration resubmit (SPA+API) ---
     Route::middleware(['role:client'])->group(function () {
         Route::post('/client/register-resubmit', [RegistrationStatusController::class, 'resubmitApi']);
-        
+
         // Customer page routes with account number parameter
         Route::get('/client/{acctno}/dashboard', [ClientDashboardController::class, 'index']);
         Route::get('/client/{acctno}/loans', [ClientDashboardController::class, 'loans']);
         Route::get('/client/{acctno}/savings', [ClientDashboardController::class, 'savings']);
         Route::get('/client/{acctno}/account', [ClientDashboardController::class, 'account']);
         Route::get('/client/{acctno}/transactions', [ClientDashboardController::class, 'transactions']);
-        
+
         // Loan apply routes
         Route::get('/loans/apply', [LoansApplyController::class, 'index']);
         Route::post('/loans/apply', [LoansApplyController::class, 'store']);
-        
+
         // Loans management routes
         Route::get('/loans', [\App\Http\Controllers\Api\Client\LoansController::class, 'index']);
         Route::get('/loans/{lnnumber}/amortization', [\App\Http\Controllers\Api\Client\LoansController::class, 'getAmortizationSchedule']);

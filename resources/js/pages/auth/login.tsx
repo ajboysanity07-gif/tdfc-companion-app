@@ -7,9 +7,9 @@ import { Eye, EyeOff } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 
 export default function Login() {
-  const [form, setForm] = useState({ email: '', password: '', remember: false });
+  const [form, setForm] = useState({ login: '', password: '', remember: false });
   const [showPassword, setShowPassword] = useState(false);
-  const [emailValid, setEmailValid] = useState<boolean | null>(null);
+  const [identifierValid, setIdentifierValid] = useState<boolean | null>(null);
   const [pwValid, setPwValid] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -17,23 +17,25 @@ export default function Login() {
   const [globalError, setGlobalError] = useState<string | null>(null);
 
   const isValidEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+  const isValidUsername = (v: string) => /^[A-Za-z0-9._-]{3,30}$/.test(v);
 
   useEffect(() => {
-    if (form.email.length === 0) setEmailValid(null);
-    else setEmailValid(isValidEmail(form.email));
-  }, [form.email]);
+    if (form.login.length === 0) setIdentifierValid(null);
+    else if (isValidEmail(form.login)) setIdentifierValid(true);
+    else setIdentifierValid(isValidUsername(form.login));
+  }, [form.login]);
 
   useEffect(() => {
     if (form.password.length === 0) setPwValid(null);
     else setPwValid(form.password.length >= 8);
   }, [form.password]);
 
-  const emailError =
-    fieldErrors.email && fieldErrors.email.length
+  const loginError =
+    (fieldErrors.login && fieldErrors.login.length
+      ? fieldErrors.login.join(', ')
+      : fieldErrors.email && fieldErrors.email.length
       ? fieldErrors.email.join(', ')
-      : emailValid === false
-      ? 'Please enter a valid email address.'
-      : '';
+      : '') || (identifierValid === false ? 'Please enter a valid email or username.' : '');
 
   const passwordError =
     fieldErrors.password && fieldErrors.password.length
@@ -58,7 +60,7 @@ export default function Login() {
     setGlobalError(null);
 
     try {
-      const response = await apiLogin({ email: form.email, password: form.password });
+      const response = await apiLogin({ login: form.login, password: form.password, remember: form.remember });
       const user = response.data.user;
       const acct = user.acctno ?? user.user_id ?? user.id;
 
@@ -129,19 +131,19 @@ export default function Login() {
           )}
 
           <div className="mb-4">
-            <label className="text-[13px] font-extrabold tracking-wide text-[#F57979] uppercase">Email</label>
+            <label className="text-[13px] font-extrabold tracking-wide text-[#F57979] uppercase">Email or Username</label>
             <input
-              type="email"
-              name="email"
-              value={form.email}
+              type="text"
+              name="login"
+              value={form.login}
               onChange={handleChange}
-              placeholder="you@example.com"
-              aria-invalid={Boolean(emailError)}
-              className={`${inputBase} ${emailError ? 'border-red-300 focus:border-red-400 focus:ring-red-300' : ''}`}
-              autoComplete="email"
+              placeholder="you@example.com or username"
+              aria-invalid={Boolean(loginError)}
+              className={`${inputBase} ${loginError ? 'border-red-300 focus:border-red-400 focus:ring-red-300' : ''}`}
+              autoComplete="username"
             />
             <div className="min-h-4 mt-1 text-xs text-red-500">
-              {emailError || ''}
+              {loginError || ''}
             </div>
           </div>
 

@@ -5,32 +5,46 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\LoginAppUserRequest;
 use App\Models\AppUser;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class AuthenticatedSessionController extends Controller
 {
     public function store(LoginAppUserRequest $request): JsonResponse
     {
-        $credentials = $request->only('email', 'password');
+        $loginValue = $request->string('login')->trim()->toString();
+        $isEmail = filter_var($loginValue, FILTER_VALIDATE_EMAIL) !== false;
+        $normalizedLogin = strtolower($loginValue);
+        $credentials = [
+            $isEmail ? 'email' : 'username' => $normalizedLogin,
+            'password' => $request->string('password')->toString(),
+        ];
 
-        if (!Auth::guard('web')->attempt($credentials)) {
+        if (! Auth::guard('web')->attempt($credentials, $request->boolean('remember'))) {
             return response()->json([
-                'message' => 'Invalid email or password.'
+                'message' => 'Invalid email/username or password.',
             ], 401);
         }
 
-        $user = AppUser::where('email', $request->email)->firstOrFail();
+        if ($request->hasSession()) {
+            $request->session()->regenerate();
+        }
+
+        $user = AppUser::query()
+            ->when($isEmail, fn ($query) => $query->whereRaw('LOWER(email) = ?', [$normalizedLogin]))
+            ->when(! $isEmail, fn ($query) => $query->whereRaw('LOWER(username) = ?', [$normalizedLogin]))
+            ->firstOrFail();
         // Create token for SPA/API
         $token = $user->createToken('auth_token')->plainTextToken;
+
         return response()->json([
             'message' => 'Login successful',
             'user' => [
-                'id'     => $user->getKey(), // primary key (user_id)
-                'user_id'=> $user->getKey(),
+                'id' => $user->getKey(), // primary key (user_id)
+                'user_id' => $user->getKey(),
                 'acctno' => $user->acctno,
-                'role'   => $user->role,
+                'role' => $user->role,
                 'status' => $user->status,
             ],
             'token' => $token,

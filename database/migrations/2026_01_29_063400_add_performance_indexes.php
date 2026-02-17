@@ -1,9 +1,8 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -14,20 +13,20 @@ return new class extends Migration
     {
         // Add index to sessions table for faster lookups (only if table exists)
         if (Schema::hasTable('sessions') && Schema::hasColumn('sessions', 'user_id')) {
-            if (!$this->indexExists('sessions', 'sessions_user_id_index')) {
+            if (! $this->indexExists('sessions', 'sessions_user_id_index')) {
                 DB::statement('CREATE INDEX sessions_user_id_index ON sessions (user_id)');
             }
         }
-        
+
         if (Schema::hasTable('sessions') && Schema::hasColumn('sessions', 'last_activity')) {
-            if (!$this->indexExists('sessions', 'sessions_last_activity_index')) {
+            if (! $this->indexExists('sessions', 'sessions_last_activity_index')) {
                 DB::statement('CREATE INDEX sessions_last_activity_index ON sessions (last_activity)');
             }
         }
 
         // Add indexes to cache table (column is 'expiration' not 'expires_at')
         if (Schema::hasTable('cache') && Schema::hasColumn('cache', 'expiration')) {
-            if (!$this->indexExists('cache', 'cache_expiration_index')) {
+            if (! $this->indexExists('cache', 'cache_expiration_index')) {
                 DB::statement('CREATE INDEX cache_expiration_index ON cache (expiration)');
             }
         }
@@ -35,7 +34,7 @@ return new class extends Migration
         // Add indexes to jobs table for queue performance
         if (Schema::hasTable('jobs')) {
             if (Schema::hasColumn('jobs', 'queue') && Schema::hasColumn('jobs', 'reserved_at')) {
-                if (!$this->indexExists('jobs', 'jobs_queue_index')) {
+                if (! $this->indexExists('jobs', 'jobs_queue_index')) {
                     DB::statement('CREATE INDEX jobs_queue_index ON jobs (queue, reserved_at)');
                 }
             }
@@ -66,13 +65,13 @@ return new class extends Migration
      */
     private function indexExists(string $table, string $index): bool
     {
-        $result = DB::select("
+        $result = DB::select('
             SELECT COUNT(*) as count 
             FROM sys.indexes 
             WHERE name = ? 
             AND object_id = OBJECT_ID(?)
-        ", [$index, $table]);
-        
+        ', [$index, $table]);
+
         return $result[0]->count > 0;
     }
 };

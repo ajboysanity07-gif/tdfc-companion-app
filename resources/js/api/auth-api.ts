@@ -5,7 +5,7 @@ export async function register(formData: FormData) {
   return axiosClient.post('/register', formData);
 }
 
-export async function login(payload: { email: string; password: string }) {
+export async function login(payload: { login: string; password: string; remember?: boolean }) {
   await getCsrfCookie();
   const res = await axiosClient.post('/login', payload);
   const token = res?.data?.token;
