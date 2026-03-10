@@ -28,7 +28,9 @@ export default function AuthCardLayout({
     };
 
     return (
-        <div className={`h-screen overflow-hidden bg-linear-to-br from-gray-100 via-white to-gray-200 px-6 py-6 sm:px-4 sm:py-10 flex ${alignClass} justify-center`}>
+        <div
+            className={`min-h-screen min-h-dvh overflow-y-auto bg-linear-to-br from-gray-100 via-white to-gray-200 px-6 py-6 sm:px-4 sm:py-10 flex ${alignClass} justify-center`}
+        >
             <div className="mx-auto w-full max-w-[320px] sm:max-w-[560px]">
                 {(title || description) && (
                     <div className="mb-4 sm:mb-6 text-center">

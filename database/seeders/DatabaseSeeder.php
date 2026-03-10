@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 use Illuminate\Database\Seeder;
@@ -16,7 +15,7 @@ class DatabaseSeeder extends Seeder
     {
         // $this->call(ReasonListSeeder::class);
         // // or fully qualified if it fails:
-        $this->call(ReasonListSeeder::class);
+        // $this->call(ReasonListSeeder::class);
         $this->call(AdminUserSeeder::class);
         $this->call(WlntypeTagsSeeder::class);
     }
