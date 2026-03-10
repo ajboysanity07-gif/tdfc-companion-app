@@ -19,7 +19,7 @@ const Step = ({ children }: { children: React.ReactNode }) => <div>{children}</d
 type LookupStatus = 'idle' | 'searching' | 'found' | 'not_found';
 
 type RegisterFormState = {
-    accntno: string;
+    acctno: string;
     full_name: string;
     phone_no: string;
     email: string;
@@ -34,7 +34,7 @@ type RegisterFormState = {
 };
 
 const initialFormState: RegisterFormState = {
-    accntno: '',
+    acctno: '',
     full_name: '',
     phone_no: '',
     email: '',
@@ -90,7 +90,7 @@ export default function Register({ adminMode = false }: Props) {
     const reqIdRef = useRef(0);
 
     useEffect(() => {
-        const q = (form.accntno ?? '').trim();
+        const q = (form.acctno ?? '').trim();
         if (q.length !== 6) {
             setLookupStatus('idle');
             setForm((prev) => ({ ...prev, full_name: '' }));
@@ -127,7 +127,7 @@ export default function Register({ adminMode = false }: Props) {
             }
         }, 250);
         return () => clearTimeout(timer);
-    }, [form.accntno]);
+    }, [form.acctno]);
 
     useEffect(() => {
         setPwValid(form.password.length === 0 ? null : form.password.length >= 8);
@@ -136,15 +136,15 @@ export default function Register({ adminMode = false }: Props) {
 
     // duplicate checks (same as your useEffect logic)
     useEffect(() => {
-        if (form.accntno.length === 6) {
-            fetch(`/api/check-register-duplicate?accntno=${encodeURIComponent(form.accntno)}`)
+        if (form.acctno.length === 6) {
+            fetch(`/api/check-register-duplicate?acctno=${encodeURIComponent(form.acctno)}`)
                 .then((res) => res.json())
-                .then((json) => setDuplicateAccount(json.accntnoExists === true))
+                .then((json) => setDuplicateAccount(json.acctnoExists === true))
                 .catch(() => setDuplicateAccount(false));
         } else {
             setDuplicateAccount(false);
         }
-    }, [form.accntno]);
+    }, [form.acctno]);
 
     useEffect(() => {
         const value = form.email.trim().toLowerCase();
@@ -206,7 +206,7 @@ export default function Register({ adminMode = false }: Props) {
                 });
                 if (form.email.trim()) params.append('email', form.email.trim().toLowerCase());
                 if (form.full_name.trim()) params.append('full_name', form.full_name.trim());
-                if (form.accntno.trim()) params.append('accntno', form.accntno.trim());
+                if (form.acctno.trim()) params.append('acctno', form.acctno.trim());
 
                 const res = await fetch(`/api/check-register-duplicate?${params.toString()}`, {
                     headers: { 'X-Requested-With': 'XMLHttpRequest' },
@@ -225,7 +225,7 @@ export default function Register({ adminMode = false }: Props) {
         }, 300);
 
         return () => clearTimeout(timer);
-    }, [form.username, form.email, form.full_name, form.accntno]);
+    }, [form.username, form.email, form.full_name, form.acctno]);
     const clearStep1State = () => {
         setFieldErrors({});
         setDuplicateAccount(false);
@@ -294,6 +294,7 @@ export default function Register({ adminMode = false }: Props) {
     // Submit form! -- use your API, and grab errors from backend
     const normalizeErrors = (errors: Record<string, string[]>) => ({
         ...errors,
+        acctno: errors.acctno ?? errors.accntno,
         phone_no: errors.phone_no ?? errors.phoneno,
     });
 
@@ -308,7 +309,7 @@ export default function Register({ adminMode = false }: Props) {
         // Fill formData object for files + text
         const buildFormData = (form: RegisterFormState) => {
             const fd = new FormData();
-            fd.append('accntno', form.accntno);
+            fd.append('acctno', form.acctno);
             fd.append('fullname', form.full_name ?? '');
             fd.append('phoneno', form.phone_no);
             fd.append('email', form.email);
@@ -456,17 +457,17 @@ export default function Register({ adminMode = false }: Props) {
                                     <div>
                                         <label className="text-[14px] font-bold text-[#F57979]">Account Number</label>
                                     <input
-                                        name="accntno"
+                                        name="acctno"
                                         type="text"
-                                        value={form.accntno}
+                                        value={form.acctno}
                                         onChange={handleChange}
                                         maxLength={6}
                                         placeholder="Enter account number"
                                         className={inputBase}
                                     />
                                     <div className="mt-1 min-h-5 text-xs" role="status" aria-live="polite">
-                                        {fieldErrors.accntno ? (
-                                            <span className="text-red-500">{fieldErrors.accntno.join(', ')}</span>
+                                        {fieldErrors.acctno ? (
+                                            <span className="text-red-500">{fieldErrors.acctno.join(', ')}</span>
                                         ) : duplicateAccount ? (
                                             <span className="text-[#DC2626]">Account number is already registered.</span>
                                         ) : (

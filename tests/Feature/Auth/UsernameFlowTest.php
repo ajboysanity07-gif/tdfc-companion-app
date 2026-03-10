@@ -66,7 +66,7 @@ it('requires a unique username when registering', function () {
     ]);
 
     $payload = [
-        'accntno' => '123456',
+        'acctno' => '123456',
         'fullname' => 'Test User',
         'phoneno' => '09123456789',
         'email' => 'new@example.com',

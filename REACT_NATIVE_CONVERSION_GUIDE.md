@@ -100,7 +100,8 @@ Mobile Client (React Native + TypeScript)
 npx create-expo-app@latest TDFCapp-mobile --template
 
 # Option 2: Using React Native CLI (More control)
-npx react-native@latest init TDFCapp-mobile --template react-native-template-typescript
+npx @react-native-community/cli@latest init TDFCapp-mobile
+
 ```
 
 **Choose Expo if:**

@@ -12,10 +12,19 @@ class RegisterAppUserRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        if (! $this->has('acctno') && $this->filled('accntno')) {
+            $this->merge([
+                'acctno' => $this->input('accntno'),
+            ]);
+        }
+    }
+
     public function rules(): array
     {
         return [
-            'accntno' => 'required|string|max:6|unique:app_user_table,acctno',
+            'acctno' => 'required|string|max:6|unique:app_user_table,acctno',
             'fullname' => 'required|string|max:255',
             // Enforces exactly 11 digits and numeric only for PH
             'phoneno' => ['required', 'digits:11', 'regex:/^09\d{9}$/', 'unique:app_user_table,phone_no'],
@@ -44,7 +53,7 @@ class RegisterAppUserRequest extends FormRequest
             'phoneno.digits' => 'Phone number must be exactly 11 digits.',
             'phoneno.regex' => 'Phone number must start with 09 and be 11 digits long.',
             'phoneno.unique' => 'Phone number is already registered.',
-            'accntno.unique' => 'Account number already exists.',
+            'acctno.unique' => 'Account number already exists.',
             'email.unique' => 'Email is already registered.',
             'username.required' => 'Username is required.',
             'username.min' => 'Username must be at least 3 characters.',

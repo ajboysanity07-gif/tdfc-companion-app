@@ -13,13 +13,13 @@ class RegistrationDuplicateController extends Controller
 {
     public function __invoke(CheckRegistrationDuplicateRequest $request): JsonResponse
     {
-        $accntnoExists = false;
+        $acctnoExists = false;
         $emailExists = false;
         $phoneExists = false;
         $usernameExists = false;
 
-        if ($request->filled('accntno')) {
-            $accntnoExists = AppUser::where('acctno', $request->string('accntno'))->exists();
+        if ($request->filled('acctno')) {
+            $acctnoExists = AppUser::where('acctno', $request->string('acctno'))->exists();
         }
 
         if ($request->filled('email')) {
@@ -39,7 +39,7 @@ class RegistrationDuplicateController extends Controller
         $suggestions = $this->availableSuggestions($request);
 
         return response()->json([
-            'accntnoExists' => $accntnoExists,
+            'acctnoExists' => $acctnoExists,
             'emailExists' => $emailExists,
             'phoneExists' => $phoneExists,
             'usernameExists' => $usernameExists,
@@ -74,7 +74,7 @@ class RegistrationDuplicateController extends Controller
         $fullName = Str::of($request->string('full_name'))->squish();
         $firstName = $this->sanitizeCandidate($fullName->explode(' ')->first());
         $lastName = $this->sanitizeCandidate($fullName->explode(' ')->last());
-        $acctSuffix = $this->sanitizeCandidate($request->string('accntno')->substr(-3)->toString());
+        $acctSuffix = $this->sanitizeCandidate($request->string('acctno')->substr(-3)->toString());
 
         if ($username) {
             $candidates->push($username, "{$username}1", "{$username}123");

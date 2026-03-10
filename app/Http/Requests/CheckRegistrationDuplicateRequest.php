@@ -14,6 +14,15 @@ class CheckRegistrationDuplicateRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        if (! $this->has('acctno') && $this->filled('accntno')) {
+            $this->merge([
+                'acctno' => $this->input('accntno'),
+            ]);
+        }
+    }
+
     /**
      * Get the validation rules that apply to the request.
      *
@@ -22,7 +31,7 @@ class CheckRegistrationDuplicateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'accntno' => 'sometimes|string|max:6',
+            'acctno' => 'sometimes|string|max:6',
             'email' => 'sometimes|email',
             'phone_no' => ['sometimes', 'digits:11', 'regex:/^09\d{9}$/'],
             'username' => ['sometimes', 'string', 'min:3', 'max:30', 'regex:/^[A-Za-z0-9._-]+$/'],
