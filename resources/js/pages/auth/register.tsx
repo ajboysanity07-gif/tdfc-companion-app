@@ -33,6 +33,11 @@ type RegisterFormState = {
     admin_registration?: boolean;
 };
 
+type FileField = 'profile_picture' | 'prc_id_photo_front' | 'prc_id_photo_back' | 'payslip_photo';
+
+const MAX_UPLOAD_BYTES = 2 * 1024 * 1024;
+const MAX_UPLOAD_LABEL = '2MB';
+
 const initialFormState: RegisterFormState = {
     acctno: '',
     full_name: '',
@@ -75,6 +80,12 @@ export default function Register({ adminMode = false }: Props) {
 
     // Field errors direct from Laravel backend!
     const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
+    const [fileSizeErrors, setFileSizeErrors] = useState<Record<FileField, string | null>>({
+        profile_picture: null,
+        prc_id_photo_front: null,
+        prc_id_photo_back: null,
+        payslip_photo: null,
+    });
     const [globalError, setGlobalError] = useState<string | null>(null);
     const [success, setSuccess] = useState<boolean>(false);
     const [loading, setLoading] = useState(false);
@@ -291,6 +302,41 @@ export default function Register({ adminMode = false }: Props) {
         }
         if (fieldErrors[name]) setFieldErrors((prev) => ({ ...prev, [name]: [] }));
     };
+
+    const updateFileSizeError = (field: FileField, message: string | null) => {
+        setFileSizeErrors((prev) => ({
+            ...prev,
+            [field]: message,
+        }));
+    };
+
+    const validateFileSize = (file: File | null, field: FileField): boolean => {
+        if (!file) {
+            updateFileSizeError(field, null);
+            return true;
+        }
+
+        if (file.size > MAX_UPLOAD_BYTES) {
+            updateFileSizeError(field, `File must be ${MAX_UPLOAD_LABEL} or smaller.`);
+            return false;
+        }
+
+        updateFileSizeError(field, null);
+        return true;
+    };
+
+    const getFileError = (field: FileField): string | null => {
+        if (fileSizeErrors[field]) {
+            return fileSizeErrors[field];
+        }
+
+        const backendErrors = fieldErrors[field];
+        if (backendErrors?.length) {
+            return backendErrors.join(', ');
+        }
+
+        return null;
+    };
     // Submit form! -- use your API, and grab errors from backend
     const normalizeErrors = (errors: Record<string, string[]>) => ({
         ...errors,
@@ -310,6 +356,12 @@ export default function Register({ adminMode = false }: Props) {
         setGlobalError(null);
         setSuccess(false);
         setLoading(true);
+
+        if (hasFileSizeErrors) {
+            setLoading(false);
+            setGlobalError(`One or more files exceed ${MAX_UPLOAD_LABEL}. Please choose smaller files.`);
+            return;
+        }
 
         // Fill formData object for files + text
         const buildFormData = (form: RegisterFormState) => {
@@ -368,6 +420,11 @@ export default function Register({ adminMode = false }: Props) {
 
     const inputBase =
         'mt-2 w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-black placeholder:text-gray-400 outline-none focus:border-[#F57979] focus:ring-2 focus:ring-[#F57979]/50';
+    const hasFileSizeErrors = Object.values(fileSizeErrors).some(Boolean);
+    const profilePictureError = getFileError('profile_picture');
+    const prcFrontError = getFileError('prc_id_photo_front');
+    const prcBackError = getFileError('prc_id_photo_back');
+    const payslipError = getFileError('payslip_photo');
     const phoneValid = phoneError === null && form.phone_no.trim().length === 11;
     const emailValid = emailStatus === 'ok';
     const usernameValid = usernameStatus === 'ok';
@@ -383,7 +440,8 @@ export default function Register({ adminMode = false }: Props) {
         !loading &&
         !duplicateAccount;
 
-    const canRegister = canProceed && form.prc_id_photo_front && form.prc_id_photo_back && form.payslip_photo;
+    const canRegister =
+        canProceed && form.prc_id_photo_front && form.prc_id_photo_back && form.payslip_photo && !hasFileSizeErrors;
 
     const stepDescription =
         step === 1
@@ -700,9 +758,9 @@ export default function Register({ adminMode = false }: Props) {
                                                 Crop will open before saving.
                                             </p>
                                         </div>
-                                        {fieldErrors.profile_picture && (
+                                        {profilePictureError && (
                                             <div className="mt-1 min-h-[18px] text-xs text-red-500">
-                                                {fieldErrors.profile_picture.join(', ')}
+                                                {profilePictureError}
                                             </div>
                                         )}
                                     </div>
@@ -714,14 +772,14 @@ export default function Register({ adminMode = false }: Props) {
                                         onClick={() => setPrcWizardOpen(true)}
                                         display={getPrcStatusDisplay()}
                                     />
-                                    {fieldErrors.prc_id_photo_front && (
+                                    {prcFrontError && (
                                         <div className="mt-1 text-xs text-red-500">
-                                            {fieldErrors.prc_id_photo_front.join(', ')}
+                                            {prcFrontError}
                                         </div>
                                     )}
-                                    {fieldErrors.prc_id_photo_back && (
+                                    {prcBackError && (
                                         <div className="text-xs text-red-500">
-                                            {fieldErrors.prc_id_photo_back.join(', ')}
+                                            {prcBackError}
                                         </div>
                                     )}
 
@@ -740,9 +798,9 @@ export default function Register({ adminMode = false }: Props) {
                                             )
                                         }
                                     />
-                                    {fieldErrors.payslip_photo && (
+                                    {payslipError && (
                                         <div className="mt-1 text-xs text-red-500">
-                                            {fieldErrors.payslip_photo.join(', ')}
+                                            {payslipError}
                                         </div>
                                     )}
 
@@ -783,6 +841,10 @@ export default function Register({ adminMode = false }: Props) {
                         setPendingAvatarSrc(null);
                     }}
                     onCroppedFile={(file) => {
+                        if (!validateFileSize(file, 'profile_picture')) {
+                            setAvatarCropOpen(false);
+                            return;
+                        }
                         const url = URL.createObjectURL(file);
                         setForm((prev) => ({ ...prev, profile_picture: file }));
                         setAvatarUrl(url);
@@ -794,6 +856,14 @@ export default function Register({ adminMode = false }: Props) {
                 open={prcWizardOpen}
                 onCancel={() => setPrcWizardOpen(false)}
                 onComplete={(front, back) => {
+                    const frontValid = validateFileSize(front, 'prc_id_photo_front');
+                    const backValid = validateFileSize(back, 'prc_id_photo_back');
+
+                    if (!frontValid || !backValid) {
+                        setPrcWizardOpen(false);
+                        return;
+                    }
+
                     setPrcFront(front);
                     setPrcBack(back);
                     setForm((prev) => ({
@@ -808,6 +878,11 @@ export default function Register({ adminMode = false }: Props) {
                 open={payslipWizardOpen}
                 onCancel={() => setPayslipWizardOpen(false)}
                 onComplete={(file) => {
+                    if (!validateFileSize(file, 'payslip_photo')) {
+                        setPayslipWizardOpen(false);
+                        return;
+                    }
+
                     setForm((prev) => ({ ...prev, payslip_photo: file }));
                     setPayName(typeof file?.name === 'string' ? file.name : null);
                     setPayslipWizardOpen(false);
