@@ -23,6 +23,43 @@ const queryClient = new QueryClient({
   },
 });
 
+const cleanupStaleServiceWorkers = async () => {
+  if (!('serviceWorker' in navigator)) {
+    return;
+  }
+
+  try {
+    const registrations = await navigator.serviceWorker.getRegistrations();
+    const scriptPatterns = [/\/sw\.js$/i, /workbox/i, /precache/i, /vite-pwa/i];
+
+    await Promise.all(
+      registrations.map(async (registration) => {
+        const scriptUrl =
+          registration.active?.scriptURL ??
+          registration.waiting?.scriptURL ??
+          registration.installing?.scriptURL ??
+          '';
+
+        if (scriptUrl && scriptPatterns.some((pattern) => pattern.test(scriptUrl))) {
+          await registration.unregister();
+        }
+      })
+    );
+
+    if (!('caches' in window)) {
+      return;
+    }
+
+    const cacheNames = await caches.keys();
+    const cachePatterns = [/workbox/i, /precache/i, /vite-pwa/i, /sw/i];
+    const cacheTargets = cacheNames.filter((name) => cachePatterns.some((pattern) => pattern.test(name)));
+
+    await Promise.all(cacheTargets.map((name) => caches.delete(name)));
+  } catch {
+    return;
+  }
+};
+
 createInertiaApp({
   title: (title) => title ? `${title} - ${appName}` : appName,
 
@@ -44,6 +81,7 @@ createInertiaApp({
   },
 
   setup({ el, App, props }) {
+    cleanupStaleServiceWorkers();
     // ✅ Call Sanctum's CSRF endpoint once when the SPA mounts
     axios.get('/sanctum/csrf-cookie');
 

@@ -42,7 +42,7 @@ class RegisterAppUserRequest extends FormRequest
             'profilepicture' => 'nullable|image|max:2048',
             'prcidphotofront' => 'nullable|image|max:2048',
             'prcidphotoback' => 'nullable|image|max:2048',
-            'payslipphoto' => 'nullable|image|max:2048',
+            'payslipphoto' => 'required|image|max:2048',
         ];
     }
 
@@ -61,6 +61,7 @@ class RegisterAppUserRequest extends FormRequest
             'username.regex' => 'Username can only include letters, numbers, dots, underscores, or hyphens.',
             'username.unique' => 'Username is already registered.',
             'password.confirmed' => 'Password confirmation does not match.',
+            'payslipphoto.required' => 'Payslip photo is required.',
         ];
     }
 }

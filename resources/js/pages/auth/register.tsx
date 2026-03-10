@@ -296,6 +296,11 @@ export default function Register({ adminMode = false }: Props) {
         ...errors,
         acctno: errors.acctno ?? errors.accntno,
         phone_no: errors.phone_no ?? errors.phoneno,
+        full_name: errors.full_name ?? errors.fullname,
+        profile_picture: errors.profile_picture ?? errors.profilepicture,
+        prc_id_photo_front: errors.prc_id_photo_front ?? errors.prcidphotofront,
+        prc_id_photo_back: errors.prc_id_photo_back ?? errors.prcidphotoback,
+        payslip_photo: errors.payslip_photo ?? errors.payslipphoto,
     });
 
     // Submit form! -- use your API, and grab errors from backend
@@ -595,6 +600,7 @@ export default function Register({ adminMode = false }: Props) {
                                                 value={form.password}
                                                 onChange={handleChange}
                                                 placeholder="Minimum 8 characters"
+                                                autoComplete="new-password"
                                                 className={`${inputBase} pr-10 ${pwValid === false ? 'border-red-300 focus:border-red-400 focus:ring-red-300' : ''}`}
                                             />
                                             <button
@@ -621,6 +627,7 @@ export default function Register({ adminMode = false }: Props) {
                                                 value={form.password_confirmation}
                                                 onChange={handleChange}
                                                 placeholder="Re-enter your password"
+                                                autoComplete="new-password"
                                                 className={`${inputBase} pr-10 ${pwMatch === false ? 'border-red-300 focus:border-red-400 focus:ring-red-300' : ''}`}
                                             />
                                             <button

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Auth\RegisteredUserController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -33,6 +34,9 @@ Route::get('/', function () {
 
 // --- Auth / Registration: Public (Guest) ---
 Route::middleware('guest')->group(function () {
+    Route::post('/api/register', [RegisteredUserController::class, 'store'])
+        ->middleware('throttle:6,1');
+
     // Password management
     Route::get('/forgot-password', [PasswordResetLinkController::class, 'create'])->name('password.request');
     Route::post('/forgot-password', [PasswordResetLinkController::class, 'store'])->name('password.email');

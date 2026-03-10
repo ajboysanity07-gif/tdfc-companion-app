@@ -1,8 +1,9 @@
+import axios from 'axios';
 import axiosClient, { getCsrfCookie, setAuthToken } from './axios-client';
 
 export async function register(formData: FormData) {
   await getCsrfCookie();
-  return axiosClient.post('/register', formData);
+  return axios.post('/register', formData);
 }
 
 export async function login(payload: { login: string; password: string; remember?: boolean }) {

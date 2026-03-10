@@ -14,15 +14,12 @@ use App\Http\Controllers\Api\Client\RecentTransactionController;
 use App\Http\Controllers\Api\Client\WmasterLookupController;
 // Auth Controllers
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
-use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Client\RegistrationStatusController;
 use Illuminate\Support\Facades\Route;
 
 // Registration duplicate check if needed (public or auth)
 Route::get('/check-register-duplicate', RegistrationDuplicateController::class);
-// REGISTER & LOGIN ROUTES (API ENDPOINTS) — SANCTUM SECURE
-Route::post('/register', [RegisteredUserController::class, 'store']);
-
+// LOGIN ROUTES (API ENDPOINTS) SANCTUM SECURE
 Route::post('/login', [AuthenticatedSessionController::class, 'store']);
 Route::get('/user', [AuthenticatedSessionController::class, 'user'])->middleware('auth:sanctum');
 Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->middleware('auth:sanctum');

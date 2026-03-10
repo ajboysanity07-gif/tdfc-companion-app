@@ -2,13 +2,18 @@
 
 use App\Models\AppUser;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
 
 use function Pest\Laravel\getJson;
+use function Pest\Laravel\post;
 use function Pest\Laravel\postJson;
 
 beforeEach(function () {
+    Storage::fake('public');
+
     Schema::disableForeignKeyConstraints();
     Schema::dropIfExists('personal_access_tokens');
     Schema::dropIfExists('app_user_table');
@@ -73,17 +78,19 @@ it('requires a unique username when registering', function () {
         'username' => 'clientuser',
         'password' => 'password123',
         'password_confirmation' => 'password123',
+        'payslipphoto' => UploadedFile::fake()->image('payslip.jpg'),
     ];
 
-    $response = postJson('/api/register', $payload);
+    $response = post('/register', $payload, ['Accept' => 'application/json']);
 
     $response->assertStatus(422)->assertJsonValidationErrors(['username']);
 
     $payload['username'] = 'fresh_user';
     $payload['email'] = 'fresh@example.com';
     $payload['phoneno'] = '09111111111';
+    $payload['payslipphoto'] = UploadedFile::fake()->image('payslip.jpg');
 
-    $response = postJson('/api/register', $payload);
+    $response = post('/register', $payload, ['Accept' => 'application/json']);
 
     $response->assertCreated();
     expect(AppUser::where('username', 'fresh_user')->exists())->toBeTrue();

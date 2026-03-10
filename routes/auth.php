@@ -14,8 +14,10 @@ use Inertia\Inertia;
 
 // --- SPA Auth Pages as Inertia routes (guest only) ---
 Route::middleware('guest')->group(function () {
-    Route::get('/login', fn() => Inertia::render('auth/login'))->name('login');
-    Route::get('/register', fn() => Inertia::render('auth/register'))->name('register');
+    Route::get('/login', fn () => Inertia::render('auth/login'))->name('login');
+    Route::get('/register', fn () => Inertia::render('auth/register'))->name('register');
+    Route::post('/register', [RegisteredUserController::class, 'store'])
+        ->middleware('throttle:6,1');
 
     // Password reset SPA pages
     Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])->name('password.request');
@@ -27,29 +29,29 @@ Route::middleware('guest')->group(function () {
 // --- Authenticated SPA pages ---
 // Admin pages
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('{admin}/dashboard', fn($admin) => Inertia::render('admin/dashboard', ['admin' => $admin]))->name('dashboard');
-    Route::get('{admin}/products', fn($admin) => Inertia::render('admin/products-management', ['admin' => $admin]))->name('products');
-    Route::get('{admin}/client-management', fn($admin) => Inertia::render('admin/client-management', ['admin' => $admin]))->name('client-management');
+    Route::get('{admin}/dashboard', fn ($admin) => Inertia::render('admin/dashboard', ['admin' => $admin]))->name('dashboard');
+    Route::get('{admin}/products', fn ($admin) => Inertia::render('admin/products-management', ['admin' => $admin]))->name('products');
+    Route::get('{admin}/client-management', fn ($admin) => Inertia::render('admin/client-management', ['admin' => $admin]))->name('client-management');
 });
 
 // Client dashboard (approved clients only)
 Route::middleware(['auth', 'role:client', 'approved'])
-    ->get('/client/{acctno}/dashboard', fn($acctno) => Inertia::render('client/dashboard', ['acctno' => $acctno]))
+    ->get('/client/{acctno}/dashboard', fn ($acctno) => Inertia::render('client/dashboard', ['acctno' => $acctno]))
     ->name('client.dashboard');
 
 // Client loans page
 Route::middleware(['auth', 'role:client', 'approved'])
-    ->get('/client/{acctno}/loans', fn($acctno) => Inertia::render('client/loans', ['acctno' => $acctno]))
+    ->get('/client/{acctno}/loans', fn ($acctno) => Inertia::render('client/loans', ['acctno' => $acctno]))
     ->name('client.loans');
 
 // Client loan calculator
 Route::middleware(['auth', 'role:client', 'approved'])
-    ->get('/client/{acctno}/loan-calculator', fn($acctno) => Inertia::render('client/calculator', ['acctno' => $acctno]))
+    ->get('/client/{acctno}/loan-calculator', fn ($acctno) => Inertia::render('client/calculator', ['acctno' => $acctno]))
     ->name('client.loan-calculator');
 
 // Client account settings
 Route::middleware(['auth', 'role:client', 'approved'])
-    ->get('/client/{acctno}/account', fn($acctno) => Inertia::render('settings/profile', ['acctno' => $acctno]))
+    ->get('/client/{acctno}/account', fn ($acctno) => Inertia::render('settings/profile', ['acctno' => $acctno]))
     ->name('client.account');
 
 // Client registration status
@@ -70,4 +72,4 @@ Route::middleware('auth')->group(function () {
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 });
 
-// No POST login/register here - those go in api.php for SPA+API!
+// Login stays in api.php; registration posts are handled in this file.
