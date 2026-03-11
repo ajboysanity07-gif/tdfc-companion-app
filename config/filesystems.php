@@ -70,7 +70,6 @@ return [
             'url' => env('AWS_URL', env('R2_PUBLIC_BASE_URL')),
             'endpoint' => env('AWS_ENDPOINT', env('R2_ENDPOINT')),
             'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', env('R2_USE_PATH_STYLE_ENDPOINT', true)),
-            'visibility' => 'public',
             'throw' => false,
             'report' => false,
         ],

@@ -145,7 +145,7 @@ class RegistrationStatusController extends Controller
     private function storeResubmissionUpload(Request $request, string $field, string $path, string $disk): string
     {
         try {
-            $storedPath = $request->file($field)?->storePublicly($path, ['disk' => $disk]);
+            $storedPath = $request->file($field)?->store($path, ['disk' => $disk]);
         } catch (\Throwable $exception) {
             Log::warning('Resubmission upload failed', [
                 'field' => $field,

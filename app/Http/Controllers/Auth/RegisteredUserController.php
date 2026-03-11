@@ -167,7 +167,7 @@ class RegisteredUserController extends Controller
             }
 
             try {
-                $path = $request->file($field)?->storePublicly('uploads', ['disk' => $disk]);
+                $path = $request->file($field)?->store('uploads', ['disk' => $disk]);
             } catch (Throwable $exception) {
                 Log::warning('Registration upload failed', [
                     'field' => $field,
