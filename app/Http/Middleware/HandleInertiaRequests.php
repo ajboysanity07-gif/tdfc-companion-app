@@ -1,64 +1,13 @@
 <?php
 
-// namespace App\Http\Middleware;
-
-// use Illuminate\Foundation\Inspiring;
-// use Illuminate\Http\Request;
-// use Inertia\Middleware;
-// use Tighten\Ziggy\Ziggy;
-
-// class HandleInertiaRequests extends Middleware
-// {
-//     /**
-//      * The root template that's loaded on the first page visit.
-//      *
-//      * @see https://inertiajs.com/server-side-setup#root-template
-//      *
-//      * @var string
-//      */
-//     protected $rootView = 'app';
-
-//     /**
-//      * Determines the current asset version.
-//      *
-//      * @see https://inertiajs.com/asset-versioning
-//      */
-//     public function version(Request $request): ?string
-//     {
-//         return parent::version($request);
-//     }
-
-//     /**
-//      * Define the props that are shared by default.
-//      *
-//      * @see https://inertiajs.com/shared-data
-//      *
-//      * @return array<string, mixed>
-//      */
-//     public function share(Request $request): array
-//     {
-//         [$message, $author] = str(Inspiring::quotes()->random())->explode('-');
-
-//         return [
-//             ...parent::share($request),
-//             'name' => config('app.name'),
-//             'quote' => ['message' => trim($message), 'author' => trim($author)],
-//             'auth' => [
-//                 'user' => $request->user(),
-//             ],
-//             'ziggy' => fn (): array => [
-//                 ...(new Ziggy)->toArray(),
-//                 'location' => $request->url(),
-//             ],
-//             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
-//         ];
-//     }
-// }
-
 namespace App\Http\Middleware;
 
+use App\Repositories\Client\LoanRepository;
+use App\Services\Client\LoanClassificationService;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Middleware;
 use Tighten\Ziggy\Ziggy;
 
@@ -77,21 +26,46 @@ class HandleInertiaRequests extends Middleware
 
         $user = $request->user(); // App\Models\AppUser|null
 
-        $authUser = $user ? [
-            'id'     => $user->user_id ?? $user->id ?? null,
-            'name'   => $user->name,
-            'email'  => $user->email,
-            'role'   => $user->role ?? 'customer',
-            'avatar' => $user->profile_picture_path ? asset('storage/'.$user->profile_picture_path) : null,
-        ] : null;
+        $authUser = null;
+        if ($user) {
+            // Fetch salary record
+            $salaryRecord = $user->acctno ? \App\Models\WSalaryRecord::where('acctno', $user->acctno)->first() : null;
+
+            // Calculate loan class using LoanClassificationService
+            $loanClass = null;
+            if ($user->acctno) {
+                $loanRepository = app(LoanRepository::class);
+                $loanClassificationService = app(LoanClassificationService::class);
+                $loanRows = $loanRepository->getLoanRowsGroupedByAccounts([$user->acctno]);
+                $loanClass = $loanClassificationService->classify($loanRows->get($user->acctno));
+            }
+
+            // Build avatar URL from the active filesystem disk.
+            $avatarUrl = null;
+            if ($user->profile_picture_path) {
+                $avatarUrl = $this->resolveMediaUrl($user->profile_picture_path);
+            }
+
+            $authUser = [
+                'id' => $user->user_id ?? $user->id ?? null,
+                'name' => $user->name,
+                'email' => $user->email,
+                'username' => $user->username,
+                'role' => $user->role ?? 'client',
+                'acctno' => $user->acctno ?? null,
+                'avatar' => $avatarUrl,
+                'salary_amount' => $salaryRecord ? (float) $salaryRecord->salary_amount : null,
+                'class' => $loanClass,
+            ];
+        }
 
         return [
             ...parent::share($request),
 
-            'name'  => config('app.name'),
+            'name' => config('app.name'),
             'quote' => ['message' => trim($message), 'author' => trim($author)],
 
-            'auth'  => [
+            'auth' => [
                 'user' => $authUser,
             ],
 
@@ -103,5 +77,38 @@ class HandleInertiaRequests extends Middleware
             'sidebarOpen' => ! $request->hasCookie('sidebar_state')
                 || $request->cookie('sidebar_state') === 'true',
         ];
+    }
+
+    private function resolveMediaUrl(?string $path): ?string
+    {
+        if (! $path) {
+            return null;
+        }
+
+        if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+            return $path;
+        }
+
+        $disk = $this->avatarDisk();
+
+        try {
+            $storage = Storage::disk($disk);
+
+            return $storage->url($path);
+        } catch (\Throwable $exception) {
+            Log::warning('Failed to resolve auth avatar URL', [
+                'path' => $path,
+                'disk' => $disk,
+                'exception_class' => $exception::class,
+                'exception' => $exception->getMessage(),
+            ]);
+
+            return null;
+        }
+    }
+
+    private function avatarDisk(): string
+    {
+        return (string) config('filesystems.avatar_disk', config('filesystems.default', 'public'));
     }
 }
