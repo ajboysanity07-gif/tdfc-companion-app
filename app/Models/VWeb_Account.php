@@ -20,7 +20,7 @@ class VWeb_Account extends Model
     protected $connection = 'sqlsrv';
 
     /** SQL Server view name */
-    protected $table = 'VWeb_Account';
+    protected $table = 'vRecentTransactions';
 
     /** Pick a unique key if the view has one (lnnumber is typical) */
     protected $primaryKey = 'lnnumber';
