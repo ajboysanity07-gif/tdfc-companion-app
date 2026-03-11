@@ -5,6 +5,7 @@ use App\Models\AppUser;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
 
 use function Pest\Laravel\actingAs;
@@ -12,10 +13,16 @@ use function Pest\Laravel\post;
 use function Pest\Laravel\withoutMiddleware;
 
 beforeEach(function () {
+    config([
+        'database.default' => 'sqlite',
+        'database.connections.sqlite.database' => ':memory:',
+    ]);
     Storage::fake('r2');
     config(['filesystems.default' => 'r2']);
     config(['session.driver' => 'array']);
+    Session::start();
     withoutMiddleware(HandleInertiaRequests::class);
+    withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class);
 
     Schema::disableForeignKeyConstraints();
     Schema::dropIfExists('app_user_table');
@@ -58,6 +65,7 @@ it('stores the avatar on the configured media disk', function () {
     actingAs($user);
 
     $response = post('/profile/avatar', [
+        '_token' => Session::token(),
         'avatar' => UploadedFile::fake()->image('avatar.png'),
     ]);
 

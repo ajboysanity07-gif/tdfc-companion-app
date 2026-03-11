@@ -45,10 +45,11 @@ class ProfileController extends Controller
 
             // Store the new avatar
             try {
-                $avatarPath = $request->file('avatar')->store('avatars', ['disk' => $disk]);
+                $avatarPath = $request->file('avatar')->storePublicly('avatars', ['disk' => $disk]);
             } catch (\Throwable $exception) {
                 Log::warning('Avatar upload failed', [
                     'disk' => $disk,
+                    'path' => 'avatars',
                     'exception_class' => $exception::class,
                     'exception' => $exception->getMessage(),
                 ]);
@@ -80,7 +81,7 @@ class ProfileController extends Controller
 
     private function mediaDisk(): string
     {
-        return (string) config('filesystems.default', 'public');
+        return (string) config('filesystems.avatar_disk', config('filesystems.default', 'public'));
     }
 
     /**

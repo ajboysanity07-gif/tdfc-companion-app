@@ -89,14 +89,10 @@ class HandleInertiaRequests extends Middleware
             return $path;
         }
 
-        $disk = (string) config('filesystems.default', 'public');
+        $disk = $this->avatarDisk();
 
         try {
             $storage = Storage::disk($disk);
-
-            if (! $storage->exists($path)) {
-                return null;
-            }
 
             return $storage->url($path);
         } catch (\Throwable $exception) {
@@ -109,5 +105,10 @@ class HandleInertiaRequests extends Middleware
 
             return null;
         }
+    }
+
+    private function avatarDisk(): string
+    {
+        return (string) config('filesystems.avatar_disk', config('filesystems.default', 'public'));
     }
 }

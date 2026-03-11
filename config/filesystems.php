@@ -15,6 +15,8 @@ return [
 
     'default' => env('FILESYSTEM_DISK', env('FILESYSTEM_CLOUD', 'local')),
 
+    'avatar_disk' => env('AVATAR_DISK', env('FILESYSTEM_DISK', env('FILESYSTEM_CLOUD', 'public'))),
+
     /*
     |--------------------------------------------------------------------------
     | Filesystem Disks
@@ -29,7 +31,6 @@ return [
     */
 
     'disks' => [
-
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app/private'),
@@ -57,8 +58,8 @@ return [
             'endpoint' => env('AWS_ENDPOINT', env('R2_ENDPOINT')),
             'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', env('R2_USE_PATH_STYLE_ENDPOINT', true)),
             'visibility' => 'public',
-            'throw' => false,
-            'report' => false,
+            'throw' => true,
+            'report' => true,
         ],
 
         'r2' => [
@@ -71,8 +72,8 @@ return [
             'endpoint' => env('AWS_ENDPOINT', env('R2_ENDPOINT')),
             'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', env('R2_USE_PATH_STYLE_ENDPOINT', true)),
             'visibility' => 'public',
-            'throw' => false,
-            'report' => false,
+            'throw' => true,
+            'report' => true,
         ],
 
     ],
