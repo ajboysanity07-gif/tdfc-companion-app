@@ -18,6 +18,7 @@ class RegisteredUserController extends Controller
     public function store(RegisterAppUserRequest $request): JsonResponse
     {
         $logContext = $this->buildLogContext($request);
+        $disk = $this->mediaDisk();
 
         Log::info('Registration request received', $logContext + [
             'milestone' => 'received',
@@ -37,8 +38,8 @@ class RegisteredUserController extends Controller
         ];
 
         try {
-            [$user, $storedPaths] = DB::transaction(function () use ($request) {
-                $storedPaths = $this->storeUploads($request);
+            [$user, $storedPaths] = DB::transaction(function () use ($request, $disk) {
+                $storedPaths = $this->storeUploads($request, $disk);
 
                 $userData = [
                     'acctno' => $request->string('acctno')->toString(),
@@ -69,7 +70,7 @@ class RegisteredUserController extends Controller
                 'redirect_to' => '/login',
             ], 201);
         } catch (ValidationException $exception) {
-            $this->cleanupStoredFiles($storedPaths);
+            $this->cleanupStoredFiles($storedPaths, $disk);
 
             Log::warning('Registration validation failed', $logContext + [
                 'milestone' => 'validation_failed',
@@ -78,7 +79,7 @@ class RegisteredUserController extends Controller
 
             throw $exception;
         } catch (Throwable $exception) {
-            $this->cleanupStoredFiles($storedPaths);
+            $this->cleanupStoredFiles($storedPaths, $disk);
 
             Log::error('Registration failed', $logContext + [
                 'milestone' => 'failed',
@@ -144,7 +145,7 @@ class RegisteredUserController extends Controller
      *
      * @throws ValidationException
      */
-    private function storeUploads(RegisterAppUserRequest $request): array
+    private function storeUploads(RegisterAppUserRequest $request, string $disk): array
     {
         $paths = [
             'profile_picture_path' => null,
@@ -166,14 +167,24 @@ class RegisteredUserController extends Controller
             }
 
             try {
-                $path = $request->file($field)?->storePublicly('uploads', ['disk' => 'public']);
+                $path = $request->file($field)?->storePublicly('uploads', ['disk' => $disk]);
             } catch (Throwable $exception) {
+                Log::warning('Registration upload failed', [
+                    'field' => $field,
+                    'disk' => $disk,
+                    'exception_class' => $exception::class,
+                    'exception' => $exception->getMessage(),
+                ]);
                 throw ValidationException::withMessages([
                     $field => 'Upload failed. Please try again.',
                 ]);
             }
 
             if (! $path) {
+                Log::warning('Registration upload path missing', [
+                    'field' => $field,
+                    'disk' => $disk,
+                ]);
                 throw ValidationException::withMessages([
                     $field => 'Upload failed. Please try again.',
                 ]);
@@ -188,7 +199,7 @@ class RegisteredUserController extends Controller
     /**
      * @param  array<string, string|null>  $storedPaths
      */
-    private function cleanupStoredFiles(array $storedPaths): void
+    private function cleanupStoredFiles(array $storedPaths, string $disk): void
     {
         $pathsToDelete = array_values(array_filter($storedPaths));
 
@@ -197,13 +208,19 @@ class RegisteredUserController extends Controller
         }
 
         try {
-            Storage::disk('public')->delete($pathsToDelete);
+            Storage::disk($disk)->delete($pathsToDelete);
         } catch (Throwable $exception) {
             Log::warning('Registration cleanup failed', [
                 'paths' => $pathsToDelete,
+                'disk' => $disk,
                 'exception_class' => $exception::class,
                 'exception' => $exception->getMessage(),
             ]);
         }
+    }
+
+    private function mediaDisk(): string
+    {
+        return (string) config('filesystems.default', 'public');
     }
 }

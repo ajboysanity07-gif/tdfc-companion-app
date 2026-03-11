@@ -4,13 +4,14 @@ namespace App\Http\Resources\Admin;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class ClientResource extends JsonResource
 {
     private function fileUrl(?string $path): ?string
     {
-        if (!$path) {
+        if (! $path) {
             return null;
         }
 
@@ -18,9 +19,26 @@ class ClientResource extends JsonResource
             return $path;
         }
 
-        $disk = env('FILESYSTEM_DISK', 'local');
+        $disk = (string) config('filesystems.default', 'public');
 
-        return Storage::disk($disk)->url($path);
+        try {
+            $storage = Storage::disk($disk);
+
+            if (! $storage->exists($path)) {
+                return null;
+            }
+
+            return $storage->url($path);
+        } catch (\Throwable $exception) {
+            Log::warning('Failed to resolve client media URL', [
+                'path' => $path,
+                'disk' => $disk,
+                'exception_class' => $exception::class,
+                'exception' => $exception->getMessage(),
+            ]);
+
+            return null;
+        }
     }
 
     /**
@@ -29,15 +47,7 @@ class ClientResource extends JsonResource
     public function toArray(Request $request): array
     {
         $profileUrl = $this->fileUrl($this->profile_picture_path);
-        
-        // Debug logging
-        \Log::info('ClientResource avatar', [
-            'user_id' => $this->user_id,
-            'path' => $this->profile_picture_path,
-            'url' => $profileUrl,
-            'app_url' => config('app.url')
-        ]);
-        
+
         return [
             'user_id' => $this->user_id,
             'name' => $this->name,
@@ -60,7 +70,7 @@ class ClientResource extends JsonResource
             'salary_amount' => $this->when(isset($this->salary_amount), $this->salary_amount),
             'rejection_reasons' => $this->when(
                 $this->isRejected(),
-                fn() => $this->rejectionReasons->map(fn($r) => [
+                fn () => $this->rejectionReasons->map(fn ($r) => [
                     'code' => $r->code,
                     'label' => $r->label,
                 ])->toArray(),

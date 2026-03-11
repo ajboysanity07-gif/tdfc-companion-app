@@ -92,8 +92,8 @@ const ClientList: React.FC<Props> = ({
 
     const resolveImagePath = (path?: string | null): string | null => {
         if (!path) return null;
-        if (path.startsWith('http') || path.startsWith('data:') || path.startsWith('/storage')) return path;
-        return `/storage/${path.replace(/^\/+/, '')}`;
+        if (path.startsWith('http') || path.startsWith('data:') || path.startsWith('/')) return path;
+        return null;
     };
 
     const getProfileImage = (client: Client): string | null => {

@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -12,8 +14,7 @@ class RegistrationStatusController extends Controller
     /**
      * Show the client's registration status page
      * Displays different views based on status: pending, approved, or rejected
-     * 
-     * @param Request $request
+     *
      * @return Response|\Illuminate\Http\RedirectResponse
      */
     public function show(Request $request)
@@ -44,10 +45,10 @@ class RegistrationStatusController extends Controller
             'bname' => $user->wmaster?->bname,
             'acctno' => $user->acctno,
             'status' => $user->status,
-            'rejection_reasons' => $user->rejectionReasons->map(function($reason) {
+            'rejection_reasons' => $user->rejectionReasons->map(function ($reason) {
                 return [
                     'code' => $reason->code,
-                    'label' => $reason->label
+                    'label' => $reason->label,
                 ];
             })->values(),
             'submitted_at' => $user->created_at->toISOString(),
@@ -56,7 +57,7 @@ class RegistrationStatusController extends Controller
         ]);
     }
 
-        /**
+    /**
      * Handle resubmission of registration documents by the user after rejection.
      */
     public function resubmit(Request $request)
@@ -80,7 +81,13 @@ class RegistrationStatusController extends Controller
 
         try {
             $this->processResubmit($request, $user);
+
             return response()->json(['success' => true]);
+        } catch (ValidationException $exception) {
+            return response()->json([
+                'message' => 'Validation failed.',
+                'errors' => $exception->errors(),
+            ], 422);
         } catch (\Throwable $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
@@ -91,21 +98,38 @@ class RegistrationStatusController extends Controller
      */
     private function processResubmit(Request $request, $user): void
     {
-        $validated = $request->validate([
+        $request->validate([
             'prc_id_photo_front' => 'nullable|image|max:8192',
-            'prc_id_photo_back'  => 'nullable|image|max:8192',
-            'payslip_photo_path'      => 'nullable|image|max:8192',
+            'prc_id_photo_back' => 'nullable|image|max:8192',
+            'payslip_photo_path' => 'nullable|image|max:8192',
         ]);
+
+        $disk = $this->mediaDisk();
 
         // Store any new uploads
         if ($request->hasFile('prc_id_photo_front')) {
-            $user->prc_id_photo_front = $request->file('prc_id_photo_front')->store('uploads/prc');
+            $user->prc_id_photo_front = $this->storeResubmissionUpload(
+                $request,
+                'prc_id_photo_front',
+                'uploads/prc',
+                $disk
+            );
         }
         if ($request->hasFile('prc_id_photo_back')) {
-            $user->prc_id_photo_back = $request->file('prc_id_photo_back')->store('uploads/prc');
+            $user->prc_id_photo_back = $this->storeResubmissionUpload(
+                $request,
+                'prc_id_photo_back',
+                'uploads/prc',
+                $disk
+            );
         }
         if ($request->hasFile('payslip_photo_path')) {
-            $user->payslip_photo_path = $request->file('payslip_photo_path')->store('uploads/payslips');
+            $user->payslip_photo_path = $this->storeResubmissionUpload(
+                $request,
+                'payslip_photo_path',
+                'uploads/payslips',
+                $disk
+            );
         }
 
         // Reset status for review
@@ -116,5 +140,41 @@ class RegistrationStatusController extends Controller
 
         // Detach all previous rejection reasons
         $user->rejectionReasons()->detach();
+    }
+
+    private function storeResubmissionUpload(Request $request, string $field, string $path, string $disk): string
+    {
+        try {
+            $storedPath = $request->file($field)?->storePublicly($path, ['disk' => $disk]);
+        } catch (\Throwable $exception) {
+            Log::warning('Resubmission upload failed', [
+                'field' => $field,
+                'disk' => $disk,
+                'exception_class' => $exception::class,
+                'exception' => $exception->getMessage(),
+            ]);
+
+            throw ValidationException::withMessages([
+                $field => 'Upload failed. Please try again.',
+            ]);
+        }
+
+        if (! $storedPath) {
+            Log::warning('Resubmission upload path missing', [
+                'field' => $field,
+                'disk' => $disk,
+            ]);
+
+            throw ValidationException::withMessages([
+                $field => 'Upload failed. Please try again.',
+            ]);
+        }
+
+        return $storedPath;
+    }
+
+    private function mediaDisk(): string
+    {
+        return (string) config('filesystems.default', 'public');
     }
 }

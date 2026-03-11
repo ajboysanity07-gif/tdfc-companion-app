@@ -8,8 +8,10 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -25,22 +27,46 @@ class ProfileController extends Controller
         ]);
 
         $user = $request->user();
+        $disk = $this->mediaDisk();
 
         if ($request->hasFile('avatar')) {
             // Delete old avatar if it exists
             if ($user->profile_picture_path) {
                 try {
-                    Storage::delete($user->profile_picture_path);
+                    Storage::disk($disk)->delete($user->profile_picture_path);
                 } catch (\Throwable $e) {
-                    \Log::warning('Failed to delete old avatar.', [
+                    Log::warning('Failed to delete old avatar.', [
                         'path' => $user->profile_picture_path,
+                        'disk' => $disk,
                         'error' => $e->getMessage(),
                     ]);
                 }
             }
 
             // Store the new avatar
-            $avatarPath = $request->file('avatar')->store('avatars');
+            try {
+                $avatarPath = $request->file('avatar')->storePublicly('avatars', ['disk' => $disk]);
+            } catch (\Throwable $exception) {
+                Log::warning('Avatar upload failed', [
+                    'disk' => $disk,
+                    'exception_class' => $exception::class,
+                    'exception' => $exception->getMessage(),
+                ]);
+
+                throw ValidationException::withMessages([
+                    'avatar' => 'Avatar upload failed. Please try again.',
+                ]);
+            }
+
+            if (! $avatarPath) {
+                Log::warning('Avatar upload path missing', [
+                    'disk' => $disk,
+                ]);
+
+                throw ValidationException::withMessages([
+                    'avatar' => 'Avatar upload failed. Please try again.',
+                ]);
+            }
 
             // Update user avatar path
             $user->profile_picture_path = $avatarPath;
@@ -50,6 +76,11 @@ class ProfileController extends Controller
         }
 
         return back()->with('error', 'Failed to upload avatar.');
+    }
+
+    private function mediaDisk(): string
+    {
+        return (string) config('filesystems.default', 'public');
     }
 
     /**
