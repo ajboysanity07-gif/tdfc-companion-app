@@ -2,8 +2,6 @@
 
 namespace App\Http\Middleware;
 
-use App\Repositories\Client\LoanRepository;
-use App\Services\Client\LoanClassificationService;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -31,14 +29,7 @@ class HandleInertiaRequests extends Middleware
             // Fetch salary record
             $salaryRecord = $user->acctno ? \App\Models\WSalaryRecord::where('acctno', $user->acctno)->first() : null;
 
-            // Calculate loan class using LoanClassificationService
             $loanClass = null;
-            if ($user->acctno) {
-                $loanRepository = app(LoanRepository::class);
-                $loanClassificationService = app(LoanClassificationService::class);
-                $loanRows = $loanRepository->getLoanRowsGroupedByAccounts([$user->acctno]);
-                $loanClass = $loanClassificationService->classify($loanRows->get($user->acctno));
-            }
 
             // Build avatar URL from the active filesystem disk.
             $avatarUrl = null;
