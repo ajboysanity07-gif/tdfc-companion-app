@@ -30,8 +30,8 @@ public function store(LoginAppUserRequest $request): RedirectResponse
 
     $user = $request->user();
 
-    // Customer pending approval check
-    if ($user->role === 'customer' && $user->status !== 'approved') {
+    // Client pending approval check
+    if ($user->role === 'client' && $user->status !== 'approved') {
         return redirect()->route('customer.registration.status');
     }
 
@@ -40,7 +40,7 @@ public function store(LoginAppUserRequest $request): RedirectResponse
         return redirect()->route('admin.dashboard'); // This points to /admin/dashboard
     }
 
-    // Customer approved - go to customer dashboard
+    // Client approved - go to the dashboard
     return redirect()->route('dashboard'); // This points to /dashboard
 }
 

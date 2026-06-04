@@ -485,7 +485,7 @@ const UserAccordionDetails: React.FC<Props> = ({
                     )}
                 </Box>
 
-                {/* Customer Class Chip with label */}
+                {/* Client Class Chip with label */}
                 <Box sx={{ mt: 3, mb: 2, textAlign: 'center' }}>
                     {user.class && (
                         <>
@@ -497,7 +497,7 @@ const UserAccordionDetails: React.FC<Props> = ({
                                     mb: 0.5,
                                 }}
                             >
-                                Customer Class:
+                                Client Class:
                             </Typography>
                             <Chip
                                 label={

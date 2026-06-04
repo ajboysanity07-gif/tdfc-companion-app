@@ -3,7 +3,7 @@ export interface User {
   readonly name: string;
   readonly email: string;
   readonly avatar: string | null;
-  readonly role: 'admin' | 'customer' | 'manager' | null;
+  readonly role: 'admin' | 'client' | 'manager' | null;
 }
 
 export interface AuthContext {

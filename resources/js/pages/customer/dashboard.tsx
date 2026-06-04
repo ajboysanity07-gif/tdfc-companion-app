@@ -102,7 +102,7 @@ createTheme(
 export default function Dashboard() {
   const { props } = usePage<PageProps>();
   const user = props.auth?.user ?? null;
-  const fullName = user?.name ?? 'Customer';
+  const fullName = user?.name ?? 'Client';
   const avatar = user?.avatar ?? null;
 
   // State with improved error handling
@@ -276,7 +276,7 @@ export default function Dashboard() {
           <div>
             <p className="text-lg/5 font-extrabold">Welcome,</p>
             <h1 className="text-4xl font-extrabold tracking-tight">{firstName}</h1>
-            <p className="mt-2 text-2xl/6 font-medium opacity-90">{(user?.role ?? 'customer').toLowerCase()}</p>
+            <p className="mt-2 text-2xl/6 font-medium opacity-90">{(user?.role ?? 'client').toLowerCase()}</p>
           </div>
           <div className="h-16 w-16 overflow-hidden rounded-full ring-2 ring-white/60">
             {avatar ? (
@@ -397,7 +397,7 @@ export default function Dashboard() {
             <div className="rounded-2xl bg-[#F57979] p-5 text-white shadow-sm">
               <p className="text-sm/5 opacity-90">Welcome,</p>
               <h4 className="mt-1 text-2xl font-extrabold tracking-wide">{fullName.toUpperCase()}</h4>
-              <p className="text-sm/5 opacity-90">{(user?.role ?? 'customer').toLowerCase()}</p>
+              <p className="text-sm/5 opacity-90">{(user?.role ?? 'client').toLowerCase()}</p>
 
               <div className="mt-6 text-[44px] leading-none font-extrabold">
                 ₱{savings.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
@@ -532,7 +532,7 @@ export default function Dashboard() {
   );
 
   return (
-    <AppLayout breadcrumbs={[{ title: 'Dashboard', href: 'customer/dashboard' }]}>
+    <AppLayout breadcrumbs={[{ title: 'Dashboard', href: '/dashboard' }]}>
       <Head title="Dashboard" />
       
       {/* Skip links for accessibility */}

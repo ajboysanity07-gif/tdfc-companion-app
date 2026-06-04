@@ -4,7 +4,7 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, Calculator, Briefcase, PiggyBank, Users, Package } from 'lucide-react';
+import { BookOpen, Folder, LayoutGrid, Briefcase, Users, Package } from 'lucide-react';
 import AppLogo from './app-logo';
 import { useMemo } from 'react';
 
@@ -28,26 +28,16 @@ type SharedPageProps = {
   };
 };
 
-const customerNavItems: NavItem[] = [
+const clientNavItems: NavItem[] = [
   {
     title: 'Home',
-    href: 'customer/dashboard',
+    href: '/dashboard',
     icon: LayoutGrid,
   },
   {
     title: 'Loan Transactions',
-    href: 'customer/loans/transactions',
+    href: '/loans/transactions',
     icon: Briefcase,
-  },
-  {
-    title: 'Loan Calculator',
-    href: 'customer/loans/calculator',
-    icon: Calculator,
-  },
-  {
-    title: 'Savings',
-    href: 'customer/savings',
-    icon: PiggyBank,
   },
 ];
 
@@ -90,14 +80,14 @@ const footerNavItems: NavItem[] = [
 export function AppSidebar() {
   const { props } = usePage<SharedPageProps>();
   const user = props.auth?.user;
-  const userRole = user?.role || 'customer';
+  const userRole = user?.role || 'client';
 
   // ✅ Enhanced: Memoized navigation items with role-based filtering
   const mainNavItems = useMemo(() => {
     if (userRole === 'admin') {
       return adminNavItems;
     }
-    return customerNavItems;
+    return clientNavItems;
   }, [userRole]);
 
   // ✅ Enhanced: Dynamic home link based on role

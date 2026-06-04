@@ -79,7 +79,7 @@ const SalaryUpdatePopover: React.FC<Props> = ({
         >
             <Box sx={{ p: 1.5 }}>
                 <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 600, fontSize: 15 }}>
-                    Please input the customer salary indicated in the payslip photo.
+                    Please input the client salary indicated in the payslip photo.
                 </Typography>
                 <Stack spacing={1.2}>
                     <NumericFormat

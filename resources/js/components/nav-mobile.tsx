@@ -14,16 +14,16 @@ export default function NavMobile() {
 
     const { props } = usePage<SharedPageProps>();
     const user = props.auth?.user;
-    const userRole = user?.role || 'customer';
+    const userRole = user?.role || 'client';
     const isDashboard = pathname === '/dashboard' || pathname === '/admin/dashboard';
 
     // MUI theme hook
     const theme = useTheme();
 
-    const customerNav = useMemo(
+    const clientNavItems = useMemo(
         () => [
             { href: '/dashboard', label: 'Home', icon: Home },
-            { href: '/loan-transactions', label: 'Loans', icon: Briefcase },
+            { href: '/loans/transactions', label: 'Loans', icon: Briefcase },
             { href: route('profile.edit'), label: 'Account', icon: UserRound },
         ],
         [],
@@ -40,8 +40,8 @@ export default function NavMobile() {
 
     const items = useMemo(() => {
         if (userRole === 'admin') return adminNav;
-        return customerNav;
-    }, [userRole, adminNav, customerNav]);
+        return clientNavItems;
+    }, [userRole, adminNav, clientNavItems]);
 
     const settingsUrl = route('profile.edit');
 

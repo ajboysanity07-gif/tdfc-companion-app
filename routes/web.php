@@ -21,7 +21,7 @@ Route::get('/', function () {
             return redirect('/admin/dashboard');
         }
 
-        if ($user->role === 'customer') {
+        if ($user->role === 'client') {
             if ($user->status === 'approved') {
                 return redirect('/dashboard');
             }
@@ -60,7 +60,7 @@ Route::middleware(['auth'])->prefix('customer')->name('customer.')->group(functi
         ->name('register.resubmit');
 });
 
-Route::middleware(['auth', 'approved', 'role:customer'])->group(function () {
+Route::middleware(['auth', 'approved', 'role:client'])->group(function () {
     Route::get('/dashboard', function () {
         return Inertia::render('customer/dashboard');
     })->name('dashboard');

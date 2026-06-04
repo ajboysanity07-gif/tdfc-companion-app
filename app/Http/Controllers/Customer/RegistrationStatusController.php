@@ -10,7 +10,7 @@ use Inertia\Response;
 class RegistrationStatusController extends Controller
 {
     /**
-     * Show the customer's registration status page
+     * Show the client's registration status page
      * Displays different views based on status: pending, approved, or rejected
      * 
      * @param Request $request

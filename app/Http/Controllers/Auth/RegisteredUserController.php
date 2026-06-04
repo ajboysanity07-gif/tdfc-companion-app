@@ -27,9 +27,9 @@ class RegisteredUserController extends Controller
         $adminMode = (bool) $request->boolean('admin_registration');
         $wm = Wmaster::query()->where('acctno', $request->string('acctno'))->first();
 
-        $role = $adminMode ? 'admin' : 'customer';
+        $role = $adminMode ? 'admin' : 'client';
         if (!$adminMode && $wm && array_key_exists('Userrights', $wm->getAttributes())) {
-            $role = ((int) $wm->getAttribute('Userrights')) === 1 ? 'admin' : 'customer';
+            $role = ((int) $wm->getAttribute('Userrights')) === 1 ? 'admin' : 'client';
         }
 
         $paths = [
@@ -73,7 +73,7 @@ class RegisteredUserController extends Controller
             // Admins go to their dashboard
             return redirect()->route($user->isAdmin() ? 'admin.dashboard' : 'dashboard');
         } else {
-            // Pending customers go to registration status page
+            // Pending clients go to registration status page
             return redirect()->route('customer.registration.status');
         }
     }
