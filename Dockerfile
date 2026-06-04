@@ -1,9 +1,30 @@
 # syntax=docker/dockerfile:1
 
-# Install PHP dependencies with Composer.
-FROM composer:2 AS vendor
+# Install PHP dependencies with Composer on PHP 8.3.
+# Do not use composer:2 directly here because it can move to a newer PHP version
+# than the project's locked dependencies support.
+FROM php:8.3-cli-bookworm AS vendor
 
 WORKDIR /app
+
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        git \
+        unzip \
+        libzip-dev \
+        libonig-dev \
+        libxml2-dev \
+        libicu-dev \
+    && docker-php-ext-install \
+        bcmath \
+        intl \
+        mbstring \
+        zip \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY . .
 
 RUN composer install \
