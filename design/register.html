@@ -1,0 +1,207 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Register · TDFC Companion App</title>
+<link rel="stylesheet" href="tdfc.css"><link rel="stylesheet" href="auth.css">
+<style>
+.a-page{padding:32px 16px}.step[hidden]{display:none}
+#f.a-wrap{max-width:560px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:0 16px;align-items:start}
+@media(max-width:640px){.row2{grid-template-columns:1fr}}
+.up{display:flex;align-items:center;gap:12px;width:100%;min-height:52px;padding:8px 16px;border:1px solid oklch(.88 0 0);border-radius:10px;background:#fff;cursor:pointer;text-align:left}
+.up:hover{border-color:color-mix(in oklch,var(--coral) 50%,white)}
+.up .pl{background:#dcfce7;color:#16a34a;border-radius:50%;width:36px;height:36px;display:grid;place-items:center;flex:none}
+.up .t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:oklch(0 0 0/.45)}.up .t.done{color:#059669;font-weight:600}
+.up small{font-size:12px;color:oklch(0 0 0/.45)}
+.av{width:64px;height:64px;border-radius:50%;border:2px dashed var(--coral);background:#fff;display:grid;place-items:center;overflow:hidden;cursor:pointer;flex:none;padding:0}
+.av img{width:100%;height:100%;object-fit:cover}
+.nav2{display:flex;justify-content:space-between;align-items:center;margin-top:24px;gap:12px}
+.pill{height:48px;padding:0 22px;border-radius:99px;border:1px solid oklch(.85 0 0);background:#fff;font-weight:600;cursor:pointer}.pill:hover{background:oklch(.95 0 0)}
+.pill.go{border:0;background:var(--coral);color:oklch(.2 .05 24);font-weight:800;padding:0 32px;letter-spacing:.02em}.pill.go:hover{background:color-mix(in oklch,var(--coral) 88%,black)}.pill.go:disabled{opacity:.4;pointer-events:none}
+.demo{margin:16px auto 0;max-width:400px;font-size:12px;color:var(--muted-fg);text-align:center}
+/* wizard */
+.wz{max-width:380px;text-align:center;padding:24px 20px}.wz h3{color:var(--coral-ink);font-size:20px;font-weight:700;margin-bottom:12px}
+.wz .smp{display:grid;gap:12px;justify-items:center;margin-bottom:16px}.wz .smp img{width:70%;max-width:260px;height:auto}
+.wz .note{background:#eff6ff;border:1px solid #dbeafe;border-radius:12px;padding:12px;color:#3b82f6;font-size:12px;margin:0 auto 16px;max-width:300px}
+.wz .w{display:grid;gap:12px;max-width:300px;margin:0 auto}.wz .w button{min-height:52px;border:0;border-radius:12px;background:var(--coral);color:oklch(.2 .05 24);font-weight:700;display:flex;gap:10px;align-items:center;justify-content:center;cursor:pointer}
+.wz .w button:hover{background:color-mix(in oklch,var(--coral) 88%,black)}
+.wz .drop{border:2px dashed oklch(.85 0 0);border-radius:12px;min-height:150px;display:grid;place-items:center;color:var(--muted-fg);font-size:14px;margin:0 auto 12px;max-width:300px;cursor:pointer;overflow:hidden}
+.wz .drop img,.wz .drop video{width:100%;height:auto;display:block}#payM .wz{max-width:480px}
+#psd{max-width:none;width:100%;min-height:200px;background:#111;border:0;color:#fff;padding:16px}
+#psd video,#psd img{width:100%;height:auto;max-height:60vh;object-fit:contain} /* follows the camera's own aspect: portrait or landscape */
+#psi{width:auto;max-width:100%;max-height:60vh;object-fit:contain;display:block}
+.stage{position:relative;display:flex;justify-content:center;overflow:hidden;margin:0 auto 12px;touch-action:none;background:#111;border-radius:12px}
+.cbox{position:absolute;border:2px solid #fff;box-shadow:0 0 0 9999px rgb(0 0 0/.5);cursor:move;touch-action:none}
+.cbox i{position:absolute;width:32px;height:32px;margin:-16px 0 0 -16px;touch-action:none}
+.cbox i::after{content:"";position:absolute;left:10px;top:10px;width:12px;height:12px;background:#fff;border:2px solid var(--coral-ink);border-radius:3px}
+.cbox i[data-h=nw]{left:0;top:0;cursor:nwse-resize}.cbox i[data-h=n]{left:50%;top:0;cursor:ns-resize}.cbox i[data-h=ne]{left:100%;top:0;cursor:nesw-resize}
+.cbox i[data-h=e]{left:100%;top:50%;cursor:ew-resize}.cbox i[data-h=se]{left:100%;top:100%;cursor:nwse-resize}.cbox i[data-h=s]{left:50%;top:100%;cursor:ns-resize}
+.cbox i[data-h=sw]{left:0;top:100%;cursor:nesw-resize}.cbox i[data-h=w]{left:0;top:50%;cursor:ew-resize}
+.tools{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:12px}
+.tb{min-height:44px;padding:0 16px;border:1px solid oklch(.8 0 0);border-radius:99px;background:#fff;color:#000;font-weight:600;cursor:pointer}
+.tb:hover{background:oklch(.94 0 0)}.tb[aria-pressed=true]{background:var(--coral-soft);border-color:var(--coral-ink);color:oklch(.3 .1 24)}
+.tb:focus-visible,.sec:focus-visible{outline:3px solid var(--coral-ink);outline-offset:2px}
+.wz .camh{font-size:12px;color:var(--muted-fg);margin-bottom:12px}
+.wz .rv{display:grid;gap:8px;justify-items:center;margin-bottom:12px}.wz .rv img{width:200px;height:auto;border:2px solid oklch(.85 0 0);border-radius:12px}
+.wz .sec{min-height:44px;border-radius:99px;border:1px solid #3b82f6;background:#eff6ff;color:#2563eb;font-weight:600;padding:0 16px;cursor:pointer;width:100%}
+.wz .ft{display:flex;justify-content:space-between;margin-top:18px}.wz .ft .pill{width:120px}
+</style></head>
+<body><main class="a-page" data-od-id="register-page"><form id="f" class="a-wrap" novalidate>
+
+<section class="step" id="s1" data-od-id="register-step-1">
+<div id="errs" class="a-alert" hidden role="alert" data-od-id="register-errors"></div>
+<img class="a-logo" src="assets/logo.png" alt="TDFC" data-od-id="register-logo">
+<h1 class="a-title">Register</h1>
+<p class="a-lead">To register, use the account number provided to you and your phone number registered with us. Please enter an active email address and create a secure password.</p>
+<div class="a-card" data-od-id="register-card-1">
+<div class="row2" data-od-id="register-row-account"><div class="f"><label for="acc">Account Number</label><input class="a-in" id="acc" maxlength="6" inputmode="numeric" placeholder="Enter account number" data-od-id="register-account"><div class="a-msg" id="acc-m" role="status" aria-live="polite"></div></div>
+<div class="f"><label for="ph">Phone Number</label><input class="a-in" id="ph" inputmode="numeric" placeholder="09xxxxxxxxx" data-od-id="register-phone"><div class="a-msg bad" id="ph-m"></div></div></div>
+<div class="f"><label for="em">Email</label><input class="a-in" id="em" type="email" placeholder="you@example.com" data-od-id="register-email"><div class="a-msg bad" id="em-m"></div></div>
+<div class="row2" style="margin-bottom:8px" data-od-id="register-row-password"><div class="f"><label for="p1">Password</label><div class="a-pw"><input class="a-in" id="p1" type="password" placeholder="Minimum 8 characters" data-od-id="register-password"><button class="a-eye" type="button" data-eye="p1" aria-label="Show password" aria-pressed="false"><svg class="ico" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/><path class="sl" d="M3 3l18 18"/></svg></button></div><div class="a-msg bad" id="p1-m"></div></div>
+<div class="f"><label for="p2">Confirm Password</label><div class="a-pw"><input class="a-in" id="p2" type="password" placeholder="Re-enter your password" data-od-id="register-confirm"><button class="a-eye" type="button" data-eye="p2" aria-label="Show password" aria-pressed="false"><svg class="ico" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/><path class="sl" d="M3 3l18 18"/></svg></button></div><div class="a-msg" id="p2-m" role="status" aria-live="polite"></div></div></div>
+<button class="a-cta" type="button" id="next" disabled style="height:56px;font-size:18px" data-od-id="register-next">NEXT</button></div>
+<p class="a-foot">Already have an account? <a href="login.html" data-od-id="register-login-link">Log in</a></p>
+<p class="demo">Mockup data: 123456 = found (Juan Dela Cruz) · 000000 = not found · 111111 = already registered · taken@example.com = duplicate email.</p>
+</section>
+
+<section class="step" id="s2" hidden data-od-id="register-step-2">
+<img class="a-logo" src="assets/logo.png" alt="TDFC">
+<h1 class="a-title">Register</h1>
+<p class="a-lead">Upload a CLEAR picture of your valid PRC ID for verification, a profile photo of yourself, and your latest payslip.</p>
+<div class="a-card" data-od-id="register-card-2">
+<div style="margin-bottom:28px"><span class="a-lbl" style="margin-bottom:8px">Upload Profile Picture</span>
+<div style="display:flex;align-items:center;gap:16px"><button type="button" class="av" id="av" aria-label="Upload profile photo" data-od-id="register-avatar"><span class="pl" style="background:#dcfce7;color:#16a34a;border-radius:50%;width:44px;height:44px;display:grid;place-items:center"><svg class="ico" viewBox="0 0 24 24" style="width:28px;height:28px"><path d="M12 5v14M5 12h14"/></svg></span></button>
+<p style="font-size:14px;line-height:1.5;color:oklch(0 0 0/.6)">Tap the circle to upload your profile photo.<br>Crop will open before saving.</p></div><input type="file" id="avf" accept="image/*" hidden></div>
+<div style="margin-bottom:28px"><span class="a-lbl" style="margin-bottom:8px">Upload PRC ID Photo <span>*</span></span>
+<button type="button" class="up" id="prcRow" data-od-id="register-prc-row"><span class="pl"><svg class="ico" viewBox="0 0 24 24" style="width:22px;height:22px"><path d="M12 5v14M5 12h14"/></svg></span><span class="t" id="prcT">Click to upload...</span><small>JPEG/PNG/WEBP</small></button></div>
+<div><span class="a-lbl" style="margin-bottom:8px">Upload LATEST PAYSLIP Photo <span>*</span></span>
+<button type="button" class="up" id="payRow" data-od-id="register-payslip-row"><span class="pl"><svg class="ico" viewBox="0 0 24 24" style="width:22px;height:22px"><path d="M12 5v14M5 12h14"/></svg></span><span class="t" id="payT">Click to upload...</span><small>JPEG/PNG/WEBP</small></button></div>
+<div class="nav2"><button type="button" class="pill" id="back" data-od-id="register-back">← Back</button><button type="submit" class="pill go" id="reg" disabled data-od-id="register-submit">REGISTER</button></div></div>
+</section>
+</form></main>
+
+<!-- PRC wizard -->
+<div class="modal-back" id="prcM" data-od-id="prc-wizard"><div class="modal wz">
+<div id="pw1"><h3>Upload your PRC ID</h3><div class="smp"><img src="assets/prc-sample-front.png" alt="PRC ID sample front"><img src="assets/prc-sample-back.png" alt="PRC ID sample back"></div>
+<div class="note">*Your payslip photos (front and back) should be clear and all details legible.</div>
+<p style="font-size:14px;color:#4b5563;margin-bottom:12px">Choose how you'd like to provide your PRC ID photos</p>
+<div class="w"><button type="button" data-mode="upload">Upload a Photo</button><button type="button" data-mode="camera">Use a Camera</button></div></div>
+<div id="pw2" hidden><h3 id="pw2h"></h3><div class="smp"><img id="pw2i" alt="PRC sample"></div><div class="drop" id="pw2d" tabindex="0" role="button">Tap to choose a photo</div><input type="file" id="prcf" accept="image/*" hidden><p class="camh" id="pw2c" hidden>Tap the live preview to capture. Tap the photo to retake.</p><div class="w"><button type="button" id="pw2n" disabled>Next</button></div></div>
+<div id="pw4" hidden><h3>Review Your PRC IDs</h3><div class="note">Compare your submitted photos to the samples. Only proceed if your uploads match the clarity and alignment.</div>
+<div class="rv"><b>Front PRC ID</b><img id="rvf" src="assets/prc-sample-front.png" alt="Front PRC ID preview"></div><div class="rv"><b>Back PRC ID</b><img id="rvb" src="assets/prc-sample-back.png" alt="Back PRC ID preview"></div>
+<div class="w"><button class="sec" type="button" id="rt" style="width:100%">Retake Photos</button><button type="button" id="use">Use Both Photos</button></div></div>
+<div class="ft"><button type="button" class="pill" id="prcCancel">Back</button><button type="button" class="pill" id="prcX">Cancel</button></div></div></div>
+
+<!-- Payslip wizard -->
+<div class="modal-back" id="payM" data-od-id="payslip-wizard"><div class="modal wz">
+<div id="ps1"><h3>Upload your Payslip</h3><div class="smp"><img src="assets/sample-payslip.png" alt="Payslip sample"></div><div class="note">Any payslip format works, portrait or landscape. The sample is only a guide. Include the whole page with your name and pay period, and make sure the text is readable.</div>
+<p style="font-size:14px;color:#4b5563;margin-bottom:12px">Choose how you'd like to provide your Payslip photos</p>
+<input type="file" id="psf" accept="image/*" hidden><div class="w"><button type="button" id="psUp">Upload a Photo</button><button type="button" id="psCam">Use a Camera</button></div></div>
+<div id="ps2" hidden><h3>Take Payslip Photo</h3><div class="drop" id="psd" tabindex="0" role="button"></div><p class="camh">Turn your phone to fit your payslip, landscape or portrait, and fit the whole page in view. Tap the preview to capture, or tap the photo to retake.</p><div class="w"><button type="button" id="ps2n" disabled>Next</button></div></div>
+<div id="ps3" hidden><h3>Review Your Payslip</h3><div class="stage" id="stage"><img id="psi" src="assets/sample-payslip.png" alt="Payslip preview"><div class="cbox" id="cbox" hidden aria-label="Crop area. Drag to move, drag the handles to resize."><i data-h="nw"></i><i data-h="n"></i><i data-h="ne"></i><i data-h="e"></i><i data-h="se"></i><i data-h="s"></i><i data-h="sw"></i><i data-h="w"></i></div></div>
+<div class="tools" data-od-id="payslip-edit-tools"><button type="button" class="tb" id="rotL">Rotate left</button><button type="button" class="tb" id="rotR">Rotate right</button><button type="button" class="tb" id="cropBtn" aria-pressed="false">Crop</button><button type="button" class="tb" id="editReset">Reset</button></div>
+<p class="camh" id="psTip" role="status"></p>
+<div class="w"><button class="sec" type="button" id="cropGo" hidden>Apply crop</button><button type="button" id="psUse">Use This Photo</button></div></div>
+<div class="ft"><button type="button" class="pill" id="payX">Cancel</button></div></div></div>
+
+<script>
+const $=i=>document.getElementById(i),on=(i,fn)=>$(i).addEventListener('input',fn);
+const st={found:false,dupA:false,dupE:false,prc:false,pay:false};let p1seen=false;
+[['acc','acc-m'],['ph','ph-m'],['em','em-m'],['p1','p1-m'],['p2','p2-m']].forEach(([i,m])=>$(i).setAttribute('aria-describedby',m));
+const msg=(id,t,c)=>{const e=$(id);e.textContent=t;e.className='a-msg '+(c||'')};
+function check(){
+ const a=$('acc').value=$('acc').value.replace(/\s/g,'').slice(0,6);$('ph').value=$('ph').value.replace(/\D/g,'').slice(0,11);
+ st.found=false;st.dupA=false;
+ if(a.length==6){msg('acc-m','Checking...');setTimeout(()=>{if($('acc').value!=a)return;
+  if(a=='111111'){st.dupA=true;msg('acc-m','Account number is already registered.','bad')}
+  else if(a=='000000')msg('acc-m','Account number not found.','bad');
+  else{st.found=true;msg('acc-m','This account no belongs to Juan Dela Cruz.')}go()},250)}else msg('acc-m','');
+ $('acc').setAttribute('aria-invalid',a=='000000'||a=='111111');
+ const e=$('em').value;st.dupE=e=='taken@example.com';
+ msg('em-m',st.dupE?'Email is already registered.':'','bad');$('em').setAttribute('aria-invalid',st.dupE);
+ const p=$('p1').value,c=$('p2').value;
+ const sh=p1seen&&p&&p.length<8; // short-password error only after blur, not while typing
+ msg('p1-m',sh?'Minimum 8 characters.':'','bad');$('p1').setAttribute('aria-invalid',!!sh);
+ $('p2').setAttribute('aria-invalid',!!c&&c!=p);
+ msg('p2-m',!c?'':c!=p?'Passwords do not match.':'Passwords match.',!c?'':c!=p?'bad':'good');
+ go()}
+function go(){$('next').disabled=!(st.found&&$('p1').value.length>=8&&$('p1').value==$('p2').value&&!st.dupA&&!st.dupE)}
+['acc','ph','em','p1','p2'].forEach(i=>on(i,check));
+$('p1').addEventListener('blur',()=>{p1seen=true;check()});
+document.querySelectorAll('[data-eye]').forEach(b=>b.onclick=()=>{const i=$(b.dataset.eye),s=i.type=='password';i.type=s?'text':'password';b.setAttribute('aria-pressed',s);b.setAttribute('aria-label',s?'Hide password':'Show password')});
+const show=n=>{$('s1').hidden=n!=1;$('s2').hidden=n!=2;scrollTo(0,0)};
+$('next').onclick=()=>{$('errs').hidden=true;show(2)};$('back').onclick=()=>show(1);
+function fin(){$('reg').disabled=!(st.prc&&st.pay)}
+$('f').onsubmit=e=>{e.preventDefault();location.href='registration-status.html'};
+// avatar (crop step omitted in mockup)
+$('av').onclick=()=>$('avf').click();
+$('avf').onchange=e=>{const f=e.target.files[0];if(f)$('av').innerHTML='<img alt="Profile preview" src="'+URL.createObjectURL(f)+'">'};
+// PRC wizard
+let mode,ws=1,stream=null;const shots={};
+// Real camera: getUserMedia live preview inside a .drop box; tap to capture a frame to a JPEG data URL.
+function stopCam(){if(stream)stream.getTracks().forEach(t=>t.stop());stream=null}
+async function camInto(d){stopCam();d.dataset.live='';d.textContent='Starting camera…';
+ try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1920}},audio:false});
+  const v=document.createElement('video');v.autoplay=v.muted=v.playsInline=true;v.srcObject=stream;d.textContent='';d.append(v);d.dataset.live='1'}
+ catch(e){stopCam();d.textContent=(location.protocol=='file:'&&!window.isSecureContext?'Camera is blocked on this page. ':'Camera unavailable or permission denied. ')+'Allow camera access and tap here to try again.'}}
+function snap(d){const v=d.querySelector('video');if(!v||!v.videoWidth)return null;const c=document.createElement('canvas');c.width=v.videoWidth;c.height=v.videoHeight;c.getContext('2d').drawImage(v,0,0);
+ const u=c.toDataURL('image/jpeg',.9);stopCam();d.dataset.live='';d.innerHTML='<img alt="Captured photo" src="'+u+'">';return u}
+const open=(m,v)=>{if(!v)stopCam();$(m).classList[v?'add':'remove']('open')};
+const panes=['pw1','pw2','pw4'];const pane=n=>panes.forEach(p=>$(p).hidden=p!=n);
+function prcStep(n){ws=n;stopCam();if(n==1)pane('pw1');else if(n==4){pane('pw4');$('rvf').src=shots.front||'assets/prc-sample-front.png';$('rvb').src=shots.back||'assets/prc-sample-back.png'}else{pane('pw2');const fr=n==2;
+ $('pw2h').textContent=(mode=='camera'?'Take ':'Upload ')+(fr?'Front':'Back')+' PRC ID'+(mode=='camera'?' Photo':'');
+ $('pw2i').src='assets/prc-sample-'+(fr?'front':'back')+'.png';$('pw2d').textContent='Tap to choose a photo';$('pw2c').hidden=mode!='camera';if(mode=='camera')camInto($('pw2d'));$('pw2n').disabled=true;$('pw2n').textContent=fr?'Next':'Done'}}
+$('prcRow').onclick=()=>{prcStep(1);open('prcM',1)};
+document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{mode=b.dataset.mode;prcStep(2)});
+$('pw2d').onclick=()=>{const d=$('pw2d'),side=ws==2?'front':'back';
+ if(mode=='camera'){
+  if(d.dataset.live){const u=snap(d);if(u){shots[side]=u;$('pw2n').disabled=false}}
+  else camInto(d).then(()=>{$('pw2n').disabled=true;delete shots[side]}); // retake or retry after an error
+  return}
+ $('prcf').click()}; // upload mode: real file picker, handled below
+$('prcf').onchange=e=>{const f=e.target.files[0];e.target.value='';if(!f)return;
+ const d=$('pw2d'),side=ws==2?'front':'back';
+ if(!f.type.startsWith('image/')){d.textContent='Please choose an image file (JPG, PNG or WEBP).';return}
+ const r=new FileReader();r.onload=()=>{shots[side]=r.result;d.innerHTML='<img alt="Selected '+side+' PRC ID photo" src="'+r.result+'">';$('pw2n').disabled=false};r.readAsDataURL(f)};
+$('pw2n').onclick=()=>{$('pw2d').textContent='';prcStep(ws+1)};
+$('rt').onclick=()=>prcStep(2);
+$('prcCancel').onclick=()=>ws>1?prcStep(ws==4?3:ws-1==1?1:ws-1):open('prcM',0);
+$('prcX').onclick=()=>open('prcM',0);
+$('use').onclick=()=>{st.prc=true;$('prcT').textContent='Front & Back completed ✓';$('prcT').className='t done';open('prcM',0);fin()};
+// Payslip wizard
+const psPane=n=>['ps1','ps2','ps3'].forEach(p=>$(p).hidden=p!=n);
+// Review step: rotate + free crop. Edits are baked into a canvas so shots.pay always holds the final image.
+const im=$('psi'),cb=$('cbox');let cr=null,orig='';
+const lay=()=>{if(!cr||cb.hidden)return;Object.assign(cb.style,{left:im.offsetLeft+cr.x*im.clientWidth+'px',top:im.offsetTop+cr.y*im.clientHeight+'px',width:cr.w*im.clientWidth+'px',height:cr.h*im.clientHeight+'px'})};
+const setCrop=on=>{cb.hidden=!on;$('cropGo').hidden=!on;$('cropBtn').setAttribute('aria-pressed',on);if(on){cr={x:.05,y:.05,w:.9,h:.9};lay()}};
+function review(src){$('psTip').textContent='';im.src=orig=src;setCrop(false);psPane('ps3')}
+function bake(w,h,draw){const c=document.createElement('canvas');c.width=w;c.height=h;draw(c.getContext('2d'));
+ try{const u=c.toDataURL('image/jpeg',.92);im.src=u;shots.pay=u;$('psTip').textContent='';return true}
+ catch(e){$('psTip').textContent='This sample image can’t be edited. Take a photo with the camera to rotate or crop it.';return false}}
+const rot=d=>{const w=im.naturalWidth,h=im.naturalHeight;if(bake(h,w,x=>{x.translate(d>0?h:0,d>0?0:w);x.rotate(d*Math.PI/2);x.drawImage(im,0,0)}))setCrop(false)};
+$('rotL').onclick=()=>rot(-1);$('rotR').onclick=()=>rot(1);
+$('cropBtn').onclick=()=>setCrop(cb.hidden);
+$('cropGo').onclick=()=>{const W=im.naturalWidth,H=im.naturalHeight,sx=Math.round(cr.x*W),sy=Math.round(cr.y*H),sw=Math.round(cr.w*W),sh=Math.round(cr.h*H);
+ if(bake(sw,sh,x=>x.drawImage(im,sx,sy,sw,sh,0,0,sw,sh)))setCrop(false)};
+$('editReset').onclick=()=>{im.src=orig;if(orig.startsWith('data:'))shots.pay=orig;setCrop(false);$('psTip').textContent=''};
+im.addEventListener('load',lay);addEventListener('resize',lay);
+let drag=null;
+cb.addEventListener('pointerdown',e=>{drag={h:e.target.dataset.h||'m',x:e.clientX,y:e.clientY,r:{...cr}};cb.setPointerCapture(e.pointerId);e.preventDefault()});
+cb.addEventListener('pointermove',e=>{if(!drag)return;const dx=(e.clientX-drag.x)/im.clientWidth,dy=(e.clientY-drag.y)/im.clientHeight,{x,y,w,h}=drag.r,m=.08,k=drag.h,cl=(v,a,b)=>Math.min(Math.max(v,a),b);
+ let l=x,t=y,r=x+w,b=y+h;
+ if(k=='m'){l=cl(x+dx,0,1-w);t=cl(y+dy,0,1-h);r=l+w;b=t+h}
+ else{if(k.includes('w'))l=cl(x+dx,0,r-m);if(k.includes('e'))r=cl(x+w+dx,l+m,1);if(k.includes('n'))t=cl(y+dy,0,b-m);if(k.includes('s'))b=cl(y+h+dy,t+m,1)}
+ cr={x:l,y:t,w:r-l,h:b-t};lay()});
+cb.addEventListener('pointerup',()=>drag=null);cb.addEventListener('pointercancel',()=>drag=null);
+$('payRow').onclick=()=>{delete shots.pay;setCrop(false);psPane('ps1');open('payM',1)};
+// Real file picker. FileReader gives a data URL, so the canvas stays untainted and rotate/crop work on uploads.
+$('psUp').onclick=()=>$('psf').click();
+$('psf').onchange=e=>{const f=e.target.files[0];e.target.value='';if(!f)return;
+ if(!f.type.startsWith('image/')){$('psTip').textContent='Please choose an image file (JPG, PNG or WEBP).';return}
+ const r=new FileReader();r.onload=()=>{shots.pay=r.result;review(r.result)};r.readAsDataURL(f)};
+$('psCam').onclick=()=>{psPane('ps2');$('ps2n').disabled=true;camInto($('psd'))};
+$('psd').onclick=()=>{const d=$('psd');
+ if(d.dataset.live){const u=snap(d);if(u){shots.pay=u;$('ps2n').disabled=false}}
+ else camInto(d).then(()=>{$('ps2n').disabled=true;delete shots.pay})};
+$('ps2n').onclick=()=>review(shots.pay);
+$('payX').onclick=()=>open('payM',0);
+$('psUse').onclick=()=>{st.pay=true;$('payT').textContent='payslip-latest.jpg';$('payT').className='t done';open('payM',0);fin()};
+document.addEventListener('keydown',e=>{if(e.key=='Escape'){open('prcM',0);open('payM',0)}});
+</script></body></html>

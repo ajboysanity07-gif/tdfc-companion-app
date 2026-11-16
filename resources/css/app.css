@@ -173,3 +173,35 @@
 
 .hide-scrollbar::-webkit-scrollbar { display: none; }
 .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+/* Auth screens (login/register) — tokens from design/tdfc.css + design/auth.css */
+@theme {
+    --color-tdfc-coral: #f57979;
+    --color-tdfc-coral-ink: oklch(0.5 0.17 24);
+    --color-tdfc-coral-soft: color-mix(in oklch, #f57979 16%, white);
+    --color-tdfc-on-coral: oklch(0.2 0.05 24);
+    --color-tdfc-line: oklch(0.78 0 0);
+    --color-tdfc-card-line: oklch(0.9 0 0);
+    --color-tdfc-error: #b91c1c;
+    --color-tdfc-error-line: #dc2626;
+    --color-tdfc-ok: #047857;
+    --color-tdfc-page-from: oklch(0.96 0 0);
+    --color-tdfc-page-to: oklch(0.93 0 0);
+    --radius-tdfc-card: 20px;
+    --radius-tdfc-field: 10px;
+    --radius-tdfc-btn: 12px;
+    --shadow-tdfc-card: 0 8px 24px rgb(0 0 0 / 0.07);
+    --shadow-tdfc-modal: 0 10px 30px rgb(0 0 0 / 0.12);
+    --animate-tdfc-msg: tdfc-msg-in 0.16s ease-out;
+    @keyframes tdfc-msg-in {
+        from {
+            opacity: 0;
+            transform: translateY(-4px);
+        }
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .animate-tdfc-msg {
+        animation: none;
+    }
+}

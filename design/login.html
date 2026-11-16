@@ -1,0 +1,25 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Login · TDFC Companion App</title>
+<link rel="stylesheet" href="tdfc.css"><link rel="stylesheet" href="auth.css"></head>
+<body><main class="a-page" data-od-id="login-page"><form class="a-wrap" id="f" novalidate data-od-id="login-form">
+<img class="a-logo" src="assets/logo.png" alt="TDFC" data-od-id="login-logo">
+<h1 class="a-title">Login</h1><p class="a-lead">Welcome back. Enter your credentials to continue.</p>
+<div class="a-card" data-od-id="login-card">
+<div class="f"><label for="em">EMAIL</label><input class="a-in" id="em" type="email" placeholder="you@example.com" autocomplete="email" aria-describedby="em-m" data-od-id="login-email"><div class="a-msg bad" id="em-m" role="status"></div></div>
+<div class="f"><label for="pw">PASSWORD</label><div class="a-pw"><input class="a-in" id="pw" type="password" placeholder="Enter your password" autocomplete="current-password" aria-describedby="pw-m" data-od-id="login-password"><button class="a-eye" type="button" id="eye" aria-label="Show password" aria-pressed="false"><svg class="ico" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/><path class="sl" d="M3 3l18 18"/></svg></button></div><div class="a-msg bad" id="pw-m" role="status"></div></div>
+<div class="a-row"><label><input type="checkbox" data-od-id="login-remember"> Remember me</label><a class="a-lnk" href="forgot-password.html" data-od-id="login-forgot">Forgot password?</a></div>
+<button class="a-cta" type="submit" data-od-id="login-submit">Sign In</button></div>
+<p class="a-foot">Don’t have an account? <a href="register.html" data-od-id="login-register-link">Register</a></p></form></main>
+<script>
+const $=i=>document.getElementById(i),em=$('em'),pw=$('pw'),seen={};
+// Errors show after blur or a submit attempt, not while typing. Login only requires a non-empty password.
+const chk=()=>{const e=em.value,p=pw.value;
+ const eb=seen.em&&(!e?'Enter your email address.':!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)?'Please enter a valid email address.':'');
+ const pb=seen.pw&&!p?'Enter your password.':'';
+ em.setAttribute('aria-invalid',!!eb);pw.setAttribute('aria-invalid',!!pb);
+ $('em-m').textContent=eb||'';$('pw-m').textContent=pb};
+em.onblur=()=>{seen.em=1;chk()};pw.onblur=()=>{seen.pw=1;chk()};
+em.oninput=pw.oninput=()=>{if(seen.em||seen.pw)chk()};
+$('eye').onclick=e=>{const s=pw.type=='password';pw.type=s?'text':'password';e.currentTarget.setAttribute('aria-pressed',s);e.currentTarget.setAttribute('aria-label',s?'Hide password':'Show password')};
+$('f').onsubmit=e=>{e.preventDefault();seen.em=seen.pw=1;chk();
+ if(em.getAttribute('aria-invalid')=='true')em.focus();else if(!pw.value)pw.focus();else location.href='customer-dashboard.html'};
+</script></body></html>
