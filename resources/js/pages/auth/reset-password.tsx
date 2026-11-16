@@ -1,68 +1,67 @@
-import React from "react";
-import { Head, useForm } from "@inertiajs/react";
-import AuthCard from "@/components/ui/auth-card";
+import AuthCard from '@/components/auth/auth-card';
+import PasswordField from '@/components/auth/password-field';
+import PrimaryButton from '@/components/auth/primary-button';
+import TextField from '@/components/auth/text-field';
+import { Head, useForm } from '@inertiajs/react';
+import React, { useState } from 'react';
 
-type Props = { token: string; email: string };
+type Props = { token: string; email?: string | null };
+type Key = 'email' | 'password' | 'password_confirmation';
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function ResetPassword({ token, email }: Props) {
-  const { data, setData, post, processing, errors } = useForm({
-    token,
-    email: email ?? "",
-    password: "",
-    password_confirmation: "",
-  });
+    const { data, setData, post, processing, errors, clearErrors } = useForm({
+        token,
+        email: email ?? '',
+        password: '',
+        password_confirmation: '',
+    });
+    const [submitted, setSubmitted] = useState(false);
 
-  const submit = (e: React.FormEvent) => {
-    e.preventDefault();
-    post("/reset-password");
-  };
+    const client: Record<Key, string> = {
+        email: !data.email ? 'Enter your email address.' : !EMAIL_RE.test(data.email) ? 'Please enter a valid email address.' : '',
+        password: data.password.length < 8 ? 'The password field must be at least 8 characters.' : '',
+        password_confirmation: data.password_confirmation !== data.password ? 'The password field confirmation does not match.' : '',
+    };
 
-  return (
-    <>
-      <Head title="Reset Password" />
-      <div className="mx-auto grid min-h-screen place-items-center bg-black/[.02] px-4 py-8">
-        <AuthCard title="Choose a new password">
-          <form onSubmit={submit} className="space-y-4">
-            <input type="hidden" value={data.token} />
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wide text-[--color-brand]">Email</label>
-              <input
-                value={data.email}
-                onChange={(e) => setData("email", e.target.value)}
-                className="mt-1 w-full rounded-lg border border-black/15 px-3 py-2"
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-semibold uppercase tracking-wide text-[--color-brand]">Password</label>
-                <input
-                  type="password"
-                  value={data.password}
-                  onChange={(e) => setData("password", e.target.value)}
-                  aria-invalid={Boolean(errors.password)}
-                  className="mt-1 w-full rounded-lg border border-black/15 px-3 py-2 aria-[invalid=true]:ring-2 aria-[invalid=true]:ring-[--ring-invalid]"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold uppercase tracking-wide text-[--color-brand]">Confirm</label>
-                <input
-                  type="password"
-                  value={data.password_confirmation}
-                  onChange={(e) => setData("password_confirmation", e.target.value)}
-                  className="mt-1 w-full rounded-lg border border-black/15 px-3 py-2"
-                />
-              </div>
-            </div>
-            <button
-              type="submit"
-              disabled={processing}
-              className="mt-2 w-full rounded-lg bg-[--color-brand] py-2 text-sm font-semibold text-white"
-            >
-              Reset password
-            </button>
-          </form>
-        </AuthCard>
-      </div>
-    </>
-  );
+    const submit = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        setSubmitted(true);
+        const firstBad = (Object.keys(client) as Key[]).find((k) => client[k]);
+        if (firstBad) {
+            (e.currentTarget.elements.namedItem(firstBad) as HTMLElement | null)?.focus();
+            return;
+        }
+        post('/reset-password');
+    };
+
+    const bind = (k: Key) => ({
+        name: k,
+        value: data[k],
+        onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+            setData(k, e.target.value);
+            clearErrors(k);
+        },
+        error: errors[k] || client[k],
+        showErrors: submitted,
+    });
+
+    return (
+        <>
+            <Head title="Reset password" />
+            <AuthCard title="Choose a new password">
+                <form onSubmit={submit} noValidate>
+                    <TextField label="EMAIL" type="email" autoComplete="email" {...bind('email')} />
+                    <div className="grid gap-x-3 sm:grid-cols-2">
+                        <PasswordField label="PASSWORD" autoComplete="new-password" {...bind('password')} />
+                        <PasswordField label="CONFIRM" autoComplete="new-password" {...bind('password_confirmation')} />
+                    </div>
+                    <PrimaryButton type="submit" disabled={processing}>
+                        Reset password
+                    </PrimaryButton>
+                </form>
+            </AuthCard>
+        </>
+    );
 }

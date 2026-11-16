@@ -1,41 +1,60 @@
-import React from "react";
-import { Head, useForm } from "@inertiajs/react";
-import AuthCard from "@/components/ui/auth-card";
+import AuthCard, { linkClass } from '@/components/auth/auth-card';
+import PrimaryButton from '@/components/auth/primary-button';
+import TextField from '@/components/auth/text-field';
+import { Head, useForm } from '@inertiajs/react';
+import React, { useState } from 'react';
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const emailError = (v: string) => (!v ? 'Enter your email address.' : !EMAIL_RE.test(v) ? 'Please enter a valid email address.' : '');
 
 export default function ForgotPassword() {
-  const { data, setData, post, processing, errors } = useForm({ email: "" });
+    const { data, setData, post, processing, errors, clearErrors, wasSuccessful } = useForm({ email: '' });
+    const [submitted, setSubmitted] = useState(false);
 
-  const submit = (e: React.FormEvent) => {
-    e.preventDefault();
-    post("/forgot-password");
-  };
+    const submit = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        setSubmitted(true);
+        if (emailError(data.email)) {
+            (e.currentTarget.elements.namedItem('email') as HTMLElement | null)?.focus();
+            return;
+        }
+        post('/forgot-password');
+    };
 
-  return (
-    <>
-      <Head title="Forgot Password" />
-      <div className="mx-auto grid min-h-screen place-items-center bg-black/[.02] px-4 py-8">
-        <AuthCard title="Reset password">
-          <form onSubmit={submit} className="space-y-4">
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wide text-[--color-brand]">Email</label>
-              <input
-                value={data.email}
-                onChange={(e) => setData("email", e.target.value)}
-                aria-invalid={Boolean(errors.email)}
-                className="mt-1 w-full rounded-lg border border-black/15 px-3 py-2 aria-[invalid=true]:ring-2 aria-[invalid=true]:ring-[--ring-invalid]"
-              />
-              {errors.email && <p className="mt-1 text-xs text-red-600">{errors.email}</p>}
-            </div>
-            <button
-              type="submit"
-              disabled={processing}
-              className="mt-2 w-full rounded-lg bg-[--color-brand] py-2 text-sm font-semibold text-white"
+    return (
+        <>
+            <Head title="Forgot password" />
+            <AuthCard
+                title="Reset password"
+                footer={
+                    <a href="/login" className={`${linkClass} inline-flex min-h-11 items-center`}>
+                        ← Back to login
+                    </a>
+                }
             >
-              Send reset link
-            </button>
-          </form>
-        </AuthCard>
-      </div>
-    </>
-  );
+                <form onSubmit={submit} noValidate>
+                    <TextField
+                        label="EMAIL"
+                        name="email"
+                        type="email"
+                        autoComplete="email"
+                        placeholder="you@example.com"
+                        value={data.email}
+                        onChange={(e) => {
+                            setData('email', e.target.value);
+                            clearErrors('email');
+                        }}
+                        error={errors.email || emailError(data.email)}
+                        showErrors={submitted}
+                        // Laravel's `status` flash isn't shared as a prop, so wasSuccessful stands in for it.
+                        hint={wasSuccessful && !errors.email ? 'We have emailed your password reset link.' : undefined}
+                        hintTone="good"
+                    />
+                    <PrimaryButton type="submit" disabled={processing}>
+                        Send reset link
+                    </PrimaryButton>
+                </form>
+            </AuthCard>
+        </>
+    );
 }

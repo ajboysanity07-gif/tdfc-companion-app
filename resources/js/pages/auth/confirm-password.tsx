@@ -1,38 +1,49 @@
-import InputError from '@/components/input-error';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import AuthLayout from '@/layouts/auth-layout';
-import { Form, Head } from '@inertiajs/react';
-import { LoaderCircle } from 'lucide-react';
+import AuthCard from '@/components/auth/auth-card';
+import PasswordField from '@/components/auth/password-field';
+import PrimaryButton from '@/components/auth/primary-button';
+import { Head, useForm } from '@inertiajs/react';
+import React, { useState } from 'react';
 
 export default function ConfirmPassword() {
+    const { data, setData, post, processing, errors, clearErrors, reset } = useForm({ password: '' });
+    const [submitted, setSubmitted] = useState(false);
+
+    const clientError = data.password ? '' : 'Enter your password.';
+
+    const submit = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        setSubmitted(true);
+        if (clientError) {
+            (e.currentTarget.elements.namedItem('password') as HTMLElement | null)?.focus();
+            return;
+        }
+        post('/confirm-password', { onFinish: () => reset('password') });
+    };
+
     return (
-        <AuthLayout
-            title="Confirm your password"
-            description="This is a secure area of the application. Please confirm your password before continuing."
-        >
+        <>
             <Head title="Confirm password" />
-
-            <Form method="post" action={route('password.confirm')} resetOnSuccess={['password']}>
-                {({ processing, errors }) => (
-                    <div className="space-y-6">
-                        <div className="grid gap-2">
-                            <Label htmlFor="password">Password</Label>
-                            <Input id="password" type="password" name="password" placeholder="Password" autoComplete="current-password" autoFocus />
-
-                            <InputError message={errors.password} />
-                        </div>
-
-                        <div className="flex items-center">
-                            <Button className="w-full" disabled={processing}>
-                                {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
-                                Confirm password
-                            </Button>
-                        </div>
-                    </div>
-                )}
-            </Form>
-        </AuthLayout>
+            <AuthCard title="Confirm your password" lead="This is a secure area of the application. Please confirm your password before continuing.">
+                <form onSubmit={submit} noValidate>
+                    <PasswordField
+                        label="Password"
+                        name="password"
+                        autoComplete="current-password"
+                        placeholder="Password"
+                        autoFocus
+                        value={data.password}
+                        onChange={(e) => {
+                            setData('password', e.target.value);
+                            clearErrors('password');
+                        }}
+                        error={errors.password || clientError}
+                        showErrors={submitted}
+                    />
+                    <PrimaryButton type="submit" disabled={processing}>
+                        Confirm password
+                    </PrimaryButton>
+                </form>
+            </AuthCard>
+        </>
     );
 }

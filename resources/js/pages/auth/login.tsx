@@ -2,7 +2,7 @@ import AuthCard, { linkClass } from '@/components/auth/auth-card';
 import PasswordField from '@/components/auth/password-field';
 import PrimaryButton from '@/components/auth/primary-button';
 import TextField from '@/components/auth/text-field';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, useForm, usePage } from '@inertiajs/react';
 import React, { useState } from 'react';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -11,6 +11,7 @@ const emailError = (v: string) => (!v ? 'Enter your email address.' : !EMAIL_RE.
 const passwordError = (v: string) => (v ? '' : 'Enter your password.');
 
 export default function Login() {
+    const flashStatus = (usePage().props as { flash?: { status?: string } }).flash?.status;
     const { data, setData, post, processing, errors, clearErrors } = useForm({ email: '', password: '', remember: false as boolean });
     const [submitted, setSubmitted] = useState(false);
 
@@ -44,6 +45,11 @@ export default function Login() {
                     </>
                 }
             >
+                {flashStatus && (
+                    <p role="status" className="mb-4 text-center text-sm font-semibold text-emerald-600">
+                        {flashStatus}
+                    </p>
+                )}
                 <form onSubmit={submit} noValidate>
                     <TextField
                         label="EMAIL"

@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 
-type Props = { title: string; lead: string; wide?: boolean; footer?: ReactNode; children: ReactNode };
+type Props = { title: string; lead?: string; wide?: boolean; footer?: ReactNode; children: ReactNode };
 
 /** Page shell + white card shared by the auth screens (logo, title, lead, card, footer line). */
 export default function AuthCard({ title, lead, wide, footer, children }: Props) {
@@ -9,7 +9,7 @@ export default function AuthCard({ title, lead, wide, footer, children }: Props)
             <div className={`w-full ${wide ? 'max-w-[560px]' : 'max-w-[420px]'}`}>
                 <img src="/images/logo.png" alt="TDFC" className="mx-auto mb-5 h-11 w-auto" />
                 <h1 className="text-center text-[32px] font-extrabold tracking-tight text-tdfc-coral-ink sm:text-4xl">{title}</h1>
-                <p className="mx-auto mt-3 max-w-[44ch] text-center text-[15px] leading-normal text-black/70">{lead}</p>
+                {lead && <p className="mx-auto mt-3 max-w-[44ch] text-center text-[15px] leading-normal text-black/70">{lead}</p>}
                 <div className="mt-6 rounded-tdfc-card border border-tdfc-card-line bg-white px-[18px] py-6 shadow-tdfc-card sm:px-[22px] sm:py-7">
                     {children}
                 </div>
