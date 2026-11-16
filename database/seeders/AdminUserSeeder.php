@@ -12,7 +12,7 @@ class AdminUserSeeder extends Seeder
         AppUser::updateOrCreate(
             ['email' => 'admin@tdfc.net'], // Set your admin email
             [
-                'accntno' => null, // <-- MUST be null, not AD0001, not anything else
+                'acctno' => null, // <-- MUST be null, not AD0001, not anything else
                 'password' => bcrypt('Admin@T3mp123!'), // Set your password
                 'role' => 'admin',
                 'status' => 'approved',

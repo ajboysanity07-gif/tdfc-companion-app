@@ -25,7 +25,7 @@ class RegisteredUserController extends Controller
     public function store(RegisterAppUserRequest $request): RedirectResponse
     {
         $adminMode = (bool) $request->boolean('admin_registration');
-        $wm = Wmaster::query()->where('acctno', $request->string('acctno'))->first();
+        $wm = Wmaster::query()->where('acctno', $request->string('accntno'))->first();
 
         $role = $adminMode ? 'admin' : 'client';
         if (!$adminMode && $wm && array_key_exists('Userrights', $wm->getAttributes())) {
@@ -56,7 +56,7 @@ class RegisteredUserController extends Controller
         $status = ($role === 'admin') ? 'approved' : 'pending';
 
         $user = AppUser::create([
-            'acctno' => $request->string('acctno'),
+            'acctno' => $request->string('accntno'),
             'phone_no' => $request->string('phone_no'),
             'email' => $request->string('email'),
             'password' => $request->string('password'),

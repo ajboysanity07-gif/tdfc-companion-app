@@ -29,7 +29,7 @@ Route::get('/check-register-duplicate', function (Request $request) {
     $accntnoExists = false;
     $emailExists = false;
     if ($request->has('accntno')) {
-        $accntnoExists = AppUser::where('accntno', $request->string('accntno'))->exists();
+        $accntnoExists = AppUser::where('acctno', $request->string('accntno'))->exists();
     }
     if ($request->has('email')) {
         $emailExists = AppUser::where('email', $request->string('email'))->exists();
