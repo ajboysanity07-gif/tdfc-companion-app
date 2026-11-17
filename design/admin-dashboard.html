@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Admin Dashboard · TDFC Companion App</title>
+<link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700" rel="stylesheet">
+<link rel="stylesheet" href="tdfc.css">
+<style>
+.hero{position:relative;display:flex;justify-content:space-between;align-items:center;gap:16px;padding:28px;border-radius:14px;background:var(--coral);overflow:hidden}
+.hero h1{font-size:clamp(24px,4vw,34px);font-weight:700;color:oklch(.2 .05 24)}
+.hero p{margin-top:6px;color:oklch(.2 .05 24)}.hero p b{text-transform:uppercase;background:var(--sun);color:oklch(.3 .07 85);padding:2px 8px;border-radius:6px;font-size:12px;margin-left:4px}
+.hero .avatar{width:72px;height:72px;background:#fff;box-shadow:var(--shadow)}.hero .avatar img{object-fit:cover}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+.stat-card{display:flex;flex-direction:column;gap:6px;padding:18px 20px;background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow)}
+.stat-card .label{font-size:13px;color:var(--muted-fg);font-weight:500}
+.stat-card .value{font-size:28px;font-weight:600;color:var(--fg);line-height:1.2}
+.stat-card .hint{font-size:12px;color:var(--muted-fg)}
+.stat-card.accent{background:var(--coral-soft);border-color:color-mix(in oklch,var(--coral) 35%,var(--border))}
+.stat-card.accent .value{color:var(--coral-ink)}
+.grid-split{display:grid;grid-template-columns:1.4fr 1fr;gap:20px;align-items:start}
+.panel{background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);padding:20px}
+.panel-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}
+.panel-head h2{font-size:16px;font-weight:600;margin:0}
+.panel-head a{font-size:13px;font-weight:600;color:var(--blue-ink)}
+.panel-head a:hover{text-decoration:underline}
+.pending-list{list-style:none;margin:0;padding:0;display:grid;gap:0}
+.pending-list li{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
+.pending-list li:last-child{border-bottom:0;padding-bottom:0}
+.pending-list .pmeta b{display:block;font-size:14px;font-weight:600}
+.pending-list .pmeta span{font-size:12px;color:var(--muted-fg)}
+.pending-list .plink{font-size:13px;font-weight:600;color:var(--coral-ink);white-space:nowrap}
+.pending-list .plink:hover{text-decoration:underline}
+.activity-list{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.activity-list li{display:flex;gap:12px;align-items:flex-start}
+.activity-list .dot{width:8px;height:8px;border-radius:50%;margin-top:6px;flex:none}
+.activity-list .dot.ok{background:var(--ok)}.activity-list .dot.warn{background:var(--coral)}.activity-list .dot.info{background:var(--blue)}
+.activity-list .atext b{display:block;font-size:14px;font-weight:500}
+.activity-list .atext span{font-size:12px;color:var(--muted-fg)}
+.quick-list{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.quick-list a{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:10px;font-weight:500}
+.quick-list a:hover{background:var(--muted)}
+.quick-list .qic{width:36px;height:36px;border-radius:10px;background:var(--coral-soft);color:var(--coral-ink);display:grid;place-items:center;flex:none}
+.quick-list .qic .ico{width:18px;height:18px}
+.section-label{font-size:12px;font-weight:600;color:var(--muted-fg);letter-spacing:.04em;text-transform:uppercase;margin:4px 0 0}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.tile{display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;padding:28px 20px;cursor:pointer;background:var(--card);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow);transition:transform .2s,box-shadow .2s}
+.tile:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg)}
+.tile .ic{width:72px;height:72px;border-radius:50%;background:var(--coral-soft);display:grid;place-items:center;color:var(--coral-ink);margin-bottom:8px}
+.tile .ic .ico{width:34px;height:34px}.tile b{font-size:17px}.tile span{color:var(--muted-fg);max-width:210px}
+.tile.out{background:var(--coral);border-color:var(--coral);color:oklch(.2 .05 24)}.tile.out:hover{background:color-mix(in oklch,var(--coral) 88%,black)}
+.tile.out .ic{background:#ffffff55;color:oklch(.2 .05 24)}.tile.out span{color:oklch(.25 .05 24)}
+@media(max-width:1100px){.stats{grid-template-columns:repeat(2,1fr)}.grid-split{grid-template-columns:1fr}}
+@media(max-width:860px){.tiles{grid-template-columns:1fr}.hero .avatar{display:none}.stats{grid-template-columns:1fr}}
+</style></head><body>
+<div class="shell">
+<aside class="side" data-od-id="sidebar">
+  <div class="brand"><div class="mk"><img src="assets/logo-white.png" alt=""></div><span>TDFC Companion App</span></div>
+  <div class="grp">Platform</div>
+  <nav>
+    <a class="on" href="admin-dashboard.html"><svg class="ico" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Dashboard</a>
+    <a href="admin-products.html"><svg class="ico" viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5v8l9 5 9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg>Products Management</a>
+    <a href="admin-client-management.html"><svg class="ico" viewBox="0 0 24 24"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0114 0M16 4a4 4 0 010 8M22 21a7 7 0 00-4-6"/></svg>Clients</a>
+    <a href="admin-registrations.html"><svg class="ico" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>Registrations</a>
+  </nav>
+  <div class="foot"><div class="user"><div class="avatar">MS</div><div><b>Maria Santos</b><small>admin</small></div></div></div>
+</aside>
+<div class="main">
+  <div class="topbar" data-od-id="breadcrumb"><span>Admin</span> / <b>Admin Dashboard</b></div>
+  <div class="content" style="max-width:1120px;width:100%;margin:0 auto">
+    <section class="hero" data-od-id="welcome-hero">
+      <div><h1>Welcome back, Maria</h1><p>You are logged in as <b>admin</b></p></div>
+      <div class="avatar"><img src="assets/default-profile-01.png" alt="Maria Santos profile photo"></div>
+    </section>
+
+    <section class="stats" data-od-id="kpi-stats" aria-label="Key metrics">
+      <div class="stat-card accent">
+        <span class="label">Pending approvals</span>
+        <span class="value">3</span>
+        <span class="hint">Needs review</span>
+      </div>
+      <div class="stat-card">
+        <span class="label">Total clients</span>
+        <span class="value">11</span>
+        <span class="hint">Registered in system</span>
+      </div>
+      <div class="stat-card">
+        <span class="label">Products active</span>
+        <span class="value">6</span>
+        <span class="hint">Across loan products</span>
+      </div>
+      <div class="stat-card">
+        <span class="label">Registrations today</span>
+        <span class="value">1</span>
+        <span class="hint">New submissions</span>
+      </div>
+    </section>
+
+    <section class="grid-split" data-od-id="ops-panels">
+      <div class="panel" data-od-id="pending-approvals-panel">
+        <div class="panel-head">
+          <h2>Pending approvals</h2>
+          <a href="admin-client-management.html">Review all</a>
+        </div>
+        <ul class="pending-list">
+          <li>
+            <div class="pmeta"><b>Jomar Aquino</b><span>Submitted Nov 15, 2026</span></div>
+            <a class="plink" href="admin-client-management.html">Review</a>
+          </li>
+          <li>
+            <div class="pmeta"><b>Katrina Lopez</b><span>Submitted Nov 14, 2026</span></div>
+            <a class="plink" href="admin-client-management.html">Review</a>
+          </li>
+          <li>
+            <div class="pmeta"><b>Elena Villanueva</b><span>Submitted Nov 13, 2026</span></div>
+            <a class="plink" href="admin-client-management.html">Review</a>
+          </li>
+        </ul>
+      </div>
+      <div class="panel" data-od-id="recent-activity-panel">
+        <div class="panel-head">
+          <h2>Recent activity</h2>
+        </div>
+        <ul class="activity-list">
+          <li><span class="dot ok" aria-hidden="true"></span><div class="atext"><b>Approved Carla Mendoza</b><span>Today, 9:14 AM</span></div></li>
+          <li><span class="dot warn" aria-hidden="true"></span><div class="atext"><b>Rejected Irene Soriano</b><span>Yesterday, 4:02 PM</span></div></li>
+          <li><span class="dot info" aria-hidden="true"></span><div class="atext"><b>Updated product “Regular Loan”</b><span>Nov 14, 2026</span></div></li>
+        </ul>
+      </div>
+    </section>
+
+    <p class="section-label">Shortcuts</p>
+    <section class="tiles" data-od-id="admin-cards">
+      <a class="tile" href="admin-products.html" data-od-id="card-manage-products"><div class="ic"><svg class="ico" viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5v8l9 5 9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg></div><b>Manage Products</b><span>View, edit, and manage all product listings.</span></a>
+      <a class="tile" href="admin-client-management.html" data-od-id="card-manage-clients"><div class="ic"><svg class="ico" viewBox="0 0 24 24"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0114 0M16 4a4 4 0 010 8M22 21a7 7 0 00-4-6"/></svg></div><b>Manage Clients</b><span>Access client profiles and handle requests efficiently.</span></a>
+      <button class="tile out" data-od-id="card-logout" onclick="location.href='admin-dashboard.html'" style="font:inherit"><div class="ic"><svg class="ico" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg></div><b>Log Out</b><span>End your current session securely.</span></button>
+    </section>
+  </div>
+</div></div>
+<nav class="mnav"><a class="on" href="admin-dashboard.html">Home</a><a href="admin-products.html">Products</a><a href="admin-client-management.html">Clients</a><a href="admin-registrations.html">Registrations</a></nav>
+</body></html>

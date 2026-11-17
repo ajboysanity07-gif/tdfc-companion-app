@@ -24,6 +24,33 @@ class ProductController extends Controller
         return response()->json($products);
     }
 
+    // Loan types from the master list that are not yet displayed (for "Add Loan")
+    public function available()
+    {
+        return response()->json(
+            WlnType::whereDoesntHave('display', fn ($q) => $q->where('isDisplayed', true))
+                ->get(['typecode', 'lntype'])
+        );
+    }
+
+    // Start displaying an existing loan type (creates its settings/display rows if missing)
+    public function enable($typecode)
+    {
+        $product = WlnType::where('typecode', $typecode)->firstOrFail();
+        WlnDisplay::updateOrCreate(['typecode' => $typecode], ['isDisplayed' => true]);
+        WlnSettings::firstOrCreate(['typecode' => $typecode], ['ln_isActive' => false]);
+
+        return response()->json($product->fresh(['settings', 'display', 'tags']));
+    }
+
+    // Remove a tag
+    public function removeTag($typecode, $tag)
+    {
+        WlnTags::where(['typecode' => $typecode, 'tag_name' => $tag])->delete();
+
+        return response()->json(['deleted' => true]);
+    }
+
     // Show one product by typecode
     public function show($typecode)
     {

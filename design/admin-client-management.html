@@ -1,0 +1,216 @@
+﻿<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Client Management · TDFC Companion App</title>
+<link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700" rel="stylesheet">
+<link rel="stylesheet" href="tdfc.css">
+<style>
+.banner{padding:26px 28px;border-radius:14px;background:var(--coral);color:oklch(.2 .05 24)}
+.banner h1{font-size:clamp(24px,3.5vw,32px);font-weight:700}.banner p{margin-top:4px;font-weight:500}
+.toolbar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:space-between;min-width:0}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;min-width:0}
+.tabs button{height:38px;padding:0 14px;border:1px solid var(--border);background:var(--bg);border-radius:999px;cursor:pointer;font-weight:600;color:var(--muted-fg);display:inline-flex;align-items:center;gap:8px}
+.tabs button.on{background:var(--primary);color:var(--primary-fg);border-color:var(--primary)}
+.tabs .cnt{min-width:22px;height:22px;padding:0 7px;border-radius:99px;background:color-mix(in oklch,currentColor 14%,transparent);font-size:12px;display:grid;place-items:center}
+.filters{display:flex;gap:8px;flex-wrap:nowrap;align-items:center;justify-content:flex-end;flex:1;min-width:0}
+.search{flex:1 1 200px;min-width:0;max-width:320px}
+.filters .select{flex:none;width:auto;min-width:0}
+.select{height:38px;padding:0 34px 0 12px;border:1px solid var(--input);border-radius:var(--radius);background:var(--bg);box-shadow:var(--shadow);cursor:pointer}
+.panel{overflow:hidden}
+.stack{display:grid;gap:14px;grid-template-columns:minmax(0,1fr)}
+.badge{white-space:nowrap}
+.tbl th button{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font:inherit;color:inherit}
+.tbl th button:hover{color:var(--fg)}
+.tbl th .ind{font-size:11px;opacity:.7;min-width:10px;display:inline-block}
+.tbl tr.sel{background:var(--blue-soft)}
+.tbl td .name{font-weight:600}.tbl td .sub{display:block;color:var(--muted-fg);font-size:12px}
+.empty{padding:32px;text-align:center;color:var(--muted-fg)}
+.pg{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 16px;border-top:1px solid var(--border);flex-wrap:wrap}
+.pgs{display:flex;gap:4px}
+.pgs button{min-width:32px;height:32px;border-radius:8px;border:1px solid transparent;background:none;cursor:pointer;font-weight:500}
+.pgs button:hover{background:var(--muted)}.pgs button.on{background:var(--primary);color:var(--primary-fg)}.pgs button:disabled{opacity:.4;pointer-events:none}
+.drawer-back{position:fixed;inset:0;background:oklch(0 0 0/.35);opacity:0;pointer-events:none;transition:opacity .2s;z-index:40}
+.drawer-back.open{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(460px,100%);background:var(--bg);box-shadow:var(--shadow-lg);transform:translateX(100%);transition:transform .22s;z-index:50;display:flex;flex-direction:column;border-left:1px solid var(--border)}
+.drawer.open{transform:none}
+.drawer-h{padding:18px 20px;border-bottom:1px solid var(--border);display:flex;gap:12px;align-items:flex-start}
+.drawer-h .who{display:flex;gap:12px;align-items:center;flex:1;min-width:0}
+.drawer-h b{display:block}.drawer-h small{color:var(--muted-fg)}
+.drawer-b{padding:20px;overflow:auto;display:grid;gap:18px;align-content:start}
+.section h3{font-size:13px;letter-spacing:.06em;color:var(--muted-fg);margin-bottom:10px}
+.kv{display:grid;grid-template-columns:110px 1fr;gap:8px 12px;font-size:14px}.kv dt{color:var(--coral-ink);font-weight:600}.kv dd{margin:0;word-break:break-word}
+.docs{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.docs button{border:1px solid var(--border);background:var(--muted);border-radius:10px;padding:0;overflow:hidden;cursor:zoom-in;text-align:center}
+.docs button:hover{border-color:var(--ring)}
+.docs img{width:100%;aspect-ratio:4/3;object-fit:cover}.docs span{display:block;font-size:11px;padding:5px;color:var(--muted-fg)}
+.sal{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.sal-btn{border:1px dashed var(--ring);background:var(--bg);border-radius:8px;padding:7px 10px;cursor:pointer;font-size:13px;font-weight:600}
+.sal-btn:hover{background:var(--muted)}
+.rr{margin:0;padding-left:18px;font-size:14px;color:var(--coral-ink);display:grid;gap:4px}
+.drawer-f{margin-top:auto;padding:16px 20px;border-top:1px solid var(--border);display:flex;gap:10px;flex-wrap:wrap;background:var(--bg)}
+.drawer-f .btn{flex:1}
+.reasons{display:grid;gap:8px;margin-top:14px}
+.reasons label{display:flex;gap:10px;align-items:center;padding:10px 12px;border:1px solid var(--border);border-radius:10px;cursor:pointer}
+.reasons label:hover{background:var(--muted)}.reasons input{width:18px;height:18px;accent-color:var(--coral)}
+.rnote{margin-top:12px;padding:10px 12px;border-radius:10px;font-size:13px;background:var(--coral-soft);color:var(--coral-ink)}.rnote.ok{background:var(--ok-soft);color:var(--ok)}
+.viewer{position:fixed;inset:0;background:oklch(.1 0 0/.92);z-index:80;display:none;flex-direction:column;color:#fff}.viewer.open{display:flex}
+.viewer header{display:flex;align-items:center;gap:12px;padding:12px 20px}.viewer header h3{flex:1;font-size:16px}
+.viewer .stage{flex:1;display:grid;place-items:center;padding:12px;min-height:0}.viewer .stage img{max-width:100%;max-height:100%;object-fit:contain;transition:transform .2s}
+.viewer .btn{background:#fff2;color:#fff;border-color:#fff3}.viewer .btn:hover{background:#fff4}
+.viewer footer{display:flex;gap:8px;justify-content:center;padding:12px}
+.toast{position:fixed;bottom:84px;left:50%;transform:translateX(-50%);background:var(--primary);color:var(--primary-fg);padding:10px 16px;border-radius:10px;display:none;z-index:90}.toast.on{display:block}
+@media(max-width:860px){
+  .hide-sm{display:none}
+  .toolbar{flex-direction:column;align-items:stretch;gap:10px}
+  .search{max-width:none}
+}
+@media(max-width:720px){
+  .tabs button{padding:0 12px}
+  .tbl thead{display:none}
+  .tbl tbody tr{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 12px;align-items:center;border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);padding:14px;margin:0 0 10px;background:var(--bg)}
+  .tbl tbody tr:active{background:var(--muted)}
+  .tbl td{display:block;padding:0;border-bottom:0}
+  .tbl td:nth-child(1){grid-column:1;grid-row:1;align-self:start}
+  .tbl td:nth-child(6){grid-column:2;grid-row:1;justify-self:end;align-self:start}
+  .tbl td:nth-child(3){grid-column:1;grid-row:2}
+  .tbl td:nth-child(2){grid-column:2;grid-row:2;justify-self:end}
+  .tbl td:nth-child(5){grid-column:1;grid-row:3}
+  .tbl td:nth-child(4){grid-column:2;grid-row:3;justify-self:end}
+  .tbl td:nth-child(2),.tbl td:nth-child(3),.tbl td:nth-child(4){font-size:12px;color:var(--muted-fg)}
+  .cli{display:flex;gap:10px;align-items:center;min-width:0}
+  .cli>div{min-width:0}
+  .tbl-wrap{padding:4px 0 6px}
+  .banner{padding:20px}
+}
+</style></head><body>
+<div class="shell">
+<aside class="side" data-od-id="sidebar">
+  <div class="brand"><div class="mk"><img src="assets/logo-white.png" alt=""></div><span>TDFC Companion App</span></div>
+  <div class="grp">Platform</div>
+  <nav>
+    <a href="admin-dashboard.html"><svg class="ico" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Dashboard</a>
+    <a href="admin-products.html"><svg class="ico" viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5v8l9 5 9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg>Products Management</a>
+    <a class="on" href="admin-client-management.html"><svg class="ico" viewBox="0 0 24 24"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0114 0M16 4a4 4 0 010 8M22 21a7 7 0 00-4-6"/></svg>Clients</a>
+    <a href="admin-registrations.html"><svg class="ico" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>Registrations</a>
+  </nav>
+  <div class="foot"><div class="user"><div class="avatar">MS</div><div><b>Maria Santos</b><small>admin</small></div></div></div>
+</aside>
+<div class="main">
+  <div class="topbar" data-od-id="breadcrumb"><span>Admin</span> / <b>Client Management</b></div>
+  <div class="content">
+    <section class="banner" data-od-id="page-banner"><h1>Client Management</h1><p>Review registrations in a pending-first queue and open each client for details and documents.</p></section>
+    <section class="card panel" data-od-id="client-queue">
+      <div class="card-b stack">
+        <div class="toolbar">
+          <div class="tabs" id="tabs" role="tablist" aria-label="Client status"></div>
+          <div class="filters">
+            <div class="search"><input class="input" id="search" placeholder="Search name, email, or account no." aria-label="Search clients" autocomplete="off"></div>
+            <select class="select" id="classFilter" aria-label="Filter by class"><option value="all">All classes</option><option value="A">Class A</option><option value="B">Class B</option><option value="C">Class C</option><option value="D">Class D</option></select>
+          </div>
+        </div>
+        <div class="tbl-wrap"><table class="tbl" aria-label="Clients table"><thead><tr id="headRow">
+          <th aria-sort="none"><button type="button" data-sort="name">Client <span class="ind"></span></button></th>
+          <th class="hide-sm" aria-sort="none"><button type="button" data-sort="ph">Contact <span class="ind"></span></button></th>
+          <th class="hide-sm" aria-sort="none"><button type="button" data-sort="acct">Account no. <span class="ind"></span></button></th>
+          <th class="hide-sm" aria-sort="none"><button type="button" data-sort="at">Submitted <span class="ind"></span></button></th>
+          <th aria-sort="none"><button type="button" data-sort="cls">Class <span class="ind"></span></button></th>
+          <th aria-sort="none"><button type="button" data-sort="st">Status <span class="ind"></span></button></th>
+        </tr></thead><tbody id="rows"></tbody></table><div id="empty" class="empty" hidden>No clients match this view.</div></div>
+      </div>
+      <div class="pg"><div class="muted" id="range"></div><div class="pgs" id="pager"></div></div>
+    </section>
+  </div>
+</div></div>
+<nav class="mnav"><a href="admin-dashboard.html">Home</a><a href="admin-products.html">Products</a><a class="on" href="admin-client-management.html">Clients</a><a href="admin-registrations.html">Registrations</a></nav>
+
+<div class="drawer-back" id="drawerBack"></div>
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="dName" aria-hidden="true" data-od-id="review-drawer">
+  <div class="drawer-h"><div class="who"><div class="avatar" id="dAv"></div><div><b id="dName">Client</b><small id="dSub"></small></div></div><button class="btn sm" type="button" id="dClose" aria-label="Close review drawer">Close</button></div>
+  <div class="drawer-b" id="dBody"></div>
+  <div class="drawer-f" id="dFoot"></div>
+</aside>
+
+<div class="modal-back" id="rejModal" data-od-id="reject-modal" aria-hidden="true"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="rejT">
+  <h3 id="rejT">Reject registration</h3><p class="muted">Select every reason for rejecting <b id="rjName"></b>.</p>
+  <div class="reasons" id="reasons"></div><div class="rnote" id="rjNote" aria-live="polite"></div>
+  <div class="actions"><button class="btn" type="button" id="rjNo">Cancel</button><button class="btn danger" type="button" id="rjYes" disabled>Reject</button></div></div></div>
+
+<div class="modal-back" id="salModal" data-od-id="salary-modal" aria-hidden="true"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="slT">
+  <h3 id="slT">Set Basic Salary</h3><p class="muted">Update basic salary for <b id="slName"></b>.</p>
+  <div class="field" style="margin-top:14px"><label for="slAmt">Salary amount (Php)</label><input class="input mono" id="slAmt" type="number" min="0" step="0.01" inputmode="decimal"></div>
+  <div class="field" style="margin-top:10px"><label for="slNote">Note</label><input class="input" id="slNote" placeholder="e.g. Updated per latest payslip"></div>
+  <div class="actions"><button class="btn" type="button" id="slNo">Cancel</button><button class="btn primary" type="button" id="slYes" disabled>Save</button></div></div></div>
+
+<div class="viewer" id="viewer" role="dialog" aria-modal="true" aria-label="Document viewer" data-od-id="fullscreen-image-modal" aria-hidden="true"><header><h3 id="vT"></h3><button class="btn sm" type="button" id="vX" aria-label="Close viewer">Close</button></header><div class="stage"><img id="vImg" alt=""></div><footer><button class="btn sm" type="button" id="vPrev" aria-label="Previous document">‹ Previous</button><button class="btn sm" type="button" id="vZ" aria-label="Toggle zoom">Zoom</button><button class="btn sm" type="button" id="vNext" aria-label="Next document">Next ›</button></footer></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+const IMG={prc1:['assets/prc-sample-front.png','PRC ID (front)'],prc2:['assets/prc-sample-back.png','PRC ID (back)'],pay:['assets/sample-payslip.png','Payslip']};
+const REASONS=['PRC ID photo is blurry','The ID photo submitted is not a PRC ID','PRC ID is expired','Payslip photo is blurry','Payslip is too old (more than 3 months)','Documents appear to be tampered'];
+const N=[['Angelica Reyes','A',1],['Benedict Cruz','C',1],['Carla Mendoza','B',1],['Danilo Ramos','A',1],['Elena Villanueva','D',2],['Francis Dela Cruz','B',2],['Grace Navarro','A',2],['Harold Bautista','C',2],['Irene Soriano','B',2],['Jomar Aquino','D',3],['Katrina Lopez','A',3]];
+const today=()=>new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+let U=N.map((n,i)=>({id:i+1,name:n[0],cls:n[1],st:['approved','pending','rejected'][n[2]-1],email:n[0].split(' ')[0].toLowerCase()+'@example.com',ph:'0917 555 '+String(1000+i*37).padStart(4,'0'),acct:'TD-'+String(20400+i*13),at:'Nov '+(2+i)+', 2026',sal:n[2]==1?[28500,31000,24800,35200][i]:0,why:n[2]==3?[REASONS[0],REASONS[4]]:[]}));
+const TABS=[['pending','Pending'],['approved','Approved'],['rejected','Rejected'],['all','All']];
+const PS=8; let tab='pending',q='',clsFilter='all',sortKey='at',sortDir='desc',page=1,selId=null,imgId=null,imgI=0,cur=null,rejU=null,lastFocus=null;
+const $=s=>document.querySelector(s),$$=s=>document.querySelectorAll(s);
+const php=n=>'Php '+Number(n).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+const ini=n=>n.split(' ').map(w=>w[0]).slice(0,2).join('');
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const statusBadge=s=>s==='approved'?'<span class="badge ok">Approved</span>':s==='rejected'?'<span class="badge bad">Rejected</span>':'<span class="badge warn">Pending</span>';
+const clsBadge=c=>'<span class="badge">Class '+esc(c)+'</span>';
+const parseDate=s=>{const d=new Date(String(s).replace(',',''));return isNaN(d)?0:d.getTime()};
+function filtered(){const needle=q.trim().toLowerCase();let list=U.filter(u=>(tab==='all'||u.st===tab)&&(clsFilter==='all'||u.cls===clsFilter)&&(!needle||[u.name,u.email,u.acct].some(v=>v.toLowerCase().includes(needle))));
+  const dir=sortDir==='asc'?1:-1; list=[...list].sort((a,b)=>{let va=a[sortKey],vb=b[sortKey]; if(sortKey==='at'){va=parseDate(va);vb=parseDate(vb)} else {va=String(va||'').toLowerCase();vb=String(vb||'').toLowerCase()} if(va<vb)return -1*dir; if(va>vb)return 1*dir; return a.id-b.id}); return list}
+function renderTabs(){$('#tabs').innerHTML=TABS.map(([k,l])=>`<button type="button" role="tab" aria-selected="${k===tab}" class="${k===tab?'on':''}" data-tab="${k}">${l} <span class="cnt">${U.filter(u=>k==='all'||u.st===k).length}</span></button>`).join('')}
+function renderHead(){document.querySelectorAll('#headRow th').forEach(th=>{const btn=th.querySelector('[data-sort]'); if(!btn)return; const k=btn.dataset.sort,on=k===sortKey; th.setAttribute('aria-sort',on?(sortDir==='asc'?'ascending':'descending'):'none'); btn.querySelector('.ind').textContent=on?(sortDir==='asc'?'▲':'▼'):''})}
+function renderTable(){const list=filtered(),n=Math.max(1,Math.ceil(list.length/PS));page=Math.min(page,n);const start=(page-1)*PS,rows=list.slice(start,start+PS);
+  renderHead();
+  $('#rows').innerHTML=rows.map(u=>`<tr class="${u.id===selId?'sel':''}" data-row="${u.id}" tabindex="0" aria-label="Open review for ${esc(u.name)}">
+    <td><div class="cli"><span class="avatar" aria-hidden="true">${ini(u.name)}</span><div><span class="name">${esc(u.name)}</span><span class="sub">${esc(u.email)}</span></div></div></td>
+    <td class="hide-sm">${esc(u.ph)}</td><td class="hide-sm mono">${esc(u.acct)}</td><td class="hide-sm">${esc(u.at)}</td>
+    <td>${clsBadge(u.cls)}</td><td>${statusBadge(u.st)}</td></tr>`).join('');
+  $('#empty').hidden=rows.length>0; $('#range').textContent=list.length?`Showing ${start+1}-${start+rows.length} of ${list.length}`:'No results';
+  let h=`<button type="button" data-page="${page-1}" ${page<2?'disabled':''} aria-label="Previous page">‹</button>`;for(let i=1;i<=n;i++)h+=`<button type="button" class="${i===page?'on':''}" data-page="${i}" ${i===page?'aria-current="page"':''}>${i}</button>`;h+=`<button type="button" data-page="${page+1}" ${page>=n?'disabled':''} aria-label="Next page">›</button>`;$('#pager').innerHTML=h}
+function renderDrawer(){const u=U.find(x=>x.id===selId); if(!u){closeDrawer();return}
+  $('#dAv').textContent=ini(u.name); $('#dName').textContent=u.name; $('#dSub').textContent=`${u.acct} · ${u.st.charAt(0).toUpperCase()+u.st.slice(1)}`;
+  $('#dBody').innerHTML=`<section class="section"><h3>CLIENT DETAILS</h3><dl class="kv"><dt>Email</dt><dd>${esc(u.email)}</dd><dt>Phone</dt><dd>${esc(u.ph)}</dd><dt>Account no.</dt><dd class="mono">${esc(u.acct)}</dd><dt>Registered</dt><dd>${esc(u.at)}</dd><dt>Class</dt><dd>${clsBadge(u.cls)}</dd><dt>Status</dt><dd>${statusBadge(u.st)}</dd></dl></section>
+  <section class="section"><h3>SUBMITTED DOCUMENTS</h3><div class="docs">${Object.entries(IMG).map(([i,v])=>`<button type="button" data-img="${i}" aria-label="View ${v[1]} for ${esc(u.name)}"><img src="${v[0]}" alt="${v[1]} of ${esc(u.name)}"><span>${v[1]}</span></button>`).join('')}</div></section>
+  ${u.st==='approved'?`<section class="section"><h3>BASIC SALARY</h3><div class="sal"><button type="button" class="sal-btn" id="salBtn">Set Basic Salary</button><b class="mono">${u.sal?php(u.sal):'Not set'}</b></div></section>`:''}
+  ${u.st==='rejected'?`<section class="section"><h3>REJECTION REASONS</h3><ul class="rr">${(u.why.length?u.why:['No reasons recorded']).map(w=>`<li>${esc(w)}</li>`).join('')}</ul></section>`:''}`;
+  $('#dFoot').innerHTML=u.st==='pending'
+    ? `<button type="button" class="btn danger" id="rejBtn">Reject</button><button type="button" class="btn primary" id="apBtn">Approve</button>`
+    : `<button type="button" class="btn" id="focusBtn">Open in queue</button>`;
+  $('#drawer').classList.add('open'); $('#drawerBack').classList.add('open'); $('#drawer').setAttribute('aria-hidden','false')}
+function openDrawer(id,focus){selId=id; if(focus)lastFocus=focus; renderTable(); renderDrawer(); $('#dClose').focus()}
+function closeDrawer(){selId=null; $('#drawer').classList.remove('open'); $('#drawerBack').classList.remove('open'); $('#drawer').setAttribute('aria-hidden','true'); renderTable(); if(lastFocus&&document.contains(lastFocus))lastFocus.focus()}
+function openModal(modal,focusSel,trigger){lastFocus=trigger||document.activeElement||lastFocus; modal.classList.add('open'); modal.setAttribute('aria-hidden','false'); modal.querySelector(focusSel)?.focus()}
+function closeModal(modal){modal.classList.remove('open'); modal.setAttribute('aria-hidden','true'); if(lastFocus&&document.contains(lastFocus))lastFocus.focus()}
+const toast=m=>{const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(toast._t);toast._t=setTimeout(()=>t.classList.remove('on'),2200)};
+
+document.addEventListener('click',e=>{const t=e.target,g=s=>t.closest(s); let b;
+  if(b=g('[data-tab]')){tab=b.dataset.tab; page=1; closeDrawer(); renderTabs(); renderTable()}
+  else if(b=g('[data-sort]')){const k=b.dataset.sort; if(sortKey===k)sortDir=sortDir==='asc'?'desc':'asc'; else{sortKey=k; sortDir=(k==='at'?'desc':'asc')} page=1; renderTable()}
+  else if(b=g('[data-page]')){page=Math.max(1,+b.dataset.page||1); renderTable()}
+  else if(b=g('[data-row]')){openDrawer(+b.dataset.row,b)}
+  else if(b=g('#dClose')||t.id==='drawerBack'){closeDrawer()}
+  else if(b=g('#apBtn')){cur=U.find(x=>x.id===selId); if(cur){cur.st='approved';cur.at=today(); toast(cur.name+' approved'); tab='approved'; page=1; renderTabs(); renderTable(); renderDrawer()}}
+  else if(b=g('#rejBtn')){rejU=U.find(x=>x.id===selId); if(!rejU)return; $('#rjName').textContent=rejU.name; $('#reasons').innerHTML=REASONS.map(r=>`<label><input type="checkbox" value="${esc(r)}"> ${esc(r)}</label>`).join(''); updReasons(); openModal($('#rejModal'),'#reasons input',b)}
+  else if(b=g('#salBtn')){cur=U.find(x=>x.id===selId); if(!cur)return; $('#slName').textContent=cur.name; $('#slAmt').value=cur.sal||''; $('#slNote').value=''; $('#slYes').disabled=!(+cur.sal>0); openModal($('#salModal'),'#slAmt',b)}
+  else if(b=g('#focusBtn')){tab=U.find(x=>x.id===selId)?.st||tab; renderTabs(); renderTable(); renderDrawer()}
+  else if(b=g('#dBody [data-img]')){imgId=selId; imgI=Object.keys(IMG).indexOf(b.dataset.img); if(imgI<0)imgI=0; showImg(); openModal($('#viewer'),'#vX',b)}
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){ if($('#viewer').classList.contains('open')) closeModal($('#viewer')); else if($('#rejModal').classList.contains('open')) closeModal($('#rejModal')); else if($('#salModal').classList.contains('open')) closeModal($('#salModal')); else if($('#drawer').classList.contains('open')) closeDrawer()}
+  if($('#viewer').classList.contains('open')){if(e.key==='ArrowRight')$('#vNext').click(); if(e.key==='ArrowLeft')$('#vPrev').click()}
+  const row=e.target.closest('[data-row]'); if(row&&(e.key==='Enter'||e.key===' ')){e.preventDefault(); openDrawer(+row.dataset.row,row)}
+});
+$('#search').addEventListener('input',e=>{q=e.target.value; page=1; renderTable()});
+$('#classFilter').addEventListener('change',e=>{clsFilter=e.target.value; page=1; renderTable()});
+function updReasons(){const n=$$('#reasons input:checked').length; $('#rjYes').disabled=!n; const r=$('#rjNote'); r.className='rnote'+(n?' ok':''); r.textContent=n?n+' reason'+(n>1?'s':'')+' selected':'Select at least one reason to continue'}
+$('#reasons').addEventListener('change',updReasons); $('#rjNo').onclick=()=>closeModal($('#rejModal'));
+$('#rjYes').onclick=()=>{if(!rejU)return; rejU.st='rejected'; rejU.why=[...$$('#reasons input:checked')].map(i=>i.value); closeModal($('#rejModal')); toast(rejU.name+' rejected'); tab='rejected'; page=1; renderTabs(); renderTable(); if(selId===rejU.id)renderDrawer()};
+$('#slNo').onclick=()=>closeModal($('#salModal')); $('#slAmt').addEventListener('input',e=>$('#slYes').disabled=!(+e.target.value>0));
+$('#slYes').onclick=()=>{if(!cur)return; cur.sal=Math.max(0,+$('#slAmt').value||0); closeModal($('#salModal')); toast('Salary updated for '+cur.name); renderTable(); renderDrawer()};
+function showImg(){const keys=Object.keys(IMG),k=keys[imgI]||keys[0],u=U.find(x=>x.id===imgId); if(!k||!u)return; $('#vImg').src=IMG[k][0]; $('#vImg').alt=IMG[k][1]+' of '+u.name; $('#vImg').style.transform=''; $('#vT').textContent=u.name+' — '+IMG[k][1]}
+$('#vPrev').onclick=()=>{imgI=(imgI+2)%3;showImg()}; $('#vNext').onclick=()=>{imgI=(imgI+1)%3;showImg()}; $('#vZ').onclick=()=>{const i=$('#vImg');i.style.transform=i.style.transform?'':'scale(1.8)'}; $('#vX').onclick=()=>closeModal($('#viewer'));
+
+renderTabs(); renderTable();
+</script></body></html>

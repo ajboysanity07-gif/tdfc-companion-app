@@ -50,7 +50,7 @@ export default function ForgotPassword() {
                         hint={wasSuccessful && !errors.email ? 'We have emailed your password reset link.' : undefined}
                         hintTone="good"
                     />
-                    <PrimaryButton type="submit" disabled={processing}>
+                    <PrimaryButton type="submit" loading={processing}>
                         Send reset link
                     </PrimaryButton>
                 </form>

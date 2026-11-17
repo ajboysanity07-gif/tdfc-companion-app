@@ -156,21 +156,6 @@
 }
 
 
-@keyframes modal-slide-up {
-  0% {
-    transform: translateY(100%);
-    opacity: 0;
-  }
-  100% {
-    transform: translateY(0%);
-    opacity: 1;
-  }
-}
-
-.modal-slide-up {
-  animation: modal-slide-up 0.35s cubic-bezier(0.23,1,0.32,1);
-}
-
 .hide-scrollbar::-webkit-scrollbar { display: none; }
 .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 /* Auth screens (login/register) — tokens from design/tdfc.css + design/auth.css */
@@ -184,6 +169,16 @@
     --color-tdfc-error: #b91c1c;
     --color-tdfc-error-line: #dc2626;
     --color-tdfc-ok: #047857;
+    --color-tdfc-ok-ink: oklch(0.55 0.14 155);
+    --color-tdfc-ok-soft: oklch(0.96 0.04 155);
+    --color-tdfc-sun: #ffe57e;
+    --color-tdfc-sun-ink: oklch(0.45 0.09 85);
+    --color-tdfc-sun-soft: color-mix(in oklch, #ffe57e 35%, white);
+    --color-tdfc-blue: #3b82f6;
+    --color-tdfc-blue-ink: oklch(0.48 0.19 262);
+    --color-tdfc-blue-soft: color-mix(in oklch, #3b82f6 12%, white);
+    --color-tdfc-page: oklch(0.975 0 0);
+    --color-tdfc-stripe: oklch(0.985 0 0);
     --color-tdfc-page-from: oklch(0.96 0 0);
     --color-tdfc-page-to: oklch(0.93 0 0);
     --radius-tdfc-card: 20px;
@@ -192,16 +187,56 @@
     --shadow-tdfc-card: 0 8px 24px rgb(0 0 0 / 0.07);
     --shadow-tdfc-modal: 0 10px 30px rgb(0 0 0 / 0.12);
     --animate-tdfc-msg: tdfc-msg-in 0.16s ease-out;
+    --animate-tdfc-pop: tdfc-pop 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+    --animate-tdfc-sheet: tdfc-sheet 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+    --animate-tdfc-drawer: tdfc-drawer 0.24s ease;
+    --animate-tdfc-fade: tdfc-fade 0.2s ease;
+    --animate-tdfc-rise: tdfc-rise 0.35s cubic-bezier(0.23, 1, 0.32, 1) backwards;
     @keyframes tdfc-msg-in {
         from {
             opacity: 0;
             transform: translateY(-4px);
         }
     }
+    @keyframes tdfc-pop {
+        from {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+    }
+    @keyframes tdfc-sheet {
+        from {
+            opacity: 0;
+            transform: translateY(24px);
+        }
+    }
+    @keyframes tdfc-drawer {
+        from {
+            transform: translateX(100%);
+        }
+    }
+    @keyframes tdfc-fade {
+        from {
+            opacity: 0;
+        }
+    }
+    @keyframes tdfc-rise {
+        from {
+            opacity: 0;
+            transform: translateY(8px);
+        }
+    }
 }
 
+/* One global guard: every animation/transition collapses for users who ask for less motion. */
 @media (prefers-reduced-motion: reduce) {
-    .animate-tdfc-msg {
-        animation: none;
+    *,
+    *::before,
+    *::after,
+    ::backdrop {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
     }
 }

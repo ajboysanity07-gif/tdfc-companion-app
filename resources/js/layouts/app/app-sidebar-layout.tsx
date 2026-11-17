@@ -4,12 +4,14 @@ import { AppSidebar } from '@/components/app-sidebar';
 import { AppSidebarHeader } from '@/components/app-sidebar-header';
 import NavMobile from '@/components/nav-mobile';
 import { type BreadcrumbItem } from '@/types';
+import { usePage } from '@inertiajs/react';
 import { type PropsWithChildren } from 'react';
 
 export default function AppSidebarLayout({
   children,
   breadcrumbs = [],
 }: PropsWithChildren<{ breadcrumbs?: BreadcrumbItem[] }>) {
+  const path = usePage().url.split('?')[0];
   return (
     <AppShell variant="sidebar">
       {/* Sidebar: visible only on desktop - removed fixed width to allow sidebar to manage its own width */}
@@ -18,10 +20,10 @@ export default function AppSidebarLayout({
       </div>
 
       {/* Main content area, expands to fill available space */}
-      <div className="flex flex-col flex-1 w-full relative min-h-screen pb-[76px] transition-all duration-300">
+      <div className="flex flex-col flex-1 w-full relative min-h-screen pb-16 md:pb-0 transition-all duration-300">
         <AppContent
           variant="sidebar"
-          className="overflow-x-hidden flex-1 w-full transition-all duration-300"
+          className="w-full flex-1 overflow-x-hidden bg-tdfc-page dark:bg-background md:rounded-[14px] md:border md:border-border"
         >
           {/* Sidebar header: visible only on desktop */}
           <div className="hidden md:block">
@@ -29,7 +31,9 @@ export default function AppSidebarLayout({
           </div>
 
           {/* Page content */}
-          {children}
+          <div key={path} className="animate-tdfc-fade">
+            {children}
+          </div>
         </AppContent>
 
         {/* Mobile bottom nav */}

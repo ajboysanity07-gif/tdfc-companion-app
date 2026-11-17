@@ -39,7 +39,7 @@ export default function ConfirmPassword() {
                         error={errors.password || clientError}
                         showErrors={submitted}
                     />
-                    <PrimaryButton type="submit" disabled={processing}>
+                    <PrimaryButton type="submit" loading={processing}>
                         Confirm password
                     </PrimaryButton>
                 </form>

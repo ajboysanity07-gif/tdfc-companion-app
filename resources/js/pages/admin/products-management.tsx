@@ -1,136 +1,599 @@
-import { useEffect, useMemo, useState } from 'react';
-import ProductDataTable from '@/components/products/product-data-table';
-import ProductDetailsInfo from '@/components/products/product-details-info';
-import ProductDetailsModal from '@/components/products/product-details-modal';
-import ProductLoanList from '@/components/products/product-loan-list';
+import Modal from '@/components/auth/modal';
+import { Drawer, PageBanner, Panel, SkelRows, Switch, btn, peso, useToast } from '@/components/tdfc/ui';
 import { useProductsApi } from '@/hooks/use-products-api';
-import { Head } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
-import AddIcon from '@mui/icons-material/Add';
+import { Head } from '@inertiajs/react';
+import axios from 'axios';
+import { Plus, X } from 'lucide-react';
+import { MutableRefObject, useEffect, useMemo, useRef, useState } from 'react';
 
-type ProductSettings = {
-  ln_isActive?: boolean;
-  ln_scheme?: string;
-  max_term?: number;
-  max_term_isEditable?: boolean;
-  max_amortization?: number;
-  max_amortization_isEditable?: boolean;
-  service_fee?: number;
-  lrf?: number;
-  doc_stamp?: number;
-  mort_notarial?: number;
-  terms_and_info?: string;
-  rate_isEditable?: boolean;
-  installment_mode?: string;
-  [key: string]: unknown;
+type Settings = {
+    ln_isActive?: boolean;
+    ln_scheme?: string;
+    installment_mode?: string;
+    rate_isEditable?: boolean;
+    max_term?: number | null;
+    max_term_isEditable?: boolean;
+    max_amortization?: number | null;
+    max_amortization_isEditable?: boolean;
+    allow_multiple?: boolean;
+    service_fee?: number | null;
+    lrf?: number | null;
+    doc_stamp?: number | null;
+    mort_notarial?: number | null;
+    terms_and_info?: string | null;
 };
-type ProductDisplay = { isDisplayed?: boolean; [key: string]: unknown; };
-type ProductTag = { tag_name: string; [key: string]: unknown; };
-type Product = {
-  typecode: string;
-  lntype?: string;
-  settings?: ProductSettings;
-  display?: ProductDisplay;
-  tags?: ProductTag[];
-  [key: string]: unknown;
+type Product = { typecode: string; lntype?: string; int_rate?: number | null; settings?: Settings; tags?: { tag_name: string }[] };
+type Form = { settings: Required<Settings>; int_rate: string; tags: string[] };
+
+const text = (n: unknown) => (n === null || n === undefined ? '' : String(n));
+// ponytail: empty input saves null (not the mockup's 0) so "no limit" stays distinguishable
+const num = (s: string) => {
+    const v = s.replace(/[^0-9.-]/g, '');
+    return v === '' || v === '-' ? null : +v;
+};
+const toForm = (p: Product): Form => {
+    const s = p.settings ?? {};
+    return {
+        int_rate: text(p.int_rate),
+        tags: (p.tags ?? []).map((t) => t.tag_name),
+        settings: {
+            ln_isActive: !!s.ln_isActive,
+            ln_scheme: s.ln_scheme ?? 'ADD-ON',
+            installment_mode: s.installment_mode ?? 'MONTHLY',
+            rate_isEditable: !!s.rate_isEditable,
+            max_term: s.max_term ?? null,
+            max_term_isEditable: !!s.max_term_isEditable,
+            max_amortization: s.max_amortization ?? null,
+            max_amortization_isEditable: !!s.max_amortization_isEditable,
+            allow_multiple: !!s.allow_multiple,
+            service_fee: s.service_fee ?? null,
+            lrf: s.lrf ?? null,
+            doc_stamp: s.doc_stamp ?? null,
+            mort_notarial: s.mort_notarial ?? null,
+            terms_and_info: s.terms_and_info ?? '',
+        },
+    };
 };
 
-const breadcrumbs = [{ title: 'Products Management', href: '/admin/products' }];
+const field = 'h-10 w-full rounded-[10px] border border-input bg-white px-3 shadow-sm focus:border-ring focus:outline-none dark:bg-transparent';
+const pill = 'inline-flex h-5.5 items-center rounded-full px-2 text-[11px] font-semibold';
+const sections = ['general', 'terms', 'fees'] as const;
+
+function Check({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
+    return (
+        <label className="flex h-10 items-center gap-1.5 text-[13px] text-muted-foreground">
+            <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} />
+            {label}
+        </label>
+    );
+}
+
+type FormProps = {
+    product: Product;
+    dirty: MutableRefObject<boolean>;
+    onSave: (p: Product, body: Record<string, unknown>, tags: string[]) => Promise<void>;
+    onDelete: (p: Product) => void;
+    onClose: () => void;
+    toast: React.ReactNode;
+};
+
+function ProductDrawerBody({ product, dirty, onSave, onDelete, onClose, toast }: FormProps) {
+    const initial = useMemo(() => toForm(product), [product]);
+    const [f, setF] = useState(initial);
+    const [tag, setTag] = useState('');
+    const [cur, setCur] = useState<(typeof sections)[number]>('general');
+    const body = useRef<HTMLDivElement>(null);
+    const s = f.settings;
+    const set = <K extends keyof Settings>(k: K, v: Settings[K]) =>
+        setF((x) => ({ ...x, settings: { ...x.settings, [k]: v } as Required<Settings> }));
+    dirty.current = JSON.stringify(f) !== JSON.stringify(initial) || tag.trim() !== '';
+    const save = () => onSave(product, { int_rate: num(f.int_rate), settings: f.settings }, f.tags);
+    // row switch toggles ln_isActive outside the drawer; mirror it without discarding other edits
+    const active = !!product.settings?.ln_isActive;
+    useEffect(() => {
+        setF((x) => ({ ...x, settings: { ...x.settings, ln_isActive: active } }));
+    }, [active]);
+    const addTag = (t: string) => setF((x) => (x.tags.includes(t) ? x : { ...x, tags: [...x.tags, t] }));
+
+    const spy = () => {
+        const b = body.current;
+        if (!b) return;
+        let next: (typeof sections)[number] = 'general';
+        sections.forEach((k) => {
+            const el = document.getElementById(`p-${k}`);
+            if (el && el.offsetTop - b.scrollTop <= 60) next = k;
+        });
+        if (b.scrollTop + b.clientHeight >= b.scrollHeight - 2) next = 'fees';
+        setCur(next);
+    };
+    const jump = (k: string) => {
+        const el = document.getElementById(`p-${k}`);
+        if (el)
+            body.current?.scrollTo({ top: el.offsetTop - 20, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    };
+
+    const numField = (k: 'max_term' | 'max_amortization' | 'service_fee' | 'lrf' | 'doc_stamp' | 'mort_notarial', id: string) => (
+        <input id={id} className={`${field} tabular-nums`} inputMode="decimal" value={text(s[k])} onChange={(e) => set(k, num(e.target.value))} />
+    );
+    const pct = (k: 'service_fee' | 'lrf' | 'doc_stamp', id: string, label: string) => (
+        <div className="grid gap-1.5">
+            <label htmlFor={id} className="font-medium">
+                {label}
+            </label>
+            <div className="relative">
+                {numField(k, id)}
+                <span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground">%</span>
+            </div>
+        </div>
+    );
+    const row = (label: string, id: string, input: React.ReactNode, ed: React.ReactNode) => (
+        <div className="grid grid-cols-[1fr_auto] items-end gap-2.5">
+            <div className="grid gap-1.5">
+                <label htmlFor={id} className="font-medium">
+                    {label}
+                </label>
+                {input}
+            </div>
+            {ed}
+        </div>
+    );
+    const h3 = 'text-base font-semibold';
+    const sec = 'grid gap-4.5 border-b border-border pb-7 mb-7 last:mb-0 last:border-0 max-md:gap-3.5 max-md:pb-5 max-md:mb-5';
+
+    return (
+        <>
+            <div className="flex items-center gap-3 border-b border-border px-5 py-4">
+                <h2 className="min-w-0 flex-1 text-lg font-semibold">{product.lntype}</h2>
+                <span className="inline-flex h-6 items-center rounded-full border border-border px-2.5 text-xs font-semibold tabular-nums">
+                    {product.typecode}
+                </span>
+                <button
+                    type="button"
+                    onClick={onClose}
+                    aria-label="Close"
+                    className={`${btn.base} !h-8 !w-9 border-transparent !px-0 hover:bg-muted`}
+                >
+                    <X className="size-5" />
+                </button>
+            </div>
+            <nav className="flex gap-1 border-b border-border px-5" aria-label="Jump to section">
+                {sections.map((k) => (
+                    <button
+                        key={k}
+                        type="button"
+                        onClick={() => jump(k)}
+                        aria-current={cur === k}
+                        className="-mb-px h-11 border-b-2 border-transparent px-3 font-medium text-muted-foreground capitalize hover:bg-muted hover:text-foreground aria-[current=true]:border-tdfc-coral aria-[current=true]:font-semibold aria-[current=true]:text-foreground"
+                    >
+                        {k}
+                    </button>
+                ))}
+            </nav>
+
+            <div ref={body} onScroll={spy} className="relative min-h-0 flex-1 overflow-auto overscroll-contain px-5 pt-5 pb-[45vh] max-md:pb-4">
+                <section id="p-general" aria-labelledby="h-general" className={sec}>
+                    <h3 id="h-general" className={h3}>
+                        General
+                    </h3>
+                    <div className="flex items-center justify-between gap-3 rounded-[10px] border border-border px-3.5 py-3">
+                        <div>
+                            <b>Available to clients</b>
+                            <small className="block text-muted-foreground">Inactive products are hidden from the loan calculator.</small>
+                        </div>
+                        <Switch checked={!!s.ln_isActive} onChange={(v) => set('ln_isActive', v)} label="Active" />
+                    </div>
+                    <div className="grid gap-1.5">
+                        <label htmlFor="d-tags" className="font-medium">
+                            Type relation tags
+                        </label>
+                        <div className="flex min-h-10.5 cursor-text flex-wrap gap-1.5 rounded-[10px] border border-input p-1.5 shadow-sm focus-within:border-ring">
+                            {f.tags.map((tag_name) => (
+                                <span key={tag_name} className={`${pill} gap-1.5 bg-tdfc-blue-soft text-tdfc-blue-ink`}>
+                                    {tag_name}
+                                    <button
+                                        type="button"
+                                        aria-label={`Remove ${tag_name}`}
+                                        onClick={() => setF((x) => ({ ...x, tags: x.tags.filter((t) => t !== tag_name) }))}
+                                    >
+                                        <X className="size-3" />
+                                    </button>
+                                </span>
+                            ))}
+                            <input
+                                id="d-tags"
+                                value={tag}
+                                onChange={(e) => setTag(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' && tag.trim()) {
+                                        e.preventDefault();
+                                        addTag(tag.trim().toUpperCase());
+                                        setTag('');
+                                    }
+                                }}
+                                placeholder="Add tag, press Enter"
+                                className="min-w-24 flex-1 bg-transparent px-1 outline-none"
+                            />
+                        </div>
+                    </div>
+                    <div className="grid gap-1.5">
+                        <label htmlFor="d-info" className="font-medium">
+                            Terms / information for clients
+                        </label>
+                        <textarea
+                            id="d-info"
+                            rows={6}
+                            value={s.terms_and_info ?? ''}
+                            onChange={(e) => set('terms_and_info', e.target.value)}
+                            className={`${field} h-auto py-2.5`}
+                        />
+                    </div>
+                </section>
+
+                <section id="p-terms" aria-labelledby="h-terms" className={sec}>
+                    <h3 id="h-terms" className={h3}>
+                        Terms
+                    </h3>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                        <div className="grid gap-1.5">
+                            <label htmlFor="d-scheme" className="font-medium">
+                                Scheme
+                            </label>
+                            <select id="d-scheme" className={field} value={s.ln_scheme} onChange={(e) => set('ln_scheme', e.target.value)}>
+                                {['ADD-ON', 'PREPAID'].map((o) => (
+                                    <option key={o}>{o}</option>
+                                ))}
+                            </select>
+                        </div>
+                        <div className="grid gap-1.5">
+                            <label htmlFor="d-mode" className="font-medium">
+                                Mode
+                            </label>
+                            <select
+                                id="d-mode"
+                                className={field}
+                                value={s.installment_mode}
+                                onChange={(e) => set('installment_mode', e.target.value)}
+                            >
+                                {['MONTHLY', 'WEEKLY', 'DUE-DATE'].map((o) => (
+                                    <option key={o}>{o}</option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+                    {row(
+                        'Rate (p.a.)',
+                        'd-rate',
+                        <div className="relative">
+                            <input
+                                id="d-rate"
+                                className={`${field} tabular-nums`}
+                                inputMode="decimal"
+                                value={f.int_rate}
+                                onChange={(e) => setF({ ...f, int_rate: e.target.value })}
+                            />
+                            <span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground">%</span>
+                        </div>,
+                        <Check label="editable by client" checked={!!s.rate_isEditable} onChange={(v) => set('rate_isEditable', v)} />,
+                    )}
+                    {row(
+                        'Max term (days)',
+                        'd-term',
+                        numField('max_term', 'd-term'),
+                        <Check label="editable by client" checked={!!s.max_term_isEditable} onChange={(v) => set('max_term_isEditable', v)} />,
+                    )}
+                    {row(
+                        'Max amortization',
+                        'd-amort',
+                        numField('max_amortization', 'd-amort'),
+                        <Check
+                            label="editable by client"
+                            checked={!!s.max_amortization_isEditable}
+                            onChange={(v) => set('max_amortization_isEditable', v)}
+                        />,
+                    )}
+                    <Check label="Allow multiple active loans per client" checked={!!s.allow_multiple} onChange={(v) => set('allow_multiple', v)} />
+                </section>
+
+                <section id="p-fees" aria-labelledby="h-fees" className={sec}>
+                    <h3 id="h-fees" className={h3}>
+                        Fees
+                    </h3>
+                    <p className="text-[13px] text-muted-foreground">Percent fees are computed on the amount applied.</p>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                        {pct('service_fee', 'd-sf', 'Service fee')}
+                        {pct('lrf', 'd-lrf', 'LRF')}
+                        {pct('doc_stamp', 'd-ds', 'Doc stamp')}
+                        <div className="grid gap-1.5">
+                            <label htmlFor="d-mn" className="font-medium">
+                                Mortgage + notarial
+                            </label>
+                            {numField('mort_notarial', 'd-mn')}
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <div className="flex items-center gap-2.5 border-t border-border bg-background px-5 py-3 pb-[calc(12px+env(safe-area-inset-bottom))]">
+                <button
+                    type="button"
+                    onClick={() => onDelete(product)}
+                    className={`${btn.base} border-transparent bg-transparent text-destructive hover:bg-destructive/10`}
+                >
+                    Delete
+                </button>
+                <span className="flex-1" />
+                <button type="button" onClick={save} className={`${btn.base} ${btn.dark}`}>
+                    Save changes
+                </button>
+            </div>
+            {toast}
+        </>
+    );
+}
 
 export default function ProductsManagement() {
-  const { products, loading, fetchProducts } = useProductsApi();
-  const [selected, setSelected] = useState<Product | null>(null);
-  const [loanListOpen, setLoanListOpen] = useState(false);
-  const [detailsModalOpen, setDetailsModalOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-  const [search, setSearch] = useState('');
+    const { products, loading, fetchProducts, updateProduct, deleteProduct } = useProductsApi();
+    const list = products as unknown as Product[];
+    const [q, setQ] = useState('');
+    const [flt, setFlt] = useState<'all' | 'on' | 'off'>('all');
+    const [sel, setSel] = useState<string | null>(null);
+    const [adding, setAdding] = useState(false);
+    const [pool, setPool] = useState<{ typecode: string; lntype: string }[]>([]);
+    const [pick, setPick] = useState('');
+    const dirty = useRef(false);
+    const { show, toast } = useToast();
 
-  useEffect(() => { fetchProducts(); }, [fetchProducts]);
-  useEffect(() => {
-    setIsMobile(window.innerWidth < 1024);
-    const listener = () => setIsMobile(window.innerWidth < 1024);
-    window.addEventListener('resize', listener);
-    return () => window.removeEventListener('resize', listener);
-  }, []);
+    useEffect(() => {
+        fetchProducts();
+    }, [fetchProducts]);
 
-  const filteredProducts = useMemo(
-    () =>
-      products?.filter(
-        (row: Product) =>
-          row.lntype?.toLowerCase().includes(search.toLowerCase()) ||
-          row.typecode?.toLowerCase().includes(search.toLowerCase())
-      ),
-    [products, search]
-  );
+    useEffect(() => {
+        document.body.style.overflow = sel ? 'hidden' : '';
+        return () => {
+            document.body.style.overflow = '';
+        };
+    }, [sel]);
 
-  return (
-    <AppLayout breadcrumbs={breadcrumbs}>
-      <Head title="Products Management" />
-      <div className="flex flex-col min-h-screen bg-[#fafafb] dark:bg-[#171717] p-4 transition-colors duration-300 gap-4">
-        {/* HEADER */}
-                <div className="relative mb-6 h-[180px] overflow-hidden rounded-xl bg-[#F57979] shadow-lg">
-                    <div className="relative z-10 p-6">
-                        <h1 className="mb-2 text-3xl font-extrabold tracking-tight text-[#FFF172]">Product Management</h1>
-                        <div className="text-[1.08rem] font-medium text-white opacity-90">Manage and update all loan products</div>
+    const active = list.filter((p) => p.settings?.ln_isActive).length;
+    const shown = useMemo(() => {
+        const n = q.toLowerCase();
+        return list
+            .filter(
+                (p) =>
+                    (p.lntype?.toLowerCase().includes(n) || p.typecode?.toLowerCase().includes(n)) &&
+                    (flt === 'all' || (flt === 'on') === !!p.settings?.ln_isActive),
+            )
+            .sort((a, b) => (a.lntype ?? '').localeCompare(b.lntype ?? ''));
+    }, [list, q, flt]);
+    const cur = list.find((p) => p.typecode === sel) ?? null;
+
+    const open = (code: string) => {
+        if (sel && sel !== code && dirty.current && !confirm('Discard unsaved changes?')) return;
+        dirty.current = false;
+        setSel(code);
+    };
+    const close = () => {
+        if (!sel) return; // native close event fires after we already closed
+        if (dirty.current && !confirm('Discard unsaved changes?')) return;
+        dirty.current = false;
+        setSel(null);
+    };
+    const toggle = async (p: Product, on: boolean) => {
+        await updateProduct(p.typecode, { settings: { ln_isActive: on } });
+        show(`${p.lntype} ${on ? 'enabled' : 'disabled'}`);
+    };
+    const save = async (p: Product, body: Record<string, unknown>, next: string[]) => {
+        try {
+            await updateProduct(p.typecode, body);
+            const old = (p.tags ?? []).map((t) => t.tag_name);
+            const base = `/api/admin/products/${p.typecode}/tags`;
+            await Promise.all([
+                ...next.filter((t) => !old.includes(t)).map((t) => axios.post(base, { tag_name: t })),
+                ...old.filter((t) => !next.includes(t)).map((t) => axios.delete(`${base}/${encodeURIComponent(t)}`)),
+            ]);
+            await fetchProducts();
+            show(`${p.lntype ?? p.typecode} updated`);
+        } catch (e) {
+            show(axios.isAxiosError(e) ? (e.response?.data?.message ?? 'Save failed') : 'Save failed');
+        }
+    };
+    const remove = async (p: Product) => {
+        if (!confirm(`Delete "${p.lntype}"? This cannot be undone.`)) return;
+        await deleteProduct(p.typecode);
+        dirty.current = false;
+        setSel(null);
+        show(`${p.lntype} deleted`);
+    };
+    const openAdd = async () => {
+        setPick('');
+        setAdding(true);
+        try {
+            setPool((await axios.get('/api/admin/products/available')).data);
+        } catch {
+            setPool([]);
+        }
+    };
+    const add = async () => {
+        const name = pool.find((p) => p.typecode === pick)?.lntype ?? pick;
+        await axios.post(`/api/admin/products/${pick}/enable`);
+        setAdding(false);
+        await fetchProducts();
+        dirty.current = false;
+        setSel(pick);
+        show(`${name} added`);
+    };
+
+    const chips = [
+        ['all', 'All', list.length],
+        ['on', 'Active', active],
+        ['off', 'Inactive', list.length - active],
+    ] as const;
+    const th = 'px-4 py-2.5 text-left text-xs font-semibold text-muted-foreground';
+
+    return (
+        <AppLayout
+            breadcrumbs={[
+                { title: 'Admin', href: '/admin/dashboard' },
+                { title: 'Products Management', href: '/admin/products' },
+            ]}
+        >
+            <Head title="Products Management" />
+            <div className="grid content-start gap-5 p-4 pb-24 md:p-6">
+                <PageBanner title="Products" sub={`${list.length} loan products · ${active} active`}>
+                    <button type="button" onClick={openAdd} className={`${btn.base} ${btn.dark}`}>
+                        <Plus className="size-4" />
+                        Add Loan
+                    </button>
+                </PageBanner>
+
+                <Panel className="overflow-hidden">
+                    <div className="grid gap-3.5 p-5">
+                        <div className="flex flex-wrap items-center justify-between gap-3 max-[860px]:flex-col max-[860px]:items-stretch">
+                            <div className="flex flex-wrap gap-1.5" role="group" aria-label="Filter by status">
+                                {chips.map(([v, l, n]) => (
+                                    <button
+                                        key={v}
+                                        type="button"
+                                        aria-pressed={flt === v}
+                                        onClick={() => setFlt(v)}
+                                        className={`inline-flex h-9.5 items-center gap-2 rounded-full border px-3.5 font-semibold max-[720px]:px-3 ${flt === v ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-white text-muted-foreground hover:bg-muted'}`}
+                                    >
+                                        {l}
+                                        <span className="grid h-5.5 min-w-5.5 place-items-center rounded-full bg-current/15 px-1.5 text-xs">{n}</span>
+                                    </button>
+                                ))}
+                            </div>
+                            <input
+                                type="search"
+                                value={q}
+                                onChange={(e) => setQ(e.target.value)}
+                                placeholder="Search loan type..."
+                                aria-label="Search loan type"
+                                className={`${field} min-w-0 flex-1 basis-50 max-[860px]:max-w-none md:max-w-80`}
+                            />
+                        </div>
+                        <div className="overflow-x-auto">
+                            <table className="w-full border-collapse max-[720px]:block">
+                                <thead className="max-[720px]:hidden">
+                                    <tr className="border-b border-border">
+                                        <th className={th}>Product</th>
+                                        <th className={`${th} max-[860px]:hidden`}>Scheme</th>
+                                        <th className={`${th} max-[1100px]:hidden`}>Mode</th>
+                                        <th className={`${th} text-right`}>Rate p.a.</th>
+                                        <th className={`${th} text-right max-[860px]:hidden`}>Max term</th>
+                                        <th className={`${th} text-right max-[860px]:hidden`}>Max amort.</th>
+                                        <th className={`${th} max-[1100px]:hidden`}>Tags</th>
+                                        <th className={`${th} w-21 text-center`}>Active</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="max-[720px]:block">
+                                    {loading && !products.length && <SkelRows rows={6} cols={8} />}
+                                    {shown.map((p) => {
+                                        const s = p.settings ?? {};
+                                        return (
+                                            <tr
+                                                key={p.typecode}
+                                                tabIndex={0}
+                                                onClick={() => open(p.typecode)}
+                                                onKeyDown={(e) => e.key === 'Enter' && e.target === e.currentTarget && open(p.typecode)}
+                                                className={`cursor-pointer border-b border-border last:border-0 hover:bg-muted max-[720px]:mb-2.5 max-[720px]:grid max-[720px]:grid-cols-[minmax(0,1fr)_auto] max-[720px]:items-center max-[720px]:gap-x-3 max-[720px]:gap-y-1.5 max-[720px]:rounded-xl max-[720px]:border max-[720px]:p-3.5 max-[720px]:shadow-sm max-[720px]:hover:bg-white max-[720px]:active:bg-muted ${sel === p.typecode ? 'bg-tdfc-coral-soft' : ''}`}
+                                            >
+                                                <td className="px-4 py-3.5 max-[720px]:col-start-1 max-[720px]:row-start-1 max-[720px]:block max-[720px]:self-start max-[720px]:p-0">
+                                                    <b>{p.lntype}</b>
+                                                    <div className="text-[13px] text-muted-foreground">{p.typecode}</div>
+                                                </td>
+                                                <td className="px-4 py-3.5 max-[860px]:hidden max-[720px]:p-0">
+                                                    <span className={`${pill} bg-muted text-muted-foreground`}>{s.ln_scheme ?? '—'}</span>
+                                                </td>
+                                                <td className="px-4 py-3.5 max-[1100px]:hidden max-[720px]:col-start-1 max-[720px]:row-start-2 max-[720px]:block max-[720px]:p-0">
+                                                    {s.installment_mode ?? '—'}
+                                                </td>
+                                                <td className="px-4 py-3.5 text-right tabular-nums max-[720px]:col-start-2 max-[720px]:row-start-2 max-[720px]:block max-[720px]:p-0">
+                                                    {p.int_rate ?? '—'}%
+                                                </td>
+                                                <td className="px-4 py-3.5 text-right tabular-nums max-[860px]:hidden max-[720px]:p-0">
+                                                    {s.max_term != null ? `${Number(s.max_term).toLocaleString()} d` : '—'}
+                                                </td>
+                                                <td className="px-4 py-3.5 text-right tabular-nums max-[860px]:hidden max-[720px]:p-0">
+                                                    {s.max_amortization != null ? peso(Number(s.max_amortization)) : '—'}
+                                                </td>
+                                                <td className="px-4 py-3.5 max-[1100px]:hidden max-[720px]:p-0">
+                                                    <span className="flex flex-wrap gap-1">
+                                                        {p.tags?.length ? (
+                                                            p.tags.map(({ tag_name }) => (
+                                                                <span key={tag_name} className={`${pill} bg-tdfc-blue-soft text-tdfc-blue-ink`}>
+                                                                    {tag_name}
+                                                                </span>
+                                                            ))
+                                                        ) : (
+                                                            <span className="text-muted-foreground">—</span>
+                                                        )}
+                                                    </span>
+                                                </td>
+                                                <td
+                                                    className="px-4 py-3.5 max-[720px]:col-start-2 max-[720px]:row-start-1 max-[720px]:block max-[720px]:justify-self-end max-[720px]:p-0"
+                                                    onClick={(e) => e.stopPropagation()}
+                                                >
+                                                    <div className="flex justify-center">
+                                                        <Switch
+                                                            checked={!!s.ln_isActive}
+                                                            onChange={(v) => toggle(p, v)}
+                                                            label={`Toggle ${p.lntype} active`}
+                                                        />
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                    {shown.length === 0 && !loading && (
+                                        <tr>
+                                            <td colSpan={8} className="px-4 py-7 text-center text-muted-foreground">
+                                                No products found
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
+                    <div className="border-t border-border px-4 py-3 text-[13px] text-muted-foreground">
+                        Showing {shown.length} of {list.length} products
+                    </div>
+                </Panel>
+            </div>
+
+            <Drawer open={!!cur} onClose={close} label={cur?.lntype ?? 'Product'} panel="max-w-[520px] overflow-hidden open:flex open:flex-col">
+                {cur && (
+                    <ProductDrawerBody key={cur.typecode} product={cur} dirty={dirty} onSave={save} onDelete={remove} onClose={close} toast={toast} />
+                )}
+            </Drawer>
+
+            <Modal open={adding} onClose={() => setAdding(false)} label="Select Loan to Add">
+                <h3 className="text-lg font-semibold">Select Loan to Add</h3>
+                <div className="mt-4 grid gap-1.5">
+                    <label htmlFor="addSel" className="font-medium">
+                        Loan Type
+                    </label>
+                    <select id="addSel" value={pick} onChange={(e) => setPick(e.target.value)} className={field}>
+                        <option value="">Select…</option>
+                        {pool.map((p) => (
+                            <option key={p.typecode} value={p.typecode}>
+                                {p.typecode}
+                            </option>
+                        ))}
+                    </select>
                 </div>
-        <div className={`flex w-full gap-6 ${isMobile ? 'flex-col' : 'flex-row'}`}>
-          {/* PRODUCTS CARD */}
-          <div className="flex-1 min-h-[520px] flex flex-col bg-white dark:bg-neutral-900 rounded-xl shadow-md border border-gray-200 overflow-hidden">
-            <div className="px-6 pt-6 pb-2 font-bold text-[1.08rem] tracking-wider text-[#f57373] uppercase">Active Products</div>
-            <div className="flex-1 flex flex-col px-6 pb-6 pt-2">
-              <ProductDataTable
-                data={filteredProducts}
-                loading={loading}
-                onRowSelect={(row: Product) => { setSelected(row); if (isMobile) setDetailsModalOpen(true); }}
-                onAddClick={() => setLoanListOpen(true)}
-                selectedTypecode={selected?.typecode}
-                search={search}
-                setSearch={setSearch}
-              />
-            </div>
-          </div>
-          {/* DETAILS CARD */}
-          {!isMobile && (
-            <div className="flex-1 min-h-[520px] flex flex-col bg-white dark:bg-neutral-900 rounded-xl shadow-md border border-gray-200 overflow-hidden">
-              <div className="flex-1 flex items-center justify-center px-5 py-5">
-                {selected
-                  ? <ProductDetailsInfo product={selected} onChange={fetchProducts} />
-                  : (
-                    <span className="text-gray-400 text-[1.07rem]">
-                      No products selected
-                    </span>
-                  )
-                }
-              </div>
-            </div>
-          )}
-        </div>
-        {/* Modals */}
-        {isMobile && selected && (
-          <ProductDetailsModal
-            open={detailsModalOpen}
-            product={selected}
-            onClose={() => setDetailsModalOpen(false)}
-            onSaved={fetchProducts}
-          />
-        )}
-        <ProductLoanList
-          open={loanListOpen}
-          onClose={() => setLoanListOpen(false)}
-          onAdded={fetchProducts}
-        />
-        {/* Floating Add (mobile) */}
-        {isMobile && (
-          <button
-            className="fixed bottom-6 right-6 z-50 rounded-full bg-[#f57373] shadow-lg hover:bg-[#da4747] p-4 transition"
-            aria-label="add"
-            onClick={() => setLoanListOpen(true)}
-          >
-            <AddIcon className="text-white" />
-          </button>
-        )}
-      </div>
-    </AppLayout>
-  );
+                <div className="mt-5 flex justify-end gap-2">
+                    <button type="button" onClick={() => setAdding(false)} className={`${btn.base} border-transparent hover:bg-muted`}>
+                        Cancel
+                    </button>
+                    <button type="button" disabled={!pick} onClick={add} className={`${btn.base} ${btn.coral}`}>
+                        Add Loan
+                    </button>
+                </div>
+            </Modal>
+            {!cur && toast}
+        </AppLayout>
+    );
 }

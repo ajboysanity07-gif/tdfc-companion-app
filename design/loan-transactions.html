@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Loan Transactions · TDFC Companion App</title>
+<link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700,800" rel="stylesheet">
+<link rel="stylesheet" href="tdfc.css">
+<style>
+.panel{background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);padding:0;overflow:hidden}
+.tbl tbody tr:nth-child(even){background:oklch(.985 0 0)}.tbl tbody tr:nth-child(even):hover,.tbl tbody tr:hover{background:var(--muted)}
+th button{all:unset;cursor:pointer}th button:focus-visible{outline:2px solid var(--coral-ink);border-radius:4px}
+.acts{display:flex;gap:8px}
+.acts .btn{gap:6px}.acts .d:hover{background:var(--blue-soft);color:var(--blue-ink)}.acts .s:hover{background:var(--ok-soft);color:var(--ok)}
+.pager{display:flex;justify-content:flex-end;align-items:center;gap:14px;padding:10px 16px;border-top:1px solid var(--border);font-size:13px;color:var(--muted-fg);flex-wrap:wrap}
+.pager select{height:30px;border:1px solid var(--input);border-radius:8px;padding:0 6px;background:#fff}
+.empty{padding:48px 16px;text-align:center;color:var(--muted-fg)}
+.modal-back{background:oklch(0 0 0/.6);backdrop-filter:blur(4px)}.modal-back.open{animation:fi .3s ease-out}.modal-back.open .modal{animation:pop .3s ease-out}
+@keyframes fi{from{opacity:0}}@keyframes pop{from{opacity:0;transform:scale(.95)}}
+.modal{max-width:448px;border:1px solid var(--border);overflow:hidden auto}.modal.wide{max-width:720px}
+.mh{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+.mtools{display:flex;align-items:center;gap:8px}.mtools .btn[hidden]{display:none}
+.mclose{width:32px;height:32px;padding:0;border-radius:50%;color:var(--muted-fg)}.mclose:hover{background:var(--muted);color:var(--fg)}
+.dl{display:grid;gap:16px}
+.dl label{display:block;font-size:13px;font-weight:500;color:oklch(.4 0 0)}.dl p{margin:2px 0 0;font-size:14px}.dl b{font-weight:700}
+.spin{display:inline-block;width:22px;height:22px;border:2px solid var(--blue);border-top-color:transparent;border-radius:50%;animation:sp .8s linear infinite;margin-right:8px;vertical-align:middle}.spin.g{border-color:var(--ok);border-top-color:transparent}
+@keyframes sp{to{transform:rotate(360deg)}}
+.mstate{text-align:center;padding:32px 0;color:oklch(.45 0 0)}.mstate.e{color:oklch(.5 .2 25)}.mstate svg{width:32px;height:32px;margin:0 auto 8px}
+.cards{display:none}
+.sch{border:1px solid var(--border);border-radius:12px;overflow:auto;max-height:60vh}
+.stbl{border-collapse:separate;border-spacing:0;width:100%;white-space:nowrap;font-variant-numeric:tabular-nums}
+.stbl th,.stbl td{padding:10px 14px;font-size:13px;border-bottom:1px solid var(--border)}
+.stbl th{position:sticky;top:0;background:oklch(.98 0 0);font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted-fg);text-align:left}
+.stbl tbody tr:last-child td{border-bottom:0}.stbl tbody tr:hover{background:var(--muted)}
+.stbl .r{text-align:right}.stbl td.r{font-weight:500}.stbl td.k{font-weight:700}
+.scards{display:none}.sc{border:1px solid var(--border);border-radius:12px;padding:12px 14px}.sc+.sc{margin-top:10px}
+.sc .h{display:flex;justify-content:space-between;align-items:baseline;gap:8px}.sc .h b{font-size:14px}.sc .h span{font-size:12px;color:var(--muted-fg)}
+.sc dl{display:grid;grid-template-columns:1fr 1fr;gap:8px 16px;margin:10px 0 0}.sc dt{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted-fg)}.sc dd{margin:2px 0 0;font-size:14px;font-weight:600;font-variant-numeric:tabular-nums}
+.modal.wide{display:flex;flex-direction:column;overflow:hidden}.modal.wide #bSch{min-height:0;display:flex;flex-direction:column}.modal.wide .sch{max-height:none;min-height:0;flex:1 1 auto}
+@media(max-width:600px){.sch{display:none}.scards{display:block}}
+@media(max-width:600px){.modal-back:has(.wide){padding:0;align-items:end}.modal-back:has(.wide){overflow:hidden}.modal.wide{max-width:none;height:100%;max-height:100%;box-sizing:border-box;border-radius:0;border:0;display:flex;flex-direction:column;overflow:hidden}.modal.wide #bSch{display:block;flex:1 1 0;min-height:0;overflow-y:auto}.mtools .btn{white-space:nowrap}}
+html:has(.modal-back.open),html:has(.modal-back.open) body{overflow:hidden}.modal.wide #bSch,.sch{scrollbar-width:thin}
+@media(max-width:600px){.modal-back.open .modal.wide{animation:sheet .3s ease-out}}
+@keyframes sheet{from{transform:translateY(24px);opacity:0}}
+@media(max-width:860px){.topbar{display:none}.tbl-wrap{display:none}.cards{display:block}
+ .lc{padding:14px 16px;border-bottom:1px solid var(--border)}.lc:last-child{border:0}
+ .lc .t{display:flex;justify-content:space-between;gap:12px}.lc .acts{margin-top:10px}}
+@media print{body.printing-sch>*:not(#mSch){display:none!important}body.printing-sch #mSch{position:static;display:block!important;background:none;backdrop-filter:none;padding:0;animation:none}
+ body.printing-sch #mSch .modal{max-width:none;height:auto;max-height:none;box-shadow:none;border:0;animation:none;padding:0;overflow:visible}.mtools,.mclose{display:none!important}.stbl{white-space:normal}.sch{max-height:none;overflow:visible;border-radius:0}.scards{display:none!important}.sch{display:block!important}}
+</style>
+</head>
+<body>
+<div class="shell" data-od-id="app-shell">
+  <aside class="side" data-od-id="sidebar">
+    <a class="brand" href="customer-dashboard.html"><span class="mk"><img src="assets/logo-white.png" alt=""></span><span>TDFC Companion App</span></a>
+    <div class="grp">Platform</div>
+    <nav aria-label="Main">
+      <a href="customer-dashboard.html"><svg class="ico" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Home</a>
+      <a class="on" href="loan-transactions.html" aria-current="page"><svg class="ico" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>Loan Transactions</a>
+    </nav>
+    <div class="foot"><a class="user" href="settings-profile.html"><span class="avatar">MS</span><span><b>Santos, Maria L.</b><small>client</small></span></a></div>
+  </aside>
+  <div class="main">
+    <header class="topbar" data-od-id="breadcrumbs"><span>Loans</span><span>/</span><b>Transactions</b></header>
+    <main class="content" data-od-id="transactions-content">
+      <div data-od-id="page-header"><h1 style="font-size:24px;font-weight:700">Loan Transactions</h1><p class="muted" style="margin-top:4px">View your loan transaction history and amortization schedules</p></div>
+      <section class="panel" data-od-id="transactions-table"><div id="tbox"></div></section>
+    </main>
+  </div>
+</div>
+<nav class="mnav" aria-label="Mobile" data-od-id="mobile-nav">
+  <a href="customer-dashboard.html"><svg class="ico" style="width:26px;height:26px" viewBox="0 0 24 24"><path d="M3 10l9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg>Home</a>
+  <a class="on" href="loan-transactions.html" style="color:var(--coral-ink)"><svg class="ico" style="width:26px;height:26px" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>Loans</a>
+  <a href="settings-profile.html"><svg class="ico" style="width:26px;height:26px" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>Account</a>
+</nav>
+
+<div class="modal-back" id="mDet" role="dialog" aria-modal="true" aria-labelledby="tDet" data-od-id="details-modal"><div class="modal"><div class="mh"><h3 id="tDet">Transaction Details</h3><button class="btn ghost sm mclose" data-close aria-label="Close">✕</button></div><div id="bDet"></div></div></div>
+<div class="modal-back" id="mSch" role="dialog" aria-modal="true" aria-labelledby="tSch" data-od-id="schedule-modal"><div class="modal wide"><div class="mh"><h3 id="tSch">Amortization Schedule</h3><span class="mtools"><button class="btn sm" id="pSch" hidden onclick="window.print()"><svg class="ico" style="width:12px;height:12px" viewBox="0 0 24 24"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>Print / PDF</button><button class="btn ghost sm mclose" data-close aria-label="Close">✕</button></span></div><div id="bSch"></div></div></div>
+
+<script>
+// SAMPLE DATA — shape of Inertia prop `transactions`
+const T=[
+['LN-2025-00088','Appliance Loan','2025-11-02',24000,24000],['LN-2025-00031','Emergency Loan','2025-08-04',35000,21800],
+['LN-2024-00123','Regular Loan','2024-10-15',120000,84500],['LN-2023-00417','Salary Loan','2023-03-12',60000,9200],
+['LN-2023-00201','Educational Loan','2023-01-20',45000,0],['LN-2022-00355','Regular Loan','2022-11-08',80000,0],
+['LN-2022-00112','Emergency Loan','2022-05-30',20000,0],['LN-2021-00290','Salary Loan','2021-09-14',50000,0],
+['LN-2021-00077','Appliance Loan','2021-02-26',18000,0],['LN-2020-00418','Regular Loan','2020-12-03',70000,0],
+['LN-2020-00199','Emergency Loan','2020-06-18',15000,0],['LN-2019-00342','Salary Loan','2019-10-09',40000,0],
+['LN-2019-00120','Regular Loan','2019-03-22',55000,0],['LN-2018-00265','Emergency Loan','2018-08-01',12000,0],
+['LN-2018-00091','Educational Loan','2018-01-15',30000,0],['LN-2017-00233','Regular Loan','2017-07-27',45000,0],
+['LN-2017-00054','Salary Loan','2017-02-10',25000,0]].map(([lnnumber,description,date,principal,raw_balance])=>({lnnumber,description,date,principal,raw_balance}));
+const state=new URLSearchParams(location.search).get('state')||'ready'; // ready | empty
+const data=state==='empty'?[]:T;
+const peso=n=>Number.isFinite(n)?new Intl.NumberFormat('en-PH',{style:'currency',currency:'PHP',maximumFractionDigits:2}).format(n):'₱0.00';
+const fd=i=>i?new Date(i).toLocaleDateString('en-PH'):'';
+const $=id=>document.getElementById(id);
+const eye='<svg class="ico" style="width:12px;height:12px" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>';
+const doc='<svg class="ico" style="width:12px;height:12px" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h8"/></svg>';
+const acts=l=>`<div class="acts"><button class="btn sm d" data-d="${l}">${eye}Details</button><button class="btn sm s" data-s="${l}">${doc}Schedule</button></div>`;
+let sk='date',asc=false,per=15,pg=0;
+function render(){
+ const box=$('tbox');
+ if(!data.length){box.innerHTML='<div class="empty">No loan transactions found</div>';return}
+ const col={date:'date',lnnumber:'lnnumber',description:'description',principal:'principal',balance:'raw_balance'}[sk];
+ const d=[...data].sort((a,b)=>(a[col]>b[col]?1:a[col]<b[col]?-1:0)*(asc?1:-1));
+ const s=pg*per,v=d.slice(s,s+per);
+ const th=(k,l,r)=>`<th class="${r?'r':''}" aria-sort="${sk===k?(asc?'ascending':'descending'):'none'}"><button data-k="${k}">${l} ${sk===k?(asc?'↑':'↓'):''}</button></th>`;
+ box.innerHTML=`<div class="tbl-wrap"><table class="tbl"><thead><tr>${th('date','Date')}${th('lnnumber','Loan Number')}${th('description','Description')}${th('principal','Principal',1)}${th('balance','Balance',1)}<th>Actions</th></tr></thead><tbody>`+
+ v.map(r=>`<tr><td class="muted">${fd(r.date)}</td><td><b style="font-weight:500">${r.lnnumber}</b></td><td><b>${r.description}</b></td><td class="r mono"><b>${peso(r.principal)}</b></td><td class="r mono"><b>${peso(r.raw_balance)}</b></td><td>${acts(r.lnnumber)}</td></tr>`).join('')+
+ `</tbody></table></div><div class="cards">`+v.map(r=>`<div class="lc"><div class="t"><div><b>${r.description}</b><div class="muted" style="font-size:13px">${r.lnnumber} · ${fd(r.date)}</div></div><div style="text-align:right"><b>${peso(r.principal)}</b><div class="muted" style="font-size:12px">Bal ${peso(r.raw_balance)}</div></div></div>${acts(r.lnnumber)}</div>`).join('')+
+ `</div><div class="pager">Rows per page: <select id="per" aria-label="Rows per page">${[10,15,25,50].map(n=>`<option ${n===per?'selected':''}>${n}</option>`).join('')}</select><span>${s+1}-${Math.min(s+per,d.length)} of ${d.length}</span><button class="btn sm ghost" id="pv" ${pg?'':'disabled'} aria-label="Previous page">‹</button><button class="btn sm ghost" id="nx" ${s+per<d.length?'':'disabled'} aria-label="Next page">›</button></div>`;
+ box.querySelectorAll('th button').forEach(b=>b.onclick=()=>{asc=sk===b.dataset.k?!asc:true;sk=b.dataset.k;render()});
+ $('per').onchange=e=>{per=+e.target.value;pg=0;render()};$('pv').onclick=()=>{pg--;render()};$('nx').onclick=()=>{pg++;render()};
+ box.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>openDet(b.dataset.d));box.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>openSch(b.dataset.s));
+}
+function row(l,v,b){return `<div><label>${l}</label><p ${b?'style="font-weight:700"':''}>${v}</p></div>`}
+const alertI='<svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>';
+let timer;
+function openDet(ln){
+ const r=T.find(x=>x.lnnumber===ln);$('mDet').classList.add('open');
+ $('bDet').innerHTML='<div class="mstate" role="status"><span class="spin"></span>Loading transaction details...</div>';
+ clearTimeout(timer);timer=setTimeout(()=>{
+  if(ln==='LN-2017-00054'){$('bDet').innerHTML=`<div class="mstate e" role="alert">${alertI}<p>Failed to load transaction details</p><button class="btn sm" style="margin-top:8px" onclick="openDet('${ln}')">Try again</button></div>`;return}
+  $('bDet').innerHTML=`<div class="dl"><div class="grid2">${row('Loan Number',r.lnnumber)}${row('Reference','REF-'+r.lnnumber.slice(3).replace(/-/g,''))}</div>
+  <div class="grid2">${row('Transaction Code','LNREL')}${row('Principal',peso(r.principal),1)}</div>
+  <div class="grid2">${row('Payment',peso(r.principal-r.raw_balance),1)}${row('Balance',peso(r.raw_balance),1)}</div>
+  ${row('Charges',peso(r.principal*.02),1)}${row('Control Number','CTL-'+r.date.replace(/-/g,'')+'-0'+(r.principal%97))}</div>`},700);
+}
+function openSch(ln){
+ const r=T.find(x=>x.lnnumber===ln);$('mSch').classList.add('open');$('pSch').hidden=true;
+ $('bSch').innerHTML='<div class="mstate" role="status"><span class="spin g"></span>Loading amortization schedule...</div>';
+ clearTimeout(timer);timer=setTimeout(()=>{
+  if(ln==='LN-2017-00054'){$('bSch').innerHTML=`<div class="mstate e" role="alert">${alertI}<p>Failed to load amortization schedule</p></div>`;return}
+  if(r.raw_balance===0&&r.principal<20000){$('bSch').innerHTML='<div class="mstate"><svg class="ico" style="width:48px;height:48px;color:oklch(.7 0 0)" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg><p>No amortization schedule data available for this transaction.</p></div>';return}
+  const n=12,pp=r.principal/n;let bal=r.principal,h='',c='';const dt=new Date(r.date);
+  for(let i=1;i<=n;i++){const intr=bal*.012;bal-=pp;dt.setMonth(dt.getMonth()+1);h+=`<tr><td>${fd(dt.toISOString().slice(0,10))}</td><td class="r">${peso(pp)}</td><td class="r">${peso(intr)}</td><td class="r">${peso(pp+intr)}</td><td class="r k">${peso(Math.max(bal,0))}</td></tr>`;c+=`<div class="sc"><div class="h"><b>${fd(dt.toISOString().slice(0,10))}</b><span>Payment ${i} of ${n}</span></div><dl><div><dt>Pay Principal</dt><dd>${peso(pp)}</dd></div><div><dt>Pay Interest</dt><dd>${peso(intr)}</dd></div><div><dt>Amortization</dt><dd>${peso(pp+intr)}</dd></div><div><dt>Balance</dt><dd>${peso(Math.max(bal,0))}</dd></div></dl></div>`}
+  $('bSch').innerHTML=`<div class="sch"><table class="stbl"><thead><tr><th>Date</th><th class="r">Pay Principal</th><th class="r">Pay Interest</th><th class="r">Amortization</th><th class="r">Balance</th></tr></thead><tbody>${h}</tbody></table></div><div class="scards">${c}</div><p class="hint" style="margin-top:8px">Sample schedule for illustration.</p>`;$('pSch').hidden=false},700);
+}
+addEventListener('beforeprint',()=>document.body.classList.toggle('printing-sch',$('mSch').classList.contains('open')));addEventListener('afterprint',()=>document.body.classList.remove('printing-sch'));
+document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>b.closest('.modal-back').classList.remove('open'));
+document.querySelectorAll('.modal-back').forEach(m=>m.onclick=e=>{if(e.target===m)m.classList.remove('open')});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.modal-back.open').forEach(m=>m.classList.remove('open'))});
+render();
+</script>
+</body>
+</html>

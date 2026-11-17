@@ -1,10 +1,9 @@
-import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, Briefcase, Users, Package } from 'lucide-react';
+import { Briefcase, Calculator, ClipboardList, LayoutGrid, Package, Settings, Users } from 'lucide-react';
 import AppLogo from './app-logo';
 import { useMemo } from 'react';
 
@@ -39,6 +38,16 @@ const clientNavItems: NavItem[] = [
     href: '/loans/transactions',
     icon: Briefcase,
   },
+  {
+    title: 'Loan Calculator',
+    href: '/loans/calculator',
+    icon: Calculator,
+  },
+  {
+    title: 'Settings',
+    href: '/settings',
+    icon: Settings,
+  },
 ];
 
 const adminNavItems: NavItem[] = [
@@ -60,20 +69,7 @@ const adminNavItems: NavItem[] = [
   {
     title: 'Registrations',
     href: '/admin/registrations',
-    icon: Briefcase,
-  },
-];
-
-const footerNavItems: NavItem[] = [
-  {
-    title: 'Repository',
-    href: 'https://github.com/laravel/react-starter-kit',
-    icon: Folder,
-  },
-  {
-    title: 'Documentation',
-    href: 'https://laravel.com/docs/starter-kits#react',
-    icon: BookOpen,
+    icon: ClipboardList,
   },
 ];
 
@@ -114,7 +110,6 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter>
-        <NavFooter items={footerNavItems} className="mt-auto" />
         <NavUser />
       </SidebarFooter>
     </Sidebar>

@@ -1,71 +1,41 @@
-import Heading from '@/components/heading';
-// import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-// import { cn } from '@/lib/utils';
-// import { type NavItem } from '@/types';
-// import { Link } from '@inertiajs/react';
+import { cn } from '@/lib/utils';
+import { Link, usePage } from '@inertiajs/react';
+import { KeyRound, Sun, UserRound } from 'lucide-react';
 import { type PropsWithChildren } from 'react';
 
-// const sidebarNavItems: NavItem[] = [
-//     {
-//         title: 'Profile',
-//         href: '/settings/profile',
-//         icon: null,
-//     },
-//     {
-//         title: 'Password',
-//         href: '/settings/password',
-//         icon: null,
-//     },
-//     {
-//         title: 'Appearance',
-//         href: '/settings/appearance',
-//         icon: null,
-//     },
-// ];
+const tabs = [
+    { title: 'Profile', href: '/settings/profile', icon: UserRound },
+    { title: 'Password', href: '/settings/password', icon: KeyRound },
+    { title: 'Appearance', href: '/settings/appearance', icon: Sun },
+];
 
 export default function SettingsLayout({ children }: PropsWithChildren) {
-    // When server-side rendering, we only render the layout on the client...
-    if (typeof window === 'undefined') {
-        return null;
-    }
-
-    // const currentPath = window.location.pathname;
+    const { url } = usePage();
 
     return (
-        <div className="w-full p-0 md:p-6">
-            <div className='w-full hidden md:block'>
-                <Heading title="Settings" description="Manage your profile and account settings" />
-            </div>
-
-            <div className="flex flex-col lg:flex-row lg:space-x-12">
-                {/* <aside className="w-48 hidden md:block">
-                    <nav className="flex flex-col space-y-1 space-x-0">
-                        {sidebarNavItems.map((item, index) => (
-                            <Button
-                                key={`${item.href}-${index}`}
-                                size="sm"
-                                variant="ghost"
-                                asChild
-                                className={cn('w-full justify-start', {
-                                    'bg-muted': currentPath === item.href,
-                                })}
-                            >
-                                <Link href={item.href} prefetch>
-                                    {item.icon && <item.icon className="h-4 w-4" />}
-                                    {item.title}
-                                </Link>
-                            </Button>
-                        ))}
-                    </nav>
-                </aside> */}
-
-                <Separator className="my-6 lg:hidden hidden md:block" />
-
-                <div className="flex-1 w-full ">
-                    <section className="w-full">{children}</section>
-                </div>
-            </div>
+        <div className="mx-auto flex w-full max-w-[1120px] flex-col gap-4 p-4 min-[860px]:flex-row min-[860px]:items-start min-[860px]:gap-8 md:p-6">
+            <h1 className="sr-only">Settings</h1>
+            <nav aria-label="Settings" className="flex gap-0.5 overflow-x-auto border-b border-border pb-2 min-[860px]:sticky min-[860px]:top-6 min-[860px]:w-[200px] min-[860px]:flex-none min-[860px]:flex-col min-[860px]:overflow-visible min-[860px]:border-b-0 min-[860px]:pb-0">
+                {tabs.map(({ title, href, icon: Icon }) => {
+                    const on = url.startsWith(href);
+                    return (
+                        <Link
+                            key={href}
+                            href={href}
+                            prefetch
+                            aria-current={on ? 'page' : undefined}
+                            className={cn(
+                                'inline-flex h-10 items-center gap-2.5 rounded-lg px-3 text-sm whitespace-nowrap',
+                                on ? 'bg-primary font-semibold text-primary-foreground' : 'font-medium text-muted-foreground hover:bg-muted hover:text-foreground',
+                            )}
+                        >
+                            <Icon className="size-4" aria-hidden />
+                            {title}
+                        </Link>
+                    );
+                })}
+            </nav>
+            <div className="min-w-0 flex-1">{children}</div>
         </div>
     );
 }

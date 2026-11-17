@@ -332,7 +332,7 @@ export default function Register({ adminMode = false }: Props) {
 
                             <div className="mt-6 flex items-center justify-between gap-3">
                                 <SecondaryButton onClick={() => setStep(1)}>← Back</SecondaryButton>
-                                <PrimaryButton type="submit" variant="pill" disabled={processing}>
+                                <PrimaryButton type="submit" variant="pill" loading={processing}>
                                     REGISTER
                                 </PrimaryButton>
                             </div>

@@ -1,554 +1,332 @@
-// resources/js/pages/dashboard.tsx - CORRECTED DROP-IN REPLACEMENT
+import Modal from '@/components/auth/modal';
+import { Badge, Pager, Panel, SkelList, SkelRows, SortTh, btn, fdate, peso, useTable } from '@/components/tdfc/ui';
+import { Skeleton } from '@/components/ui/skeleton';
 import AppLayout from '@/layouts/app-layout';
-import { Head, usePage } from '@inertiajs/react';
-import { Banknote, CreditCard, PiggyBank, UsersRound } from 'lucide-react';
-import { useEffect, useMemo, useState, memo, useCallback } from 'react';
-import DataTable, { createTheme, type TableColumn } from 'react-data-table-component';
+import { Head, Link, usePage } from '@inertiajs/react';
+import { Banknote, CreditCard, Info, PiggyBank, UsersRound } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 
-// Fixed types for Inertia compatibility
-type UserShape = { 
-  name?: string; 
-  email?: string; 
-  avatar?: string | null; 
-  role?: string | null 
-};
+type RecentRow = { lnnumber: string; description: string; date: string | null; principal: number; raw_balance: number };
+type PageProps = { auth?: { user?: { name?: string; avatar?: string | null; role?: string | null } | null }; [key: string]: unknown };
 
-type PageProps = { 
-  auth?: { user?: UserShape | null };
-  [key: string]: unknown; // ESLint fix: use unknown instead of any
-};
+const firstName = (n: string) => (n.includes(',') ? (n.split(',')[1]?.trim().split(' ')[0] ?? n) : (n.split(' ')[0] ?? n));
+const cap = (s: string) => s.charAt(0) + s.slice(1).toLowerCase();
 
-type RecentRow = {
-  lnnumber: string;
-  description: string;
-  date: string | null;
-  principal: number;
-  raw_balance: number;
-};
+// ponytail: sample rule set from the mockup (repaid %); swap for the lender's real classification.
+const CLASSES: [string, string, number][] = [['A', 'Prime', 75], ['B', 'Standard', 40], ['C', 'Watch', 0]];
+const classTone: Record<string, string> = { A: 'bg-[oklch(.42_.12_155)]', B: 'bg-[oklch(.42_.13_262)]', C: 'bg-[oklch(.45_.12_55)]' };
 
-// Improved utility functions
-const formatCurrency = (amount: number): string => {
-  if (!Number.isFinite(amount)) {
-    return '₱0.00';
-  }
-  return new Intl.NumberFormat('en-PH', { 
-    style: 'currency', 
-    currency: 'PHP', 
-    maximumFractionDigits: 2 
-  }).format(amount);
-};
+const QUICK = [
+    { label: 'Loan Apply', icon: Banknote, href: '/loans/calculator' },
+    { label: 'Savings', icon: PiggyBank, soon: 'Savings goals' },
+    { label: 'Cards', icon: CreditCard, soon: 'Card management' },
+    { label: 'Beneficiaries', icon: UsersRound, soon: 'Beneficiary management' },
+];
 
-const formatDate = (iso: string | null): string => {
-  if (!iso) return '';
-  const date = new Date(iso);
-  if (!Number.isFinite(date.getTime())) {
-    return iso;
-  }
-  return date.toLocaleDateString('en-PH');
-};
-
-const getFirstName = (fullName: string): string => {
-  if (fullName.includes(',')) {
-    return fullName.split(',')[1]?.trim().split(' ')[0] ?? fullName;
-  }
-  return fullName.split(' ')[0] ?? fullName;
-};
-
-// Improved Loading Component
-const LoadingSpinner = memo(() => (
-  <div className="flex items-center justify-center py-8" role="status" aria-live="polite">
-    <div className="flex items-center gap-3">
-      <div className="animate-spin rounded-full h-6 w-6 border-2 border-[#F57979] border-t-transparent" />
-      <span className="text-gray-600 dark:text-neutral-400">Loading transactions...</span>
-    </div>
-  </div>
-));
-LoadingSpinner.displayName = 'LoadingSpinner';
-
-// Error Message Component
-const ErrorMessage = memo<{ message: string; onRetry?: () => void }>(({ message, onRetry }) => (
-  <div className="py-8 text-center" role="alert">
-    <div className="max-w-md mx-auto">
-      <div className="text-red-600 dark:text-red-400 mb-4">
-        <p className="font-medium">{message}</p>
-      </div>
-      {onRetry && (
-        <button
-          onClick={onRetry}
-          className="px-4 py-2 bg-[#F57979] text-white rounded-lg hover:bg-[#e26d6d] transition-colors focus:outline-none focus:ring-2 focus:ring-[#F57979] focus:ring-offset-2"
-        >
-          Try Again
-        </button>
-      )}
-    </div>
-  </div>
-));
-ErrorMessage.displayName = 'ErrorMessage';
-
-// Dark theme (keep existing)
-createTheme(
-  'rb-dark',
-  {
-    text: { primary: '#e5e7eb', secondary: '#cbd5e1' },
-    background: { default: 'transparent' },
-    context: { background: '#374151', text: '#e5e7eb' },
-    divider: { default: 'rgba(120,120,120,0.25)' },
-    button: { default: '#F57979', hover: '#e26d6d', focus: '#e26d6d' },
-    striped: { default: 'rgba(255,255,255,0.02)', text: '#e5e7eb' },
-  },
-  'dark',
-);
+function Status({ loading, error, retry, empty, table }: { loading: boolean; error: string | null; retry: () => void; empty: string; table?: boolean }) {
+    if (loading)
+        return (
+            <div role="status" aria-busy="true" aria-label="Loading transactions">
+                {table ? (
+                    <table className="w-full">
+                        <tbody>
+                            <SkelRows rows={5} cols={5} />
+                        </tbody>
+                    </table>
+                ) : (
+                    <SkelList />
+                )}
+            </div>
+        );
+    if (error)
+        return (
+            <div role="alert" className="px-4 py-10 text-center text-tdfc-error">
+                <p className="mb-3 font-semibold">{error}</p>
+                <button onClick={retry} className={`${btn.base} ${btn.coral}`}>Try Again</button>
+            </div>
+        );
+    return <div className="px-4 py-10 text-center text-muted-foreground">{empty}</div>;
+}
 
 export default function Dashboard() {
-  const { props } = usePage<PageProps>();
-  const user = props.auth?.user ?? null;
-  const fullName = user?.name ?? 'Client';
-  const avatar = user?.avatar ?? null;
+    const user = usePage<PageProps>().props.auth?.user ?? null;
+    const fullName = user?.name ?? 'Client';
+    const role = (user?.role ?? 'client').toLowerCase();
 
-  // State with improved error handling
-  const [rows, setRows] = useState<RecentRow[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+    const [rows, setRows] = useState<RecentRow[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [tick, setTick] = useState(0);
+    const [soon, setSoon] = useState<string | null>(null);
+    const [showClass, setShowClass] = useState(false);
 
-  // Improved fetch with proper error handling
-  useEffect(() => {
-    let alive = true;
-    
-    const fetchData = async () => {
-      if (!alive) return;
-      
-      setLoading(true);
-      setError(null);
-      
-      try {
-        const response = await fetch('/api/transactions/recent', { 
-          headers: { 'X-Requested-With': 'XMLHttpRequest' } 
-        });
-        
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        
-        if (!alive) return;
-        
-        const items: RecentRow[] = Array.isArray(data?.items) ? data.items : [];
-        setRows(items);
-      } catch (err) {
-        if (!alive) return;
-        
-        console.error('Failed to fetch transactions:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load transactions');
-        setRows([]);
-      }
-      
-      if (alive) {
-        setLoading(false);
-      }
-    };
-    
-    fetchData();
-    
-    return () => {
-      alive = false;
-    };
-  }, []);
+    useEffect(() => {
+        let alive = true;
+        setLoading(true);
+        setError(null);
+        fetch('/api/transactions/recent', { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then((r) => {
+                if (!r.ok) throw new Error(`HTTP error! status: ${r.status}`);
+                return r.json();
+            })
+            .then((d) => alive && setRows(Array.isArray(d?.items) ? d.items : []))
+            .catch((e) => alive && (setError(e instanceof Error ? e.message : 'Failed to load transactions'), setRows([])))
+            .finally(() => alive && setLoading(false));
+        return () => {
+            alive = false;
+        };
+    }, [tick]);
+    const retry = () => setTick((t) => t + 1);
 
-  // Retry function - triggers a re-fetch
-  const handleRetry = useCallback(() => {
-    setError(null);
-    setLoading(true);
-    setRows([]);
-    
-    // Re-trigger the fetch
-    fetch('/api/transactions/recent', { 
-      headers: { 'X-Requested-With': 'XMLHttpRequest' } 
-    })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json();
-      })
-      .then(data => {
-        const items: RecentRow[] = Array.isArray(data?.items) ? data.items : [];
-        setRows(items);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error('Retry failed:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load transactions');
-        setLoading(false);
-      });
-  }, []);
+    const s = useMemo(() => {
+        const up = (r: RecentRow) => (r.lnnumber ?? '').toUpperCase();
+        const loans = rows.filter((r) => up(r).startsWith('LN'));
+        const active = loans.filter((r) => r.raw_balance > 0);
+        const savings = rows.filter((r) => up(r).startsWith('SV')).reduce((a, r) => a + Number(r.principal ?? 0), 0);
+        const out = active.reduce((a, r) => a + r.raw_balance, 0);
+        const paid = loans.reduce((a, r) => a + r.principal - r.raw_balance, 0);
+        const pct = paid + out ? (paid / (paid + out)) * 100 : 0;
+        // next payment: 12-month amortization convention, same as the schedule view
+        const next = active
+            .map((l) => {
+                const pp = l.principal / 12;
+                const made = Math.min(Math.round((l.principal - l.raw_balance) / pp), 11);
+                const due = new Date(`${l.date}T00:00:00`);
+                due.setMonth(due.getMonth() + made + 1);
+                return { desc: l.description, due, amt: pp + l.raw_balance * 0.012 };
+            })
+            .sort((a, b) => +a.due - +b.due)[0];
+        return { loans, active, savings, out, paid, pct, next, fullyPaid: loans.length - active.length };
+    }, [rows]);
 
-  // Stats calculation (keep your existing logic)
-  const stats = useMemo(() => {
-    let svPrincipal = 0;
-    let lnBalance = 0;
-    let countLN = 0;
-    const total = rows.length;
+    const cls = CLASSES.find((c) => s.pct >= c[2]) ?? CLASSES[2];
+    const t = useTable(s.loans, { key: 'date' }, (r, k) => (k === 'amount' ? r.principal : k === 'balance' ? r.raw_balance : k === 'status' ? Number(r.raw_balance > 0) : String((r as never)[k] ?? '')));
+    const savingsText = s.savings.toLocaleString('en-PH', { minimumFractionDigits: 2 });
 
-    for (const r of rows) {
-      const code = (r.lnnumber ?? '').toUpperCase();
-      const principal = Number(r.principal ?? 0);
-      const rawBal = Number(r.raw_balance ?? 0);
+    const ClassBtn = () =>
+        s.loans.length ? (
+            <button type="button" onClick={() => setShowClass(true)} aria-haspopup="dialog" aria-label="Borrower class: why this class?" className={`mt-2.5 inline-flex min-h-9 items-center gap-2 rounded-full pr-3 pl-3.5 text-[13px] font-bold text-white ${classTone[cls[0]]}`}>
+                Class {cls[0]}
+                <Info className="size-4.5" aria-hidden />
+            </button>
+        ) : null;
 
-      if (code.startsWith('SV')) {
-        svPrincipal += principal;
-      }
-      if (code.startsWith('LN')) {
-        lnBalance += rawBal;
-        countLN++;
-      }
-    }
-    const lnPercent = total > 0 ? (countLN / total) * 100 : 0;
-
-    return { svPrincipal, lnBalance, lnPercent };
-  }, [rows]);
-
-  const savings = stats.svPrincipal;
-  const deposits = stats.svPrincipal;
-  const withdrawals = stats.lnBalance;
-  const depositsChange = stats.lnPercent;
-  const withdrawalsChange = stats.lnPercent;
-
-  // Filter loan transactions
-  const allRows = useMemo(() => 
-    rows.filter(r => (r.lnnumber ?? '').toUpperCase().startsWith('LN')), 
-    [rows]
-  );
-
-  // Fixed DataTable columns
-  const columns = useMemo<TableColumn<RecentRow>[]>(() => [
-    {
-      name: 'Date',
-      selector: (r: RecentRow) => formatDate(r.date),
-      sortable: true,
-      grow: 1,
-      cell: (r: RecentRow) => (
-        <time 
-          dateTime={r.date || undefined}
-          className="text-sm text-gray-600 dark:text-neutral-300"
-        >
-          {formatDate(r.date)}
-        </time>
-      ),
-    },
-    {
-      name: 'Description',
-      selector: (r: RecentRow) => r.description,
-      sortable: true,
-      grow: 2,
-      cell: (r: RecentRow) => (
-        <span className="font-semibold text-gray-800 dark:text-neutral-100">
-          {r.description}
-        </span>
-      ),
-    },
-    {
-      name: 'Amount',
-      selector: (r: RecentRow) => r.principal,
-      sortable: true,
-      cell: (r: RecentRow) => {
-        const val = Number(r.principal ?? 0);
-        return (
-          <span className="font-semibold text-gray-800 dark:text-neutral-100">
-            {formatCurrency(Math.abs(val))}
-          </span>
-        );
-      },
-    },
-  ], []);
-
-  // Theme detection
-  const isDark = typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
-  const tableTheme = isDark ? 'rb-dark' : 'default';
-
-  const firstName = getFirstName(fullName);
-
-  // Mobile View Component
-  const Mobile = () => (
-    <section className="md:hidden">
-      <div className="relative -mx-4 mb-6 rounded-b-4xl bg-[#F57979] px-6 pt-6 pb-6 text-white">
-        <div className="flex items-start justify-between">
-          <div>
-            <p className="text-lg/5 font-extrabold">Welcome,</p>
-            <h1 className="text-4xl font-extrabold tracking-tight">{firstName}</h1>
-            <p className="mt-2 text-2xl/6 font-medium opacity-90">{(user?.role ?? 'client').toLowerCase()}</p>
-          </div>
-          <div className="h-16 w-16 overflow-hidden rounded-full ring-2 ring-white/60">
-            {avatar ? (
-              <img src={avatar} alt={`${fullName}'s avatar`} className="h-full w-full object-cover" />
-            ) : (
-              <div className="grid h-full w-full place-items-center bg-white/20 text-white">
-                <span aria-hidden="true">👤</span>
-                <span className="sr-only">{fullName}'s avatar placeholder</span>
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="mt-5 text-center">
-          <div className="text-[64px] leading-none tracking-tight">
-            <span>₱</span>
-            <span className="font-extrabold">
-              {savings.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
-            </span>
-          </div>
-          <p className="mt-2 text-2xl font-extrabold uppercase">Personal Savings</p>
-        </div>
-
-        <div className="mt-4 h-0.5 w-full bg-white/80" />
-
-        <div className="mt-5 rounded-3xl bg-[#FFE57E] px-6 py-5">
-          <div className="grid grid-cols-2 gap-5">
-            <div className="flex flex-col items-center gap-3">
-              <button
-                type="button"
-                className="grid size-20 place-items-center rounded-2xl bg-[#87bfd3] transition-colors hover:bg-[#9cc4d2] focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-[#FFE57E]"
-                aria-label="Apply for loan"
-              >
-                <Banknote className="size-10 text-white" aria-hidden="true" />
-              </button>
-              <span className="text-lg font-bold text-[#1f4d5a]">Loan Apply</span>
-            </div>
-
-            <div className="flex flex-col items-center gap-3">
-              <button
-                type="button"
-                className="grid size-20 place-items-center rounded-2xl bg-[#87bfd3] transition-colors hover:bg-[#9cc4d2] focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-[#FFE57E]"
-                aria-label="Manage savings"
-              >
-                <PiggyBank className="size-10 text-white" aria-hidden="true" />
-              </button>
-              <span className="text-lg font-bold text-[#1a3f7a]">Savings</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Recent transactions */}
-      <div className="rounded-2xl border border-gray-200 bg-white p-3 dark:border-neutral-700 dark:bg-neutral-900">
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-2xl font-semibold text-gray-800 dark:text-neutral-100">Recent Transactions</h2>
-          <a 
-            href="#" 
-            className="text-sm font-semibold text-[#F57979] hover:underline focus:outline-none focus:ring-2 focus:ring-[#F57979] focus:ring-offset-2 rounded"
-          >
-            View All
-          </a>
-        </div>
-
-        {loading && <LoadingSpinner />}
-        
-        {error && <ErrorMessage message={error} onRetry={handleRetry} />}
-        
-        {!loading && !error && allRows.length === 0 && (
-          <div className="px-2 py-4 text-sm text-gray-500 dark:text-neutral-400 text-center">
-            No transactions found.
-          </div>
-        )}
-
-        {!loading && !error && allRows.length > 0 && (
-          <ul className="divide-y divide-gray-200 dark:divide-neutral-800">
-            {allRows.map((t, idx) => {
-              const principal = Number(t.principal ?? 0);
-              const balanceRow = principal - Number(t.raw_balance ?? 0);
-
-              return (
-                <li key={t.lnnumber || `transaction-${idx}`} className="flex items-start justify-between px-2 py-4">
-                  <div className="pr-4">
-                    <div className="font-semibold text-gray-900 dark:text-neutral-100">{t.description}</div>
-                    <time 
-                      dateTime={t.date || undefined}
-                      className="text-sm text-gray-500 dark:text-neutral-400"
-                    >
-                      {formatDate(t.date)}
-                    </time>
-                  </div>
-
-                  <div className="text-right">
-                    <div className="font-semibold text-gray-800 dark:text-neutral-100">
-                      {formatCurrency(Math.abs(principal))}
+    return (
+        <AppLayout breadcrumbs={[{ title: 'Dashboard', href: '/dashboard' }]}>
+            <Head title="Dashboard" />
+            <div id="main-content" className="p-4 md:p-6">
+                {/* Mobile */}
+                <section className="grid gap-4 md:hidden">
+                    <div className="-mx-4 -mt-4 rounded-b-[32px] bg-tdfc-coral p-6 text-tdfc-on-coral">
+                        <div className="flex items-start justify-between">
+                            <div>
+                                <p className="text-lg font-extrabold">Welcome,</p>
+                                <h1 className="text-4xl leading-tight font-extrabold tracking-tight">{cap(firstName(fullName))}</h1>
+                                <p className="mt-2.5 inline-block rounded-full bg-black/10 px-2.5 py-0.5 text-xs font-bold tracking-wider uppercase">{role}</p>
+                                <div><ClassBtn /></div>
+                            </div>
+                            <div className="grid size-14 place-items-center overflow-hidden rounded-full bg-white/55 text-[22px] font-extrabold ring-2 ring-white/70" role="img" aria-label={fullName}>
+                                {user?.avatar ? <img src={user.avatar} alt="" className="size-full object-cover" /> : fullName.charAt(0).toUpperCase()}
+                            </div>
+                        </div>
+                        <p className="mt-5 text-center text-xs font-bold tracking-widest uppercase opacity-80">Personal savings</p>
+                        <p className="mt-1 text-center text-[42px] leading-tight">{loading ? <Skeleton className="mx-auto h-10 w-48 bg-black/10" /> : <>₱<b className="font-extrabold">{savingsText}</b></>}</p>
+                        <hr className="my-4 h-px border-0 bg-black/20" />
+                        <div className="grid grid-cols-2 gap-2 rounded-3xl bg-tdfc-sun p-3 text-center">
+                            {QUICK.slice(0, 2).map((q) => {
+                                const inner = (
+                                    <>
+                                        <span className="grid size-16 place-items-center rounded-2xl bg-tdfc-on-coral text-white"><q.icon className="size-8" /></span>
+                                        {q.label}
+                                    </>
+                                );
+                                const c = 'grid min-h-11 justify-items-center gap-2 rounded-2xl p-3.5 text-base font-bold hover:bg-white/35';
+                                return q.href ? <Link key={q.label} href={q.href} className={c}>{inner}</Link> : <button key={q.label} type="button" onClick={() => setSoon(q.soon!)} className={c}>{inner}</button>;
+                            })}
+                        </div>
                     </div>
-                    <div className="text-xs text-gray-500 dark:text-neutral-400">
-                      {formatCurrency(Math.abs(balanceRow))}
+                    {s.next && (
+                        <Panel className="flex items-center justify-between gap-3 rounded-2xl px-4 py-3.5">
+                            <div>
+                                <small className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">Next payment due</small>
+                                <div className="text-[15px] font-bold">{fdate(s.next.due.toISOString().slice(0, 10))}</div>
+                            </div>
+                            <div className="text-right">
+                                <b className="text-lg tabular-nums">{peso(s.next.amt)}</b>
+                                <div className="text-xs text-muted-foreground">{s.next.desc}</div>
+                            </div>
+                        </Panel>
+                    )}
+                    <Panel className="rounded-2xl p-3">
+                        <div className="mb-1 flex items-center justify-between">
+                            <h2 className="text-[22px] font-semibold">Recent Transactions</h2>
+                            <Link href="/loans/transactions" className="font-semibold text-tdfc-coral-ink hover:underline">View All</Link>
+                        </div>
+                        {s.loans.length ? (
+                            <ul>
+                                {s.loans.map((r) => (
+                                    <li key={r.lnnumber} className="flex items-start justify-between gap-4 border-b border-border px-3 py-3.5 last:border-0">
+                                        <div>
+                                            <div className="font-semibold">{r.description}</div>
+                                            <time className="text-[13px] text-muted-foreground">{fdate(r.date)}</time>
+                                        </div>
+                                        <div className="text-right font-semibold">
+                                            {peso(Math.abs(r.principal))}
+                                            <small className="block text-xs font-normal text-muted-foreground">Bal {peso(r.raw_balance)}</small>
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <Status loading={loading} error={error} retry={retry} empty="No transactions found." />
+                        )}
+                    </Panel>
+                </section>
+
+                {/* Desktop */}
+                <section className="hidden gap-5 md:grid xl:grid-cols-12">
+                    <div className="flex flex-wrap justify-between gap-8 rounded-[14px] bg-tdfc-coral p-7 text-tdfc-on-coral xl:col-span-8">
+                        <div>
+                            <p className="text-sm opacity-90">Welcome,</p>
+                            <h4 className="mt-0.5 text-[22px] font-extrabold tracking-wide">{fullName.toUpperCase()}</h4>
+                            <p className="text-sm opacity-90">{role}</p>
+                            <ClassBtn />
+                            <div className="mt-6 text-[42px] leading-none font-extrabold tabular-nums">{loading ? <Skeleton className="h-10 w-56 bg-black/10" /> : `₱${savingsText}`}</div>
+                            <p className="mt-2 text-[13px] font-semibold uppercase">Personal Savings</p>
+                        </div>
+                        <div className="grid min-w-75 flex-1 content-center gap-6 border-l border-black/25 pl-8 sm:grid-cols-2">
+                            {[
+                                ['Loan repayment', s.paid, s.pct, `${s.pct.toFixed(0)}% of ${peso(s.paid + s.out)} borrowed`],
+                                ['Outstanding balance', s.out, 100 - s.pct, `${(100 - s.pct).toFixed(0)}% left · ${s.active.length} active loans`],
+                            ].map(([l, v, p, note]) => (
+                                <div key={l as string}>
+                                    <small className="font-bold opacity-85">{l}</small>
+                                    <b className="mt-1 block text-2xl font-extrabold tabular-nums">{loading ? <Skeleton className="h-7 w-32 bg-black/10" /> : peso(v as number)}</b>
+                                    <div className="mt-2.5 h-2 rounded-full bg-black/20"><i className="block h-full rounded-full bg-black/75" style={{ width: `${p}%` }} /></div>
+                                    <div className="mt-1 text-xs font-bold">{note}</div>
+                                </div>
+                            ))}
+                        </div>
                     </div>
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </div>
-    </section>
-  );
 
-  // Desktop View Component
-  const Desktop = () => (
-    <section className="hidden md:block">
-      <div className="w-full px-4 py-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-12 gap-6">
-          {/* Balance */}
-          <div className="col-span-12 rounded-2xl border border-gray-200 bg-[#F7F9FC] p-4 lg:col-span-4 dark:border-neutral-700 dark:bg-neutral-900">
-            <h3 className="mb-3 text-lg font-semibold text-gray-800 dark:text-neutral-100">Balance</h3>
-            <div className="rounded-2xl bg-[#F57979] p-5 text-white shadow-sm">
-              <p className="text-sm/5 opacity-90">Welcome,</p>
-              <h4 className="mt-1 text-2xl font-extrabold tracking-wide">{fullName.toUpperCase()}</h4>
-              <p className="text-sm/5 opacity-90">{(user?.role ?? 'client').toLowerCase()}</p>
+                    <Panel className="p-5 xl:col-span-4">
+                        <h2 className="mb-3.5 text-base font-semibold">Quick Actions</h2>
+                        <div className="grid grid-cols-2 gap-3">
+                            {QUICK.map((q) => {
+                                const inner = (
+                                    <>
+                                        <span className="grid size-9 place-items-center rounded-lg bg-[color-mix(in_oklch,#3b82f6_18%,white)] text-[oklch(.35_.13_262)]"><q.icon className="size-4" /></span>
+                                        {q.label}
+                                    </>
+                                );
+                                const c = 'flex items-center gap-3 rounded-[10px] border border-border p-3 text-sm font-semibold hover:bg-muted';
+                                return q.href ? <Link key={q.label} href={q.href} className={c}>{inner}</Link> : <button key={q.label} type="button" onClick={() => setSoon(q.soon!)} className={c}>{inner}</button>;
+                            })}
+                        </div>
+                    </Panel>
 
-              <div className="mt-6 text-[44px] leading-none font-extrabold">
-                ₱{savings.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
-              </div>
-              <p className="mt-2 text-sm font-semibold uppercase opacity-90">Personal Savings</p>
-            </div>
-          </div>
+                    <Panel className="p-5 xl:col-span-8">
+                        <div className="mb-3.5 flex items-center justify-between">
+                            <h2 className="text-base font-semibold">Recent Transactions</h2>
+                            <Link href="/loans/transactions" className="text-sm font-semibold text-tdfc-coral-ink hover:underline">View All</Link>
+                        </div>
+                        <div className="overflow-hidden rounded-xl border border-border">
+                            {s.loans.length ? (
+                                <>
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full border-collapse">
+                                            <thead>
+                                                <tr className="border-b border-border">
+                                                    <SortTh t={t} k="date">Date</SortTh>
+                                                    <SortTh t={t} k="description">Description</SortTh>
+                                                    <SortTh t={t} k="amount" right>Principal</SortTh>
+                                                    <SortTh t={t} k="balance" right>Balance</SortTh>
+                                                    <SortTh t={t} k="status">Status</SortTh>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {t.view.map((r) => (
+                                                    <tr key={r.lnnumber} className="border-b border-border last:border-0 even:bg-tdfc-stripe hover:bg-muted">
+                                                        <td className="px-4 py-3.5 text-muted-foreground">{fdate(r.date)}</td>
+                                                        <td className="px-4 py-3.5 font-bold">{r.description}</td>
+                                                        <td className="px-4 py-3.5 text-right font-bold tabular-nums">{peso(Math.abs(r.principal))}</td>
+                                                        <td className="px-4 py-3.5 text-right font-bold tabular-nums">{peso(r.raw_balance)}</td>
+                                                        <td className="px-4 py-3.5"><Badge tone={r.raw_balance > 0 ? 'info' : 'ok'}>{r.raw_balance > 0 ? 'Active' : 'Fully Paid'}</Badge></td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <Pager t={t} options={[5, 10, 15, 20]} />
+                                </>
+                            ) : (
+                                <Status loading={loading} error={error} retry={retry} empty="No loan transactions found" table />
+                            )}
+                        </div>
+                    </Panel>
 
-          {/* Quick Actions */}
-          <div className="col-span-12 rounded-2xl border border-gray-200 bg-[#F7F9FC] p-4 lg:col-span-4 dark:border-neutral-700 dark:bg-neutral-900">
-            <h3 className="mb-3 text-lg font-semibold text-gray-800 dark:text-neutral-100">Quick Actions</h3>
-            <div className="grid grid-cols-2 gap-5">
-              <a 
-                className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white px-3 py-3 hover:bg-gray-50 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:bg-neutral-800/80 transition-colors focus:outline-none focus:ring-2 focus:ring-[#F57979] focus:ring-offset-2" 
-                href="#"
-                aria-label="Apply for loan"
-              >
-                <div className="grid size-9 place-items-center rounded-lg bg-[#86c7ff]/30 text-[#1a3f7a]" aria-hidden="true">
-                  <Banknote className="size-5" />
-                </div>
-                <span className="text-sm font-semibold text-gray-800 dark:text-neutral-100">Loan Apply</span>
-              </a>
-              <a 
-                className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white px-3 py-3 hover:bg-gray-50 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:bg-neutral-800/80 transition-colors focus:outline-none focus:ring-2 focus:ring-[#F57979] focus:ring-offset-2" 
-                href="#"
-                aria-label="Manage savings"
-              >
-                <div className="grid size-9 place-items-center rounded-lg bg-[#86c7ff]/30 text-[#1a3f7a]" aria-hidden="true">
-                  <PiggyBank className="size-5" />
-                </div>
-                <span className="text-sm font-semibold text-gray-800 dark:text-neutral-100">Savings</span>
-              </a>
-              <a 
-                className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white px-3 py-3 hover:bg-gray-50 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:bg-neutral-800/80 transition-colors focus:outline-none focus:ring-2 focus:ring-[#F57979] focus:ring-offset-2" 
-                href="#"
-                aria-label="Manage cards"
-              >
-                <div className="grid size-9 place-items-center rounded-lg bg-[#86c7ff]/30 text-[#1a3f7a]" aria-hidden="true">
-                  <CreditCard className="size-5" />
-                </div>
-                <span className="text-sm font-semibold text-gray-800 dark:text-neutral-100">Cards</span>
-              </a>
-              <a 
-                className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white px-3 py-3 hover:bg-gray-50 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:bg-neutral-800/80 transition-colors focus:outline-none focus:ring-2 focus:ring-[#F57979] focus:ring-offset-2" 
-                href="#"
-                aria-label="Manage beneficiaries"
-              >
-                <div className="grid size-9 place-items-center rounded-lg bg-[#86c7ff]/30 text-[#1a3f7a]" aria-hidden="true">
-                  <UsersRound className="size-5" />
-                </div>
-                <span className="text-sm font-semibold text-gray-800 dark:text-neutral-100">Beneficiaries</span>
-              </a>
-            </div>
-          </div>
-
-          {/* Overview */}
-          <div className="col-span-12 rounded-2xl border border-gray-200 bg-[#F7F9FC] p-4 lg:col-span-4 dark:border-neutral-700 dark:bg-neutral-900">
-            <h3 className="mb-3 text-lg font-semibold text-gray-800 dark:text-neutral-100">Overview</h3>
-
-            <div className="rounded-xl border border-gray-200 bg-white p-4 dark:border-neutral-700 dark:bg-neutral-800">
-              <div className="text-sm font-semibold text-gray-700 dark:text-neutral-200">Deposits</div>
-              <div className="mt-1 text-2xl font-extrabold text-gray-900 dark:text-neutral-50">
-                {formatCurrency(deposits)}
-              </div>
-              <div className="mt-2 h-2 w-full rounded-full bg-gray-200 dark:bg-neutral-700">
-                <div
-                  className="h-2 rounded-full bg-[#22c55e] transition-all duration-300"
-                  style={{ width: `${Math.max(0, Math.min(100, depositsChange))}%` }}
-                />
-              </div>
-              <div className="mt-1 text-xs font-semibold text-[#22c55e]">
-                {depositsChange.toFixed(0)}%
-              </div>
+                    <Panel className="p-5 xl:col-span-4">
+                        <h2 className="mb-3.5 text-base font-semibold">Payments</h2>
+                        {s.next ? (
+                            <div>
+                                <small className="font-semibold text-muted-foreground">Next payment due</small>
+                                <div className="mt-1 flex items-center justify-between gap-3">
+                                    <b className="text-[28px] font-extrabold tabular-nums">{peso(s.next.amt)}</b>
+                                    <Badge tone="info">{s.next.desc}</Badge>
+                                </div>
+                                <p className="mt-1 text-[13px] text-muted-foreground">Due <b>{fdate(s.next.due.toISOString().slice(0, 10))}</b> · 12-month amortization</p>
+                                <Link href="/loans/transactions" className="mt-2.5 inline-block text-[13px] font-semibold text-tdfc-coral-ink hover:underline">View schedule</Link>
+                            </div>
+                        ) : (
+                            <div className="py-6 text-center text-muted-foreground">No upcoming payments</div>
+                        )}
+                        <div className="mt-4">
+                            <h4 className="mb-1.5 text-xs font-semibold text-muted-foreground uppercase">Active loans</h4>
+                            {s.active.length ? (
+                                s.active.map((l) => (
+                                    <div key={l.lnnumber} className="border-b border-border py-2.5 last:border-0">
+                                        <div className="flex justify-between gap-3 text-[13px]"><b className="font-semibold">{l.description}</b><span className="tabular-nums">{peso(l.raw_balance)}</span></div>
+                                        <div className="mt-1.5 h-1.5 rounded-full bg-muted"><i className="block h-full rounded-full bg-tdfc-blue" style={{ width: `${Math.min(100, Math.round(((l.principal - l.raw_balance) / l.principal) * 100))}%` }} /></div>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="py-3 text-center text-[13px] text-muted-foreground">No active loans</div>
+                            )}
+                        </div>
+                    </Panel>
+                </section>
             </div>
 
-            <div className="mt-3 rounded-xl border border-gray-200 bg-white p-4 dark:border-neutral-700 dark:bg-neutral-800">
-              <div className="text-sm font-semibold text-gray-700 dark:text-neutral-200">Withdrawals</div>
-              <div className="mt-1 text-2xl font-extrabold text-gray-900 dark:text-neutral-50">
-                {formatCurrency(withdrawals)}
-              </div>
-              <div className="mt-2 h-2 w-full rounded-full bg-gray-200 dark:bg-neutral-700">
-                <div
-                  className="h-2 rounded-full bg-[#ef4444] transition-all duration-300"
-                  style={{ width: `${Math.max(0, Math.min(100, withdrawalsChange))}%` }}
-                />
-              </div>
-              <div className="mt-1 text-xs font-semibold text-[#ef4444]">
-                {withdrawalsChange.toFixed(0)}%
-              </div>
-            </div>
-          </div>
-
-          {/* Recent Transactions Table */}
-          <div className="col-span-12 rounded-2xl border border-gray-200 bg-[#F7F9FC] p-4 dark:border-neutral-700 dark:bg-neutral-900">
-            <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-gray-800 dark:text-neutral-100">Recent Transactions</h3>
-              <a 
-                href="#" 
-                className="text-sm font-semibold text-[#F57979] hover:underline focus:outline-none focus:ring-2 focus:ring-[#F57979] focus:ring-offset-2 rounded"
-              >
-                View All
-              </a>
-            </div>
-
-            <div className="overflow-hidden rounded-xl border border-gray-200 bg-white p-2 dark:border-neutral-700 dark:bg-neutral-800">
-              {error ? (
-                <ErrorMessage message={error} onRetry={handleRetry} />
-              ) : (
-                <DataTable
-                  columns={columns}
-                  data={allRows}
-                  progressPending={loading}
-                  striped
-                  highlightOnHover
-                  responsive
-                  theme={tableTheme}
-                  pagination
-                  paginationPerPage={10}
-                  paginationRowsPerPageOptions={[5, 10, 15, 20]}
-                  noDataComponent={
-                    <div className="py-8 text-center text-gray-500 dark:text-neutral-400">
-                      No loan transactions found
+            <Modal open={showClass} onClose={() => setShowClass(false)} label="Borrower class">
+                <div className="text-center">
+                    <h3 className="text-lg font-semibold">Class {cls[0]} · {cls[1]} borrower</h3>
+                    <p className="mt-1.5 text-muted-foreground">Your class is based on how much of your borrowed amount you have repaid.</p>
+                    <ul className="mt-4 grid gap-2.5 text-left text-sm">
+                        {[
+                            `You have repaid ${s.pct.toFixed(0)}% of ${peso(s.paid + s.out)} borrowed across all loans.`,
+                            `${s.fullyPaid} of ${s.loans.length} loans are fully paid; ${s.active.length} remain active.`,
+                            `Class ${cls[0]} applies at ${cls[2] ? `${cls[2]}% repaid or more.` : `under ${CLASSES[1][2]}% repaid.`}`,
+                        ].map((x) => (
+                            <li key={x} className="flex gap-2.5"><i className="mt-2 size-2 flex-none rounded-full bg-tdfc-coral-ink" />{x}</li>
+                        ))}
+                    </ul>
+                    <div className="mt-4 flex gap-1.5 text-left text-xs">
+                        {CLASSES.map((c) => (
+                            <div key={c[0]} className={`flex-1 rounded-[10px] border p-2 ${c === cls ? `${classTone[c[0]]} border-transparent text-white` : 'border-border text-muted-foreground'}`}>
+                                <b>Class {c[0]}</b><br />{c[2] ? `${c[2]}%+ repaid` : `Below ${CLASSES[1][2]}%`}
+                            </div>
+                        ))}
                     </div>
-                  }
-                />
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-
-  return (
-    <AppLayout breadcrumbs={[{ title: 'Dashboard', href: '/dashboard' }]}>
-      <Head title="Dashboard" />
-      
-      {/* Skip links for accessibility */}
-      <div className="sr-only focus-within:not-sr-only">
-        <a 
-          href="#main-content" 
-          className="absolute top-0 left-0 z-50 p-2 bg-[#F57979] text-white rounded-br-md focus:outline-none focus:ring-2 focus:ring-white"
-        >
-          Skip to main content
-        </a>
-      </div>
-
-      <div id="main-content" className="w-full pt-0 px-4 py-4 sm:px-6 lg:px-8">
-        <Mobile />
-        <Desktop />
-      </div>
-    </AppLayout>
-  );
+                    <button onClick={() => setShowClass(false)} className={`${btn.base} ${btn.dark} mt-5`}>Got it</button>
+                </div>
+            </Modal>
+            <Modal open={!!soon} onClose={() => setSoon(null)} label="Coming soon">
+                <div className="text-center">
+                    <h3 className="text-lg font-semibold">Coming soon</h3>
+                    <p className="mt-2 text-muted-foreground">{soon} will be available in a future release of the TDFC Companion App.</p>
+                    <button onClick={() => setSoon(null)} className={`${btn.base} ${btn.dark} mt-5`}>OK</button>
+                </div>
+            </Modal>
+        </AppLayout>
+    );
 }

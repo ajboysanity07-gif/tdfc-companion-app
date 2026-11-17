@@ -92,7 +92,7 @@ export default function Login() {
                             Forgot password?
                         </a>
                     </div>
-                    <PrimaryButton type="submit" disabled={processing}>
+                    <PrimaryButton type="submit" loading={processing}>
                         Sign In
                     </PrimaryButton>
                 </form>

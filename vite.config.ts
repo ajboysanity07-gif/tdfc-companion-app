@@ -14,6 +14,8 @@ export default defineConfig({
         react(),
         tailwindcss(),
     ],
+    // ponytail: hardcoded LAN IP for dev on other devices; update if the PC's IP changes
+    server: { host: '0.0.0.0', hmr: { host: '192.168.0.253' } },
     esbuild: {
         jsx: 'automatic',
     },

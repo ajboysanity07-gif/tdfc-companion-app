@@ -1,468 +1,292 @@
-import React, { useState, useMemo } from 'react';
-import DataTable, { createTheme, type TableColumn } from 'react-data-table-component';
-import { useQuery } from '@tanstack/react-query';
+import Modal from '@/components/auth/modal';
+import { Pager, Panel, SkelDl, SkelRows, SortTh, btn, fdate, peso, useTable } from '@/components/tdfc/ui';
 import AppLayout from '@/layouts/app-layout';
 import { Head } from '@inertiajs/react';
-import Modal from '@/components/ui/modal';
-import { Button } from '@/components/ui/button';
-import { Eye, FileText, AlertCircle } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { AlertCircle, Eye, FileText, Printer, X } from 'lucide-react';
+import { ReactNode, useState } from 'react';
 
-// ✅ TYPE DEFINITIONS
 interface Transaction {
-  lnnumber: string;
-  description: string;
-  date: string | null;
-  principal: number;
-  raw_balance: number;
+    lnnumber: string;
+    description: string;
+    date: string | null;
+    principal: number;
+    raw_balance: number;
 }
 
-// ✅ FIXED: This interface is now used in the useQuery hook return type
 interface TransactionDetail {
-  lnnumber: string;
-  reference: string;
-  transactionCode: string;
-  principal: number;
-  payment: number;
-  balance: number;
-  charges: number;
-  controlno: string;
+    lnnumber: string;
+    reference: string;
+    transactionCode: string;
+    principal: number;
+    payment: number;
+    balance: number;
+    charges: number;
+    controlno: string;
 }
 
 interface AmortizationItem {
-  date: string;
-  payPrincipal: number;
-  payInterest: number;
-  amortization: number;
-  balance: number;
+    date: string;
+    payPrincipal: number;
+    payInterest: number;
+    amortization: number;
+    balance: number;
 }
 
-interface Props {
-  transactions: Transaction[];
-}
-
-// ✅ API Response Types
-interface TransactionDetailsResponse {
-  transaction: TransactionDetail;
-}
-
-interface AmortizationScheduleResponse {
-  schedule: AmortizationItem[];
-}
-
-// Utility functions
-const formatCurrency = (amount: number): string => {
-  if (!Number.isFinite(amount)) return '₱0.00';
-  return new Intl.NumberFormat('en-PH', { 
-    style: 'currency', 
-    currency: 'PHP', 
-    maximumFractionDigits: 2 
-  }).format(amount);
+const api = async <T,>(url: string, msg: string): Promise<T> => {
+    const r = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+    if (!r.ok) throw new Error(msg);
+    return r.json();
 };
 
-const formatDate = (iso: string | null): string => {
-  if (!iso) return '';
-  const date = new Date(iso);
-  if (!Number.isFinite(date.getTime())) return iso;
-  return date.toLocaleDateString('en-PH');
-};
+const useTransactionDetails = (ln: string | null) =>
+    useQuery({
+        queryKey: ['transaction-details', ln],
+        queryFn: () => api<{ transaction: TransactionDetail }>(`/api/transactions/loan/${ln}/details`, 'Failed to fetch transaction details'),
+        enabled: !!ln,
+        staleTime: 5 * 60 * 1000,
+        retry: 2,
+    });
 
-// ✅ REACT QUERY HOOKS with proper typing
-function useTransactionDetails(lnnumber: string | null) {
-  return useQuery<TransactionDetailsResponse>({
-    queryKey: ['transaction-details', lnnumber],
-    queryFn: async (): Promise<TransactionDetailsResponse> => {
-      const response = await fetch(`/api/transactions/loan/${lnnumber}/details`, {
-        headers: { 'X-Requested-With': 'XMLHttpRequest' }
-      });
-      if (!response.ok) throw new Error('Failed to fetch transaction details');
-      return response.json();
-    },
-    enabled: !!lnnumber,
-    staleTime: 5 * 60 * 1000,
-    retry: 2,
-  });
-}
+const useAmortizationSchedule = (ln: string | null) =>
+    useQuery({
+        queryKey: ['amortization-schedule', ln],
+        queryFn: () => api<{ schedule: AmortizationItem[] }>(`/api/transactions/loan/${ln}/schedule`, 'Failed to fetch amortization schedule'),
+        enabled: !!ln,
+        staleTime: 10 * 60 * 1000,
+        retry: 2,
+    });
 
-function useAmortizationSchedule(lnnumber: string | null) {
-  return useQuery<AmortizationScheduleResponse>({
-    queryKey: ['amortization-schedule', lnnumber],
-    queryFn: async (): Promise<AmortizationScheduleResponse> => {
-      const response = await fetch(`/api/transactions/loan/${lnnumber}/schedule`, {
-        headers: { 'X-Requested-With': 'XMLHttpRequest' }
-      });
-      if (!response.ok) throw new Error('Failed to fetch amortization schedule');
-      return response.json();
-    },
-    enabled: !!lnnumber,
-    staleTime: 10 * 60 * 1000,
-    retry: 2,
-  });
-}
+const Dl = ({ l, v, b }: { l: string; v: string; b?: boolean }) => (
+    <div>
+        <label className="block text-[13px] font-medium text-neutral-600">{l}</label>
+        <p className={`mt-0.5 text-sm ${b ? 'font-bold' : ''}`}>{v}</p>
+    </div>
+);
 
-// Dark theme for DataTable
-createTheme('rb-dark', {
-  text: { primary: '#e5e7eb', secondary: '#cbd5e1' },
-  background: { default: 'transparent' },
-  context: { background: '#374151', text: '#e5e7eb' },
-  divider: { default: 'rgba(120,120,120,0.25)' },
-  button: { default: '#F57979', hover: '#e26d6d', focus: '#e26d6d' },
-  striped: { default: 'rgba(255,255,255,0.02)', text: '#e5e7eb' },
-}, 'dark');
-
-// ✅ MAIN COMPONENT
-export default function LoansTransactionPage({ transactions }: Props) {
-  
-  // Modal state management
-  const [selectedLnNumber, setSelectedLnNumber] = useState<string | null>(null);
-  const [modalType, setModalType] = useState<'details' | 'schedule' | null>(null);
-
-  // Smart data fetching with proper typing
-  const { 
-    data: transactionData, 
-    isLoading: detailsLoading, 
-    error: detailsError 
-  } = useTransactionDetails(modalType === 'details' ? selectedLnNumber : null);
-
-  const { 
-    data: scheduleData, 
-    isLoading: scheduleLoading, 
-    error: scheduleError 
-  } = useAmortizationSchedule(modalType === 'schedule' ? selectedLnNumber : null);
-
-  // Modal handlers
-  const openDetailsModal = (lnnumber: string) => {
-    console.log('Opening transaction details for:', lnnumber);
-    setSelectedLnNumber(lnnumber);
-    setModalType('details');
-  };
-
-  const openScheduleModal = (lnnumber: string) => {
-    console.log('Opening amortization schedule for:', lnnumber);
-    setSelectedLnNumber(lnnumber);
-    setModalType('schedule');
-  };
-
-  const closeModal = () => {
-    setSelectedLnNumber(null);
-    setModalType(null);
-  };
-
-  // Table configuration
-  const columns = useMemo<TableColumn<Transaction>[]>(() => [
-    {
-      name: 'Date',
-      selector: (row: Transaction) => formatDate(row.date),
-      sortable: true,
-      grow: 1,
-      cell: (row: Transaction) => (
-        <time className="text-sm text-gray-600 dark:text-neutral-300">
-          {formatDate(row.date)}
-        </time>
-      ),
-    },
-    {
-      name: 'Loan Number',
-      selector: (row: Transaction) => row.lnnumber,
-      sortable: true,
-      grow: 1,
-      cell: (row: Transaction) => (
-        <span className="font-medium text-gray-800 dark:text-neutral-100">
-          {row.lnnumber}
-        </span>
-      ),
-    },
-    {
-      name: 'Description',
-      selector: (row: Transaction) => row.description,
-      sortable: true,
-      grow: 2,
-      cell: (row: Transaction) => (
-        <span className="font-semibold text-gray-800 dark:text-neutral-100">
-          {row.description}
-        </span>
-      ),
-    },
-    {
-      name: 'Principal',
-      selector: (row: Transaction) => row.principal,
-      sortable: true,
-      right: true,
-      cell: (row: Transaction) => (
-        <span className="font-semibold text-gray-800 dark:text-neutral-100">
-          {formatCurrency(row.principal)}
-        </span>
-      ),
-    },
-    {
-      name: 'Balance',
-      selector: (row: Transaction) => row.raw_balance,
-      sortable: true,
-      right: true,
-      cell: (row: Transaction) => (
-        <span className="font-semibold text-gray-800 dark:text-neutral-100">
-          {formatCurrency(row.raw_balance)}
-        </span>
-      ),
-    },
-    {
-      name: 'Actions',
-      cell: (row: Transaction) => (
-        <div className="flex items-center gap-2">
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => openDetailsModal(row.lnnumber)}
-            className="flex items-center gap-1 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/20"
-          >
-            <Eye className="h-3 w-3" />
-            Details
-          </Button>
-          
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => openScheduleModal(row.lnnumber)}
-            className="flex items-center gap-1 hover:bg-green-50 hover:text-green-600 dark:hover:bg-green-900/20"
-          >
-            <FileText className="h-3 w-3" />
-            Schedule
-          </Button>
-        </div>
-      ),
-      ignoreRowClick: true,
-      allowOverflow: true,
-      button: true,
-      width: '200px',
-    },
-  ], []);
-
-  // Theme detection
-  const isDark = typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
-  const tableTheme = isDark ? 'rb-dark' : 'default';
-
-  return (
-    <AppLayout breadcrumbs={[
-      { title: 'Loans', href: '/loans' },
-      { title: 'Transactions', href: '/loans/transactions' }
-    ]}>
-      <Head title="Loan Transactions" />
-      
-      <div className="w-full px-4 py-4 sm:px-6 lg:px-8">
-        {/* PAGE HEADER */}
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Loan Transactions
-          </h1>
-          <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-            View your loan transaction history and amortization schedules
-          </p>
-        </div>
-
-        {/* MAIN TRANSACTIONS TABLE */}
-        <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-neutral-700 dark:bg-neutral-900">
-          <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-neutral-700 dark:bg-neutral-800">
-            <DataTable
-              columns={columns}
-              data={transactions}
-              striped
-              highlightOnHover
-              responsive
-              theme={tableTheme}
-              pagination
-              paginationPerPage={15}
-              paginationRowsPerPageOptions={[10, 15, 25, 50]}
-              noDataComponent={
-                <div className="py-8 text-center text-gray-500 dark:text-neutral-400">
-                  No loan transactions found
-                </div>
-              }
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* TRANSACTION DETAILS MODAL */}
-      <Modal
-        isOpen={modalType === 'details'}
-        onClose={closeModal}
-        title="Transaction Details"
-      >
-        {detailsLoading && (
-          <div className="flex items-center justify-center py-8">
-            <div className="animate-spin rounded-full h-6 w-6 border-2 border-blue-500 border-t-transparent" />
-            <span className="ml-2 text-gray-600">Loading transaction details...</span>
-          </div>
-        )}
-        
-        {detailsError && (
-          <div className="text-center py-4 text-red-600">
-            <AlertCircle className="mx-auto h-8 w-8 mb-2" />
-            <p>Failed to load transaction details</p>
-            <button 
-              onClick={() => window.location.reload()} 
-              className="underline mt-2 hover:no-underline"
-            >
-              Try again
+const ModalHead = ({ title, onClose, children }: { title: string; onClose: () => void; children?: ReactNode }) => (
+    <div className="mb-6 flex items-center justify-between print:hidden">
+        <h3 className="text-lg font-semibold">{title}</h3>
+        <span className="flex items-center gap-2">
+            {children}
+            <button onClick={onClose} aria-label="Close" className="grid size-8 place-items-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground">
+                <X className="size-4" />
             </button>
-          </div>
-        )}
+        </span>
+    </div>
+);
 
-        {!detailsLoading && !detailsError && transactionData?.transaction && (
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Loan Number
-                </label>
-                <p className="mt-1 text-sm text-gray-900 dark:text-white">
-                  {transactionData.transaction.lnnumber}
-                </p>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Reference
-                </label>
-                <p className="mt-1 text-sm text-gray-900 dark:text-white">
-                  {transactionData.transaction.reference}
-                </p>
-              </div>
+const Failed = ({ msg }: { msg: string }) => (
+    <div role="alert" className="py-8 text-center text-[oklch(.5_.2_25)]">
+        <AlertCircle className="mx-auto mb-2 size-8" />
+        <p>{msg}</p>
+    </div>
+);
+
+export default function LoansTransactionPage({ transactions }: { transactions: Transaction[] }) {
+    const [ln, setLn] = useState<string | null>(null);
+    const [type, setType] = useState<'details' | 'schedule' | null>(null);
+    const details = useTransactionDetails(type === 'details' ? ln : null);
+    const schedule = useAmortizationSchedule(type === 'schedule' ? ln : null);
+    const t = useTable(transactions, { key: 'date', per: 15 }, (r, k) => (k === 'balance' ? r.raw_balance : (((r as unknown) as Record<string, string | number>)[k] ?? '')));
+    const open = (l: string, ty: 'details' | 'schedule') => {
+        setLn(l);
+        setType(ty);
+    };
+    const close = () => {
+        setLn(null);
+        setType(null);
+    };
+
+    const actions = (l: string) => (
+        <div className="flex gap-2">
+            <button onClick={() => open(l, 'details')} className={`${btn.base} ${btn.plain} ${btn.sm} gap-1.5 hover:!bg-tdfc-blue-soft hover:!text-tdfc-blue-ink`}>
+                <Eye className="size-3" />
+                Details
+            </button>
+            <button onClick={() => open(l, 'schedule')} className={`${btn.base} ${btn.plain} ${btn.sm} gap-1.5 hover:!bg-tdfc-ok-soft hover:!text-tdfc-ok-ink`}>
+                <FileText className="size-3" />
+                Schedule
+            </button>
+        </div>
+    );
+
+    const rows = schedule.data?.schedule ?? [];
+    const tx = details.data?.transaction;
+    const cell = 'border-b border-border px-3.5 py-2.5';
+
+    return (
+        <AppLayout
+            breadcrumbs={[
+                { title: 'Loans', href: '/loans' },
+                { title: 'Transactions', href: '/loans/transactions' },
+            ]}
+        >
+            <Head title="Loan Transactions" />
+            <div className="grid content-start gap-5 p-4 md:p-6">
+                <div>
+                    <h1 className="text-2xl font-bold">Loan Transactions</h1>
+                    <p className="mt-1 text-muted-foreground">View your loan transaction history and amortization schedules</p>
+                </div>
+                <Panel className="overflow-hidden">
+                    {transactions.length === 0 ? (
+                        <div className="px-4 py-12 text-center text-muted-foreground">No loan transactions found</div>
+                    ) : (
+                        <>
+                            <div className="hidden overflow-x-auto md:block">
+                                <table className="w-full border-collapse">
+                                    <thead>
+                                        <tr className="border-b border-border">
+                                            <SortTh t={t} k="date">Date</SortTh>
+                                            <SortTh t={t} k="lnnumber">Loan Number</SortTh>
+                                            <SortTh t={t} k="description">Description</SortTh>
+                                            <SortTh t={t} k="principal" right>Principal</SortTh>
+                                            <SortTh t={t} k="balance" right>Balance</SortTh>
+                                            <th className="px-4 py-2.5 text-left text-xs font-semibold text-muted-foreground">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {t.view.map((r) => (
+                                            <tr key={r.lnnumber} className="border-b border-border last:border-0 even:bg-tdfc-stripe hover:bg-muted">
+                                                <td className="px-4 py-3.5 text-muted-foreground">{fdate(r.date)}</td>
+                                                <td className="px-4 py-3.5 font-medium">{r.lnnumber}</td>
+                                                <td className="px-4 py-3.5 font-bold">{r.description}</td>
+                                                <td className="px-4 py-3.5 text-right font-bold tabular-nums">{peso(r.principal)}</td>
+                                                <td className="px-4 py-3.5 text-right font-bold tabular-nums">{peso(r.raw_balance)}</td>
+                                                <td className="px-4 py-3.5">{actions(r.lnnumber)}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div className="md:hidden">
+                                {t.view.map((r) => (
+                                    <div key={r.lnnumber} className="border-b border-border px-4 py-3.5 last:border-0">
+                                        <div className="flex justify-between gap-3">
+                                            <div>
+                                                <b>{r.description}</b>
+                                                <div className="text-[13px] text-muted-foreground">
+                                                    {r.lnnumber} · {fdate(r.date)}
+                                                </div>
+                                            </div>
+                                            <div className="text-right">
+                                                <b>{peso(r.principal)}</b>
+                                                <div className="text-xs text-muted-foreground">Bal {peso(r.raw_balance)}</div>
+                                            </div>
+                                        </div>
+                                        <div className="mt-2.5">{actions(r.lnnumber)}</div>
+                                    </div>
+                                ))}
+                            </div>
+                            <Pager t={t} options={[10, 15, 25, 50]} />
+                        </>
+                    )}
+                </Panel>
             </div>
-            
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Transaction Code
-                </label>
-                <p className="mt-1 text-sm text-gray-900 dark:text-white">
-                  {transactionData.transaction.transactionCode}
-                </p>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Principal
-                </label>
-                <p className="mt-1 text-sm font-bold text-gray-900 dark:text-white">
-                  {formatCurrency(transactionData.transaction.principal)}
-                </p>
-              </div>
-            </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Payment
-                </label>
-                <p className="mt-1 text-sm font-bold text-gray-900 dark:text-white">
-                  {formatCurrency(transactionData.transaction.payment)}
-                </p>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Balance
-                </label>
-                <p className="mt-1 text-sm font-bold text-gray-900 dark:text-white">
-                  {formatCurrency(transactionData.transaction.balance)}
-                </p>
-              </div>
-            </div>
+            <Modal open={type === 'details'} onClose={close} label="Transaction Details" className="max-w-md">
+                <ModalHead title="Transaction Details" onClose={close} />
+                {details.isLoading && (
+                    <div role="status" aria-busy="true" aria-label="Loading transaction details" className="py-4">
+                        <SkelDl />
+                    </div>
+                )}
+                {details.error && (
+                    <>
+                        <Failed msg="Failed to load transaction details" />
+                        <div className="text-center">
+                            <button onClick={() => details.refetch()} className={`${btn.base} ${btn.plain} ${btn.sm}`}>Try again</button>
+                        </div>
+                    </>
+                )}
+                {tx && (
+                    <div className="grid gap-4">
+                        <div className="grid grid-cols-2 gap-4"><Dl l="Loan Number" v={tx.lnnumber} /><Dl l="Reference" v={tx.reference} /></div>
+                        <div className="grid grid-cols-2 gap-4"><Dl l="Transaction Code" v={tx.transactionCode} /><Dl l="Principal" v={peso(tx.principal)} b /></div>
+                        <div className="grid grid-cols-2 gap-4"><Dl l="Payment" v={peso(tx.payment)} b /><Dl l="Balance" v={peso(tx.balance)} b /></div>
+                        <Dl l="Charges" v={peso(tx.charges)} b />
+                        <Dl l="Control Number" v={tx.controlno} />
+                    </div>
+                )}
+            </Modal>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Charges
-              </label>
-              <p className="mt-1 text-sm font-bold text-gray-900 dark:text-white">
-                {formatCurrency(transactionData.transaction.charges)}
-              </p>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Control Number
-              </label>
-              <p className="mt-1 text-sm text-gray-900 dark:text-white">
-                {transactionData.transaction.controlno}
-              </p>
-            </div>
-          </div>
-        )}
-      </Modal>
-
-      {/* AMORTIZATION SCHEDULE MODAL */}
-      <Modal
-        isOpen={modalType === 'schedule'}
-        onClose={closeModal}
-        title="Amortization Schedule"
-      >
-        {scheduleLoading && (
-          <div className="flex items-center justify-center py-8">
-            <div className="animate-spin rounded-full h-6 w-6 border-2 border-green-500 border-t-transparent" />
-            <span className="ml-2 text-gray-600">Loading amortization schedule...</span>
-          </div>
-        )}
-
-        {scheduleError && (
-          <div className="text-center py-4 text-red-600">
-            <AlertCircle className="mx-auto h-8 w-8 mb-2" />
-            <p>Failed to load amortization schedule</p>
-          </div>
-        )}
-
-        {!scheduleLoading && !scheduleError && (!scheduleData?.schedule || scheduleData.schedule.length === 0) && (
-          <div className="text-center py-8">
-            <FileText className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-            <p className="text-gray-500 dark:text-gray-400">
-              No amortization schedule data available for this transaction.
-            </p>
-          </div>
-        )}
-
-        {!scheduleLoading && !scheduleError && scheduleData?.schedule && scheduleData.schedule.length > 0 && (
-          <div className="overflow-x-auto">
-            <table className="min-w-full border-collapse border border-gray-200 dark:border-gray-700">
-              <thead className="bg-gray-50 dark:bg-gray-800">
-                <tr>
-                  <th className="border border-gray-200 dark:border-gray-700 px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
-                    Date
-                  </th>
-                  <th className="border border-gray-200 dark:border-gray-700 px-3 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
-                    Pay Principal
-                  </th>
-                  <th className="border border-gray-200 dark:border-gray-700 px-3 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
-                    Pay Interest
-                  </th>
-                  <th className="border border-gray-200 dark:border-gray-700 px-3 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
-                    Amortization
-                  </th>
-                  <th className="border border-gray-200 dark:border-gray-700 px-3 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
-                    Balance
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
-                {scheduleData.schedule.map((item: AmortizationItem, index: number) => (
-                  <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-800">
-                    <td className="border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-white">
-                      {formatDate(item.date)}
-                    </td>
-                    <td className="border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm text-right font-medium text-gray-900 dark:text-white">
-                      {formatCurrency(item.payPrincipal)}
-                    </td>
-                    <td className="border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm text-right font-medium text-gray-900 dark:text-white">
-                      {formatCurrency(item.payInterest)}
-                    </td>
-                    <td className="border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm text-right font-medium text-gray-900 dark:text-white">
-                      {formatCurrency(item.amortization)}
-                    </td>
-                    <td className="border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm text-right font-medium text-gray-900 dark:text-white">
-                      {formatCurrency(item.balance)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </Modal>
-    </AppLayout>
-  );
+            <Modal open={type === 'schedule'} onClose={close} label="Amortization Schedule" className="max-w-[720px] print:max-w-none print:shadow-none">
+                <ModalHead title="Amortization Schedule" onClose={close}>
+                    {rows.length > 0 && (
+                        <button onClick={() => window.print()} className={`${btn.base} ${btn.plain} ${btn.sm} gap-1.5`}>
+                            <Printer className="size-3" />
+                            Print / PDF
+                        </button>
+                    )}
+                </ModalHead>
+                {schedule.isLoading && (
+                    <table role="status" aria-busy="true" aria-label="Loading amortization schedule" className="w-full">
+                        <tbody>
+                            <SkelRows rows={6} cols={5} />
+                        </tbody>
+                    </table>
+                )}
+                {schedule.error && <Failed msg="Failed to load amortization schedule" />}
+                {!schedule.isLoading && !schedule.error && rows.length === 0 && (
+                    <div className="py-8 text-center text-neutral-600">
+                        <FileText className="mx-auto mb-2 size-12 text-neutral-400" />
+                        <p>No amortization schedule data available for this transaction.</p>
+                    </div>
+                )}
+                {rows.length > 0 && (
+                    <>
+                        <div className="hidden max-h-[60vh] overflow-auto rounded-xl border border-border sm:block print:max-h-none">
+                            <table className="w-full border-separate border-spacing-0 text-[13px] whitespace-nowrap tabular-nums">
+                                <thead>
+                                    <tr>
+                                        {['Date', 'Pay Principal', 'Pay Interest', 'Amortization', 'Balance'].map((h, i) => (
+                                            <th key={h} className={`sticky top-0 border-b border-border bg-[oklch(.98_0_0)] px-3.5 py-2.5 text-[11px] tracking-wide text-muted-foreground uppercase ${i ? 'text-right' : 'text-left'}`}>
+                                                {h}
+                                            </th>
+                                        ))}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {rows.map((i, n) => (
+                                        <tr key={n} className="hover:bg-muted">
+                                            <td className={cell}>{fdate(i.date)}</td>
+                                            <td className={`${cell} text-right font-medium`}>{peso(i.payPrincipal)}</td>
+                                            <td className={`${cell} text-right font-medium`}>{peso(i.payInterest)}</td>
+                                            <td className={`${cell} text-right font-medium`}>{peso(i.amortization)}</td>
+                                            <td className={`${cell} text-right font-bold`}>{peso(i.balance)}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div className="grid gap-2.5 sm:hidden">
+                            {rows.map((i, n) => (
+                                <div key={n} className="rounded-xl border border-border px-3.5 py-3">
+                                    <div className="flex items-baseline justify-between">
+                                        <b className="text-sm">{fdate(i.date)}</b>
+                                        <span className="text-xs text-muted-foreground">Payment {n + 1} of {rows.length}</span>
+                                    </div>
+                                    <dl className="mt-2.5 grid grid-cols-2 gap-x-4 gap-y-2">
+                                        {(
+                                            [
+                                                ['Pay Principal', i.payPrincipal],
+                                                ['Pay Interest', i.payInterest],
+                                                ['Amortization', i.amortization],
+                                                ['Balance', i.balance],
+                                            ] as const
+                                        ).map(([l, v]) => (
+                                            <div key={l}>
+                                                <dt className="text-[11px] tracking-wide text-muted-foreground uppercase">{l}</dt>
+                                                <dd className="mt-0.5 text-sm font-semibold tabular-nums">{peso(v)}</dd>
+                                            </div>
+                                        ))}
+                                    </dl>
+                                </div>
+                            ))}
+                        </div>
+                    </>
+                )}
+            </Modal>
+        </AppLayout>
+    );
 }

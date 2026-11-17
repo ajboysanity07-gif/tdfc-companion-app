@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Registrations · TDFC Companion App</title>
+<link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700" rel="stylesheet">
+<link rel="stylesheet" href="tdfc.css">
+<style>
+.banner{padding:26px 28px;border-radius:14px;background:var(--coral);color:oklch(.2 .05 24);display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+.banner h1{font-size:clamp(24px,3.5vw,32px);font-weight:700}.banner p{margin-top:4px;font-weight:500}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.stat-card{display:flex;flex-direction:column;gap:4px;padding:16px 20px;background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow)}
+.stat-card .label{font-size:13px;color:var(--muted-fg);font-weight:500}
+.stat-card .value{font-size:26px;font-weight:600;line-height:1.2}
+.stat-card .hint{font-size:12px;color:var(--muted-fg)}
+.panel{overflow:hidden}
+.stack{display:grid;gap:14px;grid-template-columns:minmax(0,1fr)}
+.toolbar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:space-between;min-width:0}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;min-width:0}
+.tabs button{height:38px;padding:0 14px;border:1px solid var(--border);background:var(--bg);border-radius:999px;cursor:pointer;font-weight:600;color:var(--muted-fg);display:inline-flex;align-items:center;gap:8px}
+.tabs button.on{background:var(--primary);color:var(--primary-fg);border-color:var(--primary)}
+.tabs .cnt{min-width:22px;height:22px;padding:0 7px;border-radius:99px;background:color-mix(in oklch,currentColor 14%,transparent);font-size:12px;display:grid;place-items:center}
+.filters{display:flex;gap:8px;flex-wrap:nowrap;align-items:center;justify-content:flex-end;flex:1;min-width:0}
+.search{flex:1 1 200px;min-width:0;max-width:320px}
+.tbl td{vertical-align:top}
+.cli{display:flex;gap:10px;align-items:center;min-width:0}.cli>div{min-width:0}
+.tbl td .name{font-weight:600}.tbl td .sub{display:block;color:var(--muted-fg);font-size:12px}
+.tbl td .when{font-weight:500}.tbl td .time{display:block;color:var(--muted-fg);font-size:12px}
+.empty{padding:32px;text-align:center;color:var(--muted-fg)}
+.pg{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 16px;border-top:1px solid var(--border);flex-wrap:wrap}
+.pgs{display:flex;gap:4px}
+.pgs button{min-width:32px;height:32px;border-radius:8px;border:1px solid transparent;background:none;cursor:pointer;font-weight:500}
+.pgs button:hover{background:var(--muted)}.pgs button.on{background:var(--primary);color:var(--primary-fg)}.pgs button:disabled{opacity:.4;pointer-events:none}
+.toast{position:fixed;bottom:84px;left:50%;transform:translateX(-50%);background:var(--primary);color:var(--primary-fg);padding:10px 16px;border-radius:10px;display:none;z-index:90}.toast.on{display:block}
+@media(max-width:1100px){.stats{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:860px){
+  .hide-sm{display:none}
+  .toolbar{flex-direction:column;align-items:stretch;gap:10px}
+  .search{max-width:none}
+  .stats{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:720px){
+  .tabs button{padding:0 12px}
+  .stats{grid-template-columns:1fr}
+  .tbl thead{display:none}
+  .tbl tbody tr{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 12px;align-items:start;border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);padding:14px;margin:0 0 10px;background:var(--bg)}
+  .tbl td{display:block;padding:0;border-bottom:0}
+  .tbl td:nth-child(1){grid-column:1;grid-row:1}
+  .tbl td:nth-child(4){grid-column:2;grid-row:1;justify-self:end}
+  .tbl td:nth-child(2){grid-column:1;grid-row:2}
+  .tbl td:nth-child(5){grid-column:1/-1;grid-row:3}
+  .banner{padding:20px}
+}
+</style></head><body>
+<div class="shell">
+<aside class="side" data-od-id="sidebar">
+  <div class="brand"><div class="mk"><img src="assets/logo-white.png" alt=""></div><span>TDFC Companion App</span></div>
+  <div class="grp">Platform</div>
+  <nav>
+    <a href="admin-dashboard.html"><svg class="ico" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Dashboard</a>
+    <a href="admin-products.html"><svg class="ico" viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5v8l9 5 9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg>Products Management</a>
+    <a href="admin-client-management.html"><svg class="ico" viewBox="0 0 24 24"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0114 0M16 4a4 4 0 010 8M22 21a7 7 0 00-4-6"/></svg>Clients</a>
+    <a class="on" href="admin-registrations.html"><svg class="ico" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>Registrations</a>
+  </nav>
+  <div class="foot"><div class="user"><div class="avatar">MS</div><div><b>Maria Santos</b><small>admin</small></div></div></div>
+</aside>
+<div class="main">
+  <div class="topbar" data-od-id="breadcrumb"><span>Admin</span> / <b>Registrations</b></div>
+  <div class="content">
+    <section class="banner" data-od-id="page-banner">
+      <div><h1>Registrations</h1><p>Every registration event in one log — submissions, decisions, and resubmit requests.</p></div>
+      <a class="btn" href="admin-client-management.html" data-od-id="review-pending-link">Review pending queue</a>
+    </section>
+
+    <section class="stats" data-od-id="registration-stats" aria-label="Registration metrics">
+      <div class="stat-card">
+        <span class="label">Received this month</span>
+        <span class="value">11</span>
+        <span class="hint">Submissions in November</span>
+      </div>
+      <div class="stat-card accent" style="background:var(--coral-soft);border-color:color-mix(in oklch,var(--coral) 35%,var(--border))">
+        <span class="label">Pending review</span>
+        <span class="value" style="color:var(--coral-ink)">5</span>
+        <span class="hint">Waiting on documents review</span>
+      </div>
+      <div class="stat-card">
+        <span class="label">Approval rate</span>
+        <span class="value">67%</span>
+        <span class="hint">4 approved of 6 decided</span>
+      </div>
+      <div class="stat-card">
+        <span class="label">Avg. review time</span>
+        <span class="value">1.4 days</span>
+        <span class="hint">From submission to decision</span>
+      </div>
+    </section>
+
+    <section class="card panel" data-od-id="registration-log">
+      <div class="card-b stack">
+        <div class="toolbar">
+          <div class="tabs" id="tabs" role="tablist" aria-label="Registration events"></div>
+          <div class="filters">
+            <div class="search"><input class="input" id="search" placeholder="Search client, account no., or note" aria-label="Search events" autocomplete="off"></div>
+            <button class="btn" type="button" id="export" data-od-id="export-csv">Export CSV</button>
+          </div>
+        </div>
+        <div class="tbl-wrap"><table class="tbl" aria-label="Registration events"><thead><tr>
+          <th>Date</th>
+          <th>Client</th>
+          <th class="hide-sm">Account no.</th>
+          <th>Event</th>
+          <th>Details</th>
+        </tr></thead><tbody id="rows"></tbody></table><div id="empty" class="empty" hidden>No events match this view.</div></div>
+      </div>
+      <div class="pg"><div class="muted" id="range"></div><div class="pgs" id="pager"></div></div>
+    </section>
+  </div>
+</div></div>
+<nav class="mnav"><a href="admin-dashboard.html">Home</a><a href="admin-products.html">Products</a><a href="admin-client-management.html">Clients</a><a class="on" href="admin-registrations.html">Registrations</a></nav>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+const E=[
+ {d:'Nov 15, 2026',t:'9:14 AM',n:'Carla Mendoza',e:'carla@example.com',a:'TD-20426',ev:'approved',by:'Maria Santos',note:'Documents verified; basic salary set to Php 28,500.00'},
+ {d:'Nov 14, 2026',t:'4:02 PM',n:'Jomar Aquino',e:'jomar@example.com',a:'TD-20517',ev:'resubmit',by:'Maria Santos',note:'Please upload a clearer PRC ID photo and a payslip within the last 3 months'},
+ {d:'Nov 13, 2026',t:'4:02 PM',n:'Katrina Lopez',e:'katrina@example.com',a:'TD-20530',ev:'rejected',by:'Maria Santos',note:'PRC ID photo is blurry · Payslip is too old (more than 3 months)'},
+ {d:'Nov 12, 2026',t:'10:26 AM',n:'Jomar Aquino',e:'jomar@example.com',a:'TD-20517',ev:'rejected',by:'Maria Santos',note:'PRC ID photo is blurry · Payslip is too old (more than 3 months)'},
+ {d:'Nov 11, 2026',t:'2:15 PM',n:'Jomar Aquino',e:'jomar@example.com',a:'TD-20517',ev:'submitted',by:'',note:'New registration with PRC ID and payslip documents'},
+ {d:'Nov 10, 2026',t:'9:40 AM',n:'Irene Soriano',e:'irene@example.com',a:'TD-20504',ev:'submitted',by:'',note:'New registration with PRC ID and payslip documents'},
+ {d:'Nov 9, 2026',t:'11:08 AM',n:'Harold Bautista',e:'harold@example.com',a:'TD-20491',ev:'submitted',by:'',note:'New registration with PRC ID and payslip documents'},
+ {d:'Nov 8, 2026',t:'3:52 PM',n:'Grace Navarro',e:'grace@example.com',a:'TD-20478',ev:'submitted',by:'',note:'New registration with PRC ID and payslip documents'},
+ {d:'Nov 7, 2026',t:'1:33 PM',n:'Francis Dela Cruz',e:'francis@example.com',a:'TD-20465',ev:'submitted',by:'',note:'New registration with PRC ID and payslip documents'},
+ {d:'Nov 6, 2026',t:'5:21 PM',n:'Danilo Ramos',e:'danilo@example.com',a:'TD-20439',ev:'approved',by:'Maria Santos',note:'Documents verified; basic salary set to Php 35,200.00'},
+ {d:'Nov 6, 2026',t:'8:47 AM',n:'Elena Villanueva',e:'elena@example.com',a:'TD-20452',ev:'submitted',by:'',note:'New registration with PRC ID and payslip documents'},
+ {d:'Nov 5, 2026',t:'10:02 AM',n:'Danilo Ramos',e:'danilo@example.com',a:'TD-20439',ev:'submitted',by:'',note:'New registration with PRC ID and payslip documents'},
+ {d:'Nov 4, 2026',t:'2:44 PM',n:'Benedict Cruz',e:'benedict@example.com',a:'TD-20413',ev:'approved',by:'Maria Santos',note:'Documents verified; basic salary set to Php 31,000.00'},
+ {d:'Nov 3, 2026',t:'9:18 AM',n:'Benedict Cruz',e:'benedict@example.com',a:'TD-20413',ev:'submitted',by:'',note:'New registration with PRC ID and payslip documents'},
+ {d:'Nov 3, 2026',t:'8:05 AM',n:'Angelica Reyes',e:'angelica@example.com',a:'TD-20400',ev:'approved',by:'Maria Santos',note:'Documents verified; basic salary set to Php 28,500.00'},
+ {d:'Nov 2, 2026',t:'4:37 PM',n:'Carla Mendoza',e:'carla@example.com',a:'TD-20426',ev:'submitted',by:'',note:'New registration with PRC ID and payslip documents'},
+ {d:'Nov 2, 2026',t:'9:12 AM',n:'Angelica Reyes',e:'angelica@example.com',a:'TD-20400',ev:'submitted',by:'',note:'New registration with PRC ID and payslip documents'}
+];
+const TABS=[['all','All events'],['submitted','Submitted'],['approved','Approved'],['rejected','Rejected'],['resubmit','Resubmit requested']];
+const BADGE={submitted:'<span class="badge">Submitted</span>',approved:'<span class="badge ok">Approved</span>',rejected:'<span class="badge bad">Rejected</span>',resubmit:'<span class="badge warn">Resubmit requested</span>'};
+const PS=8; let tab='all',q='',page=1;
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const ini=n=>n.split(' ').map(w=>w[0]).slice(0,2).join('');
+function filtered(){const needle=q.trim().toLowerCase();return E.filter(x=>(tab==='all'||x.ev===tab)&&(!needle||[x.n,x.e,x.a,x.note].some(v=>v.toLowerCase().includes(needle))))}
+function renderTabs(){$('#tabs').innerHTML=TABS.map(([k,l])=>`<button type="button" role="tab" aria-selected="${k===tab}" class="${k===tab?'on':''}" data-tab="${k}">${l} <span class="cnt">${E.filter(x=>k==='all'||x.ev===k).length}</span></button>`).join('')}
+function renderTable(){const list=filtered(),n=Math.max(1,Math.ceil(list.length/PS));page=Math.min(page,n);const start=(page-1)*PS,rows=list.slice(start,start+PS);
+  $('#rows').innerHTML=rows.map(x=>`<tr>
+    <td><span class="when">${esc(x.d)}</span><span class="time">${esc(x.t)}</span></td>
+    <td><div class="cli"><span class="avatar" aria-hidden="true">${ini(x.n)}</span><div><span class="name">${esc(x.n)}</span><span class="sub">${esc(x.e)}</span></div></div></td>
+    <td class="hide-sm mono">${esc(x.a)}</td>
+    <td>${BADGE[x.ev]}</td>
+    <td>${esc(x.note)}${x.by?`<span class="sub">by ${esc(x.by)}</span>`:''}</td></tr>`).join('');
+  $('#empty').hidden=rows.length>0; $('#range').textContent=list.length?`Showing ${start+1}-${start+rows.length} of ${list.length} events`:'No results';
+  let h=`<button type="button" data-page="${page-1}" ${page<2?'disabled':''} aria-label="Previous page">‹</button>`;for(let i=1;i<=n;i++)h+=`<button type="button" class="${i===page?'on':''}" data-page="${i}" ${i===page?'aria-current="page"':''}>${i}</button>`;h+=`<button type="button" data-page="${page+1}" ${page>=n?'disabled':''} aria-label="Next page">›</button>`;$('#pager').innerHTML=h}
+const toast=m=>{const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(toast._t);toast._t=setTimeout(()=>t.classList.remove('on'),2200)};
+document.addEventListener('click',e=>{const t=e.target,g=s=>t.closest(s); let b;
+  if(b=g('[data-tab]')){tab=b.dataset.tab; page=1; renderTabs(); renderTable()}
+  else if(b=g('[data-page]')){page=Math.max(1,+b.dataset.page||1); renderTable()}
+  else if(b=g('#export')){toast('Exported registrations.csv')}
+});
+$('#search').addEventListener('input',e=>{q=e.target.value; page=1; renderTable()});
+renderTabs(); renderTable();
+</script></body></html>

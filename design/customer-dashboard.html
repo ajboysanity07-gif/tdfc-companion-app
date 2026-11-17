@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashboard · TDFC Companion App</title>
+<link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700,800" rel="stylesheet">
+<link rel="stylesheet" href="tdfc.css">
+<style>
+.skip{position:absolute;left:8px;top:-60px;background:var(--coral);color:oklch(.2 .05 24);padding:8px 12px;border-radius:0 0 8px 8px;font-weight:600;z-index:60}.skip:focus{top:0}
+.dgrid{display:grid;grid-template-columns:repeat(12,1fr);gap:20px}
+.panel{background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);padding:20px}
+.panel-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}
+.panel-head h2{font-size:16px;font-weight:600;margin:0}
+.c4{grid-column:span 4}.c8{grid-column:span 8}.c12{grid-column:span 12}
+@media(max-width:1180px){.c4,.c8{grid-column:span 12}.b-right{border-left:0;padding-left:0}}
+.nextp .amt{font-size:28px;font-weight:800;margin-top:4px}
+.nextp .sub{font-size:13px;color:var(--muted-fg);margin-top:4px}
+.nextp .row{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:4px}
+.mloans{margin-top:16px}
+.mloans h4{margin:0 0 6px;font-size:12px;font-weight:600;text-transform:uppercase;color:var(--muted-fg)}
+.mloans .li{padding:10px 0;border-bottom:1px solid var(--border)}.mloans .li:last-child{border:0}
+.mloans .li .t{display:flex;justify-content:space-between;gap:12px;font-size:13px}
+.mloans .li .t b{font-weight:600}
+.mloans .bar{height:6px;border-radius:99px;background:var(--muted);margin-top:6px}.mloans .bar i{display:block;height:100%;border-radius:99px;background:var(--blue)}
+.balance{background:var(--coral);color:oklch(.2 .05 24);border-radius:14px;padding:28px;display:flex;gap:32px;justify-content:space-between;flex-wrap:wrap}
+.balance .nm{font-size:22px;font-weight:800;letter-spacing:.02em;margin-top:2px}
+.balance .amt{font-size:42px;font-weight:800;line-height:1;margin-top:24px}
+.balance .lbl{font-size:13px;font-weight:600;text-transform:uppercase;margin-top:8px;opacity:.95}
+.b-right{flex:1;min-width:300px;display:grid;grid-template-columns:1fr 1fr;gap:24px;align-content:center;border-left:1px solid oklch(.2 .05 24/.25);padding-left:32px}
+.bstat small{font-weight:700;opacity:.85}
+.bstat b{display:block;font-size:24px;font-weight:800;margin-top:4px}
+.bbar{height:8px;border-radius:99px;background:oklch(.2 .05 24/.18);margin-top:10px}
+.bbar i{display:block;height:100%;border-radius:99px;background:oklch(.2 .05 24/.75)}
+.bstat .pc{font-size:12px;font-weight:700;margin-top:4px}
+.qa{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.qa a{display:flex;align-items:center;gap:12px;background:transparent;border:1px solid var(--border);border-radius:10px;padding:12px;font-weight:600;font-size:14px;transition:background .15s}
+.qa a:hover{background:var(--muted)}
+.qa .ib{width:36px;height:36px;border-radius:8px;background:color-mix(in oklch,var(--blue) 18%,white);color:oklch(.35 .13 262);display:grid;place-items:center}
+.inner{border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.tbl tbody tr:nth-child(even){background:oklch(.985 0 0)}.tbl tbody tr:nth-child(even):hover,.tbl tbody tr:hover{background:var(--muted)}
+.state{padding:40px 16px;text-align:center;color:var(--muted-fg)}
+.spin{display:inline-block;width:22px;height:22px;border:2px solid var(--coral);border-top-color:transparent;border-radius:50%;animation:sp .8s linear infinite;vertical-align:middle;margin-right:10px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.viewall{color:var(--coral-ink);font-weight:600;font-size:14px}.viewall:hover{text-decoration:underline}
+.pager{display:flex;justify-content:flex-end;align-items:center;gap:14px;padding:10px 16px;border-top:1px solid var(--border);font-size:13px;color:var(--muted-fg);flex-wrap:wrap}
+.pager select{height:30px;border:1px solid var(--input);border-radius:8px;padding:0 6px;background:#fff}
+th button{all:unset;cursor:pointer}th button:focus-visible{outline:2px solid var(--coral-ink);border-radius:4px}
+/* focus rings match the auth batch: coral ink, not the default blue */
+:focus-visible{outline-color:var(--coral-ink)}
+.sec-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.sec-h h3{font-size:17px;font-weight:600}
+.cls{display:inline-flex;align-items:center;gap:8px;margin-top:10px;min-height:36px;padding:0 12px 0 14px;border:0;border-radius:99px;background:var(--cc,oklch(.2 .05 24));color:#fff;font:inherit;font-size:13px;font-weight:700;cursor:pointer;transition:background .15s}
+[data-c=A]{--cc:oklch(.42 .12 155);--cch:oklch(.5 .12 155)}[data-c=B]{--cc:oklch(.42 .13 262);--cch:oklch(.5 .13 262)}[data-c=C]{--cc:oklch(.45 .12 55);--cch:oklch(.53 .12 55)}
+.cls:hover{background:var(--cch,oklch(.28 .05 24))}.cls:focus-visible{outline:2px solid oklch(.2 .05 24);outline-offset:3px}
+.cls svg{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+.cls small{font-size:12px;font-weight:500;opacity:.85}
+.why{list-style:none;margin:16px 0 0;padding:0;text-align:left;display:grid;gap:10px}
+.why li{display:flex;gap:10px;font-size:14px}.why li:before{content:"";flex:none;width:8px;height:8px;border-radius:50%;background:var(--coral-ink);margin-top:7px}
+.scale{display:flex;gap:6px;margin-top:16px;font-size:12px;text-align:left}
+.scale div{flex:1;padding:8px 10px;border-radius:10px;border:1px solid var(--border);color:var(--muted-fg)}
+.scale .me{background:var(--cc);color:#fff;border-color:transparent}
+@media(max-width:860px){.cls{min-height:44px}}
+/* mobile home */
+.m-only{display:none}
+.mhead{background:var(--coral);color:oklch(.2 .05 24);border-radius:0 0 32px 32px;margin:-16px -16px 4px;padding:24px;text-align:left}
+.mhead .top{display:flex;justify-content:space-between;align-items:flex-start}
+.mhead .w{font-size:18px;font-weight:800}.mhead h1{font-size:36px;font-weight:800;letter-spacing:-.02em;line-height:1.1}.mhead .role{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-top:10px;padding:3px 10px;border-radius:99px;background:oklch(.2 .05 24/.14)}
+.mhead .av{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;font-size:22px;font-weight:800;background:oklch(1 0 0/.55);box-shadow:0 0 0 2px oklch(1 0 0/.7)}
+.mhead .cap{text-align:center;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-top:20px;opacity:.8}
+.mhead .big{text-align:center;margin-top:4px;font-size:42px;line-height:1.1}.mhead .big b{font-weight:800}
+.mhead hr{border:0;height:1px;background:oklch(.2 .05 24/.18);margin:16px 0}
+.mact{background:var(--sun);border-radius:24px;padding:12px;display:grid;grid-template-columns:1fr 1fr;gap:8px;text-align:center}
+.mact a{display:grid;justify-items:center;gap:8px;font-weight:700;font-size:16px;padding:14px 8px;border-radius:16px;min-height:44px;transition:background .15s}
+.mact a:hover,.mact a:active{background:oklch(1 0 0/.35)}.mact a:focus-visible{outline:2px solid oklch(.2 .05 24);outline-offset:2px}
+.mact .ib{width:64px;height:64px;border-radius:16px;background:oklch(.2 .05 24);display:grid;place-items:center;color:#fff;transition:background .15s}
+.mact a:hover .ib{background:oklch(.15 .05 24)}.mact .ib svg{width:32px;height:32px}
+.mact a:nth-child(1){color:oklch(.2 .05 24)}.mact a:nth-child(2){color:oklch(.2 .05 24)}
+.mlist{list-style:none;margin:0;padding:0}.mlist li{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;padding:14px 12px;border-bottom:1px solid var(--border)}.mlist li:last-child{border:0}
+.mlist .d{font-weight:600}.mlist .s{font-size:13px;color:var(--muted-fg)}.mlist .a{text-align:right;font-weight:600}.mlist .a small{display:block;font-size:12px;color:var(--muted-fg);font-weight:400}
+@media(max-width:860px){.d-only{display:none}.m-only{display:grid;gap:16px}.shell,.main{min-height:0}.main{overflow:clip}.mnav a.on svg{background:color-mix(in oklch,var(--coral) 35%,white);border-radius:99px;width:52px!important;height:30px;padding:2px 13px}.topbar{display:none}.main{background:var(--bg)}}
+</style>
+</head>
+<body>
+<a class="skip" href="#main-content">Skip to main content</a>
+<div class="shell" data-od-id="app-shell">
+  <aside class="side" data-od-id="sidebar">
+    <a class="brand" href="customer-dashboard.html"><span class="mk"><img src="assets/logo-white.png" alt=""></span><span>TDFC Companion App</span></a>
+    <div class="grp">Platform</div>
+    <nav aria-label="Main">
+      <a class="on" href="customer-dashboard.html" aria-current="page"><svg class="ico" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Home</a>
+      <a href="loan-transactions.html"><svg class="ico" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>Loan Transactions</a>
+    </nav>
+    <div class="foot">
+      <a class="user" href="settings-profile.html" data-od-id="sidebar-user"><span class="avatar">MS</span><span><b>Santos, Maria L.</b><small>client</small></span></a>
+    </div>
+  </aside>
+  <div class="main">
+    <header class="topbar" data-od-id="breadcrumbs"><span>Dashboard</span></header>
+    <main class="content" id="main-content" data-od-id="dashboard-content">
+
+      <!-- Desktop -->
+      <section class="d-only" data-od-id="dashboard-desktop">
+        <div class="dgrid">
+          <div class="balance c8" data-od-id="balance-card">
+            <div class="b-left" data-od-id="hero-savings"><p style="font-size:14px;opacity:.9">Welcome,</p><h4 class="nm" id="dFull" style="margin:0"></h4><p style="font-size:14px;opacity:.9">client</p><button type="button" class="cls" data-cls aria-haspopup="dialog" aria-label="Borrower class: why this class?"><span class="clsT"></span><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg></button>
+              <div class="amt mono" id="dSav"></div><p class="lbl">Personal Savings</p></div>
+            <div class="b-right" data-od-id="hero-overview">
+              <div class="bstat"><small>Loan repayment</small><b class="mono" id="dPaid"></b><div class="bbar"><i id="dPaidBar"></i></div><div class="pc" id="dPaidPc"></div></div>
+              <div class="bstat"><small>Outstanding balance</small><b class="mono" id="dOut"></b><div class="bbar"><i id="dOutBar"></i></div><div class="pc" id="dOutPc"></div></div>
+            </div>
+          </div>
+          <div class="panel c4" data-od-id="quick-actions-card"><div class="panel-head"><h2>Quick Actions</h2></div>
+            <div class="qa">
+              <a href="loan-calculator.html" data-od-id="qa-loan-apply"><span class="ib"><svg class="ico" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg></span>Loan Apply</a>
+              <a href="#" data-od-id="qa-savings" data-soon="Savings goals"><span class="ib"><svg class="ico" viewBox="0 0 24 24"><path d="M19 5c-1.5 0-2.8 1.4-3 2-3.5-1.5-11-.3-11 5 0 1.8 0 3 2 4.5V20h4v-2h3v2h4v-4c1-.5 1.7-1 2-2h2v-4h-2c0-1-.5-1.5-1-2V5z"/><path d="M2 9v1c0 1.1.9 2 2 2h1M16 11h.01"/></svg></span>Savings</a>
+              <a href="#" data-od-id="qa-cards" data-soon="Card management"><span class="ib"><svg class="ico" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg></span>Cards</a>
+              <a href="#" data-od-id="qa-beneficiaries" data-soon="Beneficiary management"><span class="ib"><svg class="ico" viewBox="0 0 24 24"><path d="M18 21a8 8 0 0 0-16 0"/><circle cx="10" cy="8" r="5"/><path d="M22 20c0-3.4-1.9-6.3-4.5-7.5"/></svg></span>Beneficiaries</a>
+            </div></div>
+          <div class="panel c8" data-od-id="recent-transactions-table">
+            <div class="panel-head"><h2>Recent Transactions</h2><a class="viewall" href="loan-transactions.html">View All</a></div>
+            <div class="inner" id="dTable"></div></div>
+          <div class="panel c4" data-od-id="payments-card"><div class="panel-head"><h2>Payments</h2></div>
+            <div class="nextp" id="npCard" data-od-id="next-payment">
+              <small class="muted" style="font-weight:600">Next payment due</small>
+              <div class="row"><b class="amt mono" id="npAmt"></b><span class="badge info" id="npLoan"></span></div>
+              <p class="sub">Due <b id="npDue"></b> · 12-month amortization</p>
+              <a class="viewall" style="display:inline-block;margin-top:10px;font-size:13px" href="loan-transactions.html">View schedule</a>
+            </div>
+            <div class="mloans" data-od-id="active-loans-progress"><h4>Active loans</h4><div id="mlList"></div></div></div>
+        </div>
+      </section>
+
+      <!-- Mobile -->
+      <section class="m-only" data-od-id="dashboard-mobile">
+        <div class="mhead" data-od-id="mobile-hero">
+          <div class="top"><div><p class="w">Welcome,</p><h1 id="mFirst"></h1><p class="role">Client</p><br><button type="button" class="cls" data-cls aria-haspopup="dialog" aria-label="Borrower class: why this class?"><span class="clsT"></span><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg></button></div>
+            <div class="av" role="img" aria-label="Maria Santos">M</div></div>
+          <p class="cap">Personal savings</p><div class="big"><span>₱</span><b id="mSav"></b></div><hr>
+          <div class="mact" data-od-id="mobile-actions">
+            <a href="loan-calculator.html" aria-label="Apply for loan"><span class="ib"><svg class="ico" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/></svg></span>Loan Apply</a>
+            <a href="#" data-soon="Savings goals" aria-label="Manage savings"><span class="ib"><svg class="ico" viewBox="0 0 24 24"><path d="M19 5c-1.5 0-2.8 1.4-3 2-3.5-1.5-11-.3-11 5 0 1.8 0 3 2 4.5V20h4v-2h3v2h4v-4c1-.5 1.7-1 2-2h2v-4h-2c0-1-.5-1.5-1-2V5z"/></svg></span>Savings</a>
+          </div>
+        </div>
+        <div class="card" style="padding:14px 16px;border-radius:16px;display:flex;justify-content:space-between;align-items:center;gap:12px" id="mNpCard" data-od-id="mobile-next-payment">
+          <div><small class="muted" style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.02em">Next payment due</small>
+            <div style="font-weight:700;font-size:15px" id="mNpDue"></div></div>
+          <div style="text-align:right"><b style="font-size:18px" class="mono" id="mNpAmt"></b><div class="muted" style="font-size:12px" id="mNpLoan"></div></div>
+        </div>
+        <div class="card" style="padding:12px;border-radius:16px" data-od-id="mobile-recent">
+          <div class="sec-h" style="margin-bottom:4px"><h2 style="font-size:22px;font-weight:600">Recent Transactions</h2><a class="viewall" href="loan-transactions.html">View All</a></div>
+          <div id="mList"></div></div>
+      </section>
+    </main>
+  </div>
+</div>
+<nav class="mnav" aria-label="Mobile" data-od-id="mobile-nav">
+  <a class="on" href="customer-dashboard.html" style="color:var(--coral-ink)"><svg class="ico" style="width:26px;height:26px" viewBox="0 0 24 24"><path d="M3 10l9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg>Home</a>
+  <a href="loan-transactions.html"><svg class="ico" style="width:26px;height:26px" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>Loans</a>
+  <a href="settings-profile.html"><svg class="ico" style="width:26px;height:26px" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>Account</a>
+</nav>
+
+<div class="modal-back" id="mClass" role="dialog" aria-modal="true" aria-labelledby="clsT" data-od-id="borrower-class-modal">
+  <div class="modal" style="position:relative;text-align:center">
+    <button class="btn ghost sm" style="position:absolute;right:12px;top:12px" data-close aria-label="Close">✕</button>
+    <h3 id="clsT"></h3>
+    <p class="muted" id="clsD" style="margin-top:6px"></p>
+    <ul class="why" id="clsWhy"></ul>
+    <div class="scale" id="clsScale"></div>
+    <div class="actions" style="justify-content:center"><button class="btn primary" data-close>Got it</button></div>
+  </div>
+</div>
+
+<div class="modal-back" id="mSoon" role="dialog" aria-modal="true" aria-labelledby="soonT" data-od-id="coming-soon-modal">
+  <div class="modal" style="position:relative;text-align:center">
+    <button class="btn ghost sm" style="position:absolute;right:12px;top:12px" data-close aria-label="Close">✕</button>
+    <h3 id="soonT">Coming soon</h3>
+    <p class="muted" id="soonP" style="margin-top:8px"></p>
+    <div class="actions" style="justify-content:center"><button class="btn primary" data-close>OK</button></div>
+  </div>
+</div>
+
+<script>
+// SAMPLE DATA — shape of /api/transactions/recent items
+const SAMPLE=[
+ {lnnumber:'LN-2024-00123',description:'Regular Loan',date:'2025-10-15',principal:120000,raw_balance:84500},
+ {lnnumber:'SV-2024-00045',description:'Savings Deposit',date:'2025-10-30',principal:18500,raw_balance:0},
+ {lnnumber:'LN-2025-00031',description:'Emergency Loan',date:'2025-08-04',principal:35000,raw_balance:21800},
+ {lnnumber:'SV-2024-00046',description:'Savings Deposit',date:'2025-09-30',principal:12000,raw_balance:0},
+ {lnnumber:'LN-2023-00417',description:'Salary Loan',date:'2025-03-12',principal:60000,raw_balance:9200},
+ {lnnumber:'LN-2023-00201',description:'Educational Loan',date:'2023-01-20',principal:45000,raw_balance:0},
+ {lnnumber:'LN-2025-00088',description:'Appliance Loan',date:'2025-11-02',principal:24000,raw_balance:24000}
+];
+const state=new URLSearchParams(location.search).get('state')||'ready'; // ready | loading | error | empty
+const peso=n=>Number.isFinite(n)?new Intl.NumberFormat('en-PH',{style:'currency',currency:'PHP',maximumFractionDigits:2}).format(n):'₱0.00';
+const fd=iso=>iso?new Date(iso).toLocaleDateString('en-PH'):'';
+const $=id=>document.getElementById(id);
+const fullName='SANTOS, MARIA L.';
+const first=fullName.includes(',')?fullName.split(',')[1].trim().split(' ')[0]:fullName.split(' ')[0];
+let rows=state==='empty'||state==='error'||state==='loading'?[]:SAMPLE;
+let sv=0;rows.forEach(r=>{if(r.lnnumber.toUpperCase().startsWith('SV'))sv+=r.principal});
+const loans=rows.filter(r=>r.lnnumber.toUpperCase().startsWith('LN'));
+const act=loans.filter(r=>r.raw_balance>0);
+const out=act.reduce((s,r)=>s+r.raw_balance,0);
+const paid=loans.reduce((s,r)=>s+r.principal-r.raw_balance,0);
+const pct=paid+out?paid/(paid+out)*100:0;
+$('dFull').textContent=fullName;$('mFirst').textContent=first.charAt(0)+first.slice(1).toLowerCase();
+const sav=sv.toLocaleString('en-PH',{minimumFractionDigits:2});
+$('dSav').textContent='₱'+sav;$('mSav').textContent=sav;
+$('dPaid').textContent=peso(paid);
+$('dPaidBar').style.width=pct+'%';
+$('dPaidPc').textContent=pct.toFixed(0)+'% of '+peso(paid+out)+' borrowed';
+$('dOut').textContent=peso(out);
+$('dOutBar').style.width=(100-pct)+'%';
+$('dOutPc').textContent=(100-pct).toFixed(0)+'% left · '+act.length+' active loans';
+let per=10,sortK='date',asc=false,page=0;
+const msg={loading:'<div class="state" role="status"><span class="spin"></span>Loading transactions...</div>',
+ error:'<div class="state" role="alert" style="color:#B91C1C"><p style="font-weight:600;margin-bottom:12px">HTTP error! status: 500</p><button class="btn coral" onclick="location.search=\'\'">Try Again</button></div>',
+ empty:'<div class="state">No loan transactions found</div>'};
+function table(){
+ const box=$('dTable');
+ if(msg[state]&&state!=='ready'){box.innerHTML=msg[state];return}
+ if(!loans.length){box.innerHTML=msg.empty;return}
+ const val=r=>sortK==='amount'?r.principal:sortK==='balance'?r.raw_balance:sortK==='status'?(r.raw_balance>0?1:0):r[sortK];
+ const d=[...loans].sort((a,b)=>{const x=val(a),y=val(b);return (x>y?1:x<y?-1:0)*(asc?1:-1)});
+ const s=page*per,v=d.slice(s,s+per);
+ box.innerHTML='<div class="tbl-wrap"><table class="tbl"><thead><tr>'+[['date','Date',0],['description','Description',0],['principal','Principal',1],['balance','Balance',1],['status','Status',0]].map(([k,l,rt])=>`<th${rt?' class="r"':''} aria-sort="${sortK===k?(asc?'ascending':'descending'):'none'}"><button data-k="${k}">${l} ${sortK===k?(asc?'↑':'↓'):''}</button></th>`).join('')+'</tr></thead><tbody>'+
+ v.map(r=>`<tr><td class="muted">${fd(r.date)}</td><td><b>${r.description}</b></td><td class="r mono"><b>${peso(Math.abs(r.principal))}</b></td><td class="r mono"><b>${peso(r.raw_balance)}</b></td><td><span class="badge ${r.raw_balance>0?'info':'ok'}">${r.raw_balance>0?'Active':'Fully Paid'}</span></td></tr>`).join('')+
+ `</tbody></table></div><div class="pager">Rows per page: <select id="per" aria-label="Rows per page">${[5,10,15,20].map(n=>`<option ${n===per?'selected':''}>${n}</option>`).join('')}</select><span>${s+1}-${Math.min(s+per,d.length)} of ${d.length}</span><button class="btn sm ghost" id="pv" ${page?'':'disabled'} aria-label="Previous page">‹</button><button class="btn sm ghost" id="nx" ${s+per<d.length?'':'disabled'} aria-label="Next page">›</button></div>`;
+ box.querySelectorAll('th button').forEach(b=>b.onclick=()=>{asc=sortK===b.dataset.k?!asc:true;sortK=b.dataset.k;table()});
+ $('per').onchange=e=>{per=+e.target.value;page=0;table()};$('pv').onclick=()=>{page--;table()};$('nx').onclick=()=>{page++;table()};
+}
+table();
+$('mList').innerHTML=(msg[state]&&state!=='ready')?msg[state]:loans.length?'<ul class="mlist">'+loans.map(t=>`<li><div><div class="d">${t.description}</div><time class="s">${fd(t.date)}</time></div><div class="a">${peso(Math.abs(t.principal))}<small>Bal ${peso(t.raw_balance)}</small></div></li>`).join('')+'</ul>':'<div class="state" style="font-size:14px">No transactions found.</div>';
+
+// next payment: 12-month amortization convention (same as the schedule view)
+const npDue=act.map(l=>{const n=12,pp=l.principal/n;const made=Math.min(Math.round((l.principal-l.raw_balance)/pp),n-1);const dt=new Date(l.date+'T00:00:00');dt.setMonth(dt.getMonth()+made+1);return{desc:l.description,due:dt,amt:pp+l.raw_balance*.012}}).sort((a,b)=>a.due-b.due)[0];
+if(npDue){
+ $('npAmt').textContent=peso(npDue.amt);$('npLoan').textContent=npDue.desc;$('npDue').textContent=fd(npDue.due.toISOString().slice(0,10));
+ $('mNpAmt').textContent=peso(npDue.amt);$('mNpLoan').textContent=npDue.desc;$('mNpDue').textContent=fd(npDue.due.toISOString().slice(0,10));
+ $('mlList').innerHTML=act.map(l=>{const p=Math.min(100,Math.round((l.principal-l.raw_balance)/l.principal*100));return `<div class="li"><div class="t"><b>${l.description}</b><span class="mono">${peso(l.raw_balance)}</span></div><div class="bar"><i style="width:${p}%"></i></div></div>`}).join('');
+}else{
+ $('mNpCard').style.display='none';
+ $('npCard').innerHTML='<div class="state" style="padding:24px 0">No upcoming payments</div>';
+ $('mlList').innerHTML='<div class="state" style="padding:12px 0;font-size:13px">No active loans</div>';
+}
+
+// borrower class — SAMPLE rule set; replace with the lender's real classification
+const CLASSES=[['A','Prime',75],['B','Standard',40],['C','Watch',0]];
+const cls=CLASSES.find(c=>pct>=c[2])||CLASSES[2];
+const fullyPaid=loans.filter(l=>l.raw_balance===0).length;
+document.querySelectorAll('[data-cls]').forEach(b=>b.dataset.c=cls[0]);
+document.querySelectorAll('.clsT').forEach(e=>e.textContent='Class '+cls[0]);
+if(!loans.length)document.querySelectorAll('[data-cls]').forEach(b=>b.hidden=true);
+$('clsT').textContent='Class '+cls[0]+' · '+cls[1]+' borrower';
+$('clsD').textContent='Your class is based on how much of your borrowed amount you have repaid.';
+$('clsWhy').innerHTML=[
+ 'You have repaid '+pct.toFixed(0)+'% of '+peso(paid+out)+' borrowed across all loans.',
+ fullyPaid+' of '+loans.length+' loans are fully paid; '+act.length+' remain active.',
+ 'Class '+cls[0]+' applies at '+(cls[2]?cls[2]+'% repaid or more.':'under '+CLASSES[1][2]+'% repaid.')
+].map(t=>'<li>'+t+'</li>').join('');
+$('clsScale').innerHTML=CLASSES.map(c=>'<div data-c="'+c[0]+'" class="'+(c===cls?'me':'')+'"><b>Class '+c[0]+'</b><br>'+(c[2]?c[2]+'%+ repaid':'Below '+CLASSES[1][2]+'%')+'</div>').join('');
+const mClass=$('mClass');
+document.querySelectorAll('[data-cls]').forEach(b=>b.onclick=()=>{mClass.classList.add('open');mClass.querySelector('.btn.primary').focus()});
+mClass.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>mClass.classList.remove('open'));
+mClass.addEventListener('click',e=>{if(e.target===mClass)mClass.classList.remove('open')});
+
+// coming-soon quick actions
+const mSoon=$('mSoon');
+document.querySelectorAll('[data-soon]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();$('soonT').textContent=a.dataset.soon;$('soonP').textContent=a.dataset.soon+' will be available in a future release of the TDFC Companion App.';mSoon.classList.add('open')}));
+document.querySelectorAll('#mSoon [data-close]').forEach(b=>b.onclick=()=>mSoon.classList.remove('open'));
+mSoon.addEventListener('click',e=>{if(e.target===mSoon)mSoon.classList.remove('open')});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){mSoon.classList.remove('open');mClass.classList.remove('open')}});
+</script>
+</body>
+</html>

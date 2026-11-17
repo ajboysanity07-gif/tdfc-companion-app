@@ -31,9 +31,15 @@ class ClientManagementController extends Controller
                 ->orderBy('created_at', 'asc')
                 ->get()
                 ->map(function ($user) {
-                    $loanRows = DB::table('vloandue')
-                        ->where('acctno', $user->acctno)
-                        ->get();
+                    // ponytail: vloandue view is missing in some DBs; class badge stays blank instead of breaking the page
+                    try {
+                        $loanRows = DB::table('vloandue')
+                            ->where('acctno', $user->acctno)
+                            ->get();
+                    } catch (\Throwable $e) {
+                        Log::warning('vloandue unavailable, skipping client class', ['error' => $e->getMessage()]);
+                        $loanRows = collect();
+                    }
 
                     $highestClassPriority = null;
                     foreach ($loanRows as $loanData) {

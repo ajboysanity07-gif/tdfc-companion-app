@@ -57,7 +57,7 @@ export default function ResetPassword({ token, email }: Props) {
                         <PasswordField label="PASSWORD" autoComplete="new-password" {...bind('password')} />
                         <PasswordField label="CONFIRM" autoComplete="new-password" {...bind('password_confirmation')} />
                     </div>
-                    <PrimaryButton type="submit" disabled={processing}>
+                    <PrimaryButton type="submit" loading={processing}>
                         Reset password
                     </PrimaryButton>
                 </form>

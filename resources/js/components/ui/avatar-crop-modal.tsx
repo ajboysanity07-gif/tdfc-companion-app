@@ -56,17 +56,24 @@ export default function AvatarCropModal({
 
   const handleComplete = (_: Area, pixels: Area) => setArea(pixels);
 
-  const handleMediaLoaded = useCallback(
-    (ms: MediaSize) => {
-      if (!cropSize) return;
-      const requiredZoomX = cropSize.width / ms.width;
-      const requiredZoomY = cropSize.height / ms.height;
-      const required = Math.max(requiredZoomX, requiredZoomY, 1);
-      setMinZoom(required);
-      setZoom((z) => Math.max(z, required));
-    },
-    [cropSize]
-  );
+  // Keep the loaded media size so minZoom is recomputed whenever the crop circle OR the image changes.
+  // (Previously this ran once on image load; if the container hadn't been measured yet it bailed out,
+  // leaving the photo smaller than the circle and locked by restrictPosition, so it could not be dragged.)
+  const [media, setMedia] = useState<MediaSize | null>(null);
+  const handleMediaLoaded = useCallback((ms: MediaSize) => setMedia(ms), []);
+
+  useEffect(() => {
+    if (!media || !cropSize) return;
+    // Smallest zoom at which the photo fully covers the circle.
+    const required = Math.max(cropSize.width / media.width, cropSize.height / media.height, 1);
+    setMinZoom(required);
+    setZoom((z) => Math.min(Math.max(z, required), 4));
+  }, [media, cropSize]);
+
+  const handleReset = () => {
+    setCrop({ x: 0, y: 0 });
+    setZoom(minZoom);
+  };
 
   const handleUse = async () => {
     if (!area) return;
@@ -127,6 +134,7 @@ export default function AvatarCropModal({
     setLocalSrc(url);
     setCrop({ x: 0, y: 0 });
     setZoom(1);
+    setMedia(null);
   };
 
   const handleCancel = () => {
@@ -150,7 +158,7 @@ export default function AvatarCropModal({
             </button>
           </div>
         </div>
-        <div ref={containerRef} className="relative h-[58vh] sm:h-[62vh]">
+        <div ref={containerRef} className="relative h-[58vh] touch-none select-none sm:h-[62vh]">
           <Cropper
             image={localSrc}
             crop={crop}
@@ -168,7 +176,11 @@ export default function AvatarCropModal({
             onCropComplete={handleComplete}
             onMediaLoaded={handleMediaLoaded}
             zoomWithScroll
+            style={{ containerStyle: { cursor: "grab" }, cropAreaStyle: { border: "2px solid rgba(255,255,255,.9)" } }}
           />
+          <p className="pointer-events-none absolute inset-x-0 bottom-2 text-center text-xs font-medium text-white/90 [text-shadow:0_1px_3px_rgba(0,0,0,.6)]">
+            Drag to move · Scroll or pinch to zoom
+          </p>
         </div>
         <div className="flex flex-col gap-4 px-4 pb-4 pt-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex w-full items-center gap-3 sm:max-w-md">
@@ -187,6 +199,9 @@ export default function AvatarCropModal({
               aria-label="Zoom"
             />
             <span className="w-12 text-right text-xs tabular-nums text-black/50">{zoom.toFixed(2)}×</span>
+            <button type="button" onClick={handleReset} className="text-xs font-semibold text-black/70 underline-offset-2 hover:underline">
+              Reset
+            </button>
           </div>
           <div className="flex w-full items-center justify-end gap-3">
             <button

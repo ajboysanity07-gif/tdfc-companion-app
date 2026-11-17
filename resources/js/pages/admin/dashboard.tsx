@@ -1,100 +1,103 @@
-import React from 'react';
-import { Head, router, usePage } from '@inertiajs/react';
+import { Panel, RISE, StatCard, fdate, riseStyle } from '@/components/tdfc/ui';
 import AppLayout from '@/layouts/app-layout';
-import { Package, Users, LogOut, User } from 'lucide-react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
+import { LogOut, Package, User, Users } from 'lucide-react';
+import { ReactNode } from 'react';
 
-// 🔸 Type definition for page props
-type UserProps = {
-  auth: {
-    user: {
-      name: string;
-      email: string;
-      role: string;
-      avatar?: string | null;
-    };
-  };
+type Props = {
+    auth: { user: { name: string; role: string; avatar?: string | null } };
+    stats: { pending: number; clients: number; products: number; today: number };
+    pending: { name: string; at: string }[];
+    activity: { id: string; name: string; event: 'approved' | 'rejected'; at: string }[];
 };
 
+const dot = { approved: 'bg-tdfc-ok-ink', rejected: 'bg-tdfc-coral' };
+const tile = `${RISE} flex cursor-pointer flex-col items-center gap-1.5 rounded-2xl border border-border bg-card px-5 py-7 text-center shadow-sm transition hover:-translate-y-0.5 hover:shadow-tdfc-modal`;
+
+const Tile = ({ icon, title, sub, className = '' }: { icon: ReactNode; title: string; sub: string; className?: string }) => (
+    <>
+        <span className={`mb-2 grid size-18 place-items-center rounded-full ${className || 'bg-tdfc-coral-soft text-tdfc-coral-ink'}`}>{icon}</span>
+        <b className="text-[17px]">{title}</b>
+        <span className="max-w-52 text-muted-foreground">{sub}</span>
+    </>
+);
+
 export default function AdminDashboard() {
-  // Get user data from Inertia page props
-  const { props } = usePage<UserProps>();
-  const user = props.auth?.user ?? { name: 'Admin', role: 'admin' };
+    const { auth, stats, pending, activity } = usePage<Props>().props;
+    const user = auth?.user ?? { name: 'Admin', role: 'admin' };
 
-  return (
-    <AppLayout breadcrumbs={[{ title: 'Admin Dashboard', href: '/admin/dashboard' }]}>
-      <Head title="Admin Dashboard" />
-      
-      <div className="min-h-screen px-6 py-10 bg-gray-50 dark:bg-neutral-900">
-        <div className="max-w-6xl mx-auto">
-          
-          {/* Welcome Section */}
-          <div className="flex items-center justify-between mb-10">
-            <div>
-              <h1 className="text-4xl font-extrabold text-gray-800 dark:text-neutral-100 tracking-tight">
-                Welcome Back, {user.name.split(' ')[0] ?? 'Admin'} 👋
-              </h1>
-              <p className="mt-2 text-gray-600 dark:text-neutral-400">
-                You are logged in as <span className="font-semibold text-[#F57979] uppercase">{user.role}</span>
-              </p>
+    return (
+        <AppLayout breadcrumbs={[{ title: 'Admin Dashboard', href: '/admin/dashboard' }]}>
+            <Head title="Admin Dashboard" />
+            <div className="mx-auto grid w-full max-w-[1120px] content-start gap-5 p-4 md:p-6">
+                <section className="flex items-center justify-between gap-4 rounded-[14px] bg-tdfc-coral p-6 text-tdfc-on-coral">
+                    <div>
+                        <h1 className="text-[clamp(24px,4vw,34px)] font-bold">Welcome back, {user.name.split(' ')[0]}</h1>
+                        <p className="mt-1.5">
+                            You are logged in as <b className="ml-1 rounded-md bg-tdfc-sun px-2 py-0.5 text-xs text-[oklch(.3_.07_85)] uppercase">{user.role}</b>
+                        </p>
+                    </div>
+                    <div className="hidden size-18 place-items-center overflow-hidden rounded-full bg-white shadow-sm md:grid">
+                        {user.avatar ? <img src={user.avatar} alt={`${user.name} profile photo`} className="size-full object-cover" /> : <User className="size-9 text-tdfc-coral" />}
+                    </div>
+                </section>
+
+                <section aria-label="Key metrics" className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+                    <StatCard accent index={0} label="Pending approvals" value={stats.pending} />
+                    <StatCard index={1} label="Total clients" value={stats.clients} />
+                    <StatCard index={2} label="Products active" value={stats.products} />
+                    <StatCard index={3} label="Registrations today" value={stats.today} />
+                </section>
+
+                <section className="grid items-start gap-5 xl:grid-cols-[1.4fr_1fr]">
+                    <Panel className="p-5">
+                        <div className="mb-3.5 flex items-center justify-between">
+                            <h2 className="text-base font-semibold">Pending approvals</h2>
+                            <Link href="/admin/client-management" className="text-[13px] font-semibold text-tdfc-blue-ink hover:underline">Review all</Link>
+                        </div>
+                        {pending.length === 0 && <p className="py-4 text-center text-muted-foreground">Nothing waiting for review.</p>}
+                        <ul>
+                            {pending.map((p, i) => (
+                                <li key={p.name + p.at} style={riseStyle(i)} className={`${RISE} flex items-center justify-between gap-3 border-b border-border py-3 first:pt-0 last:border-0 last:pb-0`}>
+                                    <div>
+                                        <b className="block text-sm font-semibold">{p.name}</b>
+                                        <span className="text-xs text-muted-foreground">Submitted {fdate(p.at)}</span>
+                                    </div>
+                                    <Link href="/admin/client-management" className="text-[13px] font-semibold whitespace-nowrap text-tdfc-coral-ink hover:underline">Review</Link>
+                                </li>
+                            ))}
+                        </ul>
+                    </Panel>
+                    <Panel className="p-5">
+                        <h2 className="mb-3.5 text-base font-semibold">Recent activity</h2>
+                        {activity.length === 0 && <p className="py-4 text-center text-muted-foreground">No decisions yet.</p>}
+                        <ul className="grid gap-3">
+                            {activity.map((a, i) => (
+                                <li key={a.id} style={riseStyle(i)} className={`${RISE} flex items-start gap-3`}>
+                                    <span aria-hidden className={`mt-1.5 size-2 flex-none rounded-full ${dot[a.event]}`} />
+                                    <div>
+                                        <b className="block text-sm font-medium">{a.event === 'approved' ? 'Approved' : 'Rejected'} {a.name}</b>
+                                        <span className="text-xs text-muted-foreground">{new Date(a.at).toLocaleString('en-PH', { dateStyle: 'medium', timeStyle: 'short' })}</span>
+                                    </div>
+                                </li>
+                            ))}
+                        </ul>
+                    </Panel>
+                </section>
+
+                <p className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">Shortcuts</p>
+                <section className="grid gap-5 md:grid-cols-3">
+                    <Link href="/admin/products" className={tile} style={riseStyle(0)}>
+                        <Tile icon={<Package className="size-8.5" />} title="Manage Products" sub="View, edit, and manage all product listings." />
+                    </Link>
+                    <Link href="/admin/client-management" className={tile} style={riseStyle(1)}>
+                        <Tile icon={<Users className="size-8.5" />} title="Manage Clients" sub="Access client profiles and handle requests efficiently." />
+                    </Link>
+                    <button type="button" onClick={() => router.post('/logout')} style={riseStyle(2)} className={`${tile} !border-tdfc-coral !bg-tdfc-coral text-tdfc-on-coral hover:!bg-[color-mix(in_oklch,#f57979_88%,black)] [&>span:last-child]:!text-[oklch(.25_.05_24)]`}>
+                        <Tile icon={<LogOut className="size-8.5" />} title="Log Out" sub="End your current session securely." className="bg-white/35 text-tdfc-on-coral" />
+                    </button>
+                </section>
             </div>
-            {/* User Avatar Circle */}
-            <div className="h-20 w-20 rounded-full bg-[#F57979] flex items-center justify-center shadow-lg">
-              {user.avatar ? (
-                <img src={user.avatar} alt={user.name} className="h-20 w-20 rounded-full object-cover" />
-              ) : (
-                <User className="text-white w-10 h-10" />
-              )}
-            </div>
-          </div>
-
-          {/* Card Grid - Contains all admin management cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
-            
-            {/* Manage Products Card */}
-            <button
-              onClick={() => router.visit('/admin/products')}
-              className="flex flex-col items-center justify-center rounded-2xl bg-white dark:bg-neutral-800 shadow-sm hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border border-gray-200 dark:border-neutral-700 p-10 group"
-            >
-              <div className="rounded-full bg-[#F57979]/10 p-5 mb-4 group-hover:bg-[#F57979]/20 transition-colors">
-                <Package className="w-12 h-12 text-[#F57979]" />
-              </div>
-              <p className="text-lg font-semibold text-gray-800 dark:text-neutral-100">Manage Products</p>
-              <p className="mt-2 text-sm text-gray-500 dark:text-neutral-400 text-center max-w-[200px]">
-                View, edit, and manage all product listings.
-              </p>
-            </button>
-
-            {/* Manage Clients Card - UPDATED: Now routes to /admin/client-management */}
-            <button
-              onClick={() => router.visit('/admin/client-management')}
-              className="flex flex-col items-center justify-center rounded-2xl bg-white dark:bg-neutral-800 shadow-sm hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border border-gray-200 dark:border-neutral-700 p-10 group"
-            >
-              <div className="rounded-full bg-[#F57979]/10 p-5 mb-4 group-hover:bg-[#F57979]/20 transition-colors">
-                <Users className="w-12 h-12 text-[#F57979]" />
-              </div>
-              <p className="text-lg font-semibold text-gray-800 dark:text-neutral-100">Manage Clients</p>
-              <p className="mt-2 text-sm text-gray-500 dark:text-neutral-400 text-center max-w-[200px]">
-                Access client profiles and handle requests efficiently.
-              </p>
-            </button>
-
-            {/* Logout Card */}
-            <button
-              onClick={() => router.post('/logout')}
-              className="flex flex-col items-center justify-center rounded-2xl bg-[#F57979] text-white hover:bg-[#f46868] dark:bg-[#F57979] transition-all duration-300 shadow-md hover:shadow-lg p-10"
-            >
-              <div className="rounded-full bg-white/20 p-5 mb-4 transition group-hover:bg-white/30">
-                <LogOut className="w-12 h-12 text-white" />
-              </div>
-              <p className="text-lg font-semibold">Log Out</p>
-              <p className="mt-2 text-sm text-white/80 text-center max-w-[200px]">
-                End your current session securely.
-              </p>
-            </button>
-          </div>
-
-        </div>
-      </div>
-    </AppLayout>
-  );
+        </AppLayout>
+    );
 }

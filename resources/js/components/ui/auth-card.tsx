@@ -27,7 +27,7 @@ export default function AuthCard({
 }: Props) {
   return (
     <div
-      className={`mt-6 rounded-[1.25rem] bg-gray-200/80 backdrop-blur-md border border-gray-300/50 shadow-lg p-5 sm:p-6 ${className}`}
+      className={`animate-tdfc-rise mt-6 rounded-[1.25rem] bg-gray-200/80 backdrop-blur-md border border-gray-300/50 shadow-lg p-5 sm:p-6 ${className}`}
     >
       {(title || subtitle || headerRight) && (
         <div className="mb-4 flex items-start justify-between gap-4">

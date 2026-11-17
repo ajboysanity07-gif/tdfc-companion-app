@@ -6,6 +6,7 @@ import { initializeTheme, AppearanceProvider } from './hooks/use-appearance'; //
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import MuiThemeWrapper from './components/mui-theme-wrapper';
+import { MotionConfig } from 'framer-motion';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
@@ -48,7 +49,9 @@ createInertiaApp({
       <QueryClientProvider client={queryClient}>
         <AppearanceProvider>
           <MuiThemeWrapper>
-            <App {...props} />
+            <MotionConfig reducedMotion="user">
+              <App {...props} />
+            </MotionConfig>
             {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
           </MuiThemeWrapper>
         </AppearanceProvider>
@@ -57,7 +60,7 @@ createInertiaApp({
   },
 
   progress: {
-    color: '#4B5563',
+    color: '#f57979',
   },
 });
 

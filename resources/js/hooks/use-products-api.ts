@@ -4,7 +4,7 @@ import axios from 'axios';
 // Custom hook for product API communication
 export function useProductsApi() {
   const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   // Ensure your URL matches your API route!
   const fetchProducts = useCallback(async () => {

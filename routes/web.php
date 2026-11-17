@@ -9,6 +9,8 @@ use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\RecentTransactionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Admin\ClientManagementController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\LoanCalculatorController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Customer\RegistrationStatusController;
@@ -70,14 +72,15 @@ Route::middleware(['auth', 'approved', 'role:client'])->group(function () {
 
     Route::get('/loans/transactions', [LoanTransactionController::class, 'index'])
         ->name('loans.transactions');
+
+    Route::get('/loans/calculator', LoanCalculatorController::class)->name('loans.calculator');
 });
 
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', fn() => redirect()->route('admin.dashboard'));
 
-    Route::get('/dashboard', function () {
-        return Inertia::render('admin/dashboard');
-    })->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/registrations', [DashboardController::class, 'registrations'])->name('registrations');
 
     Route::get('/products', fn() => Inertia::render('admin/products-management'))->name('products');
 
