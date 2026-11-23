@@ -239,7 +239,8 @@ export default function LoanTransactionShow({ tab: initial, loan, history, sched
                                 {history.length === 0 ? (
                                     <p className="py-4 text-center text-sm text-muted-foreground">No transactions recorded for this loan.</p>
                                 ) : (
-                                    <div className="grid max-h-[420px] gap-2.5 overflow-auto rounded-xl border border-border p-3 sm:grid-cols-2">
+                                    <>
+                                    <div className="grid max-h-[420px] gap-2.5 overflow-auto rounded-xl border border-border p-3 sm:hidden">
                                         {history.map((h, i) => (
                                             <div key={`${h.controlno}-${i}`} className="rounded-xl border border-border px-3.5 py-3 hover:bg-muted">
                                                 <div className="flex items-baseline justify-between gap-3">
@@ -258,6 +259,31 @@ export default function LoanTransactionShow({ tab: initial, loan, history, sched
                                             </div>
                                         ))}
                                     </div>
+                                    <div className="hidden max-h-[420px] overflow-auto rounded-xl border border-border sm:block">
+                                        <table className="w-full border-separate border-spacing-0 whitespace-nowrap tabular-nums">
+                                            <thead>
+                                                <tr>
+                                                    {['Date', 'Description', 'Reference', 'Amount', 'Balance'].map((h, i) => (
+                                                        <th key={h} className={`${th} ${i > 2 ? 'text-right' : 'text-left'}`}>{h}</th>
+                                                    ))}
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {history.map((h, i) => (
+                                                    <tr key={`${h.controlno}-${i}`} className="hover:bg-muted">
+                                                        <td className={td}>{fdate(h.date)}</td>
+                                                        <td className={`${td} font-medium`}>{h.description}</td>
+                                                        <td className={`${td} text-muted-foreground`}>{h.reference || '—'}</td>
+                                                        <td className={`${td} text-right font-medium ${h.amount < 0 ? '' : 'text-tdfc-ok-ink'}`}>
+                                                            {h.amount < 0 ? '-' : '+'}{peso(Math.abs(h.amount))}
+                                                        </td>
+                                                        <td className={`${td} text-right font-bold`}>{peso(h.balance)}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    </>
                                 )}
                             </div>
                         </>
