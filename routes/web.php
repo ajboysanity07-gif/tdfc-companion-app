@@ -1,6 +1,9 @@
 <?php
 
 use Inertia\Inertia;
+use App\Models\AppUser;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserRejectionController;
@@ -62,7 +65,8 @@ Route::middleware(['auth'])->prefix('customer')->name('customer.')->group(functi
         ->name('register.resubmit');
 });
 
-Route::middleware(['auth', 'approved', 'role:client'])->group(function () {
+// Admins pass only while viewing an approved member (see AppUser::effective).
+Route::middleware(['auth', 'approved', 'role:client,admin', 'view_as:member'])->group(function () {
     Route::get('/dashboard', function () {
         return Inertia::render('customer/dashboard');
     })->name('dashboard');
@@ -79,8 +83,22 @@ Route::middleware(['auth', 'approved', 'role:client'])->group(function () {
     Route::get('/loans/calculator', LoanCalculatorController::class)->name('loans.calculator');
 });
 
-Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'role:admin', 'view_as:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', fn() => redirect()->route('admin.dashboard'));
+
+    Route::get('/view-as/{user:user_id}', function (Request $request, AppUser $user) {
+        abort_unless($user->role === 'client' && $user->isApproved(), 404);
+        Log::info('Admin viewing as member', ['admin' => $request->user()->user_id, 'member' => $user->user_id]);
+        $request->session()->put('view_as', $user->user_id);
+
+        return redirect('/dashboard');
+    })->name('view-as');
+
+    Route::delete('/view-as', function (Request $request) {
+        $request->session()->forget('view_as');
+
+        return redirect()->route('admin.client-management');
+    })->name('view-as.exit');
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/registrations', [DashboardController::class, 'registrations'])->name('registrations');

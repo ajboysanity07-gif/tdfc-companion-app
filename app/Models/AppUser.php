@@ -63,6 +63,22 @@ class AppUser extends AuthenticatableUser
         return $this->belongsTo(Wmaster::class, 'acctno', 'acctno');
     }
 
+    /** The member an admin is viewing (session 'view_as'), else the logged-in user. */
+    public static function effective(\Illuminate\Http\Request $request): ?self
+    {
+        $user = $request->user();
+
+        if ($user?->isAdmin() && $id = $request->session()->get('view_as')) {
+            $member = static::where('user_id', $id)->where('role', 'client')->where('status', 'approved')->first();
+            if ($member) {
+                return $member;
+            }
+            $request->session()->forget('view_as');
+        }
+
+        return $user;
+    }
+
     public function isAdmin(): bool
     {
         return $this->role === 'admin';

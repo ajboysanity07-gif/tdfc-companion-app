@@ -4,14 +4,15 @@ import { AppSidebar } from '@/components/app-sidebar';
 import { AppSidebarHeader } from '@/components/app-sidebar-header';
 import NavMobile from '@/components/nav-mobile';
 import { type BreadcrumbItem } from '@/types';
-import { usePage } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
 import { type PropsWithChildren } from 'react';
 
 export default function AppSidebarLayout({
   children,
   breadcrumbs = [],
 }: PropsWithChildren<{ breadcrumbs?: BreadcrumbItem[] }>) {
-  const path = usePage().url.split('?')[0];
+  const { url, props } = usePage<{ viewingAs?: string | null }>();
+  const path = url.split('?')[0];
   return (
     <AppShell variant="sidebar">
       {/* Sidebar: visible only on desktop - removed fixed width to allow sidebar to manage its own width */}
@@ -25,6 +26,15 @@ export default function AppSidebarLayout({
           variant="sidebar"
           className="w-full flex-1 overflow-x-hidden bg-tdfc-page dark:bg-background md:rounded-[14px] md:border md:border-border"
         >
+          {props.viewingAs && (
+            <div className="flex items-center justify-between gap-3 bg-tdfc-coral px-4 py-2 text-sm font-medium text-tdfc-on-coral">
+              <span>Viewing as {props.viewingAs} (read-only)</span>
+              <button type="button" className="underline" onClick={() => router.delete(route('admin.view-as.exit'))}>
+                Exit
+              </button>
+            </div>
+          )}
+
           {/* Sidebar header: visible only on desktop */}
           <div className="hidden md:block">
             <AppSidebarHeader breadcrumbs={breadcrumbs} />

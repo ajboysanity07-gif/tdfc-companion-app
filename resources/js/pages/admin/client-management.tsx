@@ -205,6 +205,7 @@ export default function ClientManagement({ pendingUsers, rejectionReasons }: Pro
                             </section>
                             {sel.status === 'approved' && (
                                 <section>
+                                    <button type="button" onClick={() => router.get(route('admin.view-as', sel.user_id))} className={`${btn.base} ${btn.dark} mb-4`}>View as member</button>
                                     <h3 className="mb-2.5 text-[13px] tracking-wider text-muted-foreground">BASIC SALARY</h3>
                                     <div className="flex flex-wrap items-center gap-2.5">
                                         <button type="button" onClick={() => { setSalaryFor(sel); setSal(salary ? String(salary) : ''); setSalNote(''); }} className="rounded-lg border border-dashed border-ring bg-card px-2.5 py-1.75 text-[13px] font-semibold hover:bg-muted">Set Basic Salary</button>

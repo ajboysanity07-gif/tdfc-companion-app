@@ -22,6 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'approved' => \App\Http\Middleware\EnsureUserIsApproved::class,
             'role' => EnsureUserHasRole::class,
+            'view_as' => \App\Http\Middleware\ViewAsMember::class,
             'admin.reg.token' => \App\Http\Middleware\EnsureAdminRegistrationToken::class,
         ]);
     })

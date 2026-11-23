@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AppUser;
 use App\Models\VWebAmortsched;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -25,7 +26,7 @@ class LoanTransactionController extends Controller
     /** The loan row, only if it belongs to the logged-in user. */
     private function ownLoan(string $lnnumber): ?object
     {
-        $acctno = Auth::user()?->acctno;
+        $acctno = AppUser::effective(request())?->acctno;
 
         return $acctno
             ? DB::table('wlnmaster')->where('acctno', $acctno)->where('lnnumber', $lnnumber)->first()
@@ -37,7 +38,7 @@ class LoanTransactionController extends Controller
      */
     public function index(Request $request)
     {
-        $acctno = Auth::user()?->acctno;
+        $acctno = AppUser::effective($request)?->acctno;
 
         $transactions = $acctno
             ? DB::table('wlnmaster')

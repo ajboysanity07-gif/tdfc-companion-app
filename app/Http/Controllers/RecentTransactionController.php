@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AppUser;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -17,9 +18,9 @@ class RecentTransactionController extends Controller
      * - dues: next unpaid installment per active loan (Amortsched + wlnmaster), earliest first.
      * - transactions: loan releases/payments (wlnled) and deposits/withdrawals (wsavled), newest first.
      */
-    public function recent(): JsonResponse
+    public function recent(Request $request): JsonResponse
     {
-        $acctno = Auth::user()?->acctno;
+        $acctno = AppUser::effective($request)?->acctno;
 
         if (! $acctno) {
             return response()->json(['items' => [], 'transactions' => [], 'dues' => []]);
