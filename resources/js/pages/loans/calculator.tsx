@@ -35,7 +35,7 @@ export function estimate(p: Product, amount: number, months: number) {
     return { term, sf, lrf, ds, mn: p.mort_plus_notarial, ded, net: Math.max(0, amount - ded), monthly, total: monthly * term };
 }
 
-const inputCls = 'min-h-12 w-full rounded-lg border border-input bg-white px-3 py-2 text-center text-[22px] font-bold focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-tdfc-coral-ink disabled:cursor-not-allowed disabled:bg-muted max-sm:text-xl';
+const inputCls = 'min-h-12 w-full rounded-lg border border-input bg-card text-foreground px-3 py-2 text-center text-[22px] font-bold focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-tdfc-coral-ink disabled:cursor-not-allowed disabled:bg-muted max-sm:text-xl';
 const lock = <span className="ml-1.5 inline-block rounded-full bg-muted px-2 py-0.5 align-[1px] text-[11px] font-bold tracking-wide uppercase">Set by admin</span>;
 
 export default function LoanCalculator({ products }: { products: Product[] }) {
