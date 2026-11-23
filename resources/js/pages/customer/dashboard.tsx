@@ -7,6 +7,7 @@ import { Banknote, CreditCard, Info, PiggyBank, UsersRound } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react';
 
 type Tx = { kind: 'loan' | 'savings'; ref: string; description: string; date: string | null; amount: number; balance: number };
+type Due = { lnnumber: string; description: string; date: string; amount: number };
 type RecentRow = { lnnumber: string; description: string; date: string | null; principal: number; raw_balance: number };
 type PageProps = { auth?: { user?: { name?: string; avatar?: string | null; role?: string | null } | null }; [key: string]: unknown };
 
@@ -56,6 +57,7 @@ export default function Dashboard() {
 
     const [rows, setRows] = useState<RecentRow[]>([]);
     const [txs, setTxs] = useState<Tx[]>([]);
+    const [dues, setDues] = useState<Due[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [tick, setTick] = useState(0);
@@ -71,8 +73,8 @@ export default function Dashboard() {
                 if (!r.ok) throw new Error(`HTTP error! status: ${r.status}`);
                 return r.json();
             })
-            .then((d) => alive && (setRows(Array.isArray(d?.items) ? d.items : []), setTxs(Array.isArray(d?.transactions) ? d.transactions : [])))
-            .catch((e) => alive && (setError(e instanceof Error ? e.message : 'Failed to load transactions'), setRows([]), setTxs([])))
+            .then((d) => alive && (setRows(Array.isArray(d?.items) ? d.items : []), setTxs(Array.isArray(d?.transactions) ? d.transactions : []), setDues(Array.isArray(d?.dues) ? d.dues : [])))
+            .catch((e) => alive && (setError(e instanceof Error ? e.message : 'Failed to load transactions'), setRows([]), setTxs([]), setDues([])))
             .finally(() => alive && setLoading(false));
         return () => {
             alive = false;
@@ -88,18 +90,11 @@ export default function Dashboard() {
         const out = active.reduce((a, r) => a + r.raw_balance, 0);
         const paid = loans.reduce((a, r) => a + r.principal - r.raw_balance, 0);
         const pct = paid + out ? (paid / (paid + out)) * 100 : 0;
-        // next payment: 12-month amortization convention, same as the schedule view
-        const next = active
-            .map((l) => {
-                const pp = l.principal / 12;
-                const made = Math.min(Math.round((l.principal - l.raw_balance) / pp), 11);
-                const due = new Date(`${l.date}T00:00:00`);
-                due.setMonth(due.getMonth() + made + 1);
-                return { desc: l.description, due, amt: pp + l.raw_balance * 0.012 };
-            })
-            .sort((a, b) => +a.due - +b.due)[0];
+        // next payment: first unpaid Amortsched installment across active loans (earliest first, from the API)
+        const first = dues[0];
+        const next = first && { desc: first.description, due: new Date(`${first.date}T00:00:00`), amt: first.amount };
         return { loans, active, savings, out, paid, pct, next, fullyPaid: loans.length - active.length };
-    }, [rows]);
+    }, [rows, dues]);
 
     const cls = CLASSES.find((c) => s.pct >= c[2]) ?? CLASSES[2];
     const t = useTable(txs, { key: 'date' }, (r, k) => (k === 'amount' ? r.amount : k === 'balance' ? r.balance : String((r as never)[k] ?? '')));
@@ -276,7 +271,7 @@ export default function Dashboard() {
                                     <b className="text-[28px] font-extrabold tabular-nums">{peso(s.next.amt)}</b>
                                     <Badge tone="info">{s.next.desc}</Badge>
                                 </div>
-                                <p className="mt-1 text-[13px] text-muted-foreground">Due <b>{fdate(s.next.due.toISOString().slice(0, 10))}</b> · 12-month amortization</p>
+                                <p className="mt-1 text-[13px] text-muted-foreground">Due <b>{fdate(s.next.due.toISOString().slice(0, 10))}</b>{s.next.due < new Date() ? ' · overdue' : ''}</p>
                                 <Link href="/loans/transactions" className="mt-2.5 inline-block text-[13px] font-semibold text-tdfc-coral-ink hover:underline">View schedule</Link>
                             </div>
                         ) : (

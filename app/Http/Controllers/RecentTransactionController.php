@@ -14,6 +14,7 @@ class RecentTransactionController extends Controller
      *
      * - items: one row per loan (wlnmaster, "LN" prefix) and per savings account
      *   (latest wsavled balance, "SV" prefix). Dashboard stats and the calculator read these.
+     * - dues: next unpaid installment per active loan (Amortsched + wlnmaster), earliest first.
      * - transactions: loan releases/payments (wlnled) and deposits/withdrawals (wsavled), newest first.
      */
     public function recent(): JsonResponse
@@ -21,7 +22,7 @@ class RecentTransactionController extends Controller
         $acctno = Auth::user()?->acctno;
 
         if (! $acctno) {
-            return response()->json(['items' => [], 'transactions' => []]);
+            return response()->json(['items' => [], 'transactions' => [], 'dues' => []]);
         }
 
         try {
@@ -107,9 +108,30 @@ class RecentTransactionController extends Controller
                 ->map(fn ($t) => array_diff_key($t, ['sort' => 1]))
                 ->values();
 
+            // Next installment per active loan: the earliest Amortsched row whose scheduled balance is
+            // below the loan's actual balance (not yet paid; same test vlnmaster uses for missed payments).
+            // Amount due = Amortization (principal) + Interest, like VWeb_Amortsched.
+            $names = $loans->pluck('description', 'lnnumber');
+            $dues = collect(DB::select(
+                'select lnnumber, Date_pay, due from (
+                    select a.lnnumber, a.Date_pay, a.Amortization + a.Interest as due,
+                           row_number() over (partition by a.lnnumber order by a.Date_pay) as rn
+                    from Amortsched a
+                    join wlnmaster w on w.lnnumber = a.lnnumber
+                    where w.acctno = ? and w.balance <> 0 and a.Balance < w.balance
+                ) x where rn = 1',
+                [$acctno]
+            ))->map(fn ($r) => [
+                'lnnumber' => 'LN'.trim((string) $r->lnnumber),
+                'description' => $names['LN'.trim((string) $r->lnnumber)] ?? '',
+                'date' => $day($r->Date_pay),
+                'amount' => $num($r->due),
+            ])->sortBy('date')->values();
+
             return response()->json([
                 'items' => $loans->concat($savings)->values(),
                 'transactions' => $transactions,
+                'dues' => $dues,
             ]);
         } catch (\Throwable $exception) {
             Log::error('Failed to load recent transactions', [
@@ -118,7 +140,7 @@ class RecentTransactionController extends Controller
                 'exception_message' => $exception->getMessage(),
             ]);
 
-            return response()->json(['items' => [], 'transactions' => []]);
+            return response()->json(['items' => [], 'transactions' => [], 'dues' => []]);
         }
     }
 
