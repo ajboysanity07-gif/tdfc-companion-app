@@ -73,6 +73,9 @@ Route::middleware(['auth', 'approved', 'role:client'])->group(function () {
     Route::get('/loans/transactions', [LoanTransactionController::class, 'index'])
         ->name('loans.transactions');
 
+    Route::get('/loans/transactions/{lnnumber}', [LoanTransactionController::class, 'show'])
+        ->name('loans.transactions.show');
+
     Route::get('/loans/calculator', LoanCalculatorController::class)->name('loans.calculator');
 });
 

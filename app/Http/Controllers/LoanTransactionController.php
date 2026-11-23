@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\VWebAmortsched;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -57,17 +58,40 @@ class LoanTransactionController extends Controller
     }
 
     /**
-     * Modal: loan summary (wlnmaster) plus its releases and payments (wlnled).
+     * Detail page: KPIs, loan summary, history (wlnled) and schedule (Amortsched) of one loan.
      */
-    public function details(Request $request, string $lnnumber): JsonResponse
+    public function show(Request $request, string $lnnumber)
     {
         $loan = $this->ownLoan($lnnumber);
+        abort_unless($loan, 404);
 
-        if (! $loan) {
-            return response()->json(['error' => 'Loan not found'], 404);
-        }
+        return Inertia::render('loans/transaction-show', [
+            'tab' => $request->query('tab') === 'schedule' ? 'schedule' : 'details',
+            'loan' => $this->summary($loan),
+            'history' => $this->history($loan),
+            'schedule' => $this->scheduleRows($loan),
+        ]);
+    }
 
-        $history = DB::table('wlnled')
+    private function summary(object $loan): array
+    {
+        return [
+            'lnnumber' => trim((string) $loan->lnnumber),
+            'description' => trim((string) $loan->lntype),
+            'released' => $this->day($loan->date_rel),
+            'matures' => $this->day($loan->date_mat),
+            'principal' => $this->num($loan->principal),
+            'balance' => $this->num($loan->balance),
+            'interest_rate' => $this->num($loan->int_rate),
+            'installment' => trim((string) $loan->installment),
+            'term_months' => $this->num($loan->term_mons),
+        ];
+    }
+
+    /** Releases and payments from wlnled, newest first. */
+    private function history(object $loan): Collection
+    {
+        return DB::table('wlnled')
             ->where('lnnumber', $loan->lnnumber)
             ->whereIn('lncode', ['RL', 'LN'])
             ->orderByDesc('date_in')
@@ -96,26 +120,56 @@ class LoanTransactionController extends Controller
             })
             ->filter()
             ->values();
-
-        return response()->json([
-            'loan' => [
-                'lnnumber' => trim((string) $loan->lnnumber),
-                'description' => trim((string) $loan->lntype),
-                'released' => $this->day($loan->date_rel),
-                'matures' => $this->day($loan->date_mat),
-                'principal' => $this->num($loan->principal),
-                'balance' => $this->num($loan->balance),
-                'interest_rate' => $this->num($loan->int_rate),
-                'installment' => trim((string) $loan->installment),
-                'term_months' => $this->num($loan->term_mons),
-            ],
-            'history' => $history,
-        ]);
     }
 
     /**
-     * Modal: amortization schedule for one of the user's loans.
+     * Amortization schedule with a status per row. Same rule as the dashboard's next payment:
+     * a row is unpaid while its scheduled balance is below the loan's actual balance.
      */
+    private function scheduleRows(object $loan): Collection
+    {
+        $owed = $this->num($loan->balance);
+        $nextFound = false;
+
+        return VWebAmortsched::where('lnnumber', $loan->lnnumber)
+            ->orderBy('Date_pay')
+            ->get()
+            ->map(function ($item) use ($owed, &$nextFound) {
+                $balance = $this->num($item->Balance);
+                if ($owed <= 0 || $balance >= $owed) {
+                    $status = 'paid';
+                } elseif (! $nextFound) {
+                    $nextFound = true;
+                    $status = 'due';
+                } else {
+                    $status = 'upcoming';
+                }
+
+                return [
+                    'date' => $this->day($item->Date_pay),
+                    'payPrincipal' => $this->num($item->Principalpay),
+                    'payInterest' => $this->num($item->Interestm ?? $item->Interest),
+                    'amortization' => $this->num($item->Amortization),
+                    'balance' => $balance,
+                    'status' => $status,
+                ];
+            })
+            ->values();
+    }
+
+    /** JSON: loan summary plus history. */
+    public function details(Request $request, string $lnnumber): JsonResponse
+    {
+        $loan = $this->ownLoan($lnnumber);
+
+        if (! $loan) {
+            return response()->json(['error' => 'Loan not found'], 404);
+        }
+
+        return response()->json(['loan' => $this->summary($loan), 'history' => $this->history($loan)]);
+    }
+
+    /** JSON: amortization schedule. */
     public function schedule(Request $request, string $lnnumber): JsonResponse
     {
         $loan = $this->ownLoan($lnnumber);
@@ -124,19 +178,6 @@ class LoanTransactionController extends Controller
             return response()->json(['error' => 'Loan not found'], 404);
         }
 
-        $schedule = VWebAmortsched::where('lnnumber', $loan->lnnumber)
-            ->orderBy('Date_pay')
-            ->get()
-            ->map(fn ($item) => [
-                'lnnumber' => (string) $item->lnnumber,
-                'date' => $item->Date_pay,
-                'payPrincipal' => $this->num($item->Principalpay),
-                'payInterest' => $this->num($item->Interestm ?? $item->Interest),
-                'amortization' => $this->num($item->Amortization),
-                'balance' => $this->num($item->Balance),
-                'controlno' => (string) ($item->controlno ?? 'N/A'),
-            ]);
-
-        return response()->json(['schedule' => $schedule]);
+        return response()->json(['schedule' => $this->scheduleRows($loan)]);
     }
 }
