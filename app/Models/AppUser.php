@@ -67,9 +67,11 @@ class AppUser extends AuthenticatableUser
     public static function subject(\Illuminate\Http\Request $request): ?self
     {
         $member = $request->route('user');
-        if (! $member instanceof self) {
+        if ($member === null) {
             return $request->user();
         }
+        // Routes don't type-hint AppUser, so {user:user_id} arrives as a raw string.
+        $member = $member instanceof self ? $member : static::where('user_id', $member)->firstOrFail();
         abort_unless($member->role === 'client' && $member->isApproved(), 404);
 
         return $member;
@@ -78,7 +80,7 @@ class AppUser extends AuthenticatableUser
     /** Extra Inertia props when an admin views a member's page; empty for the member's own pages. */
     public static function adminViewProps(\Illuminate\Http\Request $request): array
     {
-        $member = $request->route('user') instanceof self ? static::subject($request) : null;
+        $member = $request->route('user') !== null ? static::subject($request) : null;
 
         return $member
             ? ['base' => '/admin/clients/'.$member->user_id, 'member' => ['name' => $member->name, 'acctno' => $member->acctno]]
