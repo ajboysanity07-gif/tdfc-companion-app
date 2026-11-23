@@ -62,7 +62,7 @@ export default function Registrations() {
                     <div className="flex flex-wrap items-center justify-between gap-3 px-5">
                         <Tabs tabs={tabs} value={tab} onChange={(v) => { setTab(v); t.setPage(0); }} />
                         <div className="flex flex-1 items-center justify-end gap-2">
-                            <input value={q} onChange={(e) => { setQ(e.target.value); t.setPage(0); }} placeholder="Search client, account no., or note" aria-label="Search events" autoComplete="off" className="h-10 max-w-80 min-w-0 flex-1 rounded-[10px] border border-input bg-white px-3 shadow-sm" />
+                            <input value={q} onChange={(e) => { setQ(e.target.value); t.setPage(0); }} placeholder="Search client, account no., or note" aria-label="Search events" autoComplete="off" className="h-10 max-w-80 min-w-0 flex-1 rounded-[10px] border border-input bg-card px-3 shadow-sm" />
                             <button type="button" onClick={exportCsv} className={`${btn.base} ${btn.plain}`}>Export CSV</button>
                         </div>
                     </div>

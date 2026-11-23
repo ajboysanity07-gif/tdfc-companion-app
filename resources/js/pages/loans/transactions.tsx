@@ -147,7 +147,7 @@ export default function LoansTransactionPage({ transactions }: { transactions: T
                                     </thead>
                                     <tbody>
                                         {t.view.map((r) => (
-                                            <tr key={r.lnnumber} className="border-b border-border last:border-0 even:bg-tdfc-stripe hover:bg-muted">
+                                            <tr key={r.lnnumber} className="border-b border-border last:border-0 even:bg-muted/40 hover:bg-muted">
                                                 <td className="px-4 py-3.5 text-muted-foreground">{fdate(r.date)}</td>
                                                 <td className="px-4 py-3.5 font-medium">{r.lnnumber}</td>
                                                 <td className="px-4 py-3.5 font-bold">{r.description}</td>
@@ -240,7 +240,7 @@ export default function LoansTransactionPage({ transactions }: { transactions: T
                                 <thead>
                                     <tr>
                                         {['Date', 'Pay Principal', 'Pay Interest', 'Amortization', 'Balance'].map((h, i) => (
-                                            <th key={h} className={`sticky top-0 border-b border-border bg-[oklch(.98_0_0)] px-3.5 py-2.5 text-[11px] tracking-wide text-muted-foreground uppercase ${i ? 'text-right' : 'text-left'}`}>
+                                            <th key={h} className={`sticky top-0 border-b border-border bg-muted px-3.5 py-2.5 text-[11px] tracking-wide text-muted-foreground uppercase ${i ? 'text-right' : 'text-left'}`}>
                                                 {h}
                                             </th>
                                         ))}

@@ -56,7 +56,7 @@ const toForm = (p: Product): Form => {
     };
 };
 
-const field = 'h-10 w-full rounded-[10px] border border-input bg-white px-3 shadow-sm focus:border-ring focus:outline-none dark:bg-transparent';
+const field = 'h-10 w-full rounded-[10px] border border-input bg-card px-3 shadow-sm focus:border-ring focus:outline-none dark:bg-transparent';
 const pill = 'inline-flex h-5.5 items-center rounded-full px-2 text-[11px] font-semibold';
 const sections = ['general', 'terms', 'fees'] as const;
 

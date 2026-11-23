@@ -87,7 +87,8 @@ RUN apt-get update \
 
 COPY --from=frontend /app /var/www/html
 
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
+RUN ln -sfn /var/www/html/storage/app/public /var/www/html/public/storage \
+    && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
     && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \

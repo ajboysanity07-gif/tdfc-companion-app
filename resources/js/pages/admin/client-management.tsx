@@ -27,7 +27,7 @@ const php = (n: number) => `Php ${n.toLocaleString(undefined, { minimumFractionD
 const ini = (n: string) => n.split(' ').map((w) => w[0]).slice(0, 2).join('').toUpperCase();
 const date = (iso: string) => new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 const stat = (s: string) => STATUS[s as Status] ?? <Badge>{s}</Badge>;
-const input = 'h-10 w-full rounded-[10px] border border-input bg-white px-3 shadow-sm focus:border-ring focus:outline-none';
+const input = 'h-10 w-full rounded-[10px] border border-input bg-card px-3 shadow-sm focus:border-ring focus:outline-none';
 
 const docsOf = (u: PendingUser) =>
     [
@@ -118,7 +118,7 @@ export default function ClientManagement({ pendingUsers, rejectionReasons }: Pro
                         <Tabs tabs={tabs} value={tab} onChange={(v) => { setTab(v); setSelId(null); t.setPage(0); }} />
                         <div className="flex flex-1 items-center justify-end gap-2">
                             <input value={q} onChange={(e) => { setQ(e.target.value); t.setPage(0); }} placeholder="Search name, email, or account no." aria-label="Search clients" autoComplete="off" className={`${input} max-w-80 min-w-0 flex-1 max-md:max-w-none`} />
-                            <select aria-label="Filter by class" value={cls} onChange={(e) => { setCls(e.target.value); t.setPage(0); }} className="h-10 flex-none cursor-pointer rounded-[10px] border border-input bg-white px-3 shadow-sm">
+                            <select aria-label="Filter by class" value={cls} onChange={(e) => { setCls(e.target.value); t.setPage(0); }} className="h-10 flex-none cursor-pointer rounded-[10px] border border-input bg-card px-3 shadow-sm">
                                 <option value="all">All classes</option>
                                 {['A', 'B', 'C', 'D'].map((c) => (
                                     <option key={c} value={c}>Class {c}</option>
@@ -141,7 +141,7 @@ export default function ClientManagement({ pendingUsers, rejectionReasons }: Pro
                             </thead>
                             <tbody>
                                 {t.view.map((u) => (
-                                    <tr key={u.user_id} tabIndex={0} aria-label={`Open review for ${u.name}`} onClick={() => setSelId(u.user_id)} onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), setSelId(u.user_id))} className={`cursor-pointer border-b border-border last:border-0 hover:bg-muted ${u.user_id === selId ? 'bg-tdfc-blue-soft' : ''}`}>
+                                    <tr key={u.user_id} tabIndex={0} aria-label={`Open review for ${u.name}`} onClick={() => setSelId(u.user_id)} onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), setSelId(u.user_id))} className={`cursor-pointer border-b border-border last:border-0 hover:bg-muted ${u.user_id === selId ? 'bg-tdfc-blue/15' : ''}`}>
                                         <td className="px-4 py-3.5">
                                             <div className="flex min-w-0 items-center gap-2.5">
                                                 <span aria-hidden className="grid size-9 flex-none place-items-center rounded-full bg-tdfc-blue-soft text-[13px] font-bold text-tdfc-blue-ink">{ini(u.name)}</span>
@@ -207,7 +207,7 @@ export default function ClientManagement({ pendingUsers, rejectionReasons }: Pro
                                 <section>
                                     <h3 className="mb-2.5 text-[13px] tracking-wider text-muted-foreground">BASIC SALARY</h3>
                                     <div className="flex flex-wrap items-center gap-2.5">
-                                        <button type="button" onClick={() => { setSalaryFor(sel); setSal(salary ? String(salary) : ''); setSalNote(''); }} className="rounded-lg border border-dashed border-ring bg-white px-2.5 py-1.75 text-[13px] font-semibold hover:bg-muted">Set Basic Salary</button>
+                                        <button type="button" onClick={() => { setSalaryFor(sel); setSal(salary ? String(salary) : ''); setSalNote(''); }} className="rounded-lg border border-dashed border-ring bg-card px-2.5 py-1.75 text-[13px] font-semibold hover:bg-muted">Set Basic Salary</button>
                                         <b className="tabular-nums">{salary ? php(salary) : 'Not set'}</b>
                                     </div>
                                 </section>
@@ -224,7 +224,7 @@ export default function ClientManagement({ pendingUsers, rejectionReasons }: Pro
                             )}
                         </div>
                         {sel.status === 'pending' && (
-                            <div className="flex gap-2.5 border-t border-border bg-white px-5 py-4">
+                            <div className="flex gap-2.5 border-t border-border bg-card px-5 py-4">
                                 <button type="button" disabled={busy} onClick={() => { setPicked([]); setRejecting(true); }} className={`${btn.base} ${btn.danger} flex-1`}>Reject</button>
                                 <button type="button" disabled={busy} onClick={() => approve(sel)} className={`${btn.base} ${btn.dark} flex-1`}>{busy && <BtnSpinner />}Approve</button>
                             </div>

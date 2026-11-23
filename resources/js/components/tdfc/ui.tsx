@@ -240,7 +240,7 @@ export const Pager = ({ t, options = [5, 10, 15, 25, 50] }: { t: Tbl; options?: 
                 aria-label="Rows per page"
                 value={t.per}
                 onChange={(e) => t.setPer(+e.target.value)}
-                className="h-[30px] rounded-lg border border-input bg-white px-1.5"
+                className="h-[30px] rounded-lg border border-input bg-card px-1.5"
             >
                 {options.map((n) => (
                     <option key={n}>{n}</option>
@@ -330,7 +330,7 @@ export function Drawer({
                 onClose();
             }}
             onClick={(e) => e.target === e.currentTarget && onClose()}
-            className={`m-0 ml-auto h-dvh max-h-none w-full bg-white p-0 shadow-tdfc-modal backdrop:animate-tdfc-fade backdrop:bg-black/50 open:animate-tdfc-drawer ${panel}`}
+            className={`m-0 ml-auto h-dvh max-h-none w-full bg-card p-0 shadow-tdfc-modal backdrop:animate-tdfc-fade backdrop:bg-black/50 open:animate-tdfc-drawer ${panel}`}
         >
             {open && children}
         </dialog>
@@ -357,7 +357,7 @@ export function useToast() {
 
 export const btn = {
     base: 'inline-flex h-10 items-center justify-center gap-2 rounded-[10px] border px-4 font-medium transition-[color,background-color,transform] active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50',
-    plain: 'border-border bg-white hover:bg-muted',
+    plain: 'border-border bg-card hover:bg-muted',
     dark: 'border-primary bg-primary text-primary-foreground hover:bg-primary/85',
     coral: 'border-tdfc-coral bg-tdfc-coral font-bold text-tdfc-on-coral hover:bg-[color-mix(in_oklch,#f57979_88%,black)]',
     danger: 'border-destructive bg-destructive text-white hover:bg-destructive/90',
