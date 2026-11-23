@@ -103,6 +103,18 @@ function ProductDrawerBody({ product, dirty, onSave, onDelete, onClose, toast }:
         setF((x) => ({ ...x, settings: { ...x.settings, ln_isActive: active } }));
     }, [active]);
     const addTag = (t: string) => setF((x) => (x.tags.includes(t) ? x : { ...x, tags: [...x.tags, t] }));
+    const [types, setTypes] = useState<string[]>([]);
+    const [openTags, setOpenTags] = useState(false);
+    const tagBox = useRef<HTMLDivElement>(null);
+    useEffect(() => {
+        axios.get('/api/admin/products/types').then((r) => setTypes(r.data), () => setTypes([]));
+    }, []);
+    useEffect(() => {
+        const away = (e: MouseEvent) => tagBox.current?.contains(e.target as Node) || setOpenTags(false);
+        document.addEventListener('mousedown', away);
+        return () => document.removeEventListener('mousedown', away);
+    }, []);
+    const options = types.filter((t) => !f.tags.includes(t) && t.toLowerCase().includes(tag.trim().toLowerCase()));
 
     const spy = () => {
         const b = body.current;
@@ -204,33 +216,61 @@ function ProductDrawerBody({ product, dirty, onSave, onDelete, onClose, toast }:
                         <label htmlFor="d-tags" className="font-medium">
                             Type relation tags
                         </label>
-                        <div className="flex min-h-10.5 cursor-text flex-wrap gap-1.5 rounded-[10px] border border-input p-1.5 shadow-sm focus-within:border-ring">
-                            {f.tags.map((tag_name) => (
-                                <span key={tag_name} className={`${pill} gap-1.5 bg-tdfc-blue-soft text-tdfc-blue-ink`}>
-                                    {tag_name}
-                                    <button
-                                        type="button"
-                                        aria-label={`Remove ${tag_name}`}
-                                        onClick={() => setF((x) => ({ ...x, tags: x.tags.filter((t) => t !== tag_name) }))}
-                                    >
-                                        <X className="size-3" />
-                                    </button>
-                                </span>
-                            ))}
-                            <input
-                                id="d-tags"
-                                value={tag}
-                                onChange={(e) => setTag(e.target.value)}
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter' && tag.trim()) {
-                                        e.preventDefault();
-                                        addTag(tag.trim().toUpperCase());
-                                        setTag('');
-                                    }
-                                }}
-                                placeholder="Add tag, press Enter"
-                                className="min-w-24 flex-1 bg-transparent px-1 outline-none"
-                            />
+                        <div ref={tagBox} className="relative">
+                            <div className="flex min-h-10.5 cursor-text flex-wrap gap-1.5 rounded-[10px] border border-input p-1.5 shadow-sm focus-within:border-ring">
+                                {f.tags.map((tag_name) => (
+                                    <span key={tag_name} title={tag_name} className={`${pill} max-w-40 gap-1.5 bg-tdfc-blue-soft text-tdfc-blue-ink`}>
+                                        <span className="truncate">{tag_name}</span>
+                                        <button
+                                            type="button"
+                                            aria-label={`Remove ${tag_name}`}
+                                            onClick={() => setF((x) => ({ ...x, tags: x.tags.filter((t) => t !== tag_name) }))}
+                                        >
+                                            <X className="size-3" />
+                                        </button>
+                                    </span>
+                                ))}
+                                <input
+                                    id="d-tags"
+                                    value={tag}
+                                    autoComplete="off"
+                                    onChange={(e) => {
+                                        setTag(e.target.value);
+                                        setOpenTags(true);
+                                    }}
+                                    onFocus={() => setOpenTags(true)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Escape') setOpenTags(false);
+                                        if (e.key === 'Enter') {
+                                            e.preventDefault();
+                                            if (options[0]) addTag(options[0]);
+                                            setTag('');
+                                        }
+                                    }}
+                                    placeholder="Select loan types"
+                                    className="min-w-24 flex-1 bg-transparent px-1 outline-none"
+                                />
+                            </div>
+                            {openTags && (
+                                <ul className="absolute inset-x-0 top-full z-10 mt-1 max-h-56 overflow-auto rounded-[10px] border border-border bg-popover p-1 shadow-md">
+                                    {options.length === 0 && <li className="px-3 py-2 text-[13px] text-muted-foreground">No loan types</li>}
+                                    {options.map((t) => (
+                                        <li key={t}>
+                                            <button
+                                                type="button"
+                                                title={t}
+                                                onClick={() => {
+                                                    addTag(t);
+                                                    setTag('');
+                                                }}
+                                                className="block w-full truncate rounded-md px-3 py-2 text-left hover:bg-muted"
+                                            >
+                                                {t}
+                                            </button>
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
                         </div>
                     </div>
                     <div className="grid gap-1.5">

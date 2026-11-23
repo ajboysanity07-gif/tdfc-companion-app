@@ -27,30 +27,12 @@ class ProductController extends Controller
         );
     }
 
-    // Loan types from the master list that are not yet displayed (for "Add Loan")
-    public function available()
+    // All wlntype names, for the tag dropdown
+    public function types()
     {
-        $shown = WlnProduct::where('isDisplayed', true)->pluck('typecode')->all();
-
         return response()->json(
-            WlnType::get(['typecode', 'lntype'])
-                ->map(fn ($t) => ['typecode' => trim($t->typecode), 'lntype' => trim($t->lntype)])
-                ->reject(fn ($t) => in_array($t['typecode'], $shown, true))
-                ->values()
+            WlnType::pluck('lntype')->map(fn ($t) => trim($t))->unique()->sort()->values()
         );
-    }
-
-    // Start displaying a loan type (creates its product row from wlntype if missing)
-    public function enable($typecode)
-    {
-        $type = $this->masterType($typecode);
-        $product = WlnProduct::firstOrCreate(
-            ['typecode' => $typecode],
-            ['lntype' => trim($type->lntype), 'int_rate' => $type->int_rate]
-        );
-        $product->update(['isDisplayed' => true]);
-
-        return response()->json($product->fresh(self::WITH));
     }
 
     public function show($typecode)

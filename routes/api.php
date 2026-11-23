@@ -44,8 +44,7 @@ Route::get('/check-register-duplicate', function (Request $request) {
 
 Route::middleware(['web', 'auth', 'role:admin'])->prefix('admin/products')->group(function () {
     Route::get('/', [ProductController::class, 'index']);
-    Route::get('available', [ProductController::class, 'available']);
-    Route::post('{typecode}/enable', [ProductController::class, 'enable']);
+    Route::get('types', [ProductController::class, 'types']);
     Route::delete('{typecode}/tags/{tag}', [ProductController::class, 'removeTag']);
     Route::get('{typecode}', [ProductController::class, 'show']);
     Route::post('/', [ProductController::class, 'store']);
