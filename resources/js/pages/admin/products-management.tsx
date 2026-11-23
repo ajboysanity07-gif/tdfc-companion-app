@@ -119,7 +119,7 @@ function ProductDrawerBody({ product, dirty, onSave, onDelete, onClose, toast }:
     };
 
     const numField = (k: 'max_term' | 'max_amortization' | 'service_fee' | 'lrf' | 'doc_stamp' | 'mort_notarial', id: string) => (
-        <input id={id} className={`${field} tabular-nums`} inputMode="decimal" value={text(s[k])} onChange={(e) => /^\d*\.?\d*$/.test(e.target.value) && set(k, e.target.value)} />
+        <input id={id} className={`${field} tabular-nums`} inputMode="decimal" value={text(s[k])} onChange={(e) => /^\d*\.?\d{0,2}$/.test(e.target.value) && set(k, e.target.value)} />
     );
     const pct = (k: 'service_fee' | 'lrf' | 'doc_stamp', id: string, label: string) => (
         <div className="grid gap-1.5">
