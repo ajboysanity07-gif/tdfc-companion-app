@@ -2,109 +2,140 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\VWeb_Account;
-use App\Models\VWebLnled;
 use App\Models\VWebAmortsched;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class LoanTransactionController extends Controller
 {
-    /**
-     * ✅ MAIN PAGE: Load only essential table data
-     */
-public function index(Request $request)
+    private function num(mixed $v): float
     {
-        $user = Auth::user();
-        $acctno = $user?->acctno;
+        return is_numeric($v) ? (float) $v : 0.0;
+    }
 
-        if (!$acctno) {
-            return Inertia::render('loans/transactions', [
-                'transactions' => []
-            ]);
-        }
+    private function day(mixed $v): ?string
+    {
+        return $v ? substr((string) $v, 0, 10) : null;
+    }
 
-        // ✅ ADDED: Filter to only show transactions starting with 'LN'
-        $transactions = VWeb_Account::query()
-            ->where('acctno', $acctno)
-            ->where('lnnumber', 'like', 'LN%') // ✅ This filters loan numbers starting with 'LN'
-            ->orderByDesc('daterel')
-            ->get(['lnnumber', 'lntype', 'daterel', 'principal', 'balance'])
-            ->map(function ($r) {
-                return [
-                    'lnnumber'    => (string) $r->lnnumber,
-                    'description' => (string) $r->lntype,
-                    'date'        => $r->daterel,
-                    'principal'   => is_numeric($r->principal) ? (float) $r->principal : 0.0,
-                    'raw_balance' => is_numeric($r->balance) ? (float) $r->balance : 0.0,
-                ];
-            });
+    /** The loan row, only if it belongs to the logged-in user. */
+    private function ownLoan(string $lnnumber): ?object
+    {
+        $acctno = Auth::user()?->acctno;
 
-        return Inertia::render('loans/transactions', [
-            'transactions' => $transactions,
-        ]);
+        return $acctno
+            ? DB::table('wlnmaster')->where('acctno', $acctno)->where('lnnumber', $lnnumber)->first()
+            : null;
     }
 
     /**
-     * ✅ API ENDPOINT: Transaction details for modal
+     * Main page: every loan of the user (paid or not) from wlnmaster.
+     */
+    public function index(Request $request)
+    {
+        $acctno = Auth::user()?->acctno;
+
+        $transactions = $acctno
+            ? DB::table('wlnmaster')
+                ->where('acctno', $acctno)
+                ->orderByDesc('date_rel')
+                ->get(['lnnumber', 'lntype', 'date_rel', 'principal', 'balance'])
+                ->map(fn ($r) => [
+                    'lnnumber' => trim((string) $r->lnnumber),
+                    'description' => trim((string) $r->lntype),
+                    'date' => $this->day($r->date_rel),
+                    'principal' => $this->num($r->principal),
+                    'raw_balance' => $this->num($r->balance),
+                ])
+                ->values()
+            : [];
+
+        return Inertia::render('loans/transactions', ['transactions' => $transactions]);
+    }
+
+    /**
+     * Modal: loan summary (wlnmaster) plus its releases and payments (wlnled).
      */
     public function details(Request $request, string $lnnumber): JsonResponse
     {
-        $user = Auth::user();
-        
-        if (!$user || !$user->acctno) {
-            return response()->json(['error' => 'Unauthorized'], 401);
+        $loan = $this->ownLoan($lnnumber);
+
+        if (! $loan) {
+            return response()->json(['error' => 'Loan not found'], 404);
         }
 
-        $transaction = VWebLnled::where('lnnumber', $lnnumber)->first();
-        
-        if (!$transaction) {
-            return response()->json(['error' => 'Transaction not found'], 404);
-        }
+        $history = DB::table('wlnled')
+            ->where('lnnumber', $loan->lnnumber)
+            ->whereIn('lncode', ['RL', 'LN'])
+            ->orderByDesc('date_in')
+            ->orderByDesc('controlno')
+            ->get(['date_in', 'mreference', 'lncode', 'principal', 'payments', 'balance', 'controlno'])
+            ->map(function ($r) {
+                $ref = trim((string) $r->mreference);
+                if ($r->lncode === 'RL') {
+                    $label = 'Loan Release';
+                    $amount = $this->num($r->principal);
+                } elseif ($this->num($r->payments) > 0 && stripos($ref, 'loan release') !== 0) {
+                    $label = 'Loan Payment';
+                    $amount = -$this->num($r->payments);
+                } else {
+                    return null; // release counter-entry, accruals, zero rows
+                }
+
+                return [
+                    'date' => $this->day($r->date_in),
+                    'description' => $label,
+                    'reference' => $ref,
+                    'amount' => $amount,
+                    'balance' => $this->num($r->balance),
+                    'controlno' => trim((string) $r->controlno),
+                ];
+            })
+            ->filter()
+            ->values();
 
         return response()->json([
-            'transaction' => [
-                'lnnumber' => (string) $transaction->lnnumber,
-                'reference' => (string) ($transaction->mreference ?? 'N/A'),
-                'transactionCode' => (string) ($transaction->cs_ck ?? 'N/A'),
-                'principal' => is_numeric($transaction->principal) ? (float) $transaction->principal : 0.0,
-                'payment' => is_numeric($transaction->payments) ? (float) $transaction->payments : 0.0,
-                'balance' => is_numeric($transaction->balance) ? (float) $transaction->balance : 0.0,
-                'charges' => (is_numeric($transaction->debit) ? (float) $transaction->debit : 0.0) - 
-                           (is_numeric($transaction->credit) ? (float) $transaction->credit : 0.0),
-                'controlno' => (string) ($transaction->controlno ?? 'N/A'),
-            ]
+            'loan' => [
+                'lnnumber' => trim((string) $loan->lnnumber),
+                'description' => trim((string) $loan->lntype),
+                'released' => $this->day($loan->date_rel),
+                'matures' => $this->day($loan->date_mat),
+                'principal' => $this->num($loan->principal),
+                'balance' => $this->num($loan->balance),
+                'interest_rate' => $this->num($loan->int_rate),
+                'installment' => trim((string) $loan->installment),
+                'term_months' => $this->num($loan->term_mons),
+            ],
+            'history' => $history,
         ]);
     }
 
     /**
-     * ✅ UPDATED: API endpoint for amortization schedule using lnnumber
+     * Modal: amortization schedule for one of the user's loans.
      */
     public function schedule(Request $request, string $lnnumber): JsonResponse
     {
-        $user = Auth::user();
-        
-        if (!$user || !$user->acctno) {
-            return response()->json(['error' => 'Unauthorized'], 401);
+        $loan = $this->ownLoan($lnnumber);
+
+        if (! $loan) {
+            return response()->json(['error' => 'Loan not found'], 404);
         }
 
-        // ✅ CHANGED: Now using lnnumber instead of controlno
-        $schedule = VWebAmortsched::where('lnnumber', $lnnumber)
+        $schedule = VWebAmortsched::where('lnnumber', $loan->lnnumber)
             ->orderBy('Date_pay')
             ->get()
-            ->map(function ($item) {
-                return [
-                    'lnnumber' => (string) $item->lnnumber,  // ✅ Include lnnumber
-                    'date' => $item->Date_pay,
-                    'payPrincipal' => is_numeric($item->Principalpay) ? (float) $item->Principalpay : 0.0,
-                    'payInterest' => is_numeric($item->Interestm) ? (float) $item->Interestm : 0.0,
-                    'amortization' => is_numeric($item->Amortization) ? (float) $item->Amortization : 0.0,
-                    'balance' => is_numeric($item->Balance) ? (float) $item->Balance : 0.0,
-                    'controlno' => (string) ($item->controlno ?? 'N/A'), // ✅ Keep controlno if needed
-                ];
-            });
+            ->map(fn ($item) => [
+                'lnnumber' => (string) $item->lnnumber,
+                'date' => $item->Date_pay,
+                'payPrincipal' => $this->num($item->Principalpay),
+                'payInterest' => $this->num($item->Interestm ?? $item->Interest),
+                'amortization' => $this->num($item->Amortization),
+                'balance' => $this->num($item->Balance),
+                'controlno' => (string) ($item->controlno ?? 'N/A'),
+            ]);
 
         return response()->json(['schedule' => $schedule]);
     }

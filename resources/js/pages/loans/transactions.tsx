@@ -1,5 +1,5 @@
 import Modal from '@/components/auth/modal';
-import { Pager, Panel, SkelDl, SkelRows, SortTh, btn, fdate, peso, useTable } from '@/components/tdfc/ui';
+import { Badge, Pager, Panel, SkelDl, SkelRows, SortTh, btn, fdate, peso, useTable } from '@/components/tdfc/ui';
 import AppLayout from '@/layouts/app-layout';
 import { Head } from '@inertiajs/react';
 import { useQuery } from '@tanstack/react-query';
@@ -14,14 +14,24 @@ interface Transaction {
     raw_balance: number;
 }
 
-interface TransactionDetail {
+interface LoanSummary {
     lnnumber: string;
-    reference: string;
-    transactionCode: string;
+    description: string;
+    released: string | null;
+    matures: string | null;
     principal: number;
-    payment: number;
     balance: number;
-    charges: number;
+    interest_rate: number;
+    installment: string;
+    term_months: number;
+}
+
+interface HistoryItem {
+    date: string | null;
+    description: string;
+    reference: string;
+    amount: number;
+    balance: number;
     controlno: string;
 }
 
@@ -42,7 +52,7 @@ const api = async <T,>(url: string, msg: string): Promise<T> => {
 const useTransactionDetails = (ln: string | null) =>
     useQuery({
         queryKey: ['transaction-details', ln],
-        queryFn: () => api<{ transaction: TransactionDetail }>(`/api/transactions/loan/${ln}/details`, 'Failed to fetch transaction details'),
+        queryFn: () => api<{ loan: LoanSummary; history: HistoryItem[] }>(`/api/transactions/loan/${ln}/details`, 'Failed to fetch transaction details'),
         enabled: !!ln,
         staleTime: 5 * 60 * 1000,
         retry: 2,
@@ -112,7 +122,8 @@ export default function LoansTransactionPage({ transactions }: { transactions: T
     );
 
     const rows = schedule.data?.schedule ?? [];
-    const tx = details.data?.transaction;
+    const loan = details.data?.loan;
+    const history = details.data?.history ?? [];
     const cell = 'border-b border-border px-3.5 py-2.5';
 
     return (
@@ -142,6 +153,7 @@ export default function LoansTransactionPage({ transactions }: { transactions: T
                                             <SortTh t={t} k="description">Description</SortTh>
                                             <SortTh t={t} k="principal" right>Principal</SortTh>
                                             <SortTh t={t} k="balance" right>Balance</SortTh>
+                                            <th className="px-4 py-2.5 text-left text-xs font-semibold text-muted-foreground">Status</th>
                                             <th className="px-4 py-2.5 text-left text-xs font-semibold text-muted-foreground">Actions</th>
                                         </tr>
                                     </thead>
@@ -153,6 +165,7 @@ export default function LoansTransactionPage({ transactions }: { transactions: T
                                                 <td className="px-4 py-3.5 font-bold">{r.description}</td>
                                                 <td className="px-4 py-3.5 text-right font-bold tabular-nums">{peso(r.principal)}</td>
                                                 <td className="px-4 py-3.5 text-right font-bold tabular-nums">{peso(r.raw_balance)}</td>
+                                                <td className="px-4 py-3.5"><Badge tone={r.raw_balance > 0 ? 'info' : 'ok'}>{r.raw_balance > 0 ? 'Active' : 'Fully Paid'}</Badge></td>
                                                 <td className="px-4 py-3.5">{actions(r.lnnumber)}</td>
                                             </tr>
                                         ))}
@@ -172,6 +185,7 @@ export default function LoansTransactionPage({ transactions }: { transactions: T
                                             <div className="text-right">
                                                 <b>{peso(r.principal)}</b>
                                                 <div className="text-xs text-muted-foreground">Bal {peso(r.raw_balance)}</div>
+                                                <div className="mt-1"><Badge tone={r.raw_balance > 0 ? 'info' : 'ok'}>{r.raw_balance > 0 ? 'Active' : 'Fully Paid'}</Badge></div>
                                             </div>
                                         </div>
                                         <div className="mt-2.5">{actions(r.lnnumber)}</div>
@@ -184,7 +198,7 @@ export default function LoansTransactionPage({ transactions }: { transactions: T
                 </Panel>
             </div>
 
-            <Modal open={type === 'details'} onClose={close} label="Transaction Details" className="max-w-md">
+            <Modal open={type === 'details'} onClose={close} label="Transaction Details" className="max-w-[720px]">
                 <ModalHead title="Transaction Details" onClose={close} />
                 {details.isLoading && (
                     <div role="status" aria-busy="true" aria-label="Loading transaction details" className="py-4">
@@ -199,13 +213,43 @@ export default function LoansTransactionPage({ transactions }: { transactions: T
                         </div>
                     </>
                 )}
-                {tx && (
+                {loan && (
                     <div className="grid gap-4">
-                        <div className="grid grid-cols-2 gap-4"><Dl l="Loan Number" v={tx.lnnumber} /><Dl l="Reference" v={tx.reference} /></div>
-                        <div className="grid grid-cols-2 gap-4"><Dl l="Transaction Code" v={tx.transactionCode} /><Dl l="Principal" v={peso(tx.principal)} b /></div>
-                        <div className="grid grid-cols-2 gap-4"><Dl l="Payment" v={peso(tx.payment)} b /><Dl l="Balance" v={peso(tx.balance)} b /></div>
-                        <Dl l="Charges" v={peso(tx.charges)} b />
-                        <Dl l="Control Number" v={tx.controlno} />
+                        <div className="grid grid-cols-2 gap-4"><Dl l="Loan Number" v={loan.lnnumber} /><Dl l="Loan Type" v={loan.description} b /></div>
+                        <div className="grid grid-cols-2 gap-4"><Dl l="Released" v={fdate(loan.released)} /><Dl l="Matures" v={fdate(loan.matures)} /></div>
+                        <div className="grid grid-cols-2 gap-4"><Dl l="Principal" v={peso(loan.principal)} b /><Dl l="Balance" v={peso(loan.balance)} b /></div>
+                        <div className="grid grid-cols-2 gap-4"><Dl l="Interest Rate" v={`${loan.interest_rate}%`} /><Dl l="Installment" v={loan.installment || '—'} /></div>
+                        <div>
+                            <h4 className="mb-2 text-sm font-semibold">Transaction History</h4>
+                            {history.length === 0 ? (
+                                <p className="py-4 text-center text-sm text-muted-foreground">No transactions recorded for this loan.</p>
+                            ) : (
+                                <div className="max-h-[40vh] overflow-auto rounded-xl border border-border">
+                                    <table className="w-full border-separate border-spacing-0 text-[13px] whitespace-nowrap tabular-nums">
+                                        <thead>
+                                            <tr>
+                                                {['Date', 'Description', 'Reference', 'Amount', 'Balance'].map((h, i) => (
+                                                    <th key={h} className={`sticky top-0 border-b border-border bg-muted px-3.5 py-2.5 text-[11px] tracking-wide text-muted-foreground uppercase ${i > 2 ? 'text-right' : 'text-left'}`}>
+                                                        {h}
+                                                    </th>
+                                                ))}
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {history.map((h, i) => (
+                                                <tr key={`${h.controlno}-${i}`} className="hover:bg-muted">
+                                                    <td className="border-b border-border px-3.5 py-2.5">{fdate(h.date)}</td>
+                                                    <td className="border-b border-border px-3.5 py-2.5 font-medium">{h.description}</td>
+                                                    <td className="border-b border-border px-3.5 py-2.5 text-muted-foreground">{h.reference}</td>
+                                                    <td className={`border-b border-border px-3.5 py-2.5 text-right font-medium ${h.amount < 0 ? '' : 'text-tdfc-ok-ink'}`}>{h.amount < 0 ? '-' : '+'}{peso(Math.abs(h.amount))}</td>
+                                                    <td className="border-b border-border px-3.5 py-2.5 text-right font-bold">{peso(h.balance)}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 )}
             </Modal>
