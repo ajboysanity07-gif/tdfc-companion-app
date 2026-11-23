@@ -3,6 +3,7 @@ import AppLayout from '@/layouts/app-layout';
 import { Head, Link, usePage } from '@inertiajs/react';
 import { ChevronLeft, FileText, Printer } from 'lucide-react';
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 
 interface Loan {
     lnnumber: string;
@@ -55,9 +56,8 @@ const td = 'border-b border-border px-5 py-3 text-sm';
 
 const PRINT_CSS = `@media print{
   @page{size:A4;margin:12mm}
-  body *{visibility:hidden}
-  #print-doc,#print-doc *{visibility:visible}
-  #print-doc{display:block!important;position:absolute;left:0;top:0;width:100%;color:#000;background:#fff;font-size:11px}
+  body>*:not(#print-doc){display:none!important}
+  #print-doc{display:block!important;color:#000;background:#fff;font-size:11px}
 }`;
 
 function ScheduleDocument({ loan, schedule, totals, user }: { loan: Loan; schedule: ScheduleRow[]; totals: { p: number; i: number; am: number }; user?: { name?: string; acctno?: string | null } }) {
@@ -74,10 +74,11 @@ function ScheduleDocument({ loan, schedule, totals, user }: { loan: Loan; schedu
         ['Interest Rate', `${loan.interest_rate}%`],
         ['Installment', loan.installment || '—'],
     ];
-    return (
+    if (typeof document === 'undefined') return null;
+    return createPortal(
         <div id="print-doc" className="hidden">
             <style>{PRINT_CSS}</style>
-            <img src="/images/Header.png" alt="Triple Diamond Finance Corp." className="mb-3 w-full" />
+            <img src="/images/Header.png" alt="Triple Diamond Finance Corp." className="mb-3 w-[55%]" />
             <h2 className="mb-3 text-center text-base font-bold tracking-wide uppercase">Amortization Schedule</h2>
             <table className="mb-3 w-full border-collapse">
                 <tbody>
@@ -127,7 +128,8 @@ function ScheduleDocument({ loan, schedule, totals, user }: { loan: Loan; schedu
             <p className="mt-6 text-[10px] text-neutral-600">
                 Generated on {new Date().toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' })}. This is a system-generated document of Triple Diamond Finance Corp. and does not require a signature.
             </p>
-        </div>
+        </div>,
+        document.body,
     );
 }
 
@@ -237,27 +239,24 @@ export default function LoanTransactionShow({ tab: initial, loan, history, sched
                                 {history.length === 0 ? (
                                     <p className="py-4 text-center text-sm text-muted-foreground">No transactions recorded for this loan.</p>
                                 ) : (
-                                    <div className="max-h-[360px] overflow-auto rounded-xl border border-border">
-                                        <table className="w-full border-separate border-spacing-0 whitespace-nowrap tabular-nums">
-                                            <thead>
-                                                <tr>
-                                                    {['Date', 'Description', 'Reference', 'Amount', 'Balance'].map((h, i) => (
-                                                        <th key={h} className={`${th} ${i > 2 ? 'text-right' : 'text-left'}`}>{h}</th>
-                                                    ))}
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {history.map((h, i) => (
-                                                    <tr key={`${h.controlno}-${i}`} className="hover:bg-muted">
-                                                        <td className={td}>{fdate(h.date)}</td>
-                                                        <td className={`${td} font-bold`}>{h.description}</td>
-                                                        <td className={`${td} text-muted-foreground`}>{h.reference}</td>
-                                                        <td className={`${td} text-right font-medium ${h.amount < 0 ? '' : 'text-tdfc-ok-ink'}`}>{h.amount < 0 ? '-' : '+'}{peso(Math.abs(h.amount))}</td>
-                                                        <td className={`${td} text-right font-bold`}>{peso(h.balance)}</td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
+                                    <div className="grid max-h-[420px] gap-2.5 overflow-auto rounded-xl border border-border p-3 sm:grid-cols-2">
+                                        {history.map((h, i) => (
+                                            <div key={`${h.controlno}-${i}`} className="rounded-xl border border-border px-3.5 py-3 hover:bg-muted">
+                                                <div className="flex items-baseline justify-between gap-3">
+                                                    <b className="text-sm">{h.description}</b>
+                                                    <span className={`text-sm font-semibold tabular-nums ${h.amount < 0 ? '' : 'text-tdfc-ok-ink'}`}>
+                                                        {h.amount < 0 ? '-' : '+'}{peso(Math.abs(h.amount))}
+                                                    </span>
+                                                </div>
+                                                <div className="mt-0.5 text-[13px] text-muted-foreground">
+                                                    {fdate(h.date)}{h.reference ? ` · ${h.reference}` : ''}
+                                                </div>
+                                                <div className="mt-2 flex items-baseline justify-between border-t border-border pt-2">
+                                                    <span className="text-[11px] tracking-wide text-muted-foreground uppercase">Balance</span>
+                                                    <b className="text-sm tabular-nums">{peso(h.balance)}</b>
+                                                </div>
+                                            </div>
+                                        ))}
                                     </div>
                                 )}
                             </div>
