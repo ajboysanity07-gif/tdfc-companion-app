@@ -69,7 +69,8 @@ class ClientManagementController extends Controller
                         }
                     }
 
-                    $overallClass = null;
+                    // No loan owed (or no loans at all) = Class A
+                    $overallClass = $loanRows->isEmpty() ? 'A' : null;
                     if ($highestClassPriority === 1) {
                         $overallClass = 'A';
                     } elseif ($highestClassPriority === 2) {
