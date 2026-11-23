@@ -1,6 +1,6 @@
 import { Badge, Panel, btn, fdate, peso } from '@/components/tdfc/ui';
 import AppLayout from '@/layouts/app-layout';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import { ChevronLeft, FileText, Printer } from 'lucide-react';
 import { useState } from 'react';
 
@@ -52,8 +52,88 @@ const Dl = ({ l, v, b }: { l: string; v: string; b?: boolean }) => (
 const th = 'sticky top-0 border-b border-border bg-muted px-5 py-3 text-[11px] tracking-wide text-muted-foreground uppercase';
 const td = 'border-b border-border px-5 py-3 text-sm';
 
+
+const PRINT_CSS = `@media print{
+  @page{size:A4;margin:12mm}
+  body *{visibility:hidden}
+  #print-doc,#print-doc *{visibility:visible}
+  #print-doc{display:block!important;position:absolute;left:0;top:0;width:100%;color:#000;background:#fff;font-size:11px}
+}`;
+
+function ScheduleDocument({ loan, schedule, totals, user }: { loan: Loan; schedule: ScheduleRow[]; totals: { p: number; i: number; am: number }; user?: { name?: string; acctno?: string | null } }) {
+    const c = 'border border-neutral-400 px-2 py-1';
+    const info: [string, string][] = [
+        ['Borrower', user?.name ?? '—'],
+        ['Account No.', user?.acctno ?? '—'],
+        ['Loan No.', loan.lnnumber],
+        ['Loan Type', loan.description],
+        ['Released', fdate(loan.released)],
+        ['Maturity', fdate(loan.matures)],
+        ['Principal', peso(loan.principal)],
+        ['Outstanding Balance', peso(loan.balance)],
+        ['Interest Rate', `${loan.interest_rate}%`],
+        ['Installment', loan.installment || '—'],
+    ];
+    return (
+        <div id="print-doc" className="hidden">
+            <style>{PRINT_CSS}</style>
+            <img src="/images/Header.png" alt="Triple Diamond Finance Corp." className="mb-3 w-full" />
+            <h2 className="mb-3 text-center text-base font-bold tracking-wide uppercase">Amortization Schedule</h2>
+            <table className="mb-3 w-full border-collapse">
+                <tbody>
+                    {[0, 2, 4, 6, 8].map((i) => (
+                        <tr key={i}>
+                            {info.slice(i, i + 2).map(([l, v]) => (
+                                <td key={l} className="w-1/2 px-1 py-0.5">
+                                    <span className="inline-block w-36 font-semibold">{l}:</span>
+                                    {v}
+                                </td>
+                            ))}
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+            <table className="w-full border-collapse tabular-nums">
+                <thead>
+                    <tr className="bg-neutral-200">
+                        {['#', 'Due Date', 'Principal', 'Interest', 'Amortization', 'Balance', 'Status'].map((h, i) => (
+                            <th key={h} className={`${c} ${i > 1 && i < 6 ? 'text-right' : 'text-left'}`}>{h}</th>
+                        ))}
+                    </tr>
+                </thead>
+                <tbody>
+                    {schedule.map((r, n) => (
+                        <tr key={n} style={{ breakInside: 'avoid' }}>
+                            <td className={c}>{n + 1}</td>
+                            <td className={c}>{fdate(r.date)}</td>
+                            <td className={`${c} text-right`}>{peso(r.payPrincipal)}</td>
+                            <td className={`${c} text-right`}>{peso(r.payInterest)}</td>
+                            <td className={`${c} text-right`}>{peso(r.amortization)}</td>
+                            <td className={`${c} text-right`}>{peso(r.balance)}</td>
+                            <td className={c}>{r.status === 'paid' ? 'Paid' : r.status === 'due' ? 'Next due' : 'Upcoming'}</td>
+                        </tr>
+                    ))}
+                </tbody>
+                <tfoot>
+                    <tr className="bg-neutral-200 font-bold">
+                        <td className={c} colSpan={2}>Total</td>
+                        <td className={`${c} text-right`}>{peso(totals.p)}</td>
+                        <td className={`${c} text-right`}>{peso(totals.i)}</td>
+                        <td className={`${c} text-right`}>{peso(totals.am)}</td>
+                        <td className={c} colSpan={2} />
+                    </tr>
+                </tfoot>
+            </table>
+            <p className="mt-6 text-[10px] text-neutral-600">
+                Generated on {new Date().toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' })}. This is a system-generated document of Triple Diamond Finance Corp. and does not require a signature.
+            </p>
+        </div>
+    );
+}
+
 export default function LoanTransactionShow({ tab: initial, loan, history, schedule }: { tab: Tab; loan: Loan; history: HistoryItem[]; schedule: ScheduleRow[] }) {
     const [tab, setTab] = useState<Tab>(initial);
+    const user = usePage<{ auth: { user?: { name?: string; acctno?: string | null } } }>().props.auth.user;
     const paid = loan.balance <= 0;
     const totals = schedule.reduce(
         (a, r) => ({ p: a.p + r.payPrincipal, i: a.i + r.payInterest, am: a.am + r.amortization }),
@@ -73,6 +153,7 @@ export default function LoanTransactionShow({ tab: initial, loan, history, sched
             ]}
         >
             <Head title={`Loan ${loan.lnnumber}`} />
+            <ScheduleDocument loan={loan} schedule={schedule} totals={totals} user={user} />
             <div className="grid content-start gap-5 p-4 md:p-6">
                 <div className="flex flex-wrap items-start justify-between gap-4 print:hidden">
                     <div>
