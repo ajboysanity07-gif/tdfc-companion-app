@@ -8,6 +8,7 @@ use App\Models\WlnTags;
 use App\Models\WlnTagSummary;
 use App\Models\WlnType;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class ProductController extends Controller
 {
@@ -71,6 +72,17 @@ class ProductController extends Controller
             'settings.lrf' => 'nullable|numeric',
             'settings.doc_stamp' => 'nullable|numeric',
             'settings.mort_notarial' => 'nullable|numeric',
+            'settings.max_amortization_mode' => 'nullable|in:FIXED,BASIC,CUSTOM',
+            'settings.max_amortization_formula' => [
+                'nullable', 'string', 'max:255',
+                Rule::requiredIf(fn () => $request->input('settings.max_amortization_mode') === 'CUSTOM'),
+                function ($attr, $v, $fail) use ($request) {
+                    if ($request->input('settings.max_amortization_mode') === 'CUSTOM'
+                        && ! preg_match('~^[0-9+\-*/().\s]*\bbasic\b[0-9+\-*/().\s]*$~i', (string) $v)) {
+                        $fail('Formula may only use numbers, + - * / ( ) and the word "basic".');
+                    }
+                },
+            ],
             'settings.ln_scheme' => 'nullable|string',
             'settings.installment_mode' => 'nullable|string',
             'settings.terms_and_info' => 'nullable|string',

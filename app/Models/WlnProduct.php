@@ -12,6 +12,7 @@ class WlnProduct extends Model
     public const SETTINGS = [
         'ln_isActive', 'ln_scheme', 'installment_mode', 'rate_isEditable', 'allow_multiple',
         'max_term', 'max_term_isEditable', 'max_amortization', 'max_amortization_isEditable',
+        'max_amortization_mode', 'max_amortization_formula',
         'service_fee', 'lrf', 'doc_stamp', 'mort_notarial', 'terms_and_info',
     ];
 

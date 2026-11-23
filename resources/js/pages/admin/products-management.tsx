@@ -15,6 +15,8 @@ type Settings = {
     max_term_isEditable?: boolean;
     max_amortization?: number | string | null;
     max_amortization_isEditable?: boolean;
+    max_amortization_mode?: string;
+    max_amortization_formula?: string | null;
     allow_multiple?: boolean;
     service_fee?: number | string | null;
     lrf?: number | string | null;
@@ -45,6 +47,8 @@ const toForm = (p: Product): Form => {
             max_term_isEditable: !!s.max_term_isEditable,
             max_amortization: s.max_amortization ?? null,
             max_amortization_isEditable: !!s.max_amortization_isEditable,
+            max_amortization_mode: s.max_amortization_mode ?? 'FIXED',
+            max_amortization_formula: s.max_amortization_formula ?? '',
             allow_multiple: !!s.allow_multiple,
             service_fee: s.service_fee ?? null,
             lrf: s.lrf ?? null,
@@ -339,16 +343,44 @@ function ProductDrawerBody({ product, dirty, onSave, onDelete, onClose, toast }:
                         numField('max_term', 'd-term'),
                         <Check label="editable by client" checked={!!s.max_term_isEditable} onChange={(v) => set('max_term_isEditable', v)} />,
                     )}
-                    {row(
-                        'Max amortization',
-                        'd-amort',
-                        numField('max_amortization', 'd-amort'),
-                        <Check
-                            label="editable by client"
-                            checked={!!s.max_amortization_isEditable}
-                            onChange={(v) => set('max_amortization_isEditable', v)}
-                        />,
+                    <div className="grid gap-1.5">
+                        <label htmlFor="d-amode" className="font-medium">
+                            Max amortization mode
+                        </label>
+                        <select id="d-amode" className={field} value={s.max_amortization_mode} onChange={(e) => set('max_amortization_mode', e.target.value)}>
+                            <option value="FIXED">FIXED amount</option>
+                            <option value="BASIC">BASIC (client&apos;s basic salary)</option>
+                            <option value="CUSTOM">CUSTOM formula</option>
+                        </select>
+                    </div>
+                    {s.max_amortization_mode === 'CUSTOM' && (
+                        <div className="grid gap-1.5">
+                            <label htmlFor="d-formula" className="font-medium">
+                                Formula
+                            </label>
+                            <input
+                                id="d-formula"
+                                className={field}
+                                value={s.max_amortization_formula ?? ''}
+                                onChange={(e) => set('max_amortization_formula', e.target.value)}
+                                placeholder="e.g. basic * 0.4"
+                            />
+                            <small className="text-muted-foreground">
+                                <b>basic</b> is the client&apos;s basic salary. Use numbers and + - * / ( ).
+                            </small>
+                        </div>
                     )}
+                    {s.max_amortization_mode === 'FIXED' &&
+                        row(
+                            'Max amortization',
+                            'd-amort',
+                            numField('max_amortization', 'd-amort'),
+                            <Check
+                                label="editable by client"
+                                checked={!!s.max_amortization_isEditable}
+                                onChange={(v) => set('max_amortization_isEditable', v)}
+                            />,
+                        )}
                     <Check label="Allow multiple active loans per client" checked={!!s.allow_multiple} onChange={(v) => set('allow_multiple', v)} />
                 </section>
 

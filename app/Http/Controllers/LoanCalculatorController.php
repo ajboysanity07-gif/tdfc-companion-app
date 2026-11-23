@@ -3,13 +3,19 @@
 namespace App\Http\Controllers;
 
 use App\Models\WlnProduct;
+use App\Models\WSalaryRecord;
+use App\Services\MathExpressionEvaluator;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class LoanCalculatorController extends Controller
 {
-    public function __invoke(): Response
+    public function __invoke(Request $request, MathExpressionEvaluator $math): Response
     {
+        $acctno = $request->user()?->acctno;
+        $basic = $acctno ? WSalaryRecord::where('acctno', $acctno)->value('salary_amount') : null;
+
         $products = WlnProduct::where('isDisplayed', true)
             ->where('ln_isActive', true)
             ->get()
@@ -19,7 +25,12 @@ class LoanCalculatorController extends Controller
                 // max_term is stored in days; the calculator works in months
                 'max_term_months' => max(1, (int) round(($t->max_term ?? 0) / 30)),
                 'term_editable' => (bool) $t->max_term_isEditable,
-                'max_amortization' => (float) ($t->max_amortization ?? 0),
+                'max_amortization' => match ($t->max_amortization_mode) {
+                    'BASIC', 'CUSTOM' => is_numeric($basic) && ($r = $math->evaluate((string) $t->max_amortization_formula, (float) $basic))['success']
+                        ? (float) $r['result'] : 0.0,
+                    default => (float) ($t->max_amortization ?? 0),
+                },
+                'max_amortization_formula' => $t->max_amortization_mode === 'CUSTOM' ? $t->max_amortization_formula : null,
                 'amortization_editable' => (bool) $t->max_amortization_isEditable,
                 'interest_rate' => (float) ($t->int_rate ?? 0),
                 'service_fee' => (float) ($t->service_fee ?? 0),
