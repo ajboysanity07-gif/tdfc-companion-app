@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Log; // <-- make sure this is here
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use App\Models\WSalaryRecord;
+use App\Services\BorrowerClass;
 
 class ClientManagementController extends Controller
 {
@@ -31,55 +32,7 @@ class ClientManagementController extends Controller
                 ->orderBy('created_at', 'asc')
                 ->get()
                 ->map(function ($user) {
-                    // Class is detected straight from wlnmaster; only loans still owed (balance > 0) count.
-                    try {
-                        $loanRows = DB::table('wlnmaster')
-                            ->where('acctno', $user->acctno)
-                            ->where('balance', '>', 0)
-                            ->get(['date_mat', 'date_end']);
-                    } catch (\Throwable $e) {
-                        Log::warning('wlnmaster unavailable, skipping client class', ['error' => $e->getMessage()]);
-                        $loanRows = collect();
-                    }
-
-                    $highestClassPriority = null;
-                    foreach ($loanRows as $loanData) {
-                        $now = Carbon::now();
-                        // Past maturity (what vlnmaster flags as misspayment = 999)
-                        $matured = isset($loanData->date_mat) && Carbon::parse($loanData->date_mat)->lte($now);
-                        $dateEnd = isset($loanData->date_end)
-                            ? Carbon::parse($loanData->date_end)
-                            : null;
-                        $diffDays = $dateEnd ? $dateEnd->diffInDays($now, false) : null;
-                        $classPriority = null;
-
-                        if (! $matured) {
-                            $classPriority = 1; // Class A
-                        } elseif ($diffDays !== null) {
-                            if ($diffDays < 60) {
-                                $classPriority = 2; // Class B
-                            } elseif ($diffDays >= 60 && $diffDays < 90) {
-                                $classPriority = 3; // Class C
-                            } elseif ($diffDays >= 90) {
-                                $classPriority = 4; // Class D
-                            }
-                        }
-                        if ($classPriority !== null && ($highestClassPriority === null || $classPriority > $highestClassPriority)) {
-                            $highestClassPriority = $classPriority;
-                        }
-                    }
-
-                    // No loan owed (or no loans at all) = Class A
-                    $overallClass = $loanRows->isEmpty() ? 'A' : null;
-                    if ($highestClassPriority === 1) {
-                        $overallClass = 'A';
-                    } elseif ($highestClassPriority === 2) {
-                        $overallClass = 'B';
-                    } elseif ($highestClassPriority === 3) {
-                        $overallClass = 'C';
-                    } elseif ($highestClassPriority === 4) {
-                        $overallClass = 'D';
-                    }
+                    $overallClass = BorrowerClass::for($user->acctno);
 
                     $latestSalary = WSalaryRecord::where('acctno', $user->acctno)
                         ->orderBy('created_at', 'desc')
