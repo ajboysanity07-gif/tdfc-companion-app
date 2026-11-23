@@ -18,7 +18,7 @@ class ClientManagementController extends Controller
 {
     /**
      * Display the admin dashboard with all user registrations.
-     * Now attaches an "overall_class" for each user based on loan history in vloandue, following day-based logic with priority (D > C > B > A).
+     * Now attaches an "overall_class" for each user based on loans still owed in wlnmaster, following day-based logic with priority (D > C > B > A).
      */
     public function index(): InertiaResponse|RedirectResponse
     {
@@ -31,29 +31,31 @@ class ClientManagementController extends Controller
                 ->orderBy('created_at', 'asc')
                 ->get()
                 ->map(function ($user) {
-                    // ponytail: vloandue view is missing in some DBs; class badge stays blank instead of breaking the page
+                    // Class is detected straight from wlnmaster; only loans still owed (balance > 0) count.
                     try {
-                        $loanRows = DB::table('vloandue')
+                        $loanRows = DB::table('wlnmaster')
                             ->where('acctno', $user->acctno)
-                            ->get();
+                            ->where('balance', '>', 0)
+                            ->get(['date_mat', 'date_end']);
                     } catch (\Throwable $e) {
-                        Log::warning('vloandue unavailable, skipping client class', ['error' => $e->getMessage()]);
+                        Log::warning('wlnmaster unavailable, skipping client class', ['error' => $e->getMessage()]);
                         $loanRows = collect();
                     }
 
                     $highestClassPriority = null;
                     foreach ($loanRows as $loanData) {
-                        $misspayment = $loanData->misspayment ?? null;
+                        $now = Carbon::now();
+                        // Past maturity (what vlnmaster flags as misspayment = 999)
+                        $matured = isset($loanData->date_mat) && Carbon::parse($loanData->date_mat)->lte($now);
                         $dateEnd = isset($loanData->date_end)
                             ? Carbon::parse($loanData->date_end)
                             : null;
-                        $now = Carbon::now();
                         $diffDays = $dateEnd ? $dateEnd->diffInDays($now, false) : null;
                         $classPriority = null;
 
-                        if ($misspayment != 999) {
+                        if (! $matured) {
                             $classPriority = 1; // Class A
-                        } elseif ($misspayment == 999 && $diffDays !== null) {
+                        } elseif ($diffDays !== null) {
                             if ($diffDays < 60) {
                                 $classPriority = 2; // Class B
                             } elseif ($diffDays >= 60 && $diffDays < 90) {
