@@ -66,7 +66,7 @@ class ProductController extends Controller
             'int_rate' => 'nullable|numeric',
         ]);
 
-        return response()->json(WlnProduct::create($data)->load(self::WITH), 201);
+        return response()->json(WlnProduct::create($data + ['isDisplayed' => true])->load(self::WITH), 201);
     }
 
     // Update rate + settings fields (all live on the same wlnproducts row)

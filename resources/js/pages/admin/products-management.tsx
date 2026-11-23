@@ -1,4 +1,3 @@
-import Modal from '@/components/auth/modal';
 import { Drawer, PageBanner, Panel, SkelRows, Switch, btn, peso, useToast } from '@/components/tdfc/ui';
 import { useProductsApi } from '@/hooks/use-products-api';
 import AppLayout from '@/layouts/app-layout';
@@ -59,6 +58,7 @@ const toForm = (p: Product): Form => {
 const field = 'h-10 w-full rounded-[10px] border border-input bg-card px-3 shadow-sm focus:border-ring focus:outline-none dark:bg-transparent';
 const pill = 'inline-flex h-5.5 items-center rounded-full px-2 text-[11px] font-semibold';
 const sections = ['general', 'terms', 'fees'] as const;
+const NEW = '+'; // sel value for the blank "Add Loan" drawer
 
 function Check({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
     return (
@@ -82,17 +82,20 @@ function ProductDrawerBody({ product, dirty, onSave, onDelete, onClose, toast }:
     const initial = useMemo(() => toForm(product), [product]);
     const [f, setF] = useState(initial);
     const [tag, setTag] = useState('');
+    const isNew = !product.typecode;
+    const [code, setCode] = useState('');
+    const [name, setName] = useState('');
     const [cur, setCur] = useState<(typeof sections)[number]>('general');
     const body = useRef<HTMLDivElement>(null);
     const s = f.settings;
     const set = <K extends keyof Settings>(k: K, v: Settings[K]) =>
         setF((x) => ({ ...x, settings: { ...x.settings, [k]: v } as Required<Settings> }));
-    dirty.current = JSON.stringify(f) !== JSON.stringify(initial) || tag.trim() !== '';
+    dirty.current = JSON.stringify(f) !== JSON.stringify(initial) || tag.trim() !== '' || code !== '' || name !== '';
     // numeric fields are kept as typed text (so "1." survives) and converted here
     const save = () => {
         const settings = { ...f.settings } as Record<string, unknown>;
         for (const k of ['max_term', 'max_amortization', 'service_fee', 'lrf', 'doc_stamp', 'mort_notarial']) settings[k] = num(text(settings[k]));
-        return onSave(product, { int_rate: num(f.int_rate), settings }, f.tags);
+        return onSave(product, { ...(isNew && { typecode: code.trim(), lntype: name.trim() }), int_rate: num(f.int_rate), settings }, f.tags);
     };
     // row switch toggles ln_isActive outside the drawer; mirror it without discarding other edits
     const active = !!product.settings?.ln_isActive;
@@ -149,10 +152,19 @@ function ProductDrawerBody({ product, dirty, onSave, onDelete, onClose, toast }:
     return (
         <>
             <div className="flex items-center gap-3 border-b border-border px-5 py-4">
-                <h2 className="min-w-0 flex-1 text-lg font-semibold">{product.lntype}</h2>
-                <span className="inline-flex h-6 items-center rounded-full border border-border px-2.5 text-xs font-semibold tabular-nums">
-                    {product.typecode}
-                </span>
+                {isNew ? (
+                    <>
+                        <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Loan name" aria-label="Loan name" className={`${field} min-w-0 flex-1`} />
+                        <input value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} maxLength={2} placeholder="Code" aria-label="Type code" className={`${field} !w-18 text-center`} />
+                    </>
+                ) : (
+                    <>
+                        <h2 className="min-w-0 flex-1 text-lg font-semibold">{product.lntype}</h2>
+                        <span className="inline-flex h-6 items-center rounded-full border border-border px-2.5 text-xs font-semibold tabular-nums">
+                            {product.typecode}
+                        </span>
+                    </>
+                )}
                 <button
                     type="button"
                     onClick={onClose}
@@ -320,16 +332,18 @@ function ProductDrawerBody({ product, dirty, onSave, onDelete, onClose, toast }:
             </div>
 
             <div className="flex items-center gap-2.5 border-t border-border bg-background px-5 py-3 pb-[calc(12px+env(safe-area-inset-bottom))]">
-                <button
-                    type="button"
-                    onClick={() => onDelete(product)}
-                    className={`${btn.base} border-transparent bg-transparent text-destructive hover:bg-destructive/10`}
-                >
-                    Delete
-                </button>
+                {!isNew && (
+                    <button
+                        type="button"
+                        onClick={() => onDelete(product)}
+                        className={`${btn.base} border-transparent bg-transparent text-destructive hover:bg-destructive/10`}
+                    >
+                        Delete
+                    </button>
+                )}
                 <span className="flex-1" />
-                <button type="button" onClick={save} className={`${btn.base} ${btn.dark}`}>
-                    Save changes
+                <button type="button" disabled={isNew && (!code.trim() || !name.trim())} onClick={save} className={`${btn.base} ${btn.dark}`}>
+                    {isNew ? 'Add loan' : 'Save changes'}
                 </button>
             </div>
             {toast}
@@ -343,9 +357,6 @@ export default function ProductsManagement() {
     const [q, setQ] = useState('');
     const [flt, setFlt] = useState<'all' | 'on' | 'off'>('all');
     const [sel, setSel] = useState<string | null>(null);
-    const [adding, setAdding] = useState(false);
-    const [pool, setPool] = useState<{ typecode: string; lntype: string }[]>([]);
-    const [pick, setPick] = useState('');
     const dirty = useRef(false);
     const { show, toast } = useToast();
 
@@ -371,7 +382,7 @@ export default function ProductsManagement() {
             )
             .sort((a, b) => (a.lntype ?? '').localeCompare(b.lntype ?? ''));
     }, [list, q, flt]);
-    const cur = list.find((p) => p.typecode === sel) ?? null;
+    const cur = sel === NEW ? { typecode: '', lntype: '' } : (list.find((p) => p.typecode === sel) ?? null);
 
     const open = (code: string) => {
         if (sel && sel !== code && dirty.current && !confirm('Discard unsaved changes?')) return;
@@ -390,15 +401,22 @@ export default function ProductsManagement() {
     };
     const save = async (p: Product, body: Record<string, unknown>, next: string[]) => {
         try {
-            await updateProduct(p.typecode, body);
+            const isNew = sel === NEW;
+            const code = isNew ? String(body.typecode) : p.typecode;
+            if (isNew) await axios.post('/api/admin/products', { typecode: code, lntype: body.lntype, int_rate: body.int_rate });
+            await updateProduct(code, body);
             const old = (p.tags ?? []).map((t) => t.tag_name);
-            const base = `/api/admin/products/${p.typecode}/tags`;
+            const base = `/api/admin/products/${code}/tags`;
             await Promise.all([
                 ...next.filter((t) => !old.includes(t)).map((t) => axios.post(base, { tag_name: t })),
                 ...old.filter((t) => !next.includes(t)).map((t) => axios.delete(`${base}/${encodeURIComponent(t)}`)),
             ]);
             await fetchProducts();
-            show(`${p.lntype ?? p.typecode} updated`);
+            if (isNew) {
+                dirty.current = false;
+                setSel(code);
+            }
+            show(`${body.lntype ?? p.lntype ?? code} ${isNew ? 'added' : 'updated'}`);
         } catch (e) {
             show(axios.isAxiosError(e) ? (e.response?.data?.message ?? 'Save failed') : 'Save failed');
         }
@@ -409,24 +427,6 @@ export default function ProductsManagement() {
         dirty.current = false;
         setSel(null);
         show(`${p.lntype} deleted`);
-    };
-    const openAdd = async () => {
-        setPick('');
-        setAdding(true);
-        try {
-            setPool((await axios.get('/api/admin/products/available')).data);
-        } catch {
-            setPool([]);
-        }
-    };
-    const add = async () => {
-        const name = pool.find((p) => p.typecode === pick)?.lntype ?? pick;
-        await axios.post(`/api/admin/products/${pick}/enable`);
-        setAdding(false);
-        await fetchProducts();
-        dirty.current = false;
-        setSel(pick);
-        show(`${name} added`);
     };
 
     const chips = [
@@ -446,7 +446,7 @@ export default function ProductsManagement() {
             <Head title="Products Management" />
             <div className="grid content-start gap-5 p-4 pb-24 md:p-6">
                 <PageBanner title="Products" sub={`${list.length} loan products · ${active} active`}>
-                    <button type="button" onClick={openAdd} className={`${btn.base} ${btn.dark}`}>
+                    <button type="button" onClick={() => open(NEW)} className={`${btn.base} ${btn.dark}`}>
                         <Plus className="size-4" />
                         Add Loan
                     </button>
@@ -574,30 +574,6 @@ export default function ProductsManagement() {
                 )}
             </Drawer>
 
-            <Modal open={adding} onClose={() => setAdding(false)} label="Select Loan to Add">
-                <h3 className="text-lg font-semibold">Select Loan to Add</h3>
-                <div className="mt-4 grid gap-1.5">
-                    <label htmlFor="addSel" className="font-medium">
-                        Loan Type
-                    </label>
-                    <select id="addSel" value={pick} onChange={(e) => setPick(e.target.value)} className={field}>
-                        <option value="">Select…</option>
-                        {pool.map((p) => (
-                            <option key={p.typecode} value={p.typecode}>
-                                {p.typecode}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-                <div className="mt-5 flex justify-end gap-2">
-                    <button type="button" onClick={() => setAdding(false)} className={`${btn.base} border-transparent hover:bg-muted`}>
-                        Cancel
-                    </button>
-                    <button type="button" disabled={!pick} onClick={add} className={`${btn.base} ${btn.coral}`}>
-                        Add Loan
-                    </button>
-                </div>
-            </Modal>
             {!cur && toast}
         </AppLayout>
     );
