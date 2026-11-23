@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserRejectionController;
 use App\Http\Controllers\LoanTransactionController;
+use App\Http\Controllers\SavingsController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\RecentTransactionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
@@ -78,6 +79,8 @@ Route::middleware(['auth', 'approved', 'role:client'])->group(function () {
     Route::get('/loans/transactions/{lnnumber}', [LoanTransactionController::class, 'show'])
         ->name('loans.transactions.show');
 
+    Route::get('/savings', [SavingsController::class, 'index'])->name('savings');
+
     Route::get('/loans/calculator', LoanCalculatorController::class)->name('loans.calculator');
 });
 
@@ -92,6 +95,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
         Route::get('/transactions/recent', [RecentTransactionController::class, 'recent'])->name('recent');
         Route::get('/loans', [LoanTransactionController::class, 'index'])->name('loans');
         Route::get('/loans/{lnnumber}', [LoanTransactionController::class, 'show'])->name('loans.show');
+        Route::get('/savings', [SavingsController::class, 'index'])->name('savings');
     });
     Route::get('/registrations', [DashboardController::class, 'registrations'])->name('registrations');
 

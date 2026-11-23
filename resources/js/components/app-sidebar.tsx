@@ -3,7 +3,7 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { Briefcase, Calculator, ClipboardList, LayoutGrid, Package, Settings, Users } from 'lucide-react';
+import { Briefcase, Calculator, ClipboardList, LayoutGrid, Package, PiggyBank, Settings, Users } from 'lucide-react';
 import AppLogo from './app-logo';
 import { useMemo } from 'react';
 
@@ -37,6 +37,11 @@ const clientNavItems: NavItem[] = [
     title: 'Loan Transactions',
     href: '/loans/transactions',
     icon: Briefcase,
+  },
+  {
+    title: 'Savings',
+    href: '/savings',
+    icon: PiggyBank,
   },
   {
     title: 'Loan Calculator',

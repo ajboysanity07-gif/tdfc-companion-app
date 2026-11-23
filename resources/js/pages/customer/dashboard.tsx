@@ -20,7 +20,7 @@ const classTone: Record<string, string> = { A: 'bg-[oklch(.42_.12_155)]', B: 'bg
 
 const QUICK = [
     { label: 'Loan Apply', icon: Banknote, href: '/loans/calculator' },
-    { label: 'Savings', icon: PiggyBank, soon: 'Savings goals' },
+    { label: 'Savings', icon: PiggyBank, href: '/savings' },
     { label: 'Cards', icon: CreditCard, soon: 'Card management' },
     { label: 'Beneficiaries', icon: UsersRound, soon: 'Beneficiary management' },
 ];
@@ -58,7 +58,7 @@ export default function Dashboard() {
     const role = (member ? 'client' : (auth?.user?.role ?? 'client')).toLowerCase();
     // Admin viewing a member: same page under /admin/clients/{id}, no calculator link.
     const loansUrl = base ? `${base}/loans` : '/loans/transactions';
-    const quick = member ? QUICK.filter((q) => !q.href) : QUICK;
+    const quick = QUICK.filter((q) => !(member && q.href === '/loans/calculator')).map((q) => (q.href === '/savings' ? { ...q, href: `${base}/savings` } : q));
 
     const [rows, setRows] = useState<RecentRow[]>([]);
     const [txs, setTxs] = useState<Tx[]>([]);

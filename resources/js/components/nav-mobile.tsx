@@ -1,11 +1,12 @@
 import { Link, usePage } from '@inertiajs/react';
-import { Briefcase, ClipboardList, Home, Package, UserRound, Users } from 'lucide-react';
+import { Briefcase, ClipboardList, Home, Package, PiggyBank, UserRound, Users } from 'lucide-react';
 
 type SharedPageProps = { auth: { user?: { role?: string } | null } };
 
 const client = [
     { href: '/dashboard', label: 'Home', icon: Home },
     { href: '/loans/transactions', label: 'Loans', icon: Briefcase },
+    { href: '/savings', label: 'Savings', icon: PiggyBank },
     { href: '/settings/profile', label: 'Account', icon: UserRound },
 ];
 const admin = [
