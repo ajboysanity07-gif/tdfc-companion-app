@@ -60,9 +60,10 @@ class LoanTransactionController extends Controller
     /**
      * Detail page: KPIs, loan summary, history (wlnled) and schedule (Amortsched) of one loan.
      */
-    public function show(Request $request, string $lnnumber)
+    public function show(Request $request)
     {
-        $loan = $this->ownLoan($lnnumber);
+        // Read by name: on admin routes {user} comes first and would be passed positionally as $lnnumber.
+        $loan = $this->ownLoan((string) $request->route('lnnumber'));
         abort_unless($loan, 404);
 
         return Inertia::render('loans/transaction-show', [
