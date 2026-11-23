@@ -2,7 +2,6 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -31,40 +30,6 @@ return new class extends Migration
             $table->boolean('isDisplayed')->default(true);
             $table->timestamps();
         });
-
-        // Backfill from the old wln_display / wln_settings / wlntype trio.
-        $types = DB::table('wlntype')->get(['typecode', 'lntype', 'int_rate'])
-            ->keyBy(fn ($t) => trim($t->typecode));
-        $settings = DB::table('wln_settings')->get()->keyBy(fn ($s) => trim($s->typecode));
-
-        foreach (DB::table('wln_display')->get() as $d) {
-            $code = trim($d->typecode);
-            $t = $types[$code] ?? null;
-            $s = $settings[$code] ?? null;
-
-            DB::table('wlnproducts')->insert([
-                'typecode' => $code,
-                'lntype' => $t ? trim($t->lntype) : null,
-                'int_rate' => $t->int_rate ?? null,
-                'rate_isEditable' => $s->rate_isEditable ?? false,
-                'allow_multiple' => $s->allow_multiple ?? false,
-                'installment_mode' => $s->installment_mode ?? 'MONTHLY',
-                'ln_scheme' => $s->ln_scheme ?? null,
-                'max_term' => $s->max_term ?? null,
-                'max_term_isEditable' => $s->max_term_isEditable ?? false,
-                'max_amortization' => $s->max_amortization ?? null,
-                'max_amortization_isEditable' => $s->max_amortization_isEditable ?? false,
-                'service_fee' => $s->service_fee ?? null,
-                'lrf' => $s->lrf ?? null,
-                'doc_stamp' => $s->doc_stamp ?? null,
-                'mort_notarial' => $s->mort_notarial ?? null,
-                'terms_and_info' => $s->terms_and_info ?? null,
-                'ln_isActive' => $s->ln_isActive ?? false,
-                'isDisplayed' => $d->isDisplayed,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-        }
     }
 
     public function down(): void
