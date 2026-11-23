@@ -12,15 +12,15 @@ type Settings = {
     ln_scheme?: string;
     installment_mode?: string;
     rate_isEditable?: boolean;
-    max_term?: number | null;
+    max_term?: number | string | null;
     max_term_isEditable?: boolean;
-    max_amortization?: number | null;
+    max_amortization?: number | string | null;
     max_amortization_isEditable?: boolean;
     allow_multiple?: boolean;
-    service_fee?: number | null;
-    lrf?: number | null;
-    doc_stamp?: number | null;
-    mort_notarial?: number | null;
+    service_fee?: number | string | null;
+    lrf?: number | string | null;
+    doc_stamp?: number | string | null;
+    mort_notarial?: number | string | null;
     terms_and_info?: string | null;
 };
 type Product = { typecode: string; lntype?: string; int_rate?: number | null; settings?: Settings; tags?: { tag_name: string }[] };
@@ -88,7 +88,12 @@ function ProductDrawerBody({ product, dirty, onSave, onDelete, onClose, toast }:
     const set = <K extends keyof Settings>(k: K, v: Settings[K]) =>
         setF((x) => ({ ...x, settings: { ...x.settings, [k]: v } as Required<Settings> }));
     dirty.current = JSON.stringify(f) !== JSON.stringify(initial) || tag.trim() !== '';
-    const save = () => onSave(product, { int_rate: num(f.int_rate), settings: f.settings }, f.tags);
+    // numeric fields are kept as typed text (so "1." survives) and converted here
+    const save = () => {
+        const settings = { ...f.settings } as Record<string, unknown>;
+        for (const k of ['max_term', 'max_amortization', 'service_fee', 'lrf', 'doc_stamp', 'mort_notarial']) settings[k] = num(text(settings[k]));
+        return onSave(product, { int_rate: num(f.int_rate), settings }, f.tags);
+    };
     // row switch toggles ln_isActive outside the drawer; mirror it without discarding other edits
     const active = !!product.settings?.ln_isActive;
     useEffect(() => {
@@ -114,7 +119,7 @@ function ProductDrawerBody({ product, dirty, onSave, onDelete, onClose, toast }:
     };
 
     const numField = (k: 'max_term' | 'max_amortization' | 'service_fee' | 'lrf' | 'doc_stamp' | 'mort_notarial', id: string) => (
-        <input id={id} className={`${field} tabular-nums`} inputMode="decimal" value={text(s[k])} onChange={(e) => set(k, num(e.target.value))} />
+        <input id={id} className={`${field} tabular-nums`} inputMode="decimal" value={text(s[k])} onChange={(e) => /^\d*\.?\d*$/.test(e.target.value) && set(k, e.target.value)} />
     );
     const pct = (k: 'service_fee' | 'lrf' | 'doc_stamp', id: string, label: string) => (
         <div className="grid gap-1.5">
