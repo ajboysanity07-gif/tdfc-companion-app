@@ -6,6 +6,7 @@ import { Head, Link, usePage } from '@inertiajs/react';
 import { Banknote, CreditCard, Info, PiggyBank, UsersRound } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 
+type Tx = { kind: 'loan' | 'savings'; ref: string; description: string; date: string | null; amount: number; balance: number };
 type RecentRow = { lnnumber: string; description: string; date: string | null; principal: number; raw_balance: number };
 type PageProps = { auth?: { user?: { name?: string; avatar?: string | null; role?: string | null } | null }; [key: string]: unknown };
 
@@ -54,6 +55,7 @@ export default function Dashboard() {
     const role = (user?.role ?? 'client').toLowerCase();
 
     const [rows, setRows] = useState<RecentRow[]>([]);
+    const [txs, setTxs] = useState<Tx[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [tick, setTick] = useState(0);
@@ -69,8 +71,8 @@ export default function Dashboard() {
                 if (!r.ok) throw new Error(`HTTP error! status: ${r.status}`);
                 return r.json();
             })
-            .then((d) => alive && setRows(Array.isArray(d?.items) ? d.items : []))
-            .catch((e) => alive && (setError(e instanceof Error ? e.message : 'Failed to load transactions'), setRows([])))
+            .then((d) => alive && (setRows(Array.isArray(d?.items) ? d.items : []), setTxs(Array.isArray(d?.transactions) ? d.transactions : [])))
+            .catch((e) => alive && (setError(e instanceof Error ? e.message : 'Failed to load transactions'), setRows([]), setTxs([])))
             .finally(() => alive && setLoading(false));
         return () => {
             alive = false;
@@ -100,7 +102,7 @@ export default function Dashboard() {
     }, [rows]);
 
     const cls = CLASSES.find((c) => s.pct >= c[2]) ?? CLASSES[2];
-    const t = useTable(s.loans, { key: 'date' }, (r, k) => (k === 'amount' ? r.principal : k === 'balance' ? r.raw_balance : k === 'status' ? Number(r.raw_balance > 0) : String((r as never)[k] ?? '')));
+    const t = useTable(txs, { key: 'date' }, (r, k) => (k === 'amount' ? r.amount : k === 'balance' ? r.balance : String((r as never)[k] ?? '')));
     const savingsText = s.savings.toLocaleString('en-PH', { minimumFractionDigits: 2 });
 
     const ClassBtn = () =>
@@ -162,17 +164,17 @@ export default function Dashboard() {
                             <h2 className="text-[22px] font-semibold">Recent Transactions</h2>
                             <Link href="/loans/transactions" className="font-semibold text-tdfc-coral-ink hover:underline">View All</Link>
                         </div>
-                        {s.loans.length ? (
+                        {txs.length ? (
                             <ul>
-                                {s.loans.map((r) => (
-                                    <li key={r.lnnumber} className="flex items-start justify-between gap-4 border-b border-border px-3 py-3.5 last:border-0">
+                                {txs.slice(0, 10).map((r, i) => (
+                                    <li key={`${r.ref}-${r.date}-${i}`} className="flex items-start justify-between gap-4 border-b border-border px-3 py-3.5 last:border-0">
                                         <div>
                                             <div className="font-semibold">{r.description}</div>
                                             <time className="text-[13px] text-muted-foreground">{fdate(r.date)}</time>
                                         </div>
                                         <div className="text-right font-semibold">
-                                            {peso(Math.abs(r.principal))}
-                                            <small className="block text-xs font-normal text-muted-foreground">Bal {peso(r.raw_balance)}</small>
+                                            {r.amount < 0 ? '-' : '+'}{peso(Math.abs(r.amount))}
+                                            <small className="block text-xs font-normal text-muted-foreground">Bal {peso(r.balance)}</small>
                                         </div>
                                     </li>
                                 ))}
@@ -231,7 +233,7 @@ export default function Dashboard() {
                             <Link href="/loans/transactions" className="text-sm font-semibold text-tdfc-coral-ink hover:underline">View All</Link>
                         </div>
                         <div className="overflow-hidden rounded-xl border border-border">
-                            {s.loans.length ? (
+                            {txs.length ? (
                                 <>
                                     <div className="overflow-x-auto">
                                         <table className="w-full border-collapse">
@@ -239,19 +241,19 @@ export default function Dashboard() {
                                                 <tr className="border-b border-border">
                                                     <SortTh t={t} k="date">Date</SortTh>
                                                     <SortTh t={t} k="description">Description</SortTh>
-                                                    <SortTh t={t} k="amount" right>Principal</SortTh>
+                                                    <SortTh t={t} k="ref">Account</SortTh>
+                                                    <SortTh t={t} k="amount" right>Amount</SortTh>
                                                     <SortTh t={t} k="balance" right>Balance</SortTh>
-                                                    <SortTh t={t} k="status">Status</SortTh>
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {t.view.map((r) => (
-                                                    <tr key={r.lnnumber} className="border-b border-border last:border-0 even:bg-tdfc-stripe hover:bg-muted">
+                                                {t.view.map((r, i) => (
+                                                    <tr key={`${r.ref}-${r.date}-${i}`} className="border-b border-border last:border-0 even:bg-muted/40 hover:bg-muted">
                                                         <td className="px-4 py-3.5 text-muted-foreground">{fdate(r.date)}</td>
                                                         <td className="px-4 py-3.5 font-bold">{r.description}</td>
-                                                        <td className="px-4 py-3.5 text-right font-bold tabular-nums">{peso(Math.abs(r.principal))}</td>
-                                                        <td className="px-4 py-3.5 text-right font-bold tabular-nums">{peso(r.raw_balance)}</td>
-                                                        <td className="px-4 py-3.5"><Badge tone={r.raw_balance > 0 ? 'info' : 'ok'}>{r.raw_balance > 0 ? 'Active' : 'Fully Paid'}</Badge></td>
+                                                        <td className="px-4 py-3.5 text-muted-foreground">{r.ref}</td>
+                                                        <td className={`px-4 py-3.5 text-right font-bold tabular-nums ${r.amount < 0 ? '' : 'text-tdfc-ok-ink'}`}>{r.amount < 0 ? '-' : '+'}{peso(Math.abs(r.amount))}</td>
+                                                        <td className="px-4 py-3.5 text-right font-bold tabular-nums">{peso(r.balance)}</td>
                                                     </tr>
                                                 ))}
                                             </tbody>
@@ -260,7 +262,7 @@ export default function Dashboard() {
                                     <Pager t={t} options={[5, 10, 15, 20]} />
                                 </>
                             ) : (
-                                <Status loading={loading} error={error} retry={retry} empty="No loan transactions found" table />
+                                <Status loading={loading} error={error} retry={retry} empty="No transactions found" table />
                             )}
                         </div>
                     </Panel>
