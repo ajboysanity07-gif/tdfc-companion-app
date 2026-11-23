@@ -14,7 +14,7 @@ class LoanCalculatorController extends Controller
     public function __invoke(Request $request, MathExpressionEvaluator $math): Response
     {
         $acctno = $request->user()?->acctno;
-        $basic = $acctno ? WSalaryRecord::where('acctno', $acctno)->value('salary_amount') : null;
+        $basic = $acctno ? WSalaryRecord::where('acctno', $acctno)->orderBy('created_at', 'desc')->value('salary_amount') : null;
 
         $products = WlnProduct::where('isDisplayed', true)
             ->where('ln_isActive', true)

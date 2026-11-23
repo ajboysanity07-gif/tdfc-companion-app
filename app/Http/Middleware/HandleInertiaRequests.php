@@ -27,7 +27,7 @@ class HandleInertiaRequests extends Middleware
         $authUser = null;
         if ($user) {
             // Fetch salary record
-            $salaryRecord = $user->acctno ? \App\Models\WSalaryRecord::where('acctno', $user->acctno)->first() : null;
+            $salaryRecord = $user->acctno ? \App\Models\WSalaryRecord::where('acctno', $user->acctno)->orderBy('created_at', 'desc')->first() : null;
 
             $loanClass = null;
 
