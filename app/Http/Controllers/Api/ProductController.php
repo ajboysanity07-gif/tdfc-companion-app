@@ -8,6 +8,7 @@ use App\Models\WlnTags;
 use App\Models\WlnTagSummary;
 use App\Models\WlnType;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class ProductController extends Controller
@@ -41,24 +42,10 @@ class ProductController extends Controller
         return response()->json(WlnProduct::with(self::WITH)->where('typecode', $typecode)->firstOrFail());
     }
 
-    public function store(Request $request)
+    // Rules for the editable fields, shared by store() and update().
+    private function fieldRules(Request $request): array
     {
-        $data = $request->validate([
-            'typecode' => 'required|max:2|unique:wlnproducts,typecode',
-            'lntype' => 'required',
-            'int_rate' => 'nullable|numeric',
-        ]);
-
-        return response()->json(WlnProduct::create($data + ['isDisplayed' => true])->load(self::WITH), 201);
-    }
-
-    // Update rate + settings fields (all live on the same wlnproducts row)
-    public function update(Request $request, $typecode)
-    {
-        $product = WlnProduct::where('typecode', $typecode)->firstOrFail();
-
-        $data = $request->validate([
-            'lntype' => 'nullable|string',
+        return [
             'int_rate' => 'nullable|numeric',
             'settings' => 'nullable|array',
             'settings.ln_isActive' => 'boolean',
@@ -86,12 +73,49 @@ class ProductController extends Controller
             'settings.ln_scheme' => 'nullable|string',
             'settings.installment_mode' => 'nullable|string',
             'settings.terms_and_info' => 'nullable|string',
-        ]);
+        ];
+    }
 
+    // Flatten validated `settings` into columns; BASIC/CUSTOM derive the max from salary, so the stored number is dropped.
+    private function columns(array $data): array
+    {
         $settings = array_intersect_key($data['settings'] ?? [], array_flip(WlnProduct::SETTINGS));
         unset($data['settings']);
 
-        $product->update($data + $settings);
+        $mode = $settings['max_amortization_mode'] ?? null;
+        if ($mode === 'FIXED') {
+            $settings['max_amortization_formula'] = null;
+        } elseif ($mode === 'BASIC') {
+            $settings['max_amortization_formula'] = 'basic';
+            $settings['max_amortization'] = null;
+        } elseif ($mode === 'CUSTOM') {
+            $settings['max_amortization'] = null;
+        }
+
+        return $data + $settings;
+    }
+
+    // Create a product with all its settings in one transaction (nothing is left behind on failure).
+    public function store(Request $request)
+    {
+        $data = $request->validate([
+            'typecode' => 'required|max:2|unique:wlnproducts,typecode',
+            'lntype' => 'required|string',
+        ] + $this->fieldRules($request));
+
+        $product = DB::transaction(fn () => WlnProduct::create($this->columns($data) + ['isDisplayed' => true]));
+
+        return response()->json($product->load(self::WITH), 201);
+    }
+
+    // Update rate + settings fields (all live on the same wlnproducts row)
+    public function update(Request $request, $typecode)
+    {
+        $product = WlnProduct::where('typecode', $typecode)->firstOrFail();
+
+        $data = $request->validate(['lntype' => 'nullable|string'] + $this->fieldRules($request));
+
+        $product->update($this->columns($data));
 
         return response()->json($product->fresh(self::WITH));
     }

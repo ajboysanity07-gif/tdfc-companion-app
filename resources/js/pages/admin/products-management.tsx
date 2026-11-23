@@ -460,8 +460,8 @@ export default function ProductsManagement() {
         try {
             const isNew = sel === NEW;
             const code = isNew ? String(body.typecode) : p.typecode;
-            if (isNew) await axios.post('/api/admin/products', { typecode: code, lntype: body.lntype, int_rate: body.int_rate });
-            await updateProduct(code, body);
+            if (isNew) await axios.post('/api/admin/products', body); // one atomic request: row + settings
+            else await updateProduct(code, body);
             const old = (p.tags ?? []).map((t) => t.tag_name);
             const base = `/api/admin/products/${code}/tags`;
             await Promise.all([
@@ -471,11 +471,12 @@ export default function ProductsManagement() {
             await fetchProducts();
             if (isNew) {
                 dirty.current = false;
-                setSel(code);
+                setSel(null);
             }
             show(`${body.lntype ?? p.lntype ?? code} ${isNew ? 'added' : 'updated'}`);
         } catch (e) {
-            show(axios.isAxiosError(e) ? (e.response?.data?.message ?? 'Save failed') : 'Save failed');
+            const errs = axios.isAxiosError(e) ? (Object.values(e.response?.data?.errors ?? {})[0] as string[] | undefined) : undefined;
+            show(errs?.[0] ?? (axios.isAxiosError(e) ? (e.response?.data?.message ?? 'Save failed') : 'Save failed'));
         }
     };
     const remove = async (p: Product) => {
