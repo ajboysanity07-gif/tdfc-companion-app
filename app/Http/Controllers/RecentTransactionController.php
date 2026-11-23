@@ -20,7 +20,7 @@ class RecentTransactionController extends Controller
      */
     public function recent(Request $request): JsonResponse
     {
-        $acctno = AppUser::effective($request)?->acctno;
+        $acctno = AppUser::subject($request)?->acctno;
 
         if (! $acctno) {
             return response()->json(['items' => [], 'transactions' => [], 'dues' => []]);

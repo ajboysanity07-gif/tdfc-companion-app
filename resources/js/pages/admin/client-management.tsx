@@ -137,6 +137,7 @@ export default function ClientManagement({ pendingUsers, rejectionReasons }: Pro
                                     {th('at', 'Submitted', true)}
                                     {th('cls', 'Class')}
                                     {th('st', 'Status')}
+                                    <th className="px-4 py-3"><span className="sr-only">Actions</span></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -156,6 +157,11 @@ export default function ClientManagement({ pendingUsers, rejectionReasons }: Pro
                                         <td className="px-4 py-3.5 max-md:hidden">{date(u.created_at)}</td>
                                         <td className="px-4 py-3.5">{u.class ? <Badge>Class {u.class}</Badge> : <span className="text-muted-foreground">—</span>}</td>
                                         <td className="px-4 py-3.5">{stat(u.status)}</td>
+                                        <td className="px-4 py-3.5 text-right">
+                                            {u.status === 'approved' && (
+                                                <button type="button" onClick={(e) => { e.stopPropagation(); router.get(`/admin/clients/${u.user_id}/dashboard`); }} onKeyDown={(e) => e.stopPropagation()} className={`${btn.base} ${btn.plain} ${btn.sm}`}>Open profile</button>
+                                            )}
+                                        </td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -205,7 +211,6 @@ export default function ClientManagement({ pendingUsers, rejectionReasons }: Pro
                             </section>
                             {sel.status === 'approved' && (
                                 <section>
-                                    <button type="button" onClick={() => router.get(route('admin.view-as', sel.user_id))} className={`${btn.base} ${btn.dark} mb-4`}>View as member</button>
                                     <h3 className="mb-2.5 text-[13px] tracking-wider text-muted-foreground">BASIC SALARY</h3>
                                     <div className="flex flex-wrap items-center gap-2.5">
                                         <button type="button" onClick={() => { setSalaryFor(sel); setSal(salary ? String(salary) : ''); setSalNote(''); }} className="rounded-lg border border-dashed border-ring bg-card px-2.5 py-1.75 text-[13px] font-semibold hover:bg-muted">Set Basic Salary</button>

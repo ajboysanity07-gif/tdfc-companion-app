@@ -22,8 +22,7 @@ class HandleInertiaRequests extends Middleware
     {
         [$message, $author] = str(Inspiring::quotes()->random())->explode('-');
 
-        $user = $request->user() ? \App\Models\AppUser::effective($request) : null;
-        $viewingAs = $user && $user->user_id !== $request->user()->user_id ? $user->name : null;
+        $user = $request->user(); // App\Models\AppUser|null
 
         $authUser = null;
         if ($user) {
@@ -60,7 +59,6 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $authUser,
             ],
-            'viewingAs' => $viewingAs,
 
             'ziggy' => fn (): array => [
                 ...(new Ziggy)->toArray(),

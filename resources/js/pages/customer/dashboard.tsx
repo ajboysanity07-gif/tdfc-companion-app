@@ -9,7 +9,7 @@ import { useEffect, useMemo, useState } from 'react';
 type Tx = { kind: 'loan' | 'savings'; ref: string; description: string; date: string | null; amount: number; balance: number };
 type Due = { lnnumber: string; description: string; date: string; amount: number };
 type RecentRow = { lnnumber: string; description: string; date: string | null; principal: number; raw_balance: number };
-type PageProps = { auth?: { user?: { name?: string; avatar?: string | null; role?: string | null } | null }; [key: string]: unknown };
+type PageProps = { auth?: { user?: { name?: string; avatar?: string | null; role?: string | null } | null }; member?: { name: string }; base?: string; [key: string]: unknown };
 
 const firstName = (n: string) => (n.includes(',') ? (n.split(',')[1]?.trim().split(' ')[0] ?? n) : (n.split(' ')[0] ?? n));
 const cap = (s: string) => s.charAt(0) + s.slice(1).toLowerCase();
@@ -51,9 +51,14 @@ function Status({ loading, error, retry, empty, table }: { loading: boolean; err
 }
 
 export default function Dashboard() {
-    const user = usePage<PageProps>().props.auth?.user ?? null;
+    const { auth, member, base = '' } = usePage<PageProps>().props;
+    const user = member ?? auth?.user ?? null;
+    const avatar = member ? null : auth?.user?.avatar;
     const fullName = user?.name ?? 'Client';
-    const role = (user?.role ?? 'client').toLowerCase();
+    const role = (member ? 'client' : (auth?.user?.role ?? 'client')).toLowerCase();
+    // Admin viewing a member: same page under /admin/clients/{id}, no calculator link.
+    const loansUrl = base ? `${base}/loans` : '/loans/transactions';
+    const quick = member ? QUICK.filter((q) => !q.href) : QUICK;
 
     const [rows, setRows] = useState<RecentRow[]>([]);
     const [txs, setTxs] = useState<Tx[]>([]);
@@ -68,7 +73,7 @@ export default function Dashboard() {
         let alive = true;
         setLoading(true);
         setError(null);
-        fetch('/api/transactions/recent', { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+        fetch(base ? `${base}/transactions/recent` : '/api/transactions/recent', { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
             .then((r) => {
                 if (!r.ok) throw new Error(`HTTP error! status: ${r.status}`);
                 return r.json();
@@ -79,7 +84,7 @@ export default function Dashboard() {
         return () => {
             alive = false;
         };
-    }, [tick]);
+    }, [tick, base]);
     const retry = () => setTick((t) => t + 1);
 
     const s = useMemo(() => {
@@ -109,7 +114,7 @@ export default function Dashboard() {
         ) : null;
 
     return (
-        <AppLayout breadcrumbs={[{ title: 'Dashboard', href: '/dashboard' }]}>
+        <AppLayout breadcrumbs={[{ title: 'Dashboard', href: `${base}/dashboard` }]}>
             <Head title="Dashboard" />
             <div id="main-content" className="p-4 md:p-6">
                 {/* Mobile */}
@@ -123,14 +128,14 @@ export default function Dashboard() {
                                 <div><ClassBtn /></div>
                             </div>
                             <div className="grid size-14 place-items-center overflow-hidden rounded-full bg-white/55 text-[22px] font-extrabold ring-2 ring-white/70" role="img" aria-label={fullName}>
-                                {user?.avatar ? <img src={user.avatar} alt="" className="size-full object-cover" /> : fullName.charAt(0).toUpperCase()}
+                                {avatar ? <img src={avatar} alt="" className="size-full object-cover" /> : fullName.charAt(0).toUpperCase()}
                             </div>
                         </div>
                         <p className="mt-5 text-center text-xs font-bold tracking-widest uppercase opacity-80">Personal savings</p>
                         <p className="mt-1 text-center text-[42px] leading-tight">{loading ? <Skeleton className="mx-auto h-10 w-48 bg-black/10" /> : <>₱<b className="font-extrabold">{savingsText}</b></>}</p>
                         <hr className="my-4 h-px border-0 bg-black/20" />
                         <div className="grid grid-cols-2 gap-2 rounded-3xl bg-tdfc-sun p-3 text-center">
-                            {QUICK.slice(0, 2).map((q) => {
+                            {quick.slice(0, 2).map((q) => {
                                 const inner = (
                                     <>
                                         <span className="grid size-16 place-items-center rounded-2xl bg-tdfc-on-coral text-white"><q.icon className="size-8" /></span>
@@ -157,7 +162,7 @@ export default function Dashboard() {
                     <Panel className="rounded-2xl p-3">
                         <div className="mb-1 flex items-center justify-between">
                             <h2 className="text-[22px] font-semibold">Recent Transactions</h2>
-                            <Link href="/loans/transactions" className="font-semibold text-tdfc-coral-ink hover:underline">View All</Link>
+                            <Link href={loansUrl} className="font-semibold text-tdfc-coral-ink hover:underline">View All</Link>
                         </div>
                         {txs.length ? (
                             <ul>
@@ -209,7 +214,7 @@ export default function Dashboard() {
                     <Panel className="p-5 xl:col-span-4">
                         <h2 className="mb-3.5 text-base font-semibold">Quick Actions</h2>
                         <div className="grid grid-cols-2 gap-3">
-                            {QUICK.map((q) => {
+                            {quick.map((q) => {
                                 const inner = (
                                     <>
                                         <span className="grid size-9 place-items-center rounded-lg bg-[color-mix(in_oklch,#3b82f6_18%,white)] text-[oklch(.35_.13_262)]"><q.icon className="size-4" /></span>
@@ -225,7 +230,7 @@ export default function Dashboard() {
                     <Panel className="p-5 xl:col-span-8">
                         <div className="mb-3.5 flex items-center justify-between">
                             <h2 className="text-base font-semibold">Recent Transactions</h2>
-                            <Link href="/loans/transactions" className="text-sm font-semibold text-tdfc-coral-ink hover:underline">View All</Link>
+                            <Link href={loansUrl} className="text-sm font-semibold text-tdfc-coral-ink hover:underline">View All</Link>
                         </div>
                         <div className="overflow-hidden rounded-xl border border-border">
                             {txs.length ? (
@@ -272,7 +277,7 @@ export default function Dashboard() {
                                     <Badge tone="info">{s.next.desc}</Badge>
                                 </div>
                                 <p className="mt-1 text-[13px] text-muted-foreground">Due <b>{fdate(s.next.due.toISOString().slice(0, 10))}</b>{s.next.due < new Date() ? ' · overdue' : ''}</p>
-                                <Link href="/loans/transactions" className="mt-2.5 inline-block text-[13px] font-semibold text-tdfc-coral-ink hover:underline">View schedule</Link>
+                                <Link href={loansUrl} className="mt-2.5 inline-block text-[13px] font-semibold text-tdfc-coral-ink hover:underline">View schedule</Link>
                             </div>
                         ) : (
                             <div className="py-6 text-center text-muted-foreground">No upcoming payments</div>

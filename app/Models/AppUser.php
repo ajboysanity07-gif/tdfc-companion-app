@@ -63,20 +63,26 @@ class AppUser extends AuthenticatableUser
         return $this->belongsTo(Wmaster::class, 'acctno', 'acctno');
     }
 
-    /** The member an admin is viewing (session 'view_as'), else the logged-in user. */
-    public static function effective(\Illuminate\Http\Request $request): ?self
+    /** Whose data a shared member page shows: the {user} of an admin route (approved clients only), else the logged-in user. */
+    public static function subject(\Illuminate\Http\Request $request): ?self
     {
-        $user = $request->user();
-
-        if ($user?->isAdmin() && $id = $request->session()->get('view_as')) {
-            $member = static::where('user_id', $id)->where('role', 'client')->where('status', 'approved')->first();
-            if ($member) {
-                return $member;
-            }
-            $request->session()->forget('view_as');
+        $member = $request->route('user');
+        if (! $member instanceof self) {
+            return $request->user();
         }
+        abort_unless($member->role === 'client' && $member->isApproved(), 404);
 
-        return $user;
+        return $member;
+    }
+
+    /** Extra Inertia props when an admin views a member's page; empty for the member's own pages. */
+    public static function adminViewProps(\Illuminate\Http\Request $request): array
+    {
+        $member = $request->route('user') instanceof self ? static::subject($request) : null;
+
+        return $member
+            ? ['base' => '/admin/clients/'.$member->user_id, 'member' => ['name' => $member->name, 'acctno' => $member->acctno]]
+            : [];
     }
 
     public function isAdmin(): bool

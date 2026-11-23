@@ -7,7 +7,6 @@ use App\Models\VWebAmortsched;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
@@ -26,7 +25,7 @@ class LoanTransactionController extends Controller
     /** The loan row, only if it belongs to the logged-in user. */
     private function ownLoan(string $lnnumber): ?object
     {
-        $acctno = AppUser::effective(request())?->acctno;
+        $acctno = AppUser::subject(request())?->acctno;
 
         return $acctno
             ? DB::table('wlnmaster')->where('acctno', $acctno)->where('lnnumber', $lnnumber)->first()
@@ -38,7 +37,7 @@ class LoanTransactionController extends Controller
      */
     public function index(Request $request)
     {
-        $acctno = AppUser::effective($request)?->acctno;
+        $acctno = AppUser::subject($request)?->acctno;
 
         $transactions = $acctno
             ? DB::table('wlnmaster')
@@ -55,7 +54,7 @@ class LoanTransactionController extends Controller
                 ->values()
             : [];
 
-        return Inertia::render('loans/transactions', ['transactions' => $transactions]);
+        return Inertia::render('loans/transactions', ['transactions' => $transactions] + AppUser::adminViewProps($request));
     }
 
     /**
@@ -71,7 +70,7 @@ class LoanTransactionController extends Controller
             'loan' => $this->summary($loan),
             'history' => $this->history($loan),
             'schedule' => $this->scheduleRows($loan),
-        ]);
+        ] + AppUser::adminViewProps($request));
     }
 
     private function summary(object $loan): array

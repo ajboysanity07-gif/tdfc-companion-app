@@ -2,7 +2,7 @@ import { DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSep
 import { UserInfo } from '@/components/user-info';
 import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
 import { type User } from '@/types';
-import { Link, router, usePage } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import { LogOut, Settings } from 'lucide-react';
 
 interface UserMenuContentProps {
@@ -11,7 +11,6 @@ interface UserMenuContentProps {
 
 export function UserMenuContent({ user }: UserMenuContentProps) {
     const cleanup = useMobileNavigation();
-    const { viewingAs } = usePage<{ viewingAs?: string | null }>().props;
 
     const handleLogout = () => {
         cleanup();
@@ -26,19 +25,15 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
                 </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            {!viewingAs && (
-                <>
-                    <DropdownMenuGroup>
-                        <DropdownMenuItem asChild>
-                            <Link className="block w-full" href={route('profile.edit')} as="button" prefetch onClick={cleanup}>
-                                <Settings className="mr-2" />
-                                Settings
-                            </Link>
-                        </DropdownMenuItem>
-                    </DropdownMenuGroup>
-                    <DropdownMenuSeparator />
-                </>
-            )}
+            <DropdownMenuGroup>
+                <DropdownMenuItem asChild>
+                    <Link className="block w-full" href={route('profile.edit')} as="button" prefetch onClick={cleanup}>
+                        <Settings className="mr-2" />
+                        Settings
+                    </Link>
+                </DropdownMenuItem>
+            </DropdownMenuGroup>
+            <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
                 <Link className="block w-full" method="post" href={route('logout')} as="button" onClick={handleLogout}>
                     <LogOut className="mr-2" />

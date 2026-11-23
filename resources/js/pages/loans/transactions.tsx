@@ -1,6 +1,6 @@
 import { Pager, Panel, SortTh, btn, fdate, peso, useTable } from '@/components/tdfc/ui';
 import AppLayout from '@/layouts/app-layout';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import { ArrowUpRight } from 'lucide-react';
 
 interface Transaction {
@@ -11,9 +11,9 @@ interface Transaction {
     raw_balance: number;
 }
 
-const OpenLink = ({ ln }: { ln: string }) => (
+const OpenLink = ({ ln, base }: { ln: string; base: string }) => (
     <Link
-        href={`/loans/transactions/${encodeURIComponent(ln)}`}
+        href={`${base ? `${base}/loans` : '/loans/transactions'}/${encodeURIComponent(ln)}`}
         aria-label={`Open loan ${ln}`}
         className={`${btn.base} ${btn.plain} ${btn.sm} gap-1.5 hover:!bg-tdfc-blue-soft hover:!text-tdfc-blue-ink`}
     >
@@ -23,13 +23,14 @@ const OpenLink = ({ ln }: { ln: string }) => (
 );
 
 export default function LoansTransactionPage({ transactions }: { transactions: Transaction[] }) {
+    const base = usePage<{ base?: string }>().props.base ?? '';
     const t = useTable(transactions, { key: 'date', per: 15 }, (r, k) => (k === 'balance' ? r.raw_balance : (((r as unknown) as Record<string, string | number>)[k] ?? '')));
 
     return (
         <AppLayout
             breadcrumbs={[
-                { title: 'Loans', href: '/loans' },
-                { title: 'Transactions', href: '/loans/transactions' },
+                { title: base ? 'Dashboard' : 'Loans', href: base ? `${base}/dashboard` : '/loans' },
+                { title: 'Transactions', href: base ? `${base}/loans` : '/loans/transactions' },
             ]}
         >
             <Head title="Loan Transactions" />
@@ -63,7 +64,7 @@ export default function LoansTransactionPage({ transactions }: { transactions: T
                                                 <td className="px-4 py-3.5 font-bold">{r.description}</td>
                                                 <td className="px-4 py-3.5 text-right font-bold tabular-nums">{peso(r.principal)}</td>
                                                 <td className="px-4 py-3.5 text-right font-bold tabular-nums">{peso(r.raw_balance)}</td>
-                                                <td className="px-4 py-3.5"><OpenLink ln={r.lnnumber} /></td>
+                                                <td className="px-4 py-3.5"><OpenLink ln={r.lnnumber} base={base} /></td>
                                             </tr>
                                         ))}
                                     </tbody>
@@ -84,7 +85,7 @@ export default function LoansTransactionPage({ transactions }: { transactions: T
                                                 <div className="text-xs text-muted-foreground">Bal {peso(r.raw_balance)}</div>
                                             </div>
                                         </div>
-                                        <div className="mt-2.5"><OpenLink ln={r.lnnumber} /></div>
+                                        <div className="mt-2.5"><OpenLink ln={r.lnnumber} base={base} /></div>
                                     </div>
                                 ))}
                             </div>

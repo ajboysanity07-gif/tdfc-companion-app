@@ -135,7 +135,9 @@ function ScheduleDocument({ loan, schedule, totals, user }: { loan: Loan; schedu
 
 export default function LoanTransactionShow({ tab: initial, loan, history, schedule }: { tab: Tab; loan: Loan; history: HistoryItem[]; schedule: ScheduleRow[] }) {
     const [tab, setTab] = useState<Tab>(initial);
-    const user = usePage<{ auth: { user?: { name?: string; acctno?: string | null } } }>().props.auth.user;
+    const { auth, member, base = '' } = usePage<{ auth: { user?: { name?: string; acctno?: string | null } }; member?: { name?: string; acctno?: string | null }; base?: string }>().props;
+    const user = member ?? auth.user;
+    const loansUrl = base ? `${base}/loans` : '/loans/transactions';
     const paid = loan.balance <= 0;
     const totals = schedule.reduce(
         (a, r) => ({ p: a.p + r.payPrincipal, i: a.i + r.payInterest, am: a.am + r.amortization }),
@@ -149,9 +151,9 @@ export default function LoanTransactionShow({ tab: initial, loan, history, sched
     return (
         <AppLayout
             breadcrumbs={[
-                { title: 'Loans', href: '/loans' },
-                { title: 'Transactions', href: '/loans/transactions' },
-                { title: loan.lnnumber, href: `/loans/transactions/${loan.lnnumber}` },
+                { title: base ? 'Dashboard' : 'Loans', href: base ? `${base}/dashboard` : '/loans' },
+                { title: 'Transactions', href: loansUrl },
+                { title: loan.lnnumber, href: `${loansUrl}/${loan.lnnumber}` },
             ]}
         >
             <Head title={`Loan ${loan.lnnumber}`} />
@@ -159,7 +161,7 @@ export default function LoanTransactionShow({ tab: initial, loan, history, sched
             <div className="grid content-start gap-5 p-4 md:p-6">
                 <div className="flex flex-wrap items-start justify-between gap-4 print:hidden">
                     <div>
-                        <Link href="/loans/transactions" className="inline-flex h-8 items-center gap-1.5 rounded-lg pr-2.5 pl-1.5 text-[13px] font-medium text-muted-foreground hover:bg-muted hover:text-foreground">
+                        <Link href={loansUrl} className="inline-flex h-8 items-center gap-1.5 rounded-lg pr-2.5 pl-1.5 text-[13px] font-medium text-muted-foreground hover:bg-muted hover:text-foreground">
                             <ChevronLeft className="size-4" />
                             All transactions
                         </Link>
