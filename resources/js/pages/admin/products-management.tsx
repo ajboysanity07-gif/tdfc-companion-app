@@ -1,9 +1,12 @@
+import { Badge } from '@/components/ui/badge';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Drawer, PageBanner, Panel, SkelRows, Switch, btn, peso, useToast } from '@/components/tdfc/ui';
 import { useProductsApi } from '@/hooks/use-products-api';
 import AppLayout from '@/layouts/app-layout';
 import { Head } from '@inertiajs/react';
 import axios from 'axios';
-import { Plus, X } from 'lucide-react';
+import { Check as CheckIcon, ChevronsUpDown, Plus, X } from 'lucide-react';
 import { MutableRefObject, useEffect, useMemo, useRef, useState } from 'react';
 
 type Settings = {
@@ -85,7 +88,6 @@ type FormProps = {
 function ProductDrawerBody({ product, dirty, onSave, onDelete, onClose, toast }: FormProps) {
     const initial = useMemo(() => toForm(product), [product]);
     const [f, setF] = useState(initial);
-    const [tag, setTag] = useState('');
     const isNew = !product.typecode;
     const [code, setCode] = useState('');
     const [name, setName] = useState('');
@@ -94,7 +96,7 @@ function ProductDrawerBody({ product, dirty, onSave, onDelete, onClose, toast }:
     const s = f.settings;
     const set = <K extends keyof Settings>(k: K, v: Settings[K]) =>
         setF((x) => ({ ...x, settings: { ...x.settings, [k]: v } as Required<Settings> }));
-    dirty.current = JSON.stringify(f) !== JSON.stringify(initial) || tag.trim() !== '' || code !== '' || name !== '';
+    dirty.current = JSON.stringify(f) !== JSON.stringify(initial) || code !== '' || name !== '';
     // numeric fields are kept as typed text (so "1." survives) and converted here
     const save = () => {
         const settings = { ...f.settings } as Record<string, unknown>;
@@ -106,19 +108,12 @@ function ProductDrawerBody({ product, dirty, onSave, onDelete, onClose, toast }:
     useEffect(() => {
         setF((x) => ({ ...x, settings: { ...x.settings, ln_isActive: active } }));
     }, [active]);
-    const addTag = (t: string) => setF((x) => (x.tags.includes(t) ? x : { ...x, tags: [...x.tags, t] }));
+    const toggleTag = (t: string) => setF((x) => ({ ...x, tags: x.tags.includes(t) ? x.tags.filter((n) => n !== t) : [...x.tags, t] }));
     const [types, setTypes] = useState<string[]>([]);
-    const [openTags, setOpenTags] = useState(false);
-    const tagBox = useRef<HTMLDivElement>(null);
+    const [dlg, setDlg] = useState<HTMLElement | null>(null); // popover must render inside the <dialog> or it sits behind it
     useEffect(() => {
         axios.get('/api/admin/products/types').then((r) => setTypes(r.data), () => setTypes([]));
     }, []);
-    useEffect(() => {
-        const away = (e: MouseEvent) => tagBox.current?.contains(e.target as Node) || setOpenTags(false);
-        document.addEventListener('mousedown', away);
-        return () => document.removeEventListener('mousedown', away);
-    }, []);
-    const options = types.filter((t) => !f.tags.includes(t) && t.toLowerCase().includes(tag.trim().toLowerCase()));
 
     const spy = () => {
         const b = body.current;
@@ -220,62 +215,52 @@ function ProductDrawerBody({ product, dirty, onSave, onDelete, onClose, toast }:
                         <label htmlFor="d-tags" className="font-medium">
                             Type relation tags
                         </label>
-                        <div ref={tagBox} className="relative">
-                            <div className="flex min-h-10.5 cursor-text flex-wrap gap-1.5 rounded-[10px] border border-input p-1.5 shadow-sm focus-within:border-ring">
-                                {f.tags.map((tag_name) => (
-                                    <span key={tag_name} title={tag_name} className={`${pill} max-w-40 gap-1.5 bg-tdfc-blue-soft text-tdfc-blue-ink`}>
-                                        <span className="truncate">{tag_name}</span>
-                                        <button
-                                            type="button"
-                                            aria-label={`Remove ${tag_name}`}
-                                            onClick={() => setF((x) => ({ ...x, tags: x.tags.filter((t) => t !== tag_name) }))}
-                                        >
-                                            <X className="size-3" />
-                                        </button>
-                                    </span>
-                                ))}
-                                <input
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <button
                                     id="d-tags"
-                                    value={tag}
-                                    autoComplete="off"
-                                    onChange={(e) => {
-                                        setTag(e.target.value);
-                                        setOpenTags(true);
-                                    }}
-                                    onFocus={() => setOpenTags(true)}
-                                    onKeyDown={(e) => {
-                                        if (e.key === 'Escape') setOpenTags(false);
-                                        if (e.key === 'Enter') {
-                                            e.preventDefault();
-                                            if (options[0]) addTag(options[0]);
-                                            setTag('');
-                                        }
-                                    }}
-                                    placeholder="Select loan types"
-                                    className="min-w-24 flex-1 bg-transparent px-1 outline-none"
-                                />
-                            </div>
-                            {openTags && (
-                                <ul className="absolute inset-x-0 top-full z-10 mt-1 max-h-56 overflow-auto rounded-[10px] border border-border bg-popover p-1 shadow-md">
-                                    {options.length === 0 && <li className="px-3 py-2 text-[13px] text-muted-foreground">No loan types</li>}
-                                    {options.map((t) => (
-                                        <li key={t}>
-                                            <button
-                                                type="button"
-                                                title={t}
-                                                onClick={() => {
-                                                    addTag(t);
-                                                    setTag('');
-                                                }}
-                                                className="block w-full truncate rounded-md px-3 py-2 text-left hover:bg-muted"
-                                            >
-                                                {t}
-                                            </button>
-                                        </li>
-                                    ))}
-                                </ul>
-                            )}
-                        </div>
+                                    type="button"
+                                    ref={(el) => setDlg(el?.closest('dialog') ?? null)}
+                                    className={`${field} flex h-auto min-h-10 items-center justify-between gap-2 py-1.5 text-left`}
+                                >
+                                    <span className="flex min-w-0 flex-1 flex-wrap gap-1.5">
+                                        {f.tags.length === 0 && <span className="text-muted-foreground">Select loan types</span>}
+                                        {f.tags.map((t) => (
+                                            <Badge key={t} variant="secondary" title={t} className="max-w-full gap-1.5">
+                                                <span className="truncate">{t}</span>
+                                                <span
+                                                    role="button"
+                                                    aria-label={`Remove ${t}`}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        toggleTag(t);
+                                                    }}
+                                                >
+                                                    <X />
+                                                </span>
+                                            </Badge>
+                                        ))}
+                                    </span>
+                                    <ChevronsUpDown className="size-4 shrink-0 opacity-50" />
+                                </button>
+                            </PopoverTrigger>
+                            <PopoverContent container={dlg} align="start" className="w-(--radix-popover-trigger-width) p-0">
+                                <Command>
+                                    <CommandInput placeholder="Search loan types..." />
+                                    <CommandList>
+                                        <CommandEmpty>No loan types</CommandEmpty>
+                                        <CommandGroup>
+                                            {types.map((t) => (
+                                                <CommandItem key={t} value={t} title={t} onSelect={() => toggleTag(t)}>
+                                                    <CheckIcon className={`size-4 ${f.tags.includes(t) ? 'opacity-100' : 'opacity-0'}`} />
+                                                    <span className="truncate">{t}</span>
+                                                </CommandItem>
+                                            ))}
+                                        </CommandGroup>
+                                    </CommandList>
+                                </Command>
+                            </PopoverContent>
+                        </Popover>
                     </div>
                     <div className="grid gap-1.5">
                         <label htmlFor="d-info" className="font-medium">
