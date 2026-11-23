@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\AppUser;
-use App\Models\WlnSettings;
+use App\Models\WlnProduct;
 use Illuminate\Support\Collection;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -19,7 +19,7 @@ class DashboardController extends Controller
             'stats' => [
                 'pending' => $clients->where('status', 'pending')->count(),
                 'clients' => $clients->count(),
-                'products' => WlnSettings::where('ln_isActive', true)->count(),
+                'products' => WlnProduct::where('isDisplayed', true)->where('ln_isActive', true)->count(),
                 'today' => $clients->filter(fn ($u) => $u->created_at->isToday())->count(),
             ],
             'pending' => $clients->where('status', 'pending')->sortByDesc('created_at')->take(5)->values()
