@@ -1,4 +1,4 @@
-import { Panel, btn, fdateLong as fd, peso } from '@/components/tdfc/ui';
+import { Panel, btn, fdateLong as fd, pagerSelect, peso } from '@/components/tdfc/ui';
 import AppLayout from '@/layouts/app-layout';
 import { Head, usePage } from '@inertiajs/react';
 import { useMemo, useState } from 'react';
@@ -263,7 +263,7 @@ export default function SavingsTransactionPage({ transactions }: { transactions:
                                             setPer(+e.target.value);
                                             setPg(0);
                                         }}
-                                        className="h-[30px] rounded-lg border border-input bg-background px-1.5"
+                                        className={pagerSelect}
                                     >
                                         {[10, 15, 25, 50].map((n) => (
                                             <option key={n}>{n}</option>

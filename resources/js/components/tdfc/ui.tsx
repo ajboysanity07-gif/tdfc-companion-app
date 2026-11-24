@@ -237,6 +237,8 @@ export const SortTh = ({ t, k, children, right }: { t: Tbl; k: string; children:
     </th>
 );
 
+export const pagerSelect = "h-[30px] min-w-[68px] cursor-pointer rounded-lg border border-input bg-card pr-8 pl-2.5";
+
 export const Pager = ({ t, options = [5, 10, 15, 25, 50] }: { t: Tbl; options?: number[] }) => {
     const s = t.page * t.per;
     return (
@@ -246,7 +248,7 @@ export const Pager = ({ t, options = [5, 10, 15, 25, 50] }: { t: Tbl; options?: 
                 aria-label="Rows per page"
                 value={t.per}
                 onChange={(e) => t.setPer(+e.target.value)}
-                className="h-[30px] rounded-lg border border-input bg-card px-1.5"
+                className={pagerSelect}
             >
                 {options.map((n) => (
                     <option key={n}>{n}</option>
