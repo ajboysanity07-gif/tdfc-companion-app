@@ -113,7 +113,7 @@ const PrcIdCropModal: React.FC<Props> = ({
             <button
               type="button"
               disabled={!frontPreview || !backPreview}
-              className="w-36 py-3 rounded-xl bg-brand-red text-brand-ink font-bold shadow-md transition hover:bg-[color-mix(in_oklch,var(--brand-red)_88%,black)] disabled:opacity-50"
+              className="w-36 py-3 rounded-xl bg-brand-surface text-on-brand-surface font-bold shadow-md transition hover:bg-[color-mix(in_oklch,var(--brand-surface)_88%,black)] disabled:opacity-50"
               onClick={() => onSave(front, back)}
             >
               Use Both Photos

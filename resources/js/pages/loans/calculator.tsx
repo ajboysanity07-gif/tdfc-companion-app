@@ -50,7 +50,7 @@ const lock = (
 const pill = (on: boolean) =>
     `rounded-full border transition-colors ${
         on
-            ? 'border-[oklch(.16_.03_24)] bg-[oklch(.16_.03_24)] text-white hover:bg-[oklch(.28_.05_24)] dark:border-[oklch(.24_.07_24)] dark:bg-[oklch(.24_.07_24)] dark:hover:bg-[oklch(.3_.08_24)]'
+            ? 'border-[oklch(.2_.05_24)] bg-[oklch(.2_.05_24)] text-white hover:bg-[oklch(.28_.05_24)] dark:border-[oklch(.24_.07_24)] dark:bg-[oklch(.24_.07_24)] dark:hover:bg-[oklch(.3_.08_24)]'
             : 'border-border bg-transparent hover:bg-muted'
     }`;
 // Cards that sit on the red panel are always white (the guide's one intentional fixed-color exception).
@@ -138,6 +138,8 @@ export default function LoanCalculator({ products }: { products: Product[] }) {
         ['Document stamp', `− ${pesoS(e.ds)}`],
         ['Mortgage + notarial', `− ${pesoS(e.mn)}`],
     ];
+    const recv = 'bg-white dark:bg-brand-ink';
+    const fees = 'bg-[oklch(.2_.05_24)] dark:bg-white';
     const segCls = 'block h-full transition-[width] duration-300 motion-reduce:transition-none';
 
     return (
@@ -357,14 +359,14 @@ export default function LoanCalculator({ products }: { products: Product[] }) {
                         <section
                             ref={resultsRef}
                             aria-label="Estimate"
-                            className="grid gap-3.5 rounded-2xl bg-brand-red p-5 text-brand-ink shadow-sm min-[901px]:rounded-[14px] min-[901px]:p-6 [&_:focus-visible]:outline-brand-ink"
+                            className="grid gap-3.5 rounded-2xl bg-brand-surface p-5 text-on-brand-surface shadow-sm min-[901px]:rounded-[14px] min-[901px]:p-6 [&_:focus-visible]:outline-on-brand-surface"
                         >
                             <p className="text-xs font-bold tracking-widest uppercase">*Estimated monthly payment</p>
                             <div className="flex flex-wrap items-baseline gap-x-2.5 font-extrabold tabular-nums">
                                 <span className="text-[clamp(32px,11vw,40px)] leading-[1.05] min-[901px]:text-[52px]">{pesoS(e.monthly)}</span>
                                 <small className="text-[15px] font-semibold">{e.term ? `a month for ${e.term} months` : 'Enter a term'}</small>
                             </div>
-                            <div className="flex flex-wrap items-baseline justify-between gap-3 border-y border-brand-ink/20 py-3">
+                            <div className="flex flex-wrap items-baseline justify-between gap-3 border-y border-current/20 py-3">
                                 <div>
                                     <small className="block text-[11px] font-bold tracking-wider uppercase">*Net proceeds</small>
                                     <b className="text-[28px] font-extrabold tabular-nums">{pesoS(e.net)}</b>
@@ -377,15 +379,15 @@ export default function LoanCalculator({ products }: { products: Product[] }) {
                                     aria-label="Breakdown of total repayable"
                                     className="flex h-3.5 overflow-hidden rounded-full bg-white/30"
                                 >
-                                    <i className={`${segCls} bg-brand-ink`} style={seg(e.net)} />
-                                    <i className={`${segCls} bg-white`} style={seg(e.ded)} />
+                                    <i className={`${segCls} ${recv}`} style={seg(e.net)} />
+                                    <i className={`${segCls} ${fees}`} style={seg(e.ded)} />
                                     <i className={`${segCls} bg-brand-yellow`} style={seg(interest)} />
                                 </div>
                                 <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs font-medium">
                                     {(
                                         [
-                                            ['bg-brand-ink', 'You receive', e.net],
-                                            ['bg-white', 'Fees', e.ded],
+                                            [recv, 'You receive', e.net],
+                                            [fees, 'Fees', e.ded],
                                             ['bg-brand-yellow', 'Interest', interest],
                                         ] as const
                                     ).map(([c, l, v]) => (
@@ -430,7 +432,7 @@ export default function LoanCalculator({ products }: { products: Product[] }) {
                             </div>
                             <Link
                                 href={`/loans/transactions?apply=${p.id}&term=${e.term}&amount=${amount}`}
-                                className="flex min-h-12 items-center justify-center rounded-[10px] bg-brand-ink text-[15px] font-bold text-white transition-colors hover:bg-[oklch(.3_.06_24)] focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-white!"
+                                className="flex min-h-12 items-center justify-center rounded-[10px] bg-[oklch(.18_.04_24)] text-[15px] font-bold text-white transition-colors hover:bg-[oklch(.3_.06_24)] focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-white!"
                             >
                                 Apply for this loan
                             </Link>
@@ -455,7 +457,7 @@ export default function LoanCalculator({ products }: { products: Product[] }) {
 
             <div
                 aria-hidden
-                className={`fixed inset-x-0 top-0 z-30 flex items-center justify-between gap-3 bg-brand-red px-4 py-2 text-brand-ink shadow-[0_2px_10px_rgb(0_0_0/.15)] transition-transform duration-200 motion-reduce:transition-none min-[901px]:hidden ${stuck ? 'translate-y-0' : '-translate-y-[110%]'}`}
+                className={`fixed inset-x-0 top-0 z-30 flex items-center justify-between gap-3 bg-brand-surface px-4 py-2 text-on-brand-surface shadow-[0_2px_10px_rgb(0_0_0/.15)] transition-transform duration-200 motion-reduce:transition-none min-[901px]:hidden ${stuck ? 'translate-y-0' : '-translate-y-[110%]'}`}
             >
                 <div>
                     <small className="block text-[10px] font-bold tracking-wider uppercase">Monthly*</small>

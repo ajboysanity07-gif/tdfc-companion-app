@@ -497,7 +497,7 @@ function SidebarMenuButton({
   variant = "default",
   size = "default",
   tooltip,
-  className="data-[active=true]:bg-brand-red data-[active=true]:font-semibold data-[active=true]:text-brand-ink",
+  className="data-[active=true]:bg-brand-surface data-[active=true]:font-semibold data-[active=true]:text-on-brand-surface",
   ...props
 }: React.ComponentProps<"button"> & {
   asChild?: boolean

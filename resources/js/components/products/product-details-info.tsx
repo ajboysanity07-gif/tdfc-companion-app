@@ -204,10 +204,10 @@ export default function ProductDetailsInfo({ product, onChange }: ProductDetails
               minWidth: 45,
               minHeight: 45,
               borderRadius: "50%",
-              bgcolor: "var(--brand-red)",
-              color: "var(--brand-ink)",
+              bgcolor: "var(--brand-surface)",
+              color: "var(--on-brand-surface)",
               p: 0,
-              '&:hover': { bgcolor: "color-mix(in oklch, var(--brand-red) 88%, black)" }
+              '&:hover': { bgcolor: "color-mix(in oklch, var(--brand-surface) 88%, black)" }
             }}
           >
             <svg width="20" height="20" fill="none" viewBox="0 0 24 24" style={{ width: '20px', height: '20px' }}><path d="M8 16L16 8M8 8l8 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
@@ -463,11 +463,11 @@ export default function ProductDetailsInfo({ product, onChange }: ProductDetails
             minWidth: 0,
             width: 60,
             height: 60,
-            bgcolor: "var(--brand-red)",
-            color: "var(--brand-ink)",
+            bgcolor: "var(--brand-surface)",
+            color: "var(--on-brand-surface)",
             borderRadius: "50%",
             boxShadow: 4,
-            '&:hover': { bgcolor: "color-mix(in oklch, var(--brand-red) 88%, black)" }
+            '&:hover': { bgcolor: "color-mix(in oklch, var(--brand-surface) 88%, black)" }
           }}
         >
           <svg fill="currentColor" width="28" height="28" viewBox="0 0 24 24" style={{ width: '28px', height: '28px' }}><path d="M 6 19 c 0 1.1 .9 2 2 2 h 8 c 1.1 0 2 -0.9 2 -2 V 7 H 6 v 12 z m 3.46 -8.12 l 1.41 -1.41 L 12 10.59 l 1.13 -1.12 l 1.41 1.41 L 13.41 12 l 1.12 1.13 l -1.41 1.41 L 12 13.41 l -1.13 1.12 l -1.41 -1.41 L 10.59 12 l -1.13 -1.12 z M 19 4 h-3.5 l -1 -1 h -5 l -1 1 H 5 v 2 h 14 V 4 z"/></svg>

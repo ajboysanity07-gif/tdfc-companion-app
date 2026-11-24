@@ -12,7 +12,7 @@ export default function PrimaryButton({ variant = 'block', className = '', loadi
             {...p}
             disabled={p.disabled || loading}
             aria-busy={loading || undefined}
-            className={`${shape} bg-tdfc-coral font-extrabold tracking-wide text-tdfc-on-coral transition-[color,background-color,transform] hover:bg-[color-mix(in_oklch,var(--brand-red)_88%,black)] active:scale-[0.98] disabled:pointer-events-none disabled:opacity-40 ${focus} ${className}`}
+            className={`${shape} bg-tdfc-coral font-extrabold tracking-wide text-tdfc-on-coral transition-[color,background-color,transform] hover:bg-[color-mix(in_oklch,var(--brand-surface)_88%,black)] active:scale-[0.98] disabled:pointer-events-none disabled:opacity-40 ${focus} ${className}`}
         >
             {loading ? (
                 <span className="inline-flex items-center justify-center gap-2">

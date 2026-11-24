@@ -131,7 +131,7 @@ const PrcIdCropBox: React.FC<Props> = ({
             className={`w-[260px] mx-auto py-2 px-4 text-sm font-semibold rounded-full transition flex items-center justify-center gap-2 ${
               controlsDisabled
                 ? "bg-muted text-muted-foreground cursor-not-allowed"
-                : "bg-brand-red text-brand-ink shadow hover:bg-[color-mix(in_oklch,var(--brand-red)_88%,black)]"
+                : "bg-brand-surface text-on-brand-surface shadow hover:bg-[color-mix(in_oklch,var(--brand-surface)_88%,black)]"
             }`}
             onClick={confirmCropAndAdvance}
           >

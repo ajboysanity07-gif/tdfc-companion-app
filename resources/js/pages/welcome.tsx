@@ -18,7 +18,7 @@ export default function Welcome() {
                         <div className="grid gap-6">
                             <a
                                 href="/register"
-                                className="grid place-items-center rounded-[1.25rem] bg-brand-red py-4 text-2xl font-extrabold text-brand-ink shadow"
+                                className="grid place-items-center rounded-[1.25rem] bg-brand-surface py-4 text-2xl font-extrabold text-on-brand-surface shadow"
                             >
                                 REGISTER
                             </a>
@@ -49,7 +49,7 @@ export default function Welcome() {
                             <div className="grid gap-6">
                                 <a
                                     href="/register"
-                                    className="grid place-items-center rounded-[1.25rem] bg-brand-red py-4 text-xl font-extrabold text-brand-ink shadow transition-transform hover:scale-[1.01] hover:shadow-lg"
+                                    className="grid place-items-center rounded-[1.25rem] bg-brand-surface py-4 text-xl font-extrabold text-on-brand-surface shadow transition-transform hover:scale-[1.01] hover:shadow-lg"
                                 >
                                     REGISTER
                                 </a>

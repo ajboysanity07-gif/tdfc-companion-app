@@ -20,7 +20,7 @@ export default function Error404() {
                     <div className="flex justify-center gap-4">
                         <Link
                             href="/"
-                            className="inline-flex items-center rounded-lg bg-brand-red px-6 py-3 font-medium text-brand-ink transition hover:bg-[color-mix(in_oklch,var(--brand-red)_88%,black)]"
+                            className="inline-flex items-center rounded-lg bg-brand-surface px-6 py-3 font-medium text-on-brand-surface transition hover:bg-[color-mix(in_oklch,var(--brand-surface)_88%,black)]"
                         >
                             Go Home
                         </Link>

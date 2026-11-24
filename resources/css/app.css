@@ -66,6 +66,8 @@
     --color-brand-yellow: var(--brand-yellow);
     --color-brand-blue: var(--brand-blue);
     --color-brand-ink: var(--brand-ink);
+    --color-brand-surface: var(--brand-surface);
+    --color-on-brand-surface: var(--on-brand-surface);
     --color-red-text: var(--red-text);
     --color-red-soft: var(--red-soft);
     --color-yellow-text: var(--yellow-text);
@@ -117,6 +119,8 @@
     --brand-yellow: #f9de7c;
     --brand-blue: #1074df;
     --brand-ink: oklch(0.16 0.03 24);
+    --brand-surface: #cb4a49;
+    --on-brand-surface: #fff;
     --red-text: oklch(0.52 0.16 24);
     --yellow-text: oklch(0.45 0.09 85);
     --blue-text: oklch(0.5 0.19 258);
@@ -162,6 +166,8 @@
     --sidebar-ring: oklch(0.55 0 0);
     --page: oklch(0.145 0 0);
 
+    --brand-surface: #da5655;
+    --on-brand-surface: oklch(0.16 0.03 24);
     --red-text: oklch(0.74 0.14 24);
     --yellow-text: oklch(0.86 0.1 90);
     --blue-text: oklch(0.76 0.12 258);
@@ -201,10 +207,10 @@
 .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 /* Auth screens (login/register) — tokens from design/tdfc.css + design/auth.css */
 @theme {
-    --color-tdfc-coral: var(--brand-red);
+    --color-tdfc-coral: var(--brand-surface);
     --color-tdfc-coral-ink: var(--red-text);
     --color-tdfc-coral-soft: var(--red-soft);
-    --color-tdfc-on-coral: var(--brand-ink);
+    --color-tdfc-on-coral: var(--on-brand-surface);
     --color-tdfc-line: oklch(0.78 0 0);
     --color-tdfc-card-line: oklch(0.9 0 0);
     --color-tdfc-error: var(--destructive);

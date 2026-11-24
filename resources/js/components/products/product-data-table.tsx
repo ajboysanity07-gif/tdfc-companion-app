@@ -79,9 +79,9 @@ export default function ProductDataTable({
           onClick={onAddClick}
           startIcon={<AddIcon />}
           sx={{
-            bgcolor: "var(--brand-red)",
-            color: "var(--brand-ink)",
-            "&:hover": { bgcolor: "color-mix(in oklch, var(--brand-red) 88%, black)" },
+            bgcolor: "var(--brand-surface)",
+            color: "var(--on-brand-surface)",
+            "&:hover": { bgcolor: "color-mix(in oklch, var(--brand-surface) 88%, black)" },
             fontWeight: 700,
             fontSize: "1rem",
             boxShadow: 2,

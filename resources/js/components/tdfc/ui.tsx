@@ -365,7 +365,7 @@ export const btn = {
     base: 'inline-flex h-10 items-center justify-center gap-2 rounded-[10px] border px-4 font-medium transition-[color,background-color,transform] active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50',
     plain: 'border-border bg-card hover:bg-muted',
     dark: 'border-primary bg-primary text-primary-foreground hover:bg-primary/85',
-    coral: 'border-tdfc-coral bg-tdfc-coral font-bold text-tdfc-on-coral hover:bg-[color-mix(in_oklch,var(--brand-red)_88%,black)]',
+    coral: 'border-tdfc-coral bg-tdfc-coral font-bold text-tdfc-on-coral hover:bg-[color-mix(in_oklch,var(--brand-surface)_88%,black)]',
     danger: 'border-destructive bg-destructive text-white hover:bg-destructive/90',
     sm: '!h-8 !px-3 text-[13px]',
 };

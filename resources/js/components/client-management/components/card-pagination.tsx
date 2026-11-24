@@ -31,8 +31,8 @@ const CardPagination: React.FC<CardPaginationProps> = ({
         onClick={() => onChange(page > 1 ? page - 1 : page)}
         style={{
           border: 'none',
-          background: isDarkMode ? 'var(--card)' : 'var(--brand-red)',
-          color: isDarkMode ? 'var(--brand-yellow)' : 'var(--brand-ink)',
+          background: isDarkMode ? 'var(--card)' : 'var(--brand-surface)',
+          color: isDarkMode ? 'var(--brand-yellow)' : 'var(--on-brand-surface)',
           borderRadius: 6,
           marginRight: 8,
           padding: '4px 10px',
@@ -64,8 +64,8 @@ const CardPagination: React.FC<CardPaginationProps> = ({
         onClick={() => onChange(page < count ? page + 1 : page)}
         style={{
           border: 'none',
-          background: isDarkMode ? 'var(--card)' : 'var(--brand-red)',
-          color: isDarkMode ? 'var(--brand-yellow)' : 'var(--brand-ink)',
+          background: isDarkMode ? 'var(--card)' : 'var(--brand-surface)',
+          color: isDarkMode ? 'var(--brand-yellow)' : 'var(--on-brand-surface)',
           borderRadius: 6,
           marginLeft: 8,
           padding: '4px 10px',

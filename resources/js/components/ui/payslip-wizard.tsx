@@ -185,7 +185,7 @@ const PayslipWizard = ({
       <div className="space-y-4 w-full max-w-xs">
         <button
           type="button"
-          className="w-full px-6 py-4 bg-brand-red hover:bg-[color-mix(in_oklch,var(--brand-red)_88%,black)] text-brand-ink rounded-xl font-bold shadow-md transition flex items-center justify-center gap-3"
+          className="w-full px-6 py-4 bg-brand-surface hover:bg-[color-mix(in_oklch,var(--brand-surface)_88%,black)] text-on-brand-surface rounded-xl font-bold shadow-md transition flex items-center justify-center gap-3"
           onClick={() => {
             setMode("upload");
             goToStep(2);
@@ -196,7 +196,7 @@ const PayslipWizard = ({
         </button>
         <button
           type="button"
-          className="w-full px-6 py-4 bg-brand-red hover:bg-[color-mix(in_oklch,var(--brand-red)_88%,black)] text-brand-ink rounded-xl font-bold shadow-md transition flex items-center justify-center gap-3"
+          className="w-full px-6 py-4 bg-brand-surface hover:bg-[color-mix(in_oklch,var(--brand-surface)_88%,black)] text-on-brand-surface rounded-xl font-bold shadow-md transition flex items-center justify-center gap-3"
           onClick={() => {
             setMode("camera");
             goToStep(2);
@@ -317,7 +317,7 @@ const PayslipWizard = ({
                           <button
                             type="button"
                             disabled={!getFinalPreviews().front}
-                            className="w-full py-2 px-4 text-sm font-semibold rounded-card bg-brand-red text-brand-ink shadow transition hover:bg-[color-mix(in_oklch,var(--brand-red)_88%,black)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                            className="w-full py-2 px-4 text-sm font-semibold rounded-card bg-brand-surface text-on-brand-surface shadow transition hover:bg-[color-mix(in_oklch,var(--brand-surface)_88%,black)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                             onClick={() => {
                               const { front } = getFinalFiles();
                               onComplete(front, null);

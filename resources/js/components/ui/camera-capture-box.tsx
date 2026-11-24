@@ -340,7 +340,7 @@ const handleTapToFocus = async (e: React.MouseEvent<HTMLDivElement>) => {
           </button>
           <button
             type="button"
-            className="px-6 py-3 rounded-full bg-brand-red text-brand-ink font-bold shadow-md hover:bg-[color-mix(in_oklch,var(--brand-red)_88%,black)] transition"
+            className="px-6 py-3 rounded-full bg-brand-surface text-on-brand-surface font-bold shadow-md hover:bg-[color-mix(in_oklch,var(--brand-surface)_88%,black)] transition"
             onClick={handleSave}
           >
             Next

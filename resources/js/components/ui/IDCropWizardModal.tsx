@@ -238,7 +238,7 @@ const IDCropWizardModal: React.FC<IDCropWizardModalProps> = ({
           </button>
           <button
             type="button"
-            className="flex-1 px-6 py-3 rounded-lg bg-brand-red text-brand-ink font-bold hover:bg-brand-red/90 disabled:opacity-50 transition-colors"
+            className="flex-1 px-6 py-3 rounded-lg bg-brand-surface text-on-brand-surface font-bold hover:bg-brand-surface/90 disabled:opacity-50 transition-colors"
             onClick={handleCrop}
             disabled={cropping}
           >

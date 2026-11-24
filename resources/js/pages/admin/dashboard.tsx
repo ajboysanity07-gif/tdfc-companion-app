@@ -93,7 +93,7 @@ export default function AdminDashboard() {
                     <Link href="/admin/client-management" className={tile} style={riseStyle(1)}>
                         <Tile icon={<Users className="size-8.5" />} title="Manage Clients" sub="Access client profiles and handle requests efficiently." />
                     </Link>
-                    <button type="button" onClick={() => router.post('/logout')} style={riseStyle(2)} className={`${tile} !border-tdfc-coral !bg-tdfc-coral text-tdfc-on-coral hover:!bg-[color-mix(in_oklch,var(--brand-red)_88%,black)] [&>span:last-child]:!text-brand-ink`}>
+                    <button type="button" onClick={() => router.post('/logout')} style={riseStyle(2)} className={`${tile} !border-tdfc-coral !bg-tdfc-coral text-tdfc-on-coral hover:!bg-[color-mix(in_oklch,var(--brand-surface)_88%,black)] [&>span:last-child]:!text-on-brand-surface`}>
                         <Tile icon={<LogOut className="size-8.5" />} title="Log Out" sub="End your current session securely." className="bg-card/35 text-tdfc-on-coral" />
                     </button>
                 </section>

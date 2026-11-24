@@ -23,7 +23,7 @@ export const ErrorMessage: FC<ErrorMessageProps> = ({
       {onRetry && (
         <button
           onClick={onRetry}
-          className="px-4 py-2 bg-brand-red text-brand-ink rounded-lg hover:bg-[color-mix(in_oklch,var(--brand-red)_88%,black)] transition-colors focus:outline-none focus:ring-2 focus:ring-brand-red focus:ring-offset-2"
+          className="px-4 py-2 bg-brand-surface text-on-brand-surface rounded-lg hover:bg-[color-mix(in_oklch,var(--brand-surface)_88%,black)] transition-colors focus:outline-none focus:ring-2 focus:ring-brand-red focus:ring-offset-2"
         >
           Try Again
         </button>

@@ -28,7 +28,7 @@ export function StepHeading({ children }: { children: React.ReactNode }) {
 }
 
 export const wizBtn =
-    'flex min-h-[52px] w-full items-center justify-center rounded-tdfc-btn bg-tdfc-coral px-4 font-bold text-tdfc-on-coral hover:bg-[color-mix(in_oklch,var(--brand-red)_88%,black)] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-tdfc-coral-ink disabled:opacity-40';
+    'flex min-h-[52px] w-full items-center justify-center rounded-tdfc-btn bg-tdfc-coral px-4 font-bold text-tdfc-on-coral hover:bg-[color-mix(in_oklch,var(--brand-surface)_88%,black)] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-tdfc-coral-ink disabled:opacity-40';
 export const wizSecondary =
     'min-h-11 w-full rounded-full border border-brand-blue bg-blue-soft px-4 font-semibold text-blue-text hover:bg-blue-soft focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-tdfc-coral-ink';
 

@@ -235,7 +235,7 @@ export default function AvatarCropModal({
               <button
                 type="button"
                 onClick={handleUse}
-                className="inline-flex items-center rounded-full bg-brand-red px-5 py-2.5 text-sm font-semibold text-brand-ink hover:opacity-95"
+                className="inline-flex items-center rounded-full bg-brand-surface px-5 py-2.5 text-sm font-semibold text-on-brand-surface hover:opacity-95"
               >
                 Use Photo
               </button>

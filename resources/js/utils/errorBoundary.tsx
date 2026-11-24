@@ -56,7 +56,7 @@ const DefaultErrorFallback: ComponentType<{ error: Error; retry: () => void }> =
         <div className="space-x-4">
             <button
                 onClick={retry}
-                className="rounded-lg bg-brand-red px-4 py-2 text-brand-ink transition-colors hover:bg-[color-mix(in_oklch,var(--brand-red)_88%,black)] focus:ring-2 focus:ring-brand-red focus:ring-offset-2 focus:outline-none"
+                className="rounded-lg bg-brand-surface px-4 py-2 text-on-brand-surface transition-colors hover:bg-[color-mix(in_oklch,var(--brand-surface)_88%,black)] focus:ring-2 focus:ring-brand-red focus:ring-offset-2 focus:outline-none"
             >
                 Try Again
             </button>
