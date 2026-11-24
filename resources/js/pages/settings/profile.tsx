@@ -1,7 +1,7 @@
 import Modal from '@/components/auth/modal';
 import DeleteUser from '@/components/delete-user';
 import EmailModal from '@/components/modals/email-modal';
-import { ClassInfoButton } from '@/components/tdfc/borrower-class';
+import { classReason } from '@/components/tdfc/borrower-class';
 import { btn, peso, Panel } from '@/components/tdfc/ui';
 import AvatarCropModal from '@/components/ui/avatar-crop-modal';
 import AppLayout from '@/layouts/app-layout';
@@ -124,7 +124,6 @@ export default function Profile() {
                         <div className="min-w-[220px] flex-1">
                             <div className="flex flex-wrap items-center gap-2.5">
                                 <h2 className="text-[26px] font-bold">{fullName}</h2>
-                                {loanClass && <span className="inline-flex h-6 items-center rounded-full bg-white px-2.5 text-xs font-semibold text-[#1f4a6b]">Class {loanClass}</span>}
                             </div>
                             <p className="mt-0.5 text-sm break-all">{user.email}</p>
                         </div>
@@ -146,7 +145,9 @@ export default function Profile() {
                             <small className="text-xs font-semibold tracking-[.06em] text-muted-foreground uppercase">Class</small>
                             <b className="mt-1 block text-2xl break-all">{loanClass ?? '—'}</b>
                             <span className="block text-[13px] text-muted-foreground">Your borrower classification.</span>
-                            <ClassInfoButton cls={loanClass} className="mt-2" />
+                            <span className="mt-1.5 block text-xs text-muted-foreground">
+                                {classReason(loanClass)} Your class follows your most overdue loan that still has a balance.
+                            </span>
                         </Panel>
                         <Panel className="px-5 py-4">
                             <small className="text-xs font-semibold tracking-[.06em] text-muted-foreground uppercase">Basic salary</small>

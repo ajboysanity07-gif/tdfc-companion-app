@@ -8,7 +8,7 @@ import { createRoot } from 'react-dom/client';
 import MuiThemeWrapper from './components/mui-theme-wrapper';
 import { AppearanceProvider, initializeTheme } from './hooks/use-appearance'; // ✅ Import AppearanceProvider
 
-const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+const appName = import.meta.env.VITE_APP_NAME || 'TDFC Companion App';
 
 const queryClient = new QueryClient({
     defaultOptions: {

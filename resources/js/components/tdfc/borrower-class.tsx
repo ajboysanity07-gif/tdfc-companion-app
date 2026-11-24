@@ -11,6 +11,9 @@ const CLASSES: Record<string, [string, string]> = {
     D: ['90+ days past maturity', 'A loan you still owe is past maturity by 90 days or more.'],
 };
 
+/** One-line reason for a class, for inline notes. */
+export const classReason = (cls: string | null) => (cls && CLASSES[cls] ? CLASSES[cls][1] : 'No class could be assigned yet.');
+
 export const classTone: Record<string, string> = {
     A: 'bg-[oklch(.42_.12_155)]',
     B: 'bg-[oklch(.42_.13_262)]',
