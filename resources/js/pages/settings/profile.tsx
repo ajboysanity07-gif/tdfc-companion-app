@@ -1,6 +1,7 @@
 import Modal from '@/components/auth/modal';
 import DeleteUser from '@/components/delete-user';
 import EmailModal from '@/components/modals/email-modal';
+import { ClassInfoButton } from '@/components/tdfc/borrower-class';
 import { btn, peso, Panel } from '@/components/tdfc/ui';
 import AvatarCropModal from '@/components/ui/avatar-crop-modal';
 import AppLayout from '@/layouts/app-layout';
@@ -144,7 +145,8 @@ export default function Profile() {
                         <Panel className="px-5 py-4">
                             <small className="text-xs font-semibold tracking-[.06em] text-muted-foreground uppercase">Class</small>
                             <b className="mt-1 block text-2xl break-all">{loanClass ?? '—'}</b>
-                            <span className="text-[13px] text-muted-foreground">Your borrower classification.</span>
+                            <span className="block text-[13px] text-muted-foreground">Your borrower classification.</span>
+                            <ClassInfoButton cls={loanClass} className="mt-2" />
                         </Panel>
                         <Panel className="px-5 py-4">
                             <small className="text-xs font-semibold tracking-[.06em] text-muted-foreground uppercase">Basic salary</small>

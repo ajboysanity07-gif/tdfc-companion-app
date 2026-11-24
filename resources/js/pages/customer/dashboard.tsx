@@ -1,31 +1,24 @@
 import Modal from '@/components/auth/modal';
+import { ClassInfoButton } from '@/components/tdfc/borrower-class';
 import { Badge, Pager, Panel, SkelList, SkelRows, SortTh, btn, fdate, peso, useTable } from '@/components/tdfc/ui';
 import { Skeleton } from '@/components/ui/skeleton';
 import AppLayout from '@/layouts/app-layout';
 import { Head, Link, usePage } from '@inertiajs/react';
-import { Banknote, CreditCard, Info, PiggyBank, UsersRound } from 'lucide-react';
+import { Banknote, CreditCard, PiggyBank, UsersRound } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 
 type Tx = { kind: 'loan' | 'savings'; ref: string; description: string; date: string | null; amount: number; balance: number };
 type Due = { lnnumber: string; description: string; date: string; amount: number };
 type RecentRow = { lnnumber: string; description: string; date: string | null; principal: number; raw_balance: number };
 type PageProps = {
-    auth?: { user?: { name?: string; avatar?: string | null; role?: string | null } | null };
-    member?: { name: string };
+    auth?: { user?: { name?: string; avatar?: string | null; role?: string | null; class?: string | null } | null };
+    member?: { name: string; class?: string | null };
     base?: string;
     [key: string]: unknown;
 };
 
 const firstName = (n: string) => (n.includes(',') ? (n.split(',')[1]?.trim().split(' ')[0] ?? n) : (n.split(' ')[0] ?? n));
 const cap = (s: string) => s.charAt(0) + s.slice(1).toLowerCase();
-
-// ponytail: sample rule set from the mockup (repaid %); swap for the lender's real classification.
-const CLASSES: [string, string, number][] = [
-    ['A', 'Prime', 75],
-    ['B', 'Standard', 40],
-    ['C', 'Watch', 0],
-];
-const classTone: Record<string, string> = { A: 'bg-[oklch(.42_.12_155)]', B: 'bg-[oklch(.42_.13_262)]', C: 'bg-[oklch(.45_.12_55)]' };
 
 const QUICK = [
     { label: 'Loan Apply', icon: Banknote, href: '/loans/calculator' },
@@ -92,7 +85,6 @@ export default function Dashboard() {
     const [error, setError] = useState<string | null>(null);
     const [tick, setTick] = useState(0);
     const [soon, setSoon] = useState<string | null>(null);
-    const [showClass, setShowClass] = useState(false);
 
     useEffect(() => {
         let alive = true;
@@ -132,23 +124,9 @@ export default function Dashboard() {
         return { loans, active, savings, out, paid, pct, next, fullyPaid: loans.length - active.length };
     }, [rows, dues]);
 
-    const cls = CLASSES.find((c) => s.pct >= c[2]) ?? CLASSES[2];
+    const cls = member ? member.class : auth?.user?.class;
     const t = useTable(txs, { key: 'date' }, (r, k) => (k === 'amount' ? r.amount : k === 'balance' ? r.balance : String((r as never)[k] ?? '')));
     const savingsText = s.savings.toLocaleString('en-PH', { minimumFractionDigits: 2 });
-
-    const ClassBtn = () =>
-        s.loans.length ? (
-            <button
-                type="button"
-                onClick={() => setShowClass(true)}
-                aria-haspopup="dialog"
-                aria-label="Borrower class: why this class?"
-                className={`mt-2.5 inline-flex min-h-9 items-center gap-2 rounded-full pr-3 pl-3.5 text-[13px] font-bold text-white ${classTone[cls[0]]}`}
-            >
-                Class {cls[0]}
-                <Info className="size-4.5" aria-hidden />
-            </button>
-        ) : null;
 
     return (
         <AppLayout breadcrumbs={[{ title: 'Dashboard', href: `${base}/dashboard` }]}>
@@ -165,7 +143,7 @@ export default function Dashboard() {
                                     {role}
                                 </p>
                                 <div>
-                                    <ClassBtn />
+                                    <ClassInfoButton cls={cls} className="mt-2.5" />
                                 </div>
                             </div>
                             <div
@@ -261,7 +239,7 @@ export default function Dashboard() {
                         <div>
                             <p className="text-sm text-muted-foreground">Welcome,</p>
                             <h1 className="mt-0.5 text-[26px] font-extrabold tracking-[.01em]">{fullName.toUpperCase()}</h1>
-                            <ClassBtn />
+                            <ClassInfoButton cls={cls} className="mt-2.5" />
                         </div>
                         <div className="flex gap-2.5">
                             {quick.slice(0, 2).map((q) => {
@@ -419,41 +397,6 @@ export default function Dashboard() {
                 </section>
             </div>
 
-            <Modal open={showClass} onClose={() => setShowClass(false)} label="Borrower class">
-                <div className="text-center">
-                    <h3 className="text-lg font-semibold">
-                        Class {cls[0]} · {cls[1]} borrower
-                    </h3>
-                    <p className="mt-1.5 text-muted-foreground">Your class is based on how much of your borrowed amount you have repaid.</p>
-                    <ul className="mt-4 grid gap-2.5 text-left text-sm">
-                        {[
-                            `You have repaid ${s.pct.toFixed(0)}% of ${peso(s.paid + s.out)} borrowed across all loans.`,
-                            `${s.fullyPaid} of ${s.loans.length} loans are fully paid; ${s.active.length} remain active.`,
-                            `Class ${cls[0]} applies at ${cls[2] ? `${cls[2]}% repaid or more.` : `under ${CLASSES[1][2]}% repaid.`}`,
-                        ].map((x) => (
-                            <li key={x} className="flex gap-2.5">
-                                <i className="mt-2 size-2 flex-none rounded-full bg-tdfc-coral-ink" />
-                                {x}
-                            </li>
-                        ))}
-                    </ul>
-                    <div className="mt-4 flex gap-1.5 text-left text-xs">
-                        {CLASSES.map((c) => (
-                            <div
-                                key={c[0]}
-                                className={`flex-1 rounded-[10px] border p-2 ${c === cls ? `${classTone[c[0]]} border-transparent text-white` : 'border-border text-muted-foreground'}`}
-                            >
-                                <b>Class {c[0]}</b>
-                                <br />
-                                {c[2] ? `${c[2]}%+ repaid` : `Below ${CLASSES[1][2]}%`}
-                            </div>
-                        ))}
-                    </div>
-                    <button onClick={() => setShowClass(false)} className={`${btn.base} ${btn.dark} mt-5`}>
-                        Got it
-                    </button>
-                </div>
-            </Modal>
             <Modal open={!!soon} onClose={() => setSoon(null)} label="Coming soon">
                 <div className="text-center">
                     <h3 className="text-lg font-semibold">Coming soon</h3>

@@ -83,7 +83,7 @@ class AppUser extends AuthenticatableUser
         $member = $request->route('user') !== null ? static::subject($request) : null;
 
         return $member
-            ? ['base' => '/admin/clients/'.$member->user_id, 'member' => ['name' => $member->name, 'acctno' => $member->acctno]]
+            ? ['base' => '/admin/clients/'.$member->user_id, 'member' => ['name' => $member->name, 'acctno' => $member->acctno, 'class' => \App\Services\BorrowerClass::for($member->acctno)]]
             : [];
     }
 
