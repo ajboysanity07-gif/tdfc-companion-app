@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { MotionConfig } from 'framer-motion';
 import { createRoot } from 'react-dom/client';
+import { Toaster } from './components/tdfc/ui';
 import MuiThemeWrapper from './components/mui-theme-wrapper';
 import { AppearanceProvider, initializeTheme } from './hooks/use-appearance'; // ✅ Import AppearanceProvider
 
@@ -48,6 +49,7 @@ createInertiaApp({
                         <MotionConfig reducedMotion="user">
                             <App {...props} />
                         </MotionConfig>
+                        <Toaster />
                         {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
                     </MuiThemeWrapper>
                 </AppearanceProvider>

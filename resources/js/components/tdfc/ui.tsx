@@ -1,5 +1,6 @@
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
+import { router } from '@inertiajs/react';
 import { animate, motion, useReducedMotion } from 'framer-motion';
 import { CSSProperties, ImgHTMLAttributes, ReactNode, useEffect, useId, useMemo, useRef, useState } from 'react';
 
@@ -353,22 +354,65 @@ export function Drawer({
     );
 }
 
-export function useToast() {
-    const [msg, setMsg] = useState<string | null>(null);
+type ToastItem = { id: number; msg: string; variant: 'success' | 'error' };
+let toasts: ToastItem[] = [];
+let toastId = 0;
+const toastListeners = new Set<() => void>();
+const emitToasts = () => toastListeners.forEach((l) => l());
+
+/** Global toast. Call from anywhere; <Toaster /> (mounted once in app.tsx) renders it. */
+export function showToast(msg: string, variant: ToastItem['variant'] = 'success') {
+    const id = ++toastId;
+    toasts = [...toasts, { id, msg, variant }];
+    emitToasts();
+    setTimeout(
+        () => {
+            toasts = toasts.filter((t) => t.id !== id);
+            emitToasts();
+        },
+        variant === 'error' ? 5000 : 3000,
+    );
+}
+
+export function Toaster() {
+    const [items, setItems] = useState(toasts);
     useEffect(() => {
-        if (!msg) return;
-        const t = setTimeout(() => setMsg(null), 3000);
-        return () => clearTimeout(t);
-    }, [msg]);
-    const toast = msg ? (
-        <div
-            role="status"
-            className="fixed bottom-20 left-1/2 z-[60] -translate-x-1/2 animate-tdfc-rise rounded-xl bg-primary px-4 py-2.5 text-sm text-primary-foreground shadow-tdfc-modal md:bottom-6"
-        >
-            {msg}
+        const l = () => setItems(toasts);
+        toastListeners.add(l);
+        return () => void toastListeners.delete(l);
+    }, []);
+    // Backend flashes (->with('success'|'error', ...)) arrive in page props on every Inertia visit.
+    useEffect(
+        () =>
+            router.on('success', (e) => {
+                const f = (e.detail.page.props as { flash?: { success?: string; error?: string } }).flash;
+                if (f?.success) showToast(f.success);
+                if (f?.error) showToast(f.error, 'error');
+            }),
+        [],
+    );
+    if (!items.length) return null;
+    return (
+        <div className="pointer-events-none fixed bottom-20 left-1/2 z-[60] flex -translate-x-1/2 flex-col items-center gap-2 md:bottom-6">
+            {items.map((t) => (
+                <div
+                    key={t.id}
+                    role={t.variant === 'error' ? 'alert' : 'status'}
+                    className={cn(
+                        'animate-tdfc-rise rounded-xl px-4 py-2.5 text-sm shadow-tdfc-modal',
+                        t.variant === 'error' ? 'bg-destructive text-white' : 'bg-primary text-primary-foreground',
+                    )}
+                >
+                    {t.msg}
+                </div>
+            ))}
         </div>
-    ) : null;
-    return { show: setMsg, toast };
+    );
+}
+
+/** Kept for existing pages: `show(msg, variant?)`; rendering is handled by the global <Toaster />. */
+export function useToast() {
+    return { show: showToast, toast: null };
 }
 
 export const btn = {

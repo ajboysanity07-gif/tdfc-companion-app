@@ -1,5 +1,5 @@
 import InputError from '@/components/input-error';
-import { BtnSpinner } from '@/components/tdfc/ui';
+import { BtnSpinner, showToast } from '@/components/tdfc/ui';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -62,6 +62,7 @@ export default function Password() {
                         onSuccess={() => {
                             setPw('');
                             setCf('');
+                            showToast('Password updated');
                         }}
                         onError={(errors) => {
                             if (errors.password) passwordInput.current?.focus();

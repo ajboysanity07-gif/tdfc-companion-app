@@ -1,3 +1,4 @@
+import { showToast } from '@/components/tdfc/ui';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,6 +19,7 @@ export default function EmailModal({ currentEmail, onClose }: EmailModalProps) {
 
     useEffect(() => {
         if (recentlySuccessful) {
+            showToast('Email updated');
             const timer = setTimeout(() => {
                 onClose();
             }, 1500);

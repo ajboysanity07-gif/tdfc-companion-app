@@ -71,20 +71,18 @@ export default function ClientManagement({ pendingUsers, rejectionReasons }: Pro
         </th>
     );
 
-    const go = (url: string, data: Record<string, string[]>, msg: string, then?: () => void) => {
+    const go = (url: string, data: Record<string, string[]>, then?: () => void) => {
         setBusy(true);
         router.post(url, data, {
             preserveScroll: true,
-            onSuccess: () => {
-                show(msg);
-                then?.();
-            },
+            // success/error text comes from the backend flash (global <Toaster />)
+            onSuccess: () => then?.(),
             onFinish: () => setBusy(false),
         });
     };
-    const approve = (u: PendingUser) => go(route('admin.client-management.approve', u.user_id), {}, `${u.name} approved`, () => setTab('approved'));
+    const approve = (u: PendingUser) => go(route('admin.client-management.approve', u.user_id), {}, () => setTab('approved'));
     const reject = (u: PendingUser) =>
-        go(route('admin.client-management.reject', u.user_id), { reasons: picked }, `${u.name} rejected`, () => {
+        go(route('admin.client-management.reject', u.user_id), { reasons: picked }, () => {
             setRejecting(false);
             setTab('rejected');
         });
@@ -98,7 +96,7 @@ export default function ClientManagement({ pendingUsers, rejectionReasons }: Pro
             show(`Salary updated for ${salaryFor.name}`);
             setSalaryFor(null);
         } catch {
-            show('Failed to save salary');
+            show('Failed to save salary', 'error');
         } finally {
             setBusy(false);
         }

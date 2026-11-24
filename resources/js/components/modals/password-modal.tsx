@@ -1,3 +1,4 @@
+import { showToast } from '@/components/tdfc/ui';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,6 +28,7 @@ export default function PasswordModal({ onClose }: PasswordModalProps) {
     // Close modal when form submission is successful
     useEffect(() => {
         if (recentlySuccessful) {
+            showToast('Password updated');
             const timer = setTimeout(() => {
                 onClose();
             }, 1500);

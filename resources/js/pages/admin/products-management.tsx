@@ -476,7 +476,7 @@ export default function ProductsManagement() {
             show(`${body.lntype ?? p.lntype ?? code} ${isNew ? 'added' : 'updated'}`);
         } catch (e) {
             const errs = axios.isAxiosError(e) ? (Object.values(e.response?.data?.errors ?? {})[0] as string[] | undefined) : undefined;
-            show(errs?.[0] ?? (axios.isAxiosError(e) ? (e.response?.data?.message ?? 'Save failed') : 'Save failed'));
+            show(errs?.[0] ?? (axios.isAxiosError(e) ? (e.response?.data?.message ?? 'Save failed') : 'Save failed'), 'error');
         }
     };
     const remove = async (p: Product) => {
