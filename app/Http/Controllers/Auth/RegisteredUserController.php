@@ -48,7 +48,9 @@ class RegisteredUserController extends Controller
             ] as $input => $column
         ) {
             if ($request->hasFile($input)) {
-                $paths[$column] = $request->file($input)->storePublicly('uploads', ['disk' => 'public']);
+                // Avatar is resolved from avatar_disk (see HandleInertiaRequests); ID/payslip are read from /storage (public).
+                $disk = $input === 'profile_picture' ? config('filesystems.avatar_disk') : 'public';
+                $paths[$column] = $request->file($input)->storePublicly('uploads', ['disk' => $disk]);
             }
         }
 
