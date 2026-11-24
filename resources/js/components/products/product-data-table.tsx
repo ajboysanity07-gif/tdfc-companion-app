@@ -79,8 +79,9 @@ export default function ProductDataTable({
           onClick={onAddClick}
           startIcon={<AddIcon />}
           sx={{
-            bgcolor: "#f57373",
-            "&:hover": { bgcolor: "#f25d5d" },
+            bgcolor: "var(--brand-red)",
+            color: "var(--brand-ink)",
+            "&:hover": { bgcolor: "color-mix(in oklch, var(--brand-red) 88%, black)" },
             fontWeight: 700,
             fontSize: "1rem",
             boxShadow: 2,
@@ -92,13 +93,13 @@ export default function ProductDataTable({
           Add Loan
         </Button>
         <div className="relative flex-1">
-          <span className="absolute left-3 top-2 text-gray-400 pointer-events-none">
+          <span className="absolute left-3 top-2 text-muted-foreground pointer-events-none">
             <svg width={20} height={20} fill="none" viewBox="0 0 24 24">
               <path stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 10A7 7 0 1 1 3 10a7 7 0 0 1 14 0z" />
             </svg>
           </span>
           <input
-            className="w-full border border-gray-300 text-gray-700 rounded-md pl-10 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#f57373] bg-[#fafafb]"
+            className="w-full border border-input text-foreground rounded-md pl-10 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-red bg-background"
             placeholder="Search loan type..."
             value={search}
             onChange={e => setSearch(e.target.value)}
@@ -125,8 +126,8 @@ export default function ProductDataTable({
             boxShadow: 1,
             bgcolor: theme.palette.background.paper,
             '& .MuiDataGrid-columnHeaders': {
-              backgroundColor: "#fff4f4",
-              color: "#f57373",
+              backgroundColor: "var(--red-soft)",
+              color: "var(--red-text)",
               fontWeight: 600,
               fontSize: "1.08rem",
               borderRadius: 0,
@@ -137,7 +138,7 @@ export default function ProductDataTable({
               borderBottom: "1px solid #f5e8e8",
             },
             '& .MuiDataGrid-row.Mui-selected, & .MuiDataGrid-row.Mui-selected:hover': {
-              backgroundColor: "#fff0f0",
+              backgroundColor: "var(--red-soft)",
               color: theme.palette.primary.main,
             },
             '& .MuiDataGrid-root': {

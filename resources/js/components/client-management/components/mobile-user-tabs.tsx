@@ -44,9 +44,9 @@ interface Props {
 }
 
 const USER_TABS = [
-  { label: 'Registered', color: '#F57979' },
-  { label: 'Pending', color: '#F57979' },
-  { label: 'Rejected', color: '#4C92F1' }
+  { label: 'Registered', color: 'var(--red-text)' },
+  { label: 'Pending', color: 'var(--red-text)' },
+  { label: 'Rejected', color: 'var(--blue-text)' }
 ];
 
 export default function MobileUserTabs(props: Props) {
@@ -102,7 +102,7 @@ export default function MobileUserTabs(props: Props) {
         {tab === 0 && (
           <UserListCard
             title="REGISTERED USERS"
-            titleColor="#F57979"
+            titleColor="var(--red-text)"
             userCount={props.registeredUsers.length}
             // Card content is flex to allow pushing pagination to bottom
             sx={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 320 }}
@@ -135,7 +135,7 @@ export default function MobileUserTabs(props: Props) {
         {tab === 1 && (
           <UserListCard
             title="PENDING APPROVAL"
-            titleColor="#F57979"
+            titleColor="var(--red-text)"
             userCount={props.forApprovalUsers.length}
             sx={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 320 }}
           >
@@ -167,7 +167,7 @@ export default function MobileUserTabs(props: Props) {
         {tab === 2 && (
           <UserListCard
             title="REJECTED USERS"
-            titleColor="#4C92F1"
+            titleColor="var(--blue-text)"
             userCount={props.rejectedUsers.length}
             sx={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 320 }}
           >

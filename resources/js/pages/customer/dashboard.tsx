@@ -63,7 +63,7 @@ function Status({
         );
     if (error)
         return (
-            <div role="alert" className="px-4 py-10 text-center text-tdfc-error">
+            <div role="alert" className="px-4 py-10 text-center text-destructive">
                 <p className="mb-3 font-semibold">{error}</p>
                 <button onClick={retry} className={`${btn.base} ${btn.coral}`}>
                     Try Again
@@ -286,7 +286,7 @@ export default function Dashboard() {
                         return (
                             <section
                                 aria-label="Next payment due"
-                                className={`flex flex-wrap items-center justify-between gap-5 rounded-[14px] border px-6 py-5 shadow-xs xl:col-span-12 ${late ? 'border-tdfc-coral bg-[color-mix(in_oklch,var(--color-tdfc-coral)_14%,white)]' : 'border-border bg-card'}`}
+                                className={`flex flex-wrap items-center justify-between gap-5 rounded-[14px] border px-6 py-5 shadow-xs xl:col-span-12 ${late ? 'border-tdfc-coral bg-red-soft' : 'border-border bg-card'}`}
                             >
                                 {s.next ? (
                                     <>

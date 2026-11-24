@@ -520,7 +520,7 @@ export default function ProductsManagement() {
                                         type="button"
                                         aria-pressed={flt === v}
                                         onClick={() => setFlt(v)}
-                                        className={`inline-flex h-9.5 items-center gap-2 rounded-full border px-3.5 font-semibold max-[720px]:px-3 ${flt === v ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-white text-muted-foreground hover:bg-muted'}`}
+                                        className={`inline-flex h-9.5 items-center gap-2 rounded-full border px-3.5 font-semibold max-[720px]:px-3 ${flt === v ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-card text-muted-foreground hover:bg-muted'}`}
                                     >
                                         {l}
                                         <span className="grid h-5.5 min-w-5.5 place-items-center rounded-full bg-current/15 px-1.5 text-xs">{n}</span>

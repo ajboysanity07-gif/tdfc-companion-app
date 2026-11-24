@@ -113,9 +113,9 @@ export default function ProductDetailsInfo({ product, onChange }: ProductDetails
             onChange={e => handleChange('ln_isActive', e.target.checked)}
             sx={{
               '& .MuiSwitch-switchBase': { color: theme.palette.grey[400] },
-              '& .MuiSwitch-switchBase.Mui-checked': { color: '#34C759' },
+              '& .MuiSwitch-switchBase.Mui-checked': { color: 'var(--success)' },
               '& .MuiSwitch-track': { backgroundColor: theme.palette.grey[300] },
-              '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: '#34C75966' }
+              '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: 'color-mix(in oklch, var(--success) 40%, transparent)' }
             }}
           />
         </Box>
@@ -127,7 +127,7 @@ export default function ProductDetailsInfo({ product, onChange }: ProductDetails
               fontWeight: 500,
               fontSize: 13,
               textAlign: "left",
-              color: "#75767f",
+              color: "var(--muted-foreground)",
               mb: 1,
             }}
           >Type Relation Tags:</Typography>
@@ -146,7 +146,7 @@ export default function ProductDetailsInfo({ product, onChange }: ProductDetails
                 variant="outlined"
                 size="small"
                 sx={{
-                  bgcolor: "#fff",
+                  bgcolor: "var(--card)",
                   borderRadius: 1,
                   input: { fontSize: 13 },
                   minWidth: { xs: '100%', md: 300 }
@@ -173,7 +173,7 @@ export default function ProductDetailsInfo({ product, onChange }: ProductDetails
               })
             }
             sx={{
-              bgcolor: "#fafafa",
+              bgcolor: "var(--muted)",
               borderRadius: 1,
               my: 0
             }}
@@ -191,10 +191,10 @@ export default function ProductDetailsInfo({ product, onChange }: ProductDetails
               minWidth: 45,
               minHeight: 45,
               borderRadius: "50%",
-              bgcolor: "#34C759",
+              bgcolor: "var(--success)",
               color: "#fff",
               p: 0,
-              '&:hover': { bgcolor: "#2EBE50" }
+              '&:hover': { bgcolor: "color-mix(in oklch, var(--success) 88%, black)" }
             }}
           >
             <svg width="24" height="24" fill="none" viewBox="0 0 24 24" style={{ width: '24px', height: '24px' }}><path d="M12 4v16m8-8H4" stroke="#fff" strokeWidth="2" strokeLinecap="round" /></svg>
@@ -204,13 +204,13 @@ export default function ProductDetailsInfo({ product, onChange }: ProductDetails
               minWidth: 45,
               minHeight: 45,
               borderRadius: "50%",
-              bgcolor: "#F57373",
-              color: "#fff",
+              bgcolor: "var(--brand-red)",
+              color: "var(--brand-ink)",
               p: 0,
-              '&:hover': { bgcolor: "#f25d5d" }
+              '&:hover': { bgcolor: "color-mix(in oklch, var(--brand-red) 88%, black)" }
             }}
           >
-            <svg width="20" height="20" fill="none" viewBox="0 0 24 24" style={{ width: '20px', height: '20px' }}><path d="M8 16L16 8M8 8l8 8" stroke="#fff" strokeWidth="2" strokeLinecap="round" /></svg>
+            <svg width="20" height="20" fill="none" viewBox="0 0 24 24" style={{ width: '20px', height: '20px' }}><path d="M8 16L16 8M8 8l8 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
           </Button>
         </Stack>
       </Stack>
@@ -241,9 +241,9 @@ export default function ProductDetailsInfo({ product, onChange }: ProductDetails
               onChange={e => handleChange('allow_multiple', e.target.checked)}
               sx={{
                 '& .MuiSwitch-switchBase': { color: theme.palette.grey[400] },
-                '& .MuiSwitch-switchBase.Mui-checked': { color: '#34C759' },
+                '& .MuiSwitch-switchBase.Mui-checked': { color: 'var(--success)' },
                 '& .MuiSwitch-track': { backgroundColor: theme.palette.grey[300] },
-                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: '#34C75966' }
+                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: 'color-mix(in oklch, var(--success) 40%, transparent)' }
               }}
             />
           </Stack>
@@ -274,9 +274,9 @@ export default function ProductDetailsInfo({ product, onChange }: ProductDetails
               onChange={e => handleChange('rate_isEditable', e.target.checked)}
               sx={{
                 '& .MuiSwitch-switchBase': { color: theme.palette.grey[400] },
-                '& .MuiSwitch-switchBase.Mui-checked': { color: '#34C759' },
+                '& .MuiSwitch-switchBase.Mui-checked': { color: 'var(--success)' },
                 '& .MuiSwitch-track': { backgroundColor: theme.palette.grey[300] },
-                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: '#34C75966' }
+                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: 'color-mix(in oklch, var(--success) 40%, transparent)' }
               }}
             />
           </Stack>
@@ -313,9 +313,9 @@ export default function ProductDetailsInfo({ product, onChange }: ProductDetails
               onChange={e => handleChange('max_term_isEditable', e.target.checked)}
               sx={{
                 '& .MuiSwitch-switchBase': { color: theme.palette.grey[400] },
-                '& .MuiSwitch-switchBase.Mui-checked': { color: '#34C759' },
+                '& .MuiSwitch-switchBase.Mui-checked': { color: 'var(--success)' },
                 '& .MuiSwitch-track': { backgroundColor: theme.palette.grey[300] },
-                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: '#34C75966' }
+                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: 'color-mix(in oklch, var(--success) 40%, transparent)' }
               }}
             />
           </Stack>
@@ -342,9 +342,9 @@ export default function ProductDetailsInfo({ product, onChange }: ProductDetails
               onChange={e => handleChange('max_amortization_isEditable', e.target.checked)}
               sx={{
                 '& .MuiSwitch-switchBase': { color: theme.palette.grey[400] },
-                '& .MuiSwitch-switchBase.Mui-checked': { color: '#34C759' },
+                '& .MuiSwitch-switchBase.Mui-checked': { color: 'var(--success)' },
                 '& .MuiSwitch-track': { backgroundColor: theme.palette.grey[300] },
-                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: '#34C75966' }
+                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: 'color-mix(in oklch, var(--success) 40%, transparent)' }
               }}
             />
           </Stack>
@@ -407,7 +407,7 @@ export default function ProductDetailsInfo({ product, onChange }: ProductDetails
             fontWeight: 600,
             fontSize: 15,
             letterSpacing: 0.5,
-            color: "#73778f",
+            color: "var(--muted-foreground)",
           }}
         >TERMS/INFORMATION FOR CLIENTS:</Typography>
         <TextField
@@ -418,7 +418,7 @@ export default function ProductDetailsInfo({ product, onChange }: ProductDetails
           onChange={e => handleChange('terms_and_info', e.target.value)}
           sx={{
             width: "100%",
-            background: "#fff",
+            background: "var(--card)",
             borderRadius: 2,
             boxShadow: theme.shadows[1],
             '& .MuiOutlinedInput-root': {
@@ -463,14 +463,14 @@ export default function ProductDetailsInfo({ product, onChange }: ProductDetails
             minWidth: 0,
             width: 60,
             height: 60,
-            bgcolor: "#f57373",
-            color: "#fff",
+            bgcolor: "var(--brand-red)",
+            color: "var(--brand-ink)",
             borderRadius: "50%",
             boxShadow: 4,
-            '&:hover': { bgcolor: "#d95353" }
+            '&:hover': { bgcolor: "color-mix(in oklch, var(--brand-red) 88%, black)" }
           }}
         >
-          <svg fill="#fff" width="28" height="28" viewBox="0 0 24 24" style={{ width: '28px', height: '28px' }}><path d="M 6 19 c 0 1.1 .9 2 2 2 h 8 c 1.1 0 2 -0.9 2 -2 V 7 H 6 v 12 z m 3.46 -8.12 l 1.41 -1.41 L 12 10.59 l 1.13 -1.12 l 1.41 1.41 L 13.41 12 l 1.12 1.13 l -1.41 1.41 L 12 13.41 l -1.13 1.12 l -1.41 -1.41 L 10.59 12 l -1.13 -1.12 z M 19 4 h-3.5 l -1 -1 h -5 l -1 1 H 5 v 2 h 14 V 4 z"/></svg>
+          <svg fill="currentColor" width="28" height="28" viewBox="0 0 24 24" style={{ width: '28px', height: '28px' }}><path d="M 6 19 c 0 1.1 .9 2 2 2 h 8 c 1.1 0 2 -0.9 2 -2 V 7 H 6 v 12 z m 3.46 -8.12 l 1.41 -1.41 L 12 10.59 l 1.13 -1.12 l 1.41 1.41 L 13.41 12 l 1.12 1.13 l -1.41 1.41 L 12 13.41 l -1.13 1.12 l -1.41 -1.41 L 10.59 12 l -1.13 -1.12 z M 19 4 h-3.5 l -1 -1 h -5 l -1 1 H 5 v 2 h 14 V 4 z"/></svg>
         </Button>
       </Box>
     </Box>

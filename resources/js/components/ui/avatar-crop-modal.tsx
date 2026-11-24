@@ -144,15 +144,15 @@ export default function AvatarCropModal({
 
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 backdrop-blur-xl p-3 sm:p-4">
-      <div className="w-full max-w-2xl overflow-hidden rounded-2xl bg-white shadow-2xl">
+      <div className="w-full max-w-2xl overflow-hidden rounded-2xl bg-card shadow-2xl">
         <div className="flex items-center justify-between px-4 pt-3 pb-2">
-          <div className="text-left text-[15px] font-semibold text-black/40">Crop your photo</div>
+          <div className="text-left text-[15px] font-semibold text-foreground/40">Crop your photo</div>
           <div className="flex items-center gap-2">
             <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="inline-flex items-center rounded-full border border-gray-300 bg-white px-3 py-1.5 text-xs font-semibold text-black/80 hover:bg-black/5"
+              className="inline-flex items-center rounded-full border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground/80 hover:bg-foreground/5"
             >
               Change Photo
             </button>
@@ -184,7 +184,7 @@ export default function AvatarCropModal({
         </div>
         <div className="flex flex-col gap-4 px-4 pb-4 pt-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex w-full items-center gap-3 sm:max-w-md">
-            <label htmlFor="avatar-zoom" className="whitespace-nowrap text-sm font-medium text-black/70">
+            <label htmlFor="avatar-zoom" className="whitespace-nowrap text-sm font-medium text-foreground/70">
               Zoom
             </label>
             <input
@@ -195,11 +195,11 @@ export default function AvatarCropModal({
               step={0.05}
               value={zoom}
               onChange={(e) => setZoom(parseFloat(e.target.value))}
-              className="w-full accent-[#3B82F6]"
+              className="w-full accent-brand-blue"
               aria-label="Zoom"
             />
-            <span className="w-12 text-right text-xs tabular-nums text-black/50">{zoom.toFixed(2)}×</span>
-            <button type="button" onClick={handleReset} className="text-xs font-semibold text-black/70 underline-offset-2 hover:underline">
+            <span className="w-12 text-right text-xs tabular-nums text-foreground/50">{zoom.toFixed(2)}×</span>
+            <button type="button" onClick={handleReset} className="text-xs font-semibold text-foreground/70 underline-offset-2 hover:underline">
               Reset
             </button>
           </div>
@@ -207,7 +207,7 @@ export default function AvatarCropModal({
             <button
               type="button"
               onClick={handleCancel}
-              className="inline-flex items-center rounded-full border border-gray-300 bg-white px-5 py-2.5 text-sm font-semibold text-black/80 hover:bg-black/5"
+              className="inline-flex items-center rounded-full border border-border bg-card px-5 py-2.5 text-sm font-semibold text-foreground/80 hover:bg-foreground/5"
             >
               Close
             </button>
@@ -216,7 +216,7 @@ export default function AvatarCropModal({
                 type="button"
                 onClick={handleUploadPhoto}
                 disabled={isUploading}
-                className="inline-flex items-center rounded-full bg-[#3B82F6] px-5 py-2.5 text-sm font-semibold text-white hover:opacity-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex items-center rounded-full bg-brand-blue px-5 py-2.5 text-sm font-semibold text-white hover:opacity-95 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isUploading ? (
                   <>
@@ -235,7 +235,7 @@ export default function AvatarCropModal({
               <button
                 type="button"
                 onClick={handleUse}
-                className="inline-flex items-center rounded-full bg-[#F57979] px-5 py-2.5 text-sm font-semibold text-white hover:opacity-95"
+                className="inline-flex items-center rounded-full bg-brand-red px-5 py-2.5 text-sm font-semibold text-brand-ink hover:opacity-95"
               >
                 Use Photo
               </button>

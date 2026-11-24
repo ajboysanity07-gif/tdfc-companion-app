@@ -61,10 +61,10 @@ export default function DocumentCropModal({
 
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 backdrop-blur-xl p-3 sm:p-4">
-      <div className="w-full max-w-3xl overflow-hidden rounded-2xl bg-white shadow-2xl">
+      <div className="w-full max-w-3xl overflow-hidden rounded-2xl bg-card shadow-2xl">
         {/* Header with Change Photo */}
         <div className="flex items-center justify-between px-4 pt-3 pb-2">
-          <div className="text-left text-[15px] font-semibold text-black/40">
+          <div className="text-left text-[15px] font-semibold text-foreground/40">
             Fit your PRC ID inside the crop
           </div>
           <div className="flex items-center gap-2">
@@ -72,7 +72,7 @@ export default function DocumentCropModal({
             <button
               type="button"
               onClick={openChooser}
-              className="inline-flex items-center rounded-full border border-gray-300 bg-white px-3 py-1.5 text-xs font-semibold text-black/80 hover:bg-black/5"
+              className="inline-flex items-center rounded-full border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground/80 hover:bg-foreground/5"
             >
               Change Photo
             </button>
@@ -100,7 +100,7 @@ export default function DocumentCropModal({
         <div className="flex flex-col gap-4 px-4 pb-4 pt-3 sm:flex-row sm:items-center sm:justify-between">
           {/* Zoom slider */}
           <div className="flex w-full items-center gap-3 sm:max-w-md">
-            <label htmlFor="doc-zoom" className="whitespace-nowrap text-sm font-medium text-black/70">
+            <label htmlFor="doc-zoom" className="whitespace-nowrap text-sm font-medium text-foreground/70">
               Zoom
             </label>
             <input
@@ -111,24 +111,24 @@ export default function DocumentCropModal({
               step={0.05}
               value={zoom}
               onChange={(e) => setZoom(parseFloat(e.target.value))}
-              className="w-full accent-[#3B82F6]"
+              className="w-full accent-brand-blue"
               aria-label="Zoom"
             />
-            <span className="w-12 text-right text-xs tabular-nums text-black/50">{zoom.toFixed(2)}×</span>
+            <span className="w-12 text-right text-xs tabular-nums text-foreground/50">{zoom.toFixed(2)}×</span>
           </div>
 
           <div className="flex w-full items-center justify-end gap-3">
             <button
               type="button"
               onClick={onCancel}
-              className="inline-flex items-center rounded-full border border-gray-300 bg-white px-5 py-2.5 text-sm font-semibold text-black/80 hover:bg-black/5"
+              className="inline-flex items-center rounded-full border border-border bg-card px-5 py-2.5 text-sm font-semibold text-foreground/80 hover:bg-foreground/5"
             >
               Cancel
             </button>
             <button
               type="button"
               onClick={handleUse}
-              className="inline-flex items-center rounded-full bg-[#F57979] px-5 py-2.5 text-sm font-semibold text-white hover:opacity-95"
+              className="inline-flex items-center rounded-full bg-brand-red px-5 py-2.5 text-sm font-semibold text-brand-ink hover:opacity-95"
             >
               Use Photo
             </button>

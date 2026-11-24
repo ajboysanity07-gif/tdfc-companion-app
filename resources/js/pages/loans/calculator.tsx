@@ -1,8 +1,8 @@
 import { Panel, peso } from '@/components/tdfc/ui';
 import AppLayout from '@/layouts/app-layout';
 import { Head, Link } from '@inertiajs/react';
-import { ChevronLeft } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { ChevronLeft, TriangleAlert } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 
 type Product = {
     id: string;
@@ -21,6 +21,9 @@ type Product = {
 
 const pesoS = (n: number) => peso(n).replace('₱', '₱ ');
 const pct = (n: number) => `${n.toFixed(n % 1 ? 1 : 0)}%`;
+const nf0 = new Intl.NumberFormat('en-PH', { maximumFractionDigits: 0 });
+const nf2 = new Intl.NumberFormat('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const fmtAm = (v: number) => (v ? (v % 1 ? nf2 : nf0).format(v) : '');
 
 /** Deductions, monthly payment and total repayable for one product, amount and term (months). */
 export function estimate(p: Product, amount: number, months: number) {
@@ -36,12 +39,23 @@ export function estimate(p: Product, amount: number, months: number) {
 }
 
 const inputCls =
-    'min-h-12 w-full rounded-lg border border-input bg-card text-foreground px-3 py-2 text-center text-[22px] font-bold focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-tdfc-coral-ink disabled:cursor-not-allowed disabled:bg-muted max-sm:text-xl';
+    'h-11 w-full rounded-[10px] border border-input bg-background px-3 text-base text-foreground shadow-xs focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-red-text disabled:cursor-not-allowed disabled:bg-muted disabled:opacity-100 disabled:[-webkit-text-fill-color:var(--foreground)]';
+const rangeCls =
+    'mt-0.5 h-5 w-full cursor-pointer rounded-full accent-red-text focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-red-text disabled:cursor-not-allowed disabled:opacity-45';
 const lock = (
-    <span className="ml-1.5 inline-block rounded-full bg-muted px-2 py-0.5 align-[1px] text-[11px] font-bold tracking-wide uppercase">
+    <span className="ml-1.5 inline-block rounded-full bg-muted px-2 py-0.5 align-[1px] text-[11px] font-bold tracking-wide uppercase max-[560px]:mt-0.5 max-[560px]:ml-0 max-[560px]:block max-[560px]:w-max">
         Set by admin
     </span>
 );
+const pill = (on: boolean) =>
+    `rounded-full border transition-colors ${
+        on
+            ? 'border-[oklch(.16_.03_24)] bg-[oklch(.16_.03_24)] text-white hover:bg-[oklch(.28_.05_24)] dark:border-[oklch(.24_.07_24)] dark:bg-[oklch(.24_.07_24)] dark:hover:bg-[oklch(.3_.08_24)]'
+            : 'border-border bg-transparent hover:bg-muted'
+    }`;
+// Cards that sit on the red panel are always white (the guide's one intentional fixed-color exception).
+const wcard = 'rounded-[14px] bg-white text-[oklch(.2_0_0)]';
+const wsub = 'text-[oklch(.45_0_0)]';
 
 export default function LoanCalculator({ products }: { products: Product[] }) {
     const initial = (() => {
@@ -51,11 +65,13 @@ export default function LoanCalculator({ products }: { products: Product[] }) {
     const [p, setP] = useState<Product | undefined>(initial);
     const [months, setMonths] = useState(initial?.max_term_months ?? 0);
     const [amount, setAmount] = useState(initial?.max_amortization ?? 0);
-    const [amountText, setAmountText] = useState(initial?.max_amortization ? pesoS(initial.max_amortization) : '');
+    const [amountText, setAmountText] = useState(fmtAm(initial?.max_amortization ?? 0));
     const [hint, setHint] = useState<{ term?: string; amount?: string }>({});
     const [dirty, setDirty] = useState(false);
     const [reset, setReset] = useState<string | null>(null);
     const [owed, setOwed] = useState<Record<string, number>>({});
+    const [stuck, setStuck] = useState(false);
+    const resultsRef = useRef<HTMLElement>(null);
 
     // Existing balances per product (same source as the dashboard).
     useEffect(() => {
@@ -71,6 +87,15 @@ export default function LoanCalculator({ products }: { products: Product[] }) {
             .catch(() => undefined);
     }, []);
 
+    // Mobile summary bar: show once the results panel has scrolled above the viewport.
+    useEffect(() => {
+        const el = resultsRef.current;
+        if (!el || !('IntersectionObserver' in window)) return;
+        const io = new IntersectionObserver(([e]) => setStuck(!e.isIntersecting && e.boundingClientRect.bottom < 0));
+        io.observe(el);
+        return () => io.disconnect();
+    }, [p]);
+
     if (!p)
         return (
             <AppLayout breadcrumbs={[{ title: 'Loan Calculator', href: '/loans/calculator' }]}>
@@ -85,27 +110,35 @@ export default function LoanCalculator({ products }: { products: Product[] }) {
         setP(n);
         setMonths(n.max_term_months);
         setAmount(n.max_amortization);
-        setAmountText(n.max_amortization ? pesoS(n.max_amortization) : '');
+        setAmountText(fmtAm(n.max_amortization));
         setHint({});
     };
+    const touch = () => {
+        setDirty(true);
+        setReset(null);
+    };
+    const setTerm = (v: number) => {
+        setMonths(v);
+        touch();
+    };
+
     const e = estimate(p, amount, months);
     const owe = owed[p.name];
+    const termLocked = !p.term_editable;
+    const amMax = p.max_amortization || 100000;
+    const termChips = [...new Set([...[6, 12, 18, 24, 36].filter((v) => v <= p.max_term_months), p.max_term_months])].sort((a, b) => a - b);
     const maxLabel = p.amortization_editable ? `Maximum ${pesoS(p.max_amortization)}.` : 'Fixed amount for this product.';
-    const Kpi = ({ label, value, sub }: { label: string; value: string; sub: string }) => (
-        <div className="grid min-w-0 content-start rounded-xl bg-white px-3.5 py-3 text-foreground">
-            <small className="text-[11px] font-semibold tracking-widest text-muted-foreground uppercase">{label}</small>
-            <b className="mt-0.5 text-[clamp(16px,5vw,20px)] [overflow-wrap:anywhere] tabular-nums">{value}</b>
-            <span className="mt-0.5 min-h-4.5 text-xs text-muted-foreground">{sub}</span>
-        </div>
-    );
-    const rows: [string, string, boolean?][] = [
+    const interest = Math.max(0, e.total - amount);
+    const all = Math.max(1, e.net + e.ded + interest);
+    const seg = (n: number) => ({ width: `${(n / all) * 100}%` });
+    const rows: [string, string][] = [
         ['Amortization amount', pesoS(amount)],
         ['Service fee', `− ${pesoS(e.sf)}`],
         ['LRF', `− ${pesoS(e.lrf)}`],
         ['Document stamp', `− ${pesoS(e.ds)}`],
         ['Mortgage + notarial', `− ${pesoS(e.mn)}`],
-        ['Total deductions', `− ${pesoS(e.ded)}`, true],
     ];
+    const segCls = 'block h-full transition-[width] duration-300 motion-reduce:transition-none';
 
     return (
         <AppLayout
@@ -115,22 +148,26 @@ export default function LoanCalculator({ products }: { products: Product[] }) {
             ]}
         >
             <Head title="Loan Calculator" />
-            <div id="main-content" className="grid min-w-0 content-start gap-3.5 p-4 max-md:pb-36 md:gap-5 md:p-6">
+            <div id="main-content" className="grid min-w-0 content-start gap-3.5 p-4 max-[900px]:pb-[88px] min-[901px]:gap-5 min-[901px]:p-6">
                 <Link
                     href="/dashboard"
-                    className="inline-flex min-h-10 items-center gap-1.5 justify-self-start text-sm font-semibold text-tdfc-coral-ink hover:underline"
+                    className="inline-flex min-h-10 items-center gap-1.5 justify-self-start text-sm font-semibold text-red-text hover:underline min-[901px]:min-h-11"
                 >
                     <ChevronLeft className="size-4" />
                     Back to dashboard
                 </Link>
                 <div>
-                    <h1 className="text-[22px] font-extrabold md:text-2xl">Loan Calculator</h1>
-                    <p className="mt-1 text-[13px] text-muted-foreground md:text-sm">
+                    <h1 className="text-[22px] font-extrabold min-[901px]:text-2xl">Loan Calculator</h1>
+                    <p className="mt-1 text-[13px] text-muted-foreground min-[901px]:text-sm">
                         Estimate a loan before you apply. Pick a product, then adjust the term and amount.
                     </p>
                 </div>
 
-                <div role="radiogroup" aria-label="Loan product" className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-2 [&::-webkit-scrollbar]:hidden">
+                <div
+                    role="radiogroup"
+                    aria-label="Loan product"
+                    className="-mx-4 flex gap-2 overflow-x-auto px-4 pt-0.5 pb-1.5 [scrollbar-width:none] min-[901px]:mx-0 min-[901px]:flex-wrap min-[901px]:overflow-visible min-[901px]:px-0 [&::-webkit-scrollbar]:hidden"
+                >
                     {products.map((n) => (
                         <button
                             key={n.id}
@@ -145,153 +182,271 @@ export default function LoanCalculator({ products }: { products: Product[] }) {
                                 const i = products.indexOf(p) + (ev.key === 'ArrowRight' ? 1 : products.length - 1);
                                 choose(products[i % products.length]);
                             }}
-                            className={`min-h-11 flex-none rounded-full border px-4 text-sm font-semibold transition-colors ${n === p ? 'border-tdfc-on-coral bg-tdfc-on-coral text-white hover:bg-[oklch(.28_.05_24)]' : 'border-border bg-card hover:bg-muted'}`}
+                            className={`min-h-11 flex-none px-4 text-sm font-semibold ${pill(n === p)}`}
                         >
                             {n.name}
                         </button>
                     ))}
                 </div>
 
-                <div className="grid items-start gap-3.5 md:grid-cols-[5fr_6fr] md:gap-5">
-                    <div className="grid gap-3.5 md:sticky md:top-4 md:gap-5">
-                        <Panel className="grid gap-3.5 p-5 max-md:p-4">
+                <div className="grid items-start gap-3.5 min-[901px]:grid-cols-[5fr_6fr] min-[901px]:gap-5">
+                    <div className="grid min-w-0 content-start gap-3.5 min-[901px]:gap-5">
+                        <Panel className="grid gap-3 p-4 min-[901px]:gap-3.5 min-[901px]:p-5">
                             <h2 className="text-base font-semibold">{p.name}</h2>
                             {reset && (
-                                <p
-                                    role="status"
-                                    className="animate-tdfc-msg rounded-lg bg-[color-mix(in_oklch,#f57979_14%,white)] px-3 py-2.5 text-[13px]"
-                                >
+                                <p role="status" className="animate-tdfc-msg rounded-lg bg-red-soft px-3 py-2.5 text-[13px]">
                                     {reset}
                                 </p>
                             )}
-                            <div>
-                                <label htmlFor="cTerm" className="mb-1.5 block text-[11px] font-semibold tracking-widest uppercase">
-                                    Term in months{!p.term_editable && lock}
-                                </label>
-                                <input
-                                    id="cTerm"
-                                    inputMode="numeric"
-                                    autoComplete="off"
-                                    placeholder="0"
-                                    disabled={!p.term_editable}
-                                    value={months || ''}
-                                    onChange={(ev) => {
-                                        let v = parseInt(ev.target.value.replace(/\D/g, '')) || 0;
-                                        setHint({
-                                            ...hint,
-                                            term: v > p.max_term_months ? `Capped at the maximum of ${p.max_term_months} months.` : undefined,
-                                        });
-                                        v = Math.min(v, p.max_term_months);
-                                        setMonths(v);
-                                        setDirty(true);
-                                        setReset(null);
-                                    }}
-                                    className={inputCls}
-                                />
-                                <p className="mt-1.5 text-center text-xs text-muted-foreground">
-                                    {hint.term ??
-                                        (p.term_editable
-                                            ? `Up to ${p.max_term_months} months.`
-                                            : `Fixed at ${p.max_term_months} months for this product.`)}
-                                </p>
-                            </div>
-                            <div>
-                                <label htmlFor="cAmort" className="mb-1.5 block text-[11px] font-semibold tracking-widest uppercase">
-                                    Amortization{!p.amortization_editable && lock}
-                                </label>
-                                <input
-                                    id="cAmort"
-                                    inputMode="decimal"
-                                    autoComplete="off"
-                                    placeholder="₱ 0.00"
-                                    disabled={!p.amortization_editable}
-                                    value={amountText}
-                                    onChange={(ev) => {
-                                        let t = ev.target.value.replace(/[^\d.]/g, '');
-                                        const [int, ...dec] = t.split('.');
-                                        t = dec.length ? `${int}.${dec.join('').slice(0, 2)}` : int;
-                                        let v = parseFloat(t) || 0;
-                                        const max = p.max_amortization;
-                                        if (max && v > max) {
-                                            v = max;
-                                            t = String(max);
-                                            setHint({ ...hint, amount: `Capped at the maximum of ${pesoS(max)}.` });
-                                        } else setHint({ ...hint, amount: undefined });
-                                        setAmount(v);
-                                        setAmountText(t ? `₱ ${t}` : '');
-                                        setDirty(true);
-                                        setReset(null);
-                                    }}
-                                    onBlur={() => {
-                                        setAmountText(amount ? pesoS(amount) : '');
-                                        setHint({ ...hint, amount: undefined });
-                                    }}
-                                    className={inputCls}
-                                />
-                                <p className="mt-1.5 text-center text-xs text-muted-foreground">{hint.amount ?? maxLabel}</p>
+                            <div className="grid gap-3.5 min-[901px]:gap-4 [&>*]:min-w-0">
+                                <div className="grid gap-1.5">
+                                    <label htmlFor="cTerm" className="flex items-center text-sm font-medium max-[560px]:block">
+                                        Term in months{termLocked && lock}
+                                    </label>
+                                    {!termLocked && (
+                                        <div role="group" aria-label="Term shortcuts" className="flex flex-wrap gap-1.5">
+                                            {termChips.map((v) => (
+                                                <button
+                                                    key={v}
+                                                    type="button"
+                                                    aria-pressed={v === months}
+                                                    onClick={() => {
+                                                        setHint({ ...hint, term: undefined });
+                                                        setTerm(v);
+                                                    }}
+                                                    className={`min-h-9 px-3.5 text-[13px] font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-text ${pill(v === months)}`}
+                                                >
+                                                    {v} mo
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+                                    <input
+                                        id="cTerm"
+                                        inputMode="numeric"
+                                        autoComplete="off"
+                                        placeholder="0"
+                                        disabled={termLocked}
+                                        value={months || ''}
+                                        onChange={(ev) => {
+                                            let v = parseInt(ev.target.value.replace(/\D/g, '')) || 0;
+                                            setHint({
+                                                ...hint,
+                                                term: v > p.max_term_months ? `Capped at the maximum of ${p.max_term_months} months.` : undefined,
+                                            });
+                                            v = Math.min(v, p.max_term_months);
+                                            setTerm(v);
+                                        }}
+                                        className={inputCls}
+                                    />
+                                    <input
+                                        type="range"
+                                        aria-label="Term in months slider"
+                                        min={1}
+                                        max={p.max_term_months}
+                                        value={months}
+                                        disabled={termLocked}
+                                        onChange={(ev) => {
+                                            setHint({ ...hint, term: undefined });
+                                            setTerm(+ev.target.value);
+                                        }}
+                                        className={rangeCls}
+                                    />
+                                    <div className="flex justify-between text-xs text-muted-foreground tabular-nums">
+                                        <span>1 month</span>
+                                        <span>{p.max_term_months} months</span>
+                                    </div>
+                                    <p className="text-xs text-muted-foreground">
+                                        {hint.term ??
+                                            (p.term_editable
+                                                ? `Up to ${p.max_term_months} months.`
+                                                : `Fixed at ${p.max_term_months} months for this product.`)}
+                                    </p>
+                                </div>
+                                <div className="grid gap-1.5">
+                                    <label htmlFor="cAmort" className="flex items-center text-sm font-medium max-[560px]:block">
+                                        Amortization{!p.amortization_editable && lock}
+                                    </label>
+                                    <div className="relative">
+                                        <span
+                                            aria-hidden
+                                            className="pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 text-2xl font-extrabold text-muted-foreground"
+                                        >
+                                            ₱
+                                        </span>
+                                        <input
+                                            id="cAmort"
+                                            inputMode="decimal"
+                                            autoComplete="off"
+                                            placeholder="0.00"
+                                            disabled={!p.amortization_editable}
+                                            value={amountText}
+                                            onChange={(ev) => {
+                                                let t = ev.target.value.replace(/[^\d.]/g, '');
+                                                const [int, ...dec] = t.split('.');
+                                                t = dec.length ? `${int}.${dec.join('').slice(0, 2)}` : int;
+                                                let v = parseFloat(t) || 0;
+                                                const max = p.max_amortization;
+                                                if (max && v > max) {
+                                                    v = max;
+                                                    t = String(max);
+                                                    setHint({ ...hint, amount: `Capped at the maximum of ${pesoS(max)}.` });
+                                                } else setHint({ ...hint, amount: undefined });
+                                                const [ip, dp] = t.split('.');
+                                                setAmount(v);
+                                                setAmountText((ip ? nf0.format(+ip) : '') + (dp !== undefined ? `.${dp}` : ''));
+                                                touch();
+                                            }}
+                                            onBlur={() => {
+                                                setAmountText(amount ? nf2.format(amount) : '');
+                                                setHint({ ...hint, amount: undefined });
+                                            }}
+                                            className={`${inputCls} h-14 pl-10 text-[22px] font-extrabold tabular-nums min-[561px]:text-[26px]`}
+                                        />
+                                    </div>
+                                    <input
+                                        type="range"
+                                        aria-label="Amortization slider"
+                                        min={0}
+                                        max={amMax}
+                                        step={Math.max(1000, Math.round(amMax / 20))}
+                                        value={amount}
+                                        disabled={!p.amortization_editable}
+                                        onChange={(ev) => {
+                                            const v = +ev.target.value;
+                                            setHint({ ...hint, amount: undefined });
+                                            setAmount(v);
+                                            setAmountText(fmtAm(v));
+                                            touch();
+                                        }}
+                                        className={rangeCls}
+                                    />
+                                    <div className="flex justify-between text-xs text-muted-foreground tabular-nums">
+                                        <span>₱ 0</span>
+                                        <span>₱ {nf0.format(amMax)}</span>
+                                    </div>
+                                    <p className="text-xs text-muted-foreground">{hint.amount ?? maxLabel}</p>
+                                </div>
                             </div>
                         </Panel>
 
-                        <Panel className="px-5 max-md:px-4">
-                            <details>
-                                <summary className="flex min-h-11 cursor-pointer items-center text-sm font-semibold focus-visible:outline-2 focus-visible:outline-tdfc-coral-ink">
-                                    Terms and conditions
-                                </summary>
-                                <ol className="mb-4 list-decimal pl-5 text-[13px] leading-[1.7] text-muted-foreground">
-                                    {(p.terms || 'No terms and conditions available.').split('\n').map((l) => (
-                                        <li key={l}>{l.replace(/^\d+\.\s*/, '')}</li>
-                                    ))}
-                                </ol>
-                            </details>
+                        {owe && (
+                            <p
+                                role="status"
+                                className="flex animate-tdfc-rise items-start gap-2.5 rounded-xl border border-[oklch(.85_.1_85)] bg-[oklch(.95_.08_90)] px-3.5 py-3 text-[13px] leading-normal text-[oklch(.3_.07_70)]"
+                            >
+                                <TriangleAlert className="mt-px size-[18px] flex-none" aria-hidden />
+                                <span>
+                                    You still owe <b className="tabular-nums">{pesoS(owe)}</b> on your current {p.name}. Shown for reference; it is
+                                    not deducted in this estimate.
+                                </span>
+                            </p>
+                        )}
+
+                        <Panel className="grid gap-3 p-4 min-[901px]:p-5">
+                            <h2 className="text-base font-semibold">Terms and conditions</h2>
+                            <ol className="list-decimal pl-5 text-[13px] leading-[1.7] text-muted-foreground">
+                                {(p.terms || 'No terms and conditions available.').split('\n').map((l) => (
+                                    <li key={l}>{l.replace(/^\d+\.\s*/, '')}</li>
+                                ))}
+                            </ol>
                         </Panel>
                     </div>
 
-                    <Panel className="grid gap-3.5 border-transparent bg-tdfc-coral p-5 text-tdfc-on-coral md:p-6">
-                        <h2 className="text-xs font-bold tracking-widest uppercase">*Estimated net proceeds</h2>
-                        <div className="text-[clamp(32px,11vw,44px)] leading-[1.05] font-extrabold tracking-tight tabular-nums">
-                            {pesoS(e.net)}
-                            <small className="mt-1.5 block text-[13px] font-semibold tracking-normal opacity-85">
-                                {amount ? `After ${pesoS(e.ded)} in deductions from ${pesoS(amount)}` : 'Enter an amortization to see your estimate'}
-                            </small>
-                        </div>
-                        <dl aria-label="Deductions" className="rounded-xl bg-white px-3.5 py-1 text-foreground">
-                            {rows.map(([l, v, tot]) => (
-                                <div key={l} className="flex justify-between gap-3 border-b border-border py-2.25 text-sm last:border-0">
-                                    <dt className={tot ? 'font-extrabold' : 'text-muted-foreground'}>{l}</dt>
-                                    <dd className={`min-w-0 tabular-nums ${tot ? 'font-extrabold' : 'font-semibold'}`}>{v}</dd>
-                                </div>
-                            ))}
-                        </dl>
-                        <div className="grid grid-cols-2 gap-2.5">
-                            <Kpi
-                                label="*Monthly payment"
-                                value={pesoS(e.monthly)}
-                                sub={e.term ? `${pct(p.interest_rate)} a year over ${e.term} months` : 'Enter a term'}
-                            />
-                            <Kpi
-                                label="Total repayable"
-                                value={pesoS(e.total)}
-                                sub={e.total ? `${pesoS(Math.max(0, e.total - amount))} total interest` : ''}
-                            />
-                        </div>
-                        {owe && (
-                            <p className="animate-tdfc-rise rounded-xl bg-white px-3.5 py-3 text-[13px] text-foreground">
-                                You still owe <b className="tabular-nums">{pesoS(owe)}</b> on your current {p.name}. Shown for reference; it is not
-                                deducted in this estimate.
-                            </p>
-                        )}
-                        <Link
-                            href="/loans/transactions"
-                            className="inline-flex min-h-11 items-center justify-self-start text-sm font-bold underline underline-offset-3 hover:rounded-md hover:bg-tdfc-on-coral/10"
+                    <div className="min-w-0 min-[901px]:sticky min-[901px]:top-6">
+                        <section
+                            ref={resultsRef}
+                            aria-label="Estimate"
+                            className="grid gap-3.5 rounded-2xl bg-brand-red p-5 text-brand-ink shadow-sm min-[901px]:rounded-[14px] min-[901px]:p-6 [&_:focus-visible]:outline-brand-ink"
                         >
-                            View my loan schedules and payments
-                        </Link>
-                        <p className="text-[11px] leading-[1.8] font-semibold italic opacity-90">
-                            * Subject to further delinquent balances deduction.
-                            <br />
-                            Estimated values may vary based on actual processing.
-                        </p>
-                    </Panel>
+                            <p className="text-xs font-bold tracking-widest uppercase">*Estimated monthly payment</p>
+                            <div className="flex flex-wrap items-baseline gap-x-2.5 font-extrabold tabular-nums">
+                                <span className="text-[clamp(32px,11vw,40px)] leading-[1.05] min-[901px]:text-[52px]">{pesoS(e.monthly)}</span>
+                                <small className="text-[15px] font-semibold">{e.term ? `a month for ${e.term} months` : 'Enter a term'}</small>
+                            </div>
+                            <div className="flex flex-wrap items-baseline justify-between gap-3 border-y border-brand-ink/20 py-3">
+                                <div>
+                                    <small className="block text-[11px] font-bold tracking-wider uppercase">*Net proceeds</small>
+                                    <b className="text-[28px] font-extrabold tabular-nums">{pesoS(e.net)}</b>
+                                </div>
+                                <span className="text-[13px] font-medium">{amount ? `After ${pesoS(e.ded)} in deductions` : 'Enter an amount'}</span>
+                            </div>
+                            <div className="grid gap-2">
+                                <div
+                                    role="img"
+                                    aria-label="Breakdown of total repayable"
+                                    className="flex h-3.5 overflow-hidden rounded-full bg-white/30"
+                                >
+                                    <i className={`${segCls} bg-brand-ink`} style={seg(e.net)} />
+                                    <i className={`${segCls} bg-white`} style={seg(e.ded)} />
+                                    <i className={`${segCls} bg-brand-yellow`} style={seg(interest)} />
+                                </div>
+                                <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs font-medium">
+                                    {(
+                                        [
+                                            ['bg-brand-ink', 'You receive', e.net],
+                                            ['bg-white', 'Fees', e.ded],
+                                            ['bg-brand-yellow', 'Interest', interest],
+                                        ] as const
+                                    ).map(([c, l, v]) => (
+                                        <span key={l} className="inline-flex items-center gap-1.5">
+                                            <i className={`size-2.5 flex-none rounded-full shadow-[0_0_0_1px_oklch(.2_.05_24/.35)] ${c}`} />
+                                            {l} <b className="tabular-nums">{pesoS(v)}</b>
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+                            <details className={`group px-3.5 ${wcard}`}>
+                                <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 text-sm font-semibold focus-visible:rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 [&::-webkit-details-marker]:hidden">
+                                    <span className="inline-flex items-center">
+                                        See deductions
+                                        <i className="mb-1 ml-2.5 inline-block size-[7px] rotate-45 border-r-2 border-b-2 border-current transition-transform group-open:mb-0 group-open:-rotate-[135deg] motion-reduce:transition-none" />
+                                    </span>
+                                    <b className="tabular-nums">− {pesoS(e.ded)}</b>
+                                </summary>
+                                <dl aria-label="Deductions" className="border-t border-[oklch(.9_0_0)] pb-1">
+                                    {rows.map(([l, v]) => (
+                                        <div
+                                            key={l}
+                                            className="flex justify-between gap-3 border-b border-[oklch(.9_0_0)] py-2.25 text-sm last:border-0"
+                                        >
+                                            <dt className={wsub}>{l}</dt>
+                                            <dd className="min-w-0 font-semibold tabular-nums">{v}</dd>
+                                        </div>
+                                    ))}
+                                </dl>
+                            </details>
+                            <div className="grid gap-3 min-[561px]:grid-cols-2">
+                                <div className={`grid content-start gap-1 p-4 ${wcard}`}>
+                                    <small className={`text-[11px] font-bold tracking-wider uppercase ${wsub}`}>Total repayable</small>
+                                    <b className="text-[26px] font-extrabold [overflow-wrap:anywhere] tabular-nums">{pesoS(e.total)}</b>
+                                    <span className={`min-h-4.5 text-xs ${wsub}`}>{e.total ? `${pesoS(interest)} total interest` : ''}</span>
+                                </div>
+                                <div className={`grid content-start gap-1 p-4 ${wcard}`}>
+                                    <small className={`text-[11px] font-bold tracking-wider uppercase ${wsub}`}>Interest rate</small>
+                                    <b className="text-[26px] font-extrabold tabular-nums">{pct(p.interest_rate)}</b>
+                                    <span className={`min-h-4.5 text-xs ${wsub}`}>{e.term ? `a year · ${e.term} monthly payments` : 'a year'}</span>
+                                </div>
+                            </div>
+                            <Link
+                                href={`/loans/transactions?apply=${p.id}&term=${e.term}&amount=${amount}`}
+                                className="flex min-h-12 items-center justify-center rounded-[10px] bg-brand-ink text-[15px] font-bold text-white transition-colors hover:bg-[oklch(.3_.06_24)] focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-white!"
+                            >
+                                Apply for this loan
+                            </Link>
+                            <Link
+                                href="/loans/transactions"
+                                className="inline-flex min-h-11 items-center justify-self-start rounded-md text-sm font-bold underline underline-offset-3 hover:bg-white/25"
+                            >
+                                View my loan schedules and payments
+                            </Link>
+                            <p className="text-xs leading-[1.7] font-medium italic">
+                                * Subject to further delinquent balances deduction.
+                                <br />
+                                Estimated values may vary based on actual processing.
+                            </p>
+                        </section>
+                    </div>
                 </div>
                 <p className="sr-only" role="status" aria-live="polite">
                     Net proceeds {pesoS(e.net)}. Monthly payment {pesoS(e.monthly)}.
@@ -300,15 +455,15 @@ export default function LoanCalculator({ products }: { products: Product[] }) {
 
             <div
                 aria-hidden
-                className="fixed inset-x-0 bottom-16 z-30 flex items-center justify-between gap-4 bg-tdfc-coral px-4 py-2.5 text-tdfc-on-coral shadow-[0_-2px_10px_rgb(0_0_0/.15)] md:hidden"
+                className={`fixed inset-x-0 top-0 z-30 flex items-center justify-between gap-3 bg-brand-red px-4 py-2 text-brand-ink shadow-[0_2px_10px_rgb(0_0_0/.15)] transition-transform duration-200 motion-reduce:transition-none min-[901px]:hidden ${stuck ? 'translate-y-0' : '-translate-y-[110%]'}`}
             >
                 <div>
-                    <small className="block text-[11px] font-bold tracking-wider uppercase">Net proceeds*</small>
-                    <b className="text-xl tabular-nums">{pesoS(e.net)}</b>
+                    <small className="block text-[10px] font-bold tracking-wider uppercase">Monthly*</small>
+                    <b className="text-[clamp(16px,5vw,20px)] tabular-nums">{pesoS(e.monthly)}</b>
                 </div>
                 <div className="text-right">
-                    <small className="block text-[11px] font-bold tracking-wider uppercase">Monthly*</small>
-                    <b className="text-base tabular-nums">{pesoS(e.monthly)}</b>
+                    <small className="block text-[10px] font-bold tracking-wider uppercase">Net proceeds*</small>
+                    <b className="text-[clamp(14px,4.2vw,16px)] tabular-nums">{pesoS(e.net)}</b>
                 </div>
             </div>
         </AppLayout>

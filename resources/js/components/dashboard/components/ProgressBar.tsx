@@ -19,7 +19,7 @@ export const ProgressBar: FC<ProgressBarProps> = ({
   return (
     <div className={`mt-2 ${className}`}>
       <div 
-        className="h-2 w-full rounded-full bg-gray-200 dark:bg-neutral-700"
+        className="h-2 w-full rounded-full bg-muted"
         role="progressbar"
         aria-valuenow={clampedPercentage}
         aria-valuemin={0}

@@ -23,7 +23,7 @@ export default function AuthSplitLayout({ children, title, description }: PropsW
                     <div className="relative z-20 mt-auto">
                         <blockquote className="space-y-2">
                             <p className="text-lg">&ldquo;{quote.message}&rdquo;</p>
-                            <footer className="text-sm text-neutral-300">{quote.author}</footer>
+                            <footer className="text-sm text-muted-foreground">{quote.author}</footer>
                         </blockquote>
                     </div>
                 )}
@@ -31,7 +31,7 @@ export default function AuthSplitLayout({ children, title, description }: PropsW
             <div className="w-full lg:p-8">
                 <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
                     <Link href={route('welcome')} className="relative z-20 flex items-center justify-center lg:hidden">
-                        <AppLogoIcon className="h-10 fill-current text-black sm:h-12" />
+                        <AppLogoIcon className="h-10 fill-current text-foreground sm:h-12" />
                     </Link>
                     <div className="flex flex-col items-start gap-2 text-left sm:items-center sm:text-center">
                         <h1 className="text-xl font-medium">{title}</h1>

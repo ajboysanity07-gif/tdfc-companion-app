@@ -12,7 +12,7 @@ export default function PrimaryButton({ variant = 'block', className = '', loadi
             {...p}
             disabled={p.disabled || loading}
             aria-busy={loading || undefined}
-            className={`${shape} bg-tdfc-coral font-extrabold tracking-wide text-tdfc-on-coral transition-[color,background-color,transform] active:scale-[0.98] hover:bg-[color-mix(in_oklch,#f57979_88%,black)] disabled:pointer-events-none disabled:opacity-40 ${focus} ${className}`}
+            className={`${shape} bg-tdfc-coral font-extrabold tracking-wide text-tdfc-on-coral transition-[color,background-color,transform] hover:bg-[color-mix(in_oklch,var(--brand-red)_88%,black)] active:scale-[0.98] disabled:pointer-events-none disabled:opacity-40 ${focus} ${className}`}
         >
             {loading ? (
                 <span className="inline-flex items-center justify-center gap-2">
@@ -31,7 +31,7 @@ export function SecondaryButton({ className = '', ...p }: ButtonHTMLAttributes<H
         <button
             type="button"
             {...p}
-            className={`min-h-12 rounded-full border border-black/15 bg-white px-5 text-sm font-semibold text-black hover:bg-black/5 ${focus} ${className}`}
+            className={`min-h-12 rounded-full border border-foreground/15 bg-card px-5 text-sm font-semibold text-foreground hover:bg-foreground/5 ${focus} ${className}`}
         />
     );
 }

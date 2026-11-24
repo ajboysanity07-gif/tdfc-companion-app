@@ -20,21 +20,21 @@ const PRCFileRow: React.FC<Props> = ({ valueFront, valueBack, onClick, display }
 
   return (
     <div className="mb-8">
-      <label className="text-[14px] font-bold text-[#F57979] block mb-2">
-        Upload PRC ID Photo <span className="text-[#F57979]">*</span>
+      <label className="text-[14px] font-bold text-red-text block mb-2">
+        Upload PRC ID Photo <span className="text-red-text">*</span>
       </label>
       <button
         type="button"
         onClick={onClick}
-        className="flex items-center gap-3 w-full py-3 px-4 border rounded-lg border-gray-200 bg-white active:border-[#F57979]/40"
+        className="flex items-center gap-3 w-full py-3 px-4 border rounded-lg border-border bg-card active:border-brand-red/40"
       >
-        <span className="bg-green-100 text-green-600 rounded-full p-2">
+        <span className="bg-success-soft text-success rounded-full p-2">
           <Plus className="w-6 h-6" />
         </span>
-        <span className="grow truncate text-black/40 select-none">
+        <span className="grow truncate text-muted-foreground select-none">
           {getStatusDisplay()}
         </span>
-        <span className="text-xs text-black/40 select-none">JPEG/PNG/WEBP</span>
+        <span className="text-xs text-muted-foreground select-none">JPEG/PNG/WEBP</span>
       </button>
     </div>
   );

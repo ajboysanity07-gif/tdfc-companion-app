@@ -50,7 +50,7 @@ const Dl = ({ l, v, b }: { l: string; v: string; b?: boolean }) => (
     </div>
 );
 
-const th = 'sticky top-0 z-1 border-b border-border bg-[oklch(.98_0_0)] px-5 py-3 text-[11px] tracking-[.04em] text-muted-foreground uppercase';
+const th = 'sticky top-0 z-1 border-b border-border bg-muted px-5 py-3 text-[11px] tracking-[.04em] text-muted-foreground uppercase';
 const td = 'border-b border-border px-5 py-3 text-sm';
 const kpiCell = 'bg-card px-[18px] py-4';
 
@@ -286,7 +286,7 @@ export default function LoanTransactionShow({
                             <>
                                 <div
                                     role="status"
-                                    className="m-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-[oklch(.985_.01_250)] px-4 py-3.5 min-[701px]:mx-6 min-[701px]:mt-4 min-[701px]:mb-5"
+                                    className="m-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-blue-soft px-4 py-3.5 min-[701px]:mx-6 min-[701px]:mt-4 min-[701px]:mb-5"
                                 >
                                     <div className="min-w-0 flex-[1_1_200px]">
                                         {!paid && due ? (
@@ -425,8 +425,8 @@ export default function LoanTransactionShow({
                                     {(
                                         [
                                             ['bg-tdfc-ok', 'Paid'],
-                                            ['bg-[oklch(.72_.14_75)]', 'Next due'],
-                                            ['bg-[oklch(.72_0_0)]', 'Upcoming'],
+                                            ['bg-brand-yellow', 'Next due'],
+                                            ['bg-muted-foreground', 'Upcoming'],
                                         ] as const
                                     ).map(([c, l]) => (
                                         <span key={l} className="inline-flex items-center gap-1.5">
@@ -467,7 +467,7 @@ export default function LoanTransactionShow({
                                                     {[null, 'Total', peso(totals.p), peso(totals.i), peso(totals.am), null, null].map((v, i) => (
                                                         <td
                                                             key={i}
-                                                            className={`sticky bottom-0 border-t border-border bg-[oklch(.98_0_0)] px-5 py-3 text-sm ${i > 1 && i < 6 ? 'text-right' : ''}`}
+                                                            className={`sticky bottom-0 border-t border-border bg-muted px-5 py-3 text-sm ${i > 1 && i < 6 ? 'text-right' : ''}`}
                                                         >
                                                             {v}
                                                         </td>

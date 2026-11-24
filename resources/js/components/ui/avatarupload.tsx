@@ -52,7 +52,7 @@ export default function AvatarUpload({
             <Plus className="h-8 w-8" />
           )}
         </div>
-        {label && <span className="text-sm text-black/70">{label}</span>}
+        {label && <span className="text-sm text-foreground/70">{label}</span>}
       </div>
       <input
         ref={inputRef}

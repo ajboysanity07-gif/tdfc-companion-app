@@ -68,11 +68,11 @@ const PrcIdCropBox: React.FC<Props> = ({
 
   return (
     <div className="mb-6 flex flex-col items-center w-full">
-      <label className="block text-center font-semibold mb-4 text-gray-600 text-sm tracking-wide">
+      <label className="block text-center font-semibold mb-4 text-muted-foreground text-sm tracking-wide">
         {label.toUpperCase()}
       </label>
       <div className="relative w-full max-w-[300px]" style={{ aspectRatio: aspect }}>
-        <div className="absolute inset-0 flex flex-col items-center justify-center border-2 border-dashed border-gray-400 rounded-xl overflow-hidden bg-white">
+        <div className="absolute inset-0 flex flex-col items-center justify-center border-2 border-dashed border-border rounded-xl overflow-hidden bg-card">
           {imageSrc ? (
             <Cropper
               image={imageSrc}
@@ -91,10 +91,10 @@ const PrcIdCropBox: React.FC<Props> = ({
               className="w-full h-full flex flex-col items-center justify-center"
               onClick={() => fileInputRef.current?.click()}
             >
-              <span className="bg-gray-200 text-gray-400 rounded-full w-12 h-12 flex items-center justify-center text-3xl font-bold">
+              <span className="bg-muted text-muted-foreground rounded-full w-12 h-12 flex items-center justify-center text-3xl font-bold">
                 +
               </span>
-              <span className="block mt-2 text-sm text-gray-400">Add Photo</span>
+              <span className="block mt-2 text-sm text-muted-foreground">Add Photo</span>
             </button>
           )}
         </div>
@@ -102,7 +102,7 @@ const PrcIdCropBox: React.FC<Props> = ({
       <div className="flex flex-col items-center w-full mt-4">
 {/* Zoom Control (centered and smaller) */}
 <div className="flex items-center gap-3 w-[280px] mx-auto mt- mb-3">
-  <span className="text-xs text-gray-500 font-medium">Zoom</span>
+  <span className="text-xs text-muted-foreground font-medium">Zoom</span>
   <input
     type="range"
     min={1}
@@ -111,14 +111,14 @@ const PrcIdCropBox: React.FC<Props> = ({
     value={zoom}
     disabled={controlsDisabled}
     onChange={(e) => setZoom(Number(e.target.value))}
-    className={`flex-1 accent-[#F57979] h-3 ${
+    className={`flex-1 accent-brand-red h-3 ${
       controlsDisabled ? "opacity-40 cursor-not-allowed" : ""
     }`}
     style={{
       maxWidth: "220px", // Increase this value for wider slider
       minWidth: "120px", // Optional for minimum
       height: "20px", // Makes the slider rail chunkier
-      accentColor: "#F57979", // for Chrome etc.
+      accentColor: "var(--brand-red)", // for Chrome etc.
     }}
   />
 </div>
@@ -130,8 +130,8 @@ const PrcIdCropBox: React.FC<Props> = ({
             disabled={controlsDisabled}
             className={`w-[260px] mx-auto py-2 px-4 text-sm font-semibold rounded-full transition flex items-center justify-center gap-2 ${
               controlsDisabled
-                ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                : "bg-[#F57979] text-white shadow hover:bg-[#ea5b5b]"
+                ? "bg-muted text-muted-foreground cursor-not-allowed"
+                : "bg-brand-red text-brand-ink shadow hover:bg-[color-mix(in_oklch,var(--brand-red)_88%,black)]"
             }`}
             onClick={confirmCropAndAdvance}
           >
@@ -143,8 +143,8 @@ const PrcIdCropBox: React.FC<Props> = ({
             disabled={controlsDisabled}
             className={`w-[260px] mx-auto py-2 px-4 text-sm font-semibold rounded-full transition flex items-center justify-center gap-2 ${
               controlsDisabled
-                ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                : "bg-gray-100 text-gray-700 border border-gray-300 hover:bg-gray-200"
+                ? "bg-muted text-muted-foreground cursor-not-allowed"
+                : "bg-muted text-foreground border border-border hover:bg-muted"
             }`}
             onClick={resetCrop}
           >
@@ -156,8 +156,8 @@ const PrcIdCropBox: React.FC<Props> = ({
             disabled={controlsDisabled}
             className={`w-[260px] mx-auto py-2 px-4 text-sm font-semibold rounded-full transition flex items-center justify-center gap-2 ${
               controlsDisabled
-                ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                : "bg-blue-50 text-blue-600 border border-blue-500 hover:bg-blue-100"
+                ? "bg-muted text-muted-foreground cursor-not-allowed"
+                : "bg-blue-soft text-blue-text border border-brand-blue hover:bg-blue-soft"
             }`}
             onClick={changePhoto}
           >

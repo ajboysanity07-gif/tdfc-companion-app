@@ -288,17 +288,17 @@ export default function Register({ adminMode = false }: Props) {
                                         aria-label="Upload profile photo"
                                         aria-describedby="avatar-msg"
                                         onClick={() => avatarInput.current?.click()}
-                                        className="grid size-16 flex-none place-items-center overflow-hidden rounded-full border-2 border-dashed border-tdfc-coral bg-white focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-tdfc-coral-ink"
+                                        className="grid size-16 flex-none place-items-center overflow-hidden rounded-full border-2 border-dashed border-tdfc-coral bg-card focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-tdfc-coral-ink"
                                     >
                                         {avatarUrl ? (
                                             <img src={avatarUrl} alt="Profile preview" className="size-full object-cover" />
                                         ) : (
-                                            <span className="grid size-11 place-items-center rounded-full bg-green-100 text-green-600">
+                                            <span className="grid size-11 place-items-center rounded-full bg-success-soft text-success">
                                                 <Plus className="size-6" aria-hidden />
                                             </span>
                                         )}
                                     </button>
-                                    <p className="text-sm leading-normal text-black/60">
+                                    <p className="text-sm leading-normal text-foreground/60">
                                         Tap the circle to upload your profile photo.
                                         <br />
                                         Crop will open before saving.

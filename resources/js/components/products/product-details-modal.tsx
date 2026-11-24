@@ -46,7 +46,7 @@ export default function ProductDetailsModal({
       TransitionComponent={FadeSlide}
       PaperProps={{
         sx: {
-          backgroundColor: "#ffffff",
+          backgroundColor: "var(--card)",
           color: theme.palette.text.primary,
           boxShadow: '0 8px 44px 0 rgba(30,30,70,.15)',
           overflow: 'auto',
@@ -59,8 +59,8 @@ export default function ProductDetailsModal({
         display: "flex",
         alignItems: "center",
         minHeight: 'clamp(56px, 10vw, 64px)',
-        background: "#fff7d1",
-        borderBottom: `2px solid #f5e399`,
+        background: "var(--yellow-soft)",
+        borderBottom: `2px solid var(--brand-yellow)`,
         padding: '0 clamp(16px, 5vw, 32px)',
         position: 'sticky',
         top: 0,
@@ -70,7 +70,7 @@ export default function ProductDetailsModal({
           style={{
             fontWeight: 800,
             fontSize: "clamp(1.5rem, 5vw, 2rem)",
-            color: "#4687e8",
+            color: "var(--blue-text)",
             flex: 1,
             margin: 0,
             letterSpacing: "1px"
@@ -79,13 +79,13 @@ export default function ProductDetailsModal({
         <IconButton
           onClick={onClose}
           size="large"
-          sx={{ color: "#f57373", mr: 1, mt: 0 }}
+          sx={{ color: "var(--red-text)", mr: 1, mt: 0 }}
         >
           <CloseIcon fontSize="large"/>
         </IconButton>
       </div>
       <div style={{
-        background: "#ffffff",
+        background: "var(--card)",
         overflowY: 'auto',
         maxHeight: "calc(100vh - 80px)",
         paddingBottom: 'clamp(80px, 15vh, 120px)'

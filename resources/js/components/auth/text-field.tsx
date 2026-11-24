@@ -1,7 +1,7 @@
 import { InputHTMLAttributes, ReactNode, useId, useState } from 'react';
 
 export const fieldClass =
-    'h-12 w-full rounded-tdfc-field border border-tdfc-line bg-white px-3.5 text-[15px] text-black placeholder:text-black/55 focus:border-tdfc-coral-ink focus:ring-3 focus:ring-tdfc-coral/40 focus:outline-none aria-invalid:border-tdfc-error-line aria-invalid:focus:ring-tdfc-error-line/25';
+    'h-12 w-full rounded-tdfc-field border border-tdfc-line bg-card px-3.5 text-[15px] text-foreground placeholder:text-foreground/55 focus:border-tdfc-coral-ink focus:ring-3 focus:ring-tdfc-coral/40 focus:outline-none aria-invalid:border-tdfc-error-line aria-invalid:focus:ring-tdfc-error-line/25';
 
 export type FieldProps = Omit<InputHTMLAttributes<HTMLInputElement>, 'id' | 'className'> & {
     label: string;
@@ -46,7 +46,7 @@ export default function TextField({ label, error, showErrors, hint, hintTone, tr
             <div
                 id={msgId}
                 aria-live="polite"
-                className={`mt-1 animate-tdfc-msg text-[13px] leading-[18px] empty:mt-0 ${bad ? 'text-tdfc-error' : hintTone === 'good' ? 'text-tdfc-ok' : 'text-black/70'}`}
+                className={`mt-1 animate-tdfc-msg text-[13px] leading-[18px] empty:mt-0 ${bad ? 'text-tdfc-error' : hintTone === 'good' ? 'text-tdfc-ok' : 'text-foreground/70'}`}
             >
                 {text}
             </div>

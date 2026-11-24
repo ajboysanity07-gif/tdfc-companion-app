@@ -46,7 +46,7 @@ export default function Login() {
                 }
             >
                 {flashStatus && (
-                    <p role="status" className="mb-4 text-center text-sm font-semibold text-emerald-600">
+                    <p role="status" className="mb-4 text-center text-sm font-semibold text-success">
                         {flashStatus}
                     </p>
                 )}
@@ -79,12 +79,12 @@ export default function Login() {
                         showErrors={submitted}
                     />
                     <div className="mb-4 flex items-center justify-between gap-3 text-sm">
-                        <label className="flex min-h-11 items-center gap-2 text-black/70">
+                        <label className="flex min-h-11 items-center gap-2 text-foreground/70">
                             <input
                                 type="checkbox"
                                 checked={data.remember}
                                 onChange={(e) => setData('remember', e.target.checked)}
-                                className="h-[18px] w-[18px] rounded border-black/40 text-tdfc-coral-ink focus:ring-tdfc-coral-ink"
+                                className="h-[18px] w-[18px] rounded border-foreground/40 text-tdfc-coral-ink focus:ring-tdfc-coral-ink"
                             />
                             Remember me
                         </label>

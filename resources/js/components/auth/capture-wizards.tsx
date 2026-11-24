@@ -4,12 +4,12 @@ import PhotoEditor from './photo-editor';
 import PhotoSlot, { PhotoMode, StepHeading, useObjectUrl, wizBtn, wizSecondary } from './photo-slot';
 import { SecondaryButton } from './primary-button';
 
-const note = 'mx-auto mb-4 max-w-[300px] rounded-xl border border-blue-100 bg-blue-50 p-3 text-xs text-blue-700';
+const note = 'mx-auto mb-4 max-w-[300px] rounded-xl border border-brand-blue/30 bg-blue-soft p-3 text-xs text-blue-text';
 
 function ModeChoice({ what, onPick }: { what: string; onPick: (m: PhotoMode) => void }) {
     return (
         <>
-            <p className="mb-3 text-sm text-black/70">Choose how you’d like to provide your {what}</p>
+            <p className="mb-3 text-sm text-foreground/70">Choose how you’d like to provide your {what}</p>
             <div className="mx-auto grid max-w-[300px] gap-3">
                 <button type="button" className={wizBtn} onClick={() => onPick('upload')}>
                     Upload a Photo
@@ -44,7 +44,14 @@ function PrcBody({ initial, onDone, onClose }: { initial: [File | null, File | n
     const [back, setBack] = useState<File | null>(initial[1]);
     const frontUrl = useObjectUrl(front);
     const backUrl = useObjectUrl(back);
-    const prev: Record<PrcStep, PrcStep | null> = { choose: null, front: 'choose', editFront: 'front', back: 'front', editBack: 'back', review: 'back' };
+    const prev: Record<PrcStep, PrcStep | null> = {
+        choose: null,
+        front: 'choose',
+        editFront: 'front',
+        back: 'front',
+        editBack: 'back',
+        review: 'back',
+    };
 
     const isFront = step === 'front' || step === 'editFront';
     const side = isFront ? 'Front' : 'Back';
@@ -122,7 +129,7 @@ function PrcBody({ initial, onDone, onClose }: { initial: [File | null, File | n
                     ).map(([t, u]) => (
                         <figure key={t} className="mb-3 grid justify-items-center gap-2">
                             <figcaption className="font-bold">{t}</figcaption>
-                            {u && <img src={u} alt={t} className="h-auto w-[200px] rounded-xl border-2 border-black/15" />}
+                            {u && <img src={u} alt={t} className="h-auto w-[200px] rounded-xl border-2 border-foreground/15" />}
                         </figure>
                     ))}
                     <div className="mx-auto grid max-w-[300px] gap-3">

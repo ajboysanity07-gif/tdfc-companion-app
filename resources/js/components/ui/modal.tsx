@@ -37,16 +37,16 @@ export default function Modal({ isOpen, onClose, title, children }: ModalProps) 
                             leaveFrom="opacity-100 scale-100"
                             leaveTo="opacity-0 scale-95"
                         >
-                            <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 p-6 text-left align-middle shadow-xl transition-all">
+                            <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-card border border-border p-6 text-left align-middle shadow-xl transition-all">
                                 <div className="flex items-center justify-between mb-6">
-                                    <Dialog.Title as="h3" className="text-lg font-semibold text-gray-900 dark:text-white">
+                                    <Dialog.Title as="h3" className="text-lg font-semibold text-foreground ">
                                         {title}
                                     </Dialog.Title>
                                     <Button
                                         variant="ghost"
                                         size="sm"
                                         onClick={onClose}
-                                        className="h-8 w-8 rounded-full p-0 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+                                        className="h-8 w-8 rounded-full p-0 hover:bg-muted text-muted-foreground hover:text-foreground "
                                     >
                                         <X className="h-4 w-4" />
                                     </Button>

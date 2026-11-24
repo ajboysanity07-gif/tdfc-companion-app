@@ -24,7 +24,7 @@ export default function Modal({ open, onClose, label, bare, className = 'max-w-[
             className={
                 bare
                     ? 'm-0 h-dvh max-h-none w-dvw max-w-none bg-transparent p-0 backdrop:bg-transparent'
-                    : `m-auto max-h-[90dvh] w-[calc(100%-32px)] ${className} overflow-auto rounded-2xl bg-white p-5 text-black shadow-tdfc-modal dark:bg-card dark:text-foreground backdrop:animate-tdfc-fade backdrop:bg-black/50 open:animate-tdfc-pop max-sm:open:animate-tdfc-sheet`
+                    : `m-auto max-h-[90dvh] w-[calc(100%-32px)] ${className} overflow-auto rounded-2xl bg-card p-5 text-foreground shadow-tdfc-modal backdrop:animate-tdfc-fade backdrop:bg-black/50 open:animate-tdfc-pop max-sm:open:animate-tdfc-sheet`
             }
         >
             {open && children}

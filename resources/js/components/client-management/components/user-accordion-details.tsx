@@ -44,7 +44,7 @@ const UserAccordionDetails: React.FC<Props> = ({
     const text = theme.palette.text.primary;
     const mutedText = theme.palette.text.secondary;
     const panelBg = theme.palette.background.paper;
-    const aroundPanelBg = theme.palette.mode === 'light' ? '#f8f8fa' : '#3a3a3a';
+    const aroundPanelBg = theme.palette.mode === 'light' ? 'var(--muted)' : 'var(--muted)';
 
     const [salaryPopoverAnchor, setSalaryPopoverAnchor] = React.useState<null | HTMLElement>(null);
     const [latestSalary, setLatestSalary] = React.useState(user?.salary_amount ? user.salary_amount.toString() : '');
@@ -492,7 +492,7 @@ const UserAccordionDetails: React.FC<Props> = ({
                             <Typography
                                 sx={{
                                     fontWeight: 700,
-                                    color: '#f57979', // match 'Client Details:' label color
+                                    color: 'var(--red-text)', // match 'Client Details:' label color
                                     fontSize: { xs: '1.1rem', sm: '1.2rem', md: '1.25rem' },
                                     mb: 0.5,
                                 }}
@@ -557,7 +557,7 @@ const UserAccordionDetails: React.FC<Props> = ({
                                         border: 'none',
                                         cursor: 'pointer',
                                         fontWeight: 700,
-                                        color: '#f57979',
+                                        color: 'var(--red-text)',
                                         fontSize: 'clamp(1.1rem, 3vw, 1.25rem)',
                                         padding: 0,
                                         textDecoration: 'underline',
@@ -567,12 +567,11 @@ const UserAccordionDetails: React.FC<Props> = ({
                                         gap: '0.3em',
                                     }}
                                     onMouseEnter={(e) => {
-                                        e.currentTarget.style.color = '#d32f2f';
+                                        e.currentTarget.style.color = 'color-mix(in oklch, var(--red-text) 80%, black)';
                                         e.currentTarget.style.fontSize = 'clamp(1.15rem, 3.2vw, 1.3rem)';
                                     }}
                                     onMouseLeave={(e) => {
-                                        e.currentTarget.style.color = '#f57979';
-                                        e.currentTarget.style.fontSize = 'clamp(1.1rem, 3vw, 1.25rem)';
+                                        e.currentTarget.style.color = 'var(--red-text)';                                        e.currentTarget.style.fontSize = 'clamp(1.1rem, 3vw, 1.25rem)';
                                     }}
                                 >
                                     <span>Set Basic Salary:</span>
@@ -584,7 +583,7 @@ const UserAccordionDetails: React.FC<Props> = ({
                             variant="body1"
                             sx={{
                                 fontWeight: 900,
-                                color: '#1976d2',
+                                color: 'var(--blue-text)',
                                 textAlign: 'center',
                                 fontSize: { xs: '1.08rem', sm: '1.16rem', md: '1.28rem' },
                                 mt: 0.8,

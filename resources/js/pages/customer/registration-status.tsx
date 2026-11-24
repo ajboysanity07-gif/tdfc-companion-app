@@ -65,11 +65,11 @@ export default function RegistrationStatus({
   const errorBorder =
     theme.palette.mode === 'dark'
       ? `1.5px solid ${alpha(theme.palette.error.main, 0.34)}`
-      : '1.5px solid #F57979';
+      : '1.5px solid var(--brand-red)';
   const errorBg =
     theme.palette.mode === 'dark'
       ? alpha(theme.palette.error.main, 0.08)
-      : '#FFF8F8';
+      : 'var(--red-soft)';
 
   const headlineFont = theme.typography.h4?.fontFamily ?? 'inherit';
   const welcomeFontSize = theme.typography.subtitle1?.fontSize ?? '16px';
@@ -88,7 +88,7 @@ export default function RegistrationStatus({
   return (
     <MinimalLayout>
       <Head title={status === 'pending' ? 'Registration Under Review' : 'Registration Rejected'} />
-<div className="h-screen w-full bg-gray-100 dark:bg-neutral-900 flex items-center justify-center px-2 overflow-hidden">
+<div className="h-screen w-full bg-page flex items-center justify-center px-2 overflow-hidden">
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
@@ -96,7 +96,7 @@ export default function RegistrationStatus({
       w-full max-h-50vh
       ${isMobile ? "" : "max-w-xl"}
       ${isMobile ? "" : "rounded-3xl"}
-      border border-gray-200 bg-white text-center shadow-xl
+      border border-border bg-card text-center shadow-xl
       dark:border-neutral-700 dark:bg-neutral-800
       ${isMobile ? "py-6 px-4" : "py-10 px-10"}
       mx-auto
@@ -136,26 +136,26 @@ export default function RegistrationStatus({
             <div
               className={`mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-full ${
                 status === 'pending'
-                  ? 'bg-yellow-100 dark:bg-yellow-900/30'
-                  : 'bg-red-100 dark:bg-red-900/30'
+                  ? 'bg-yellow-soft'
+                  : 'bg-red-soft'
               }`}
             >
               <span className="text-5xl">{status === 'pending' ? '⏳' : '❌'}</span>
             </div>
-            <h2 className="mb-2 text-2xl font-bold text-gray-900 dark:text-neutral-100">
+            <h2 className="mb-2 text-2xl font-bold text-foreground">
               {status === 'pending' ? 'Under Review' : 'Registration Rejected'}
             </h2>
-            <p className="text-gray-600 dark:text-neutral-400">
+            <p className="text-muted-foreground">
               {status === 'pending'
                 ? 'Your registration is currently being reviewed by our team.'
                 : 'Unfortunately, your registration could not be approved at this time.'}
             </p>
           </div>
 
-          <div className="mb-6 rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-neutral-700 dark:bg-neutral-900">
+          <div className="mb-6 rounded-xl border border-border bg-muted p-4">
             <div className="mb-2 flex items-center justify-between">
-              <span className="text-sm text-gray-600 dark:text-neutral-400">Submitted</span>
-              <span className="text-sm font-medium text-gray-900 dark:text-neutral-100">
+              <span className="text-sm text-muted-foreground">Submitted</span>
+              <span className="text-sm font-medium text-foreground">
                 {new Date(submitted_at).toLocaleDateString('en-US', {
                   year: 'numeric',
                   month: 'long',
@@ -164,7 +164,7 @@ export default function RegistrationStatus({
               </span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600 dark:text-neutral-400">Status</span>
+              <span className="text-sm text-muted-foreground">Status</span>
               <span
                 style={{
                   paddingLeft: '12px',
@@ -178,18 +178,18 @@ export default function RegistrationStatus({
                     status === 'pending'
                       ? theme.palette.mode === 'dark'
                         ? alpha(theme.palette.warning.main, 0.15)
-                        : '#FEF3C7'
+                        : 'var(--yellow-soft)'
                       : theme.palette.mode === 'dark'
                       ? alpha(theme.palette.error.main, 0.15)
-                      : '#FEE2E2',
+                      : 'var(--red-soft)',
                   color:
                     status === 'pending'
                       ? theme.palette.mode === 'dark'
                         ? theme.palette.warning.light
-                        : '#92400E'
+                        : 'var(--yellow-text)'
                       : theme.palette.mode === 'dark'
                       ? theme.palette.error.light
-                      : '#991B1B',
+                      : 'var(--red-text)',
                 }}
               >
                 {status === 'pending' ? 'Pending' : 'Rejected'}
@@ -197,23 +197,23 @@ export default function RegistrationStatus({
             </div>
             {reviewed_at && status === 'rejected' && (
               <div className="mt-2 flex items-center justify-between">
-                <span className="text-sm text-gray-600 dark:text-neutral-400">Reviewed on</span>
-                <span className="text-sm font-medium text-gray-900 dark:text-neutral-100">
+                <span className="text-sm text-muted-foreground">Reviewed on</span>
+                <span className="text-sm font-medium text-foreground">
                   {new Date(reviewed_at).toLocaleDateString()}
                 </span>
               </div>
             )}
             {reviewed_by && status === 'rejected' && (
               <div className="mt-2 flex items-center justify-between">
-                <span className="text-sm text-gray-600 dark:text-neutral-400">Reviewed by</span>
-                <span className="text-sm font-medium text-gray-900 dark:text-neutral-100">{reviewed_by}</span>
+                <span className="text-sm text-muted-foreground">Reviewed by</span>
+                <span className="text-sm font-medium text-foreground">{reviewed_by}</span>
               </div>
             )}
           </div>
 
           {status === 'rejected' && rejection_reasons && rejection_reasons.length > 0 && (
             <div className="mb-6">
-              <h3 className="mb-2 text-left font-semibold text-gray-900 dark:text-neutral-100">Reasons for Rejection:</h3>
+              <h3 className="mb-2 text-left font-semibold text-foreground">Reasons for Rejection:</h3>
               <div
                 style={{
                   border: errorBorder,
@@ -260,7 +260,7 @@ export default function RegistrationStatus({
                   />
                 )}
                 {(errors.prc_id_photo_front || errors.prc_id_photo_back || errors.payslip_photo) && (
-                  <div className="mb-2 text-sm text-red-600">
+                  <div className="mb-2 text-sm text-destructive">
                     {errors.prc_id_photo_front || errors.prc_id_photo_back || errors.payslip_photo}
                   </div>
                 )}
@@ -304,7 +304,7 @@ export default function RegistrationStatus({
               />
             </div>
           )}
-          <p className={`mb-6 text-sm text-gray-500 dark:text-neutral-400 ${isMobile ? "px-2" : ""}`}>
+          <p className={`mb-6 text-sm text-muted-foreground ${isMobile ? "px-2" : ""}`}>
             {status === 'pending'
               ? "We'll notify you once your registration has been reviewed. This typically takes 1-2 business days."
               : 'Please address the issues above and submit a new registration.'}

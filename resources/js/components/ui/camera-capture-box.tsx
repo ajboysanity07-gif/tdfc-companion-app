@@ -251,14 +251,14 @@ const handleTapToFocus = async (e: React.MouseEvent<HTMLDivElement>) => {
 
   return (
     <div className="flex flex-col items-center w-full px-0">
-      <h3 className="font-semibold text-lg mb-4 text-gray-700">{`Capture ${label}`}</h3>
+      <h3 className="font-semibold text-lg mb-4 text-foreground">{`Capture ${label}`}</h3>
       <div
-        className="border-2 border-dashed border-gray-400 mx-0 mb-6 bg-white shadow-lg relative"
+        className="border-2 border-dashed border-border mx-0 mb-6 bg-card shadow-lg relative"
         style={{ aspectRatio: '1.585', width: '100%', maxWidth: '100%', borderRadius: 18, overflow: 'hidden' }}
       >
         {error ? (
           <div className="w-full h-full flex items-center justify-center">
-            <span className="text-center text-sm text-red-600 px-4">{error}</span>
+            <span className="text-center text-sm text-destructive px-4">{error}</span>
           </div>
         ) : showPreview && capturedImage ? (
           <img src={capturedImage} alt="Captured" className="w-full h-full object-cover" />
@@ -333,14 +333,14 @@ const handleTapToFocus = async (e: React.MouseEvent<HTMLDivElement>) => {
         <div className="flex gap-3">
           <button
             type="button"
-            className="px-6 py-3 rounded-full border-2 border-gray-300 bg-white text-gray-700 font-semibold flex items-center gap-2 shadow hover:bg-gray-100 transition"
+            className="px-6 py-3 rounded-full border-2 border-border bg-card text-foreground font-semibold flex items-center gap-2 shadow hover:bg-muted transition"
             onClick={handleRetry}
           >
             <RotateCcw className="w-5 h-5" /> Retake
           </button>
           <button
             type="button"
-            className="px-6 py-3 rounded-full bg-[#F57979] text-white font-bold shadow-md hover:bg-[#ea5b5b] transition"
+            className="px-6 py-3 rounded-full bg-brand-red text-brand-ink font-bold shadow-md hover:bg-[color-mix(in_oklch,var(--brand-red)_88%,black)] transition"
             onClick={handleSave}
           >
             Next

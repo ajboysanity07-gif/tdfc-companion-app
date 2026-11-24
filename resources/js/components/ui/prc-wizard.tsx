@@ -9,8 +9,8 @@ type WizardStep = 1 | 2 | 3 | 4;
 const aspectRect = 1.585;
 
 const StepHeader: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <div className="w-full flex flex-col items-center sticky top-0 z-20 bg-white pt-2 pb-2 border-b border-gray-200">
-    <span className="text-xl font-bold text-[#F57979] tracking-tight mb-2 mt-1">{children}</span>
+  <div className="w-full flex flex-col items-center sticky top-0 z-20 bg-card pt-2 pb-2 border-b border-border">
+    <span className="text-xl font-bold text-red-text tracking-tight mb-2 mt-1">{children}</span>
   </div>
 );
 
@@ -34,8 +34,8 @@ const SamplePreview: React.FC<{ showFront?: boolean; showBack?: boolean; caption
         className="w-[70vw] max-w-[300px] h-auto object-contain mb-4 mt-5"
       />
     )}
-    <div className="bg-blue-50 rounded-xl p-4 mb-5 border w-[80vw] max-w-[300px] text-center border-blue-100">
-      <span className="block text-xs text-blue-500">{caption}</span>
+    <div className="bg-blue-soft rounded-xl p-4 mb-5 border w-[80vw] max-w-[300px] text-center border-brand-blue/30">
+      <span className="block text-xs text-blue-text">{caption}</span>
     </div>
   </div>
 );
@@ -168,7 +168,7 @@ const PRCIDWizard = ({
           transition={{ duration: 0.3 }}
         >
           <motion.div
-            className="bg-white shadow-2xl w-full mx-auto flex flex-col relative overflow-hidden
+            className="bg-card shadow-2xl w-full mx-auto flex flex-col relative overflow-hidden
                       h-screen md:h-[950px] md:max-h-[90vh] md:rounded-2xl md:max-w-lg"
             initial={{ y: "100%", opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -203,13 +203,13 @@ const PRCIDWizard = ({
                         caption="*Your payslip photos (front and back) should be clear and all details legible."
                       />
                       <div className="flex flex-col items-center">
-                        <p className="text-sm text-gray-600 mb-3 w-[80vw] max-w-[300px] text-center">
+                        <p className="text-sm text-muted-foreground mb-3 w-[80vw] max-w-[300px] text-center">
                           Choose how you'd like to provide your PRC ID photos
                         </p>
                         <div className="space-y-4 w-full max-w-xs">
                           <button
                             type="button"
-                            className="w-full px-6 py-4 bg-[#F57979] hover:bg-[#ea5b5b] text-white rounded-xl font-bold shadow-md transition flex items-center justify-center gap-3"
+                            className="w-full px-6 py-4 bg-brand-red hover:bg-[color-mix(in_oklch,var(--brand-red)_88%,black)] text-brand-ink rounded-xl font-bold shadow-md transition flex items-center justify-center gap-3"
                             onClick={() => {
                               setMode("upload");
                               goToStep(2);
@@ -220,7 +220,7 @@ const PRCIDWizard = ({
                           </button>
                           <button
                             type="button"
-                            className="w-full px-6 py-4 bg-[#F57979] hover:bg-[#ea5b5b] text-white rounded-xl font-bold shadow-md transition flex items-center justify-center gap-3"
+                            className="w-full px-6 py-4 bg-brand-red hover:bg-[color-mix(in_oklch,var(--brand-red)_88%,black)] text-brand-ink rounded-xl font-bold shadow-md transition flex items-center justify-center gap-3"
                             onClick={() => {
                               setMode("camera");
                               goToStep(2);
@@ -241,7 +241,7 @@ const PRCIDWizard = ({
                         showFront
                         caption="Upload a photo of your payslip's front side. Make sure it's clear, legible, and no sections are cut off."
                       />
-                      <div className="w-[310px] place-self-center h-px bg-gray-200 mb-5" />
+                      <div className="w-[310px] place-self-center h-px bg-muted mb-5" />
                       <PrcIdCropBox
                         label="Front PRC ID"
                         aspect={aspectRect}
@@ -261,7 +261,7 @@ const PRCIDWizard = ({
                         showBack
                         caption="Now upload the back side. Ensure the back is well-lit and text is crisp."
                       />
-                      <div className="w-[310px] place-self-center h-px bg-gray-200 mb-5" />
+                      <div className="w-[310px] place-self-center h-px bg-muted mb-5" />
                       <PrcIdCropBox
                         label="Back PRC ID"
                         aspect={aspectRect}
@@ -281,7 +281,7 @@ const PRCIDWizard = ({
                         showFront
                         caption="Capture a clear photo of the front. Align your payslip with the example shown."
                       />
-                      <div className="w-[310px] place-self-center h-px bg-gray-200 mb-5" />
+                      <div className="w-[310px] place-self-center h-px bg-muted mb-5" />
                       <CameraCaptureBox
                         label="Front PRC ID"
                         onCapture={(imgSrc) => {
@@ -301,7 +301,7 @@ const PRCIDWizard = ({
                         showBack
                         caption="Capture the back. Make sure the backside is not blurred or cropped out."
                       />
-                      <div className="w-[310px] place-self-center h-px bg-gray-200 mb-5" />
+                      <div className="w-[310px] place-self-center h-px bg-muted mb-5" />
                       <CameraCaptureBox
                         label="Back PRC ID"
                         onCapture={(imgSrc) => {
@@ -321,23 +321,23 @@ const PRCIDWizard = ({
       <img
         src="/images/prc-sample-front.png"
         alt="PRC ID Sample Front"
-        className="w-40 h-auto rounded-lg border border-gray-200 shadow-sm"
+        className="w-40 h-auto rounded-lg border border-border shadow-sm"
       />
       <img
         src="/images/prc-sample-back.png"
         alt="PRC ID Sample Back"
-        className="w-40to rounded-lg border border-gray-200 shadow-sm"
+        className="w-40to rounded-lg border border-border shadow-sm"
       />
     </div>
-    <div className="bg-blue-50 rounded-xl p-3 mb-5 mt-2 border text-center border-blue-100 w-full max-w-[320px] mx-auto">
-      <span className="block text-xs text-blue-500">
+    <div className="bg-blue-soft rounded-xl p-3 mb-5 mt-2 border text-center border-brand-blue/30 w-full max-w-[320px] mx-auto">
+      <span className="block text-xs text-blue-text">
         Compare your submitted payslips to these samples. Only proceed if your uploads match the clarity and alignment.
       </span>
     </div>
-    <div className="w-40 place-self-center h-px bg-gray-200 mb-3" />
+    <div className="w-40 place-self-center h-px bg-muted mb-3" />
     <div className="flex flex-col items-center justify-center w-full">
-      <span className="mb-2 text-base font-bold text-gray-700">Front PRC ID</span>
-      <div className="bg-white border-2 border-gray-300 shadow-lg rounded-xl w-6036px] flex items-center justify-center mb-4">
+      <span className="mb-2 text-base font-bold text-foreground">Front PRC ID</span>
+      <div className="bg-card border-2 border-border shadow-lg rounded-xl w-6036px] flex items-center justify-center mb-4">
         {getFinalPreviews().front ? (
           <img
             src={getFinalPreviews().front!}
@@ -345,12 +345,12 @@ const PRCIDWizard = ({
             alt="Front PRC ID Preview"
           />
         ) : (
-          <span className="text-sm text-gray-400">No Photo</span>
+          <span className="text-sm text-muted-foreground">No Photo</span>
         )}
       </div>
 
-      <span className="mb-2 text-base font-bold text-gray-700">Back PRC ID</span>
-      <div className="bg-white border-2 border-gray-300 shadow-lg rounded-xl w-60 h-[136px] flex items-center justify-center mb-3">
+      <span className="mb-2 text-base font-bold text-foreground">Back PRC ID</span>
+      <div className="bg-card border-2 border-border shadow-lg rounded-xl w-60 h-[136px] flex items-center justify-center mb-3">
         {getFinalPreviews().back ? (
           <img
             src={getFinalPreviews().back!}
@@ -358,7 +358,7 @@ const PRCIDWizard = ({
             alt="Back PRC ID Preview"
           />
         ) : (
-          <span className="text-sm text-gray-400">No Photo</span>
+          <span className="text-sm text-muted-foreground">No Photo</span>
         )}
       </div>
 
@@ -367,7 +367,7 @@ const PRCIDWizard = ({
                           {mode === "upload" && (
                             <button
                               type="button"
-                              className="w-full py-2 px-4 text-sm rounded-full font-semibold border border-blue-500 bg-blue-50 text-blue-600 rounded-cardrounded-card transition hover:bg-blue-100 flex items-center justify-center gap-2"
+                              className="w-full py-2 px-4 text-sm rounded-full font-semibold border border-brand-blue bg-blue-soft text-blue-text rounded-cardrounded-card transition hover:bg-blue-soft flex items-center justify-center gap-2"
                               onClick={switchToCamera}
                             >
                               <Camera className="w-4 h-4" />
@@ -377,7 +377,7 @@ const PRCIDWizard = ({
                           {mode === "upload" && (
                             <button
                               type="button"
-                              className="w-full py-2 px-4 text-sm font-semibold border border-gray-300 bg-gray-50 text-gray-700 rounded-card transition hover:bg-gray-100 flex items-center justify-center gap-2"
+                              className="w-full py-2 px-4 text-sm font-semibold border border-border bg-muted text-foreground rounded-card transition hover:bg-muted flex items-center justify-center gap-2"
                               onClick={reUploadPhotos}
                             >
                               <RotateCcw className="w-4 h-4" />
@@ -387,7 +387,7 @@ const PRCIDWizard = ({
                           {mode === "camera" && (
                             <button
                               type="button"
-                              className="w-full py-2 px-4 text-sm font-semibold border border-gray-300 bg-gray-50 text-gray-700 rounded-card transition hover:bg-gray-100 flex items-center justify-center gap-2"
+                              className="w-full py-2 px-4 text-sm font-semibold border border-border bg-muted text-foreground rounded-card transition hover:bg-muted flex items-center justify-center gap-2"
                               onClick={reTakePhotos}
                             >
                               <RotateCcw className="w-4 h-4" />
@@ -397,7 +397,7 @@ const PRCIDWizard = ({
                           {mode === "camera" && (
                             <button
                               type="button"
-                              className="w-full py-2 px-4 text-sm font-semibold border border-blue-500 bg-blue-50 text-blue-600 rounded-card transition hover:bg-blue-100 flex items-center justify-center gap-2"
+                              className="w-full py-2 px-4 text-sm font-semibold border border-brand-blue bg-blue-soft text-blue-text rounded-card transition hover:bg-blue-soft flex items-center justify-center gap-2"
                               onClick={reUploadPhotos}
                             >
                               <SwitchCamera className="w-4 h-4" />
@@ -407,7 +407,7 @@ const PRCIDWizard = ({
                           <button
                             type="button"
                             disabled={!getFinalPreviews().front || !getFinalPreviews().back}
-                            className="w-full py-2 px-4 text-sm font-semibold rounded-card bg-[#F57979] text-white shadow transition hover:bg-[#ea5b5b] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                            className="w-full py-2 px-4 text-sm font-semibold rounded-card bg-brand-red text-brand-ink shadow transition hover:bg-[color-mix(in_oklch,var(--brand-red)_88%,black)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                             onClick={() => {
                               const { front, back } = getFinalFiles();
                               onComplete(front, back);
@@ -424,10 +424,10 @@ const PRCIDWizard = ({
                 </motion.div>
               </AnimatePresence>
             </div>
-            <div className="sticky bottom-0 left-0 w-full py-5 flex flex-row gap-4 justify-center items-center bg-white border-t border-gray-200 shadow-lg">
+            <div className="sticky bottom-0 left-0 w-full py-5 flex flex-row gap-4 justify-center items-center bg-card border-t border-border shadow-lg">
               <button
                 type="button"
-                className="w-32 py-3 border rounded-full border-gray-300 bg-white text-black font-semibold transition hover:bg-gray-50"
+                className="w-32 py-3 border rounded-full border-border bg-card text-foreground font-semibold transition hover:bg-muted"
                 onClick={() => {
                   if (step === 1) {
                     resetWizard();
@@ -441,7 +441,7 @@ const PRCIDWizard = ({
               </button>
               <button
                 type="button"
-                className="w-32 py-3 border rounded-full border-gray-300 bg-gray-100 text-black font-semibold transition hover:bg-gray-200"
+                className="w-32 py-3 border rounded-full border-border bg-muted text-foreground font-semibold transition hover:bg-muted"
                 onClick={() => {
                   resetWizard();
                   onCancel();

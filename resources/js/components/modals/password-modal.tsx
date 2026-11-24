@@ -1,10 +1,10 @@
-import { useForm } from '@inertiajs/react';
+import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import InputError from '@/components/input-error';
 import { Transition } from '@headlessui/react';
-import { useRef, useEffect, useState } from 'react';
+import { useForm } from '@inertiajs/react';
+import { useEffect, useRef, useState } from 'react';
 
 interface PasswordModalProps {
     onClose: () => void;
@@ -69,7 +69,7 @@ export default function PasswordModal({ onClose }: PasswordModalProps) {
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid gap-2">
-                <Label htmlFor="current_password" className="text-gray-700 dark:text-gray-300 font-medium">
+                <Label htmlFor="current_password" className="font-medium text-foreground">
                     Current Password
                 </Label>
                 <Input
@@ -78,7 +78,7 @@ export default function PasswordModal({ onClose }: PasswordModalProps) {
                     type="password"
                     value={data.current_password}
                     onChange={(e) => setData('current_password', e.target.value)}
-                    className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600 focus:ring-blue-500 focus:border-blue-500"
+                    className="border-border bg-card text-foreground focus:border-brand-blue focus:ring-ring"
                     autoComplete="current-password"
                     placeholder="Enter current password"
                 />
@@ -86,7 +86,7 @@ export default function PasswordModal({ onClose }: PasswordModalProps) {
             </div>
 
             <div className="grid gap-2">
-                <Label htmlFor="password" className="text-gray-700 dark:text-gray-300 font-medium">
+                <Label htmlFor="password" className="font-medium text-foreground">
                     New Password
                 </Label>
                 <Input
@@ -95,8 +95,8 @@ export default function PasswordModal({ onClose }: PasswordModalProps) {
                     type="password"
                     value={data.password}
                     onChange={(e) => setData('password', e.target.value)}
-                    className={`bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600 focus:ring-blue-500 focus:border-blue-500 ${
-                        pwValid === false ? 'border-red-300 focus:border-red-400 focus:ring-red-300' : ''
+                    className={`border-border bg-card text-foreground focus:border-brand-blue focus:ring-ring ${
+                        pwValid === false ? 'border-destructive/40 focus:border-destructive focus:ring-destructive/30' : ''
                     }`}
                     autoComplete="new-password"
                     placeholder="Enter new password"
@@ -105,7 +105,7 @@ export default function PasswordModal({ onClose }: PasswordModalProps) {
             </div>
 
             <div className="grid gap-2">
-                <Label htmlFor="password_confirmation" className="text-gray-700 dark:text-gray-300 font-medium">
+                <Label htmlFor="password_confirmation" className="font-medium text-foreground">
                     Confirm New Password
                 </Label>
                 <Input
@@ -113,21 +113,21 @@ export default function PasswordModal({ onClose }: PasswordModalProps) {
                     type="password"
                     value={data.password_confirmation}
                     onChange={(e) => setData('password_confirmation', e.target.value)}
-                    className={`bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600 focus:ring-blue-500 focus:border-blue-500 ${
-                        pwMatch === false ? 'border-red-300 focus:border-red-400 focus:ring-red-300' : ''
+                    className={`border-border bg-card text-foreground focus:border-brand-blue focus:ring-ring ${
+                        pwMatch === false ? 'border-destructive/40 focus:border-destructive focus:ring-destructive/30' : ''
                     }`}
                     autoComplete="new-password"
                     placeholder="Confirm new password"
                 />
-                
+
                 {/* Unified status line (same as register.tsx) */}
                 <div className="mt-1 min-h-[1.25rem] text-xs" role="status" aria-live="polite">
                     {errors.password_confirmation ? (
-                        <span className="text-red-600">{errors.password_confirmation}</span>
+                        <span className="text-destructive">{errors.password_confirmation}</span>
                     ) : pwMatch === false ? (
-                        <span className="text-red-600">Passwords do not match.</span>
+                        <span className="text-destructive">Passwords do not match.</span>
                     ) : pwMatch === true ? (
-                        <span className="text-emerald-600">Passwords match.</span>
+                        <span className="text-success">Passwords match.</span>
                     ) : (
                         <span className="invisible">.</span>
                     )}
@@ -135,19 +135,10 @@ export default function PasswordModal({ onClose }: PasswordModalProps) {
             </div>
 
             <div className="flex items-center gap-4 pt-4">
-                <Button 
-                    disabled={!canSubmit} 
-                    className="flex-1" 
-                    type="submit"
-                >
+                <Button disabled={!canSubmit} className="flex-1" type="submit">
                     Update Password
                 </Button>
-                <Button 
-                    variant="outline" 
-                    onClick={onClose} 
-                    type="button" 
-                    className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
-                >
+                <Button variant="outline" onClick={onClose} type="button" className="border-border text-foreground hover:bg-muted">
                     Cancel
                 </Button>
             </div>
@@ -159,7 +150,7 @@ export default function PasswordModal({ onClose }: PasswordModalProps) {
                 leave="transition ease-in-out"
                 leaveTo="opacity-0"
             >
-                <p className="text-sm text-green-600 dark:text-green-400">Password updated successfully!</p>
+                <p className="text-sm text-success">Password updated successfully!</p>
             </Transition>
         </form>
     );

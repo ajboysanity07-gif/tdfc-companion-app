@@ -37,7 +37,7 @@ export default function AdminDashboard() {
                             You are logged in as <b className="ml-1 rounded-md bg-tdfc-sun px-2 py-0.5 text-xs text-[oklch(.3_.07_85)] uppercase">{user.role}</b>
                         </p>
                     </div>
-                    <div className="hidden size-18 place-items-center overflow-hidden rounded-full bg-white shadow-sm md:grid">
+                    <div className="hidden size-18 place-items-center overflow-hidden rounded-full bg-card shadow-sm md:grid">
                         {user.avatar ? <img src={user.avatar} alt={`${user.name} profile photo`} className="size-full object-cover" /> : <User className="size-9 text-tdfc-coral" />}
                     </div>
                 </section>
@@ -93,8 +93,8 @@ export default function AdminDashboard() {
                     <Link href="/admin/client-management" className={tile} style={riseStyle(1)}>
                         <Tile icon={<Users className="size-8.5" />} title="Manage Clients" sub="Access client profiles and handle requests efficiently." />
                     </Link>
-                    <button type="button" onClick={() => router.post('/logout')} style={riseStyle(2)} className={`${tile} !border-tdfc-coral !bg-tdfc-coral text-tdfc-on-coral hover:!bg-[color-mix(in_oklch,#f57979_88%,black)] [&>span:last-child]:!text-[oklch(.25_.05_24)]`}>
-                        <Tile icon={<LogOut className="size-8.5" />} title="Log Out" sub="End your current session securely." className="bg-white/35 text-tdfc-on-coral" />
+                    <button type="button" onClick={() => router.post('/logout')} style={riseStyle(2)} className={`${tile} !border-tdfc-coral !bg-tdfc-coral text-tdfc-on-coral hover:!bg-[color-mix(in_oklch,var(--brand-red)_88%,black)] [&>span:last-child]:!text-brand-ink`}>
+                        <Tile icon={<LogOut className="size-8.5" />} title="Log Out" sub="End your current session securely." className="bg-card/35 text-tdfc-on-coral" />
                     </button>
                 </section>
             </div>

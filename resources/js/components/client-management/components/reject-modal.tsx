@@ -30,13 +30,13 @@ const RejectModal: React.FC<Props> = ({
     : `1.5px solid ${theme.palette.divider}`;
   const fieldsetBg = theme.palette.mode === 'dark'
     ? alpha(theme.palette.background.default, 0.93)
-    : '#FAFBFB';
+    : 'var(--muted)';
   const errorBg = theme.palette.mode === 'dark'
     ? alpha(theme.palette.error.main, 0.12)
-    : '#FFF1F1';
+    : 'var(--red-soft)';
   const errorBorder = theme.palette.mode === 'dark'
     ? alpha(theme.palette.error.main, 0.34)
-    : '#F57979';
+    : 'var(--brand-red)';
 
   return (
     <AnimatePresence>

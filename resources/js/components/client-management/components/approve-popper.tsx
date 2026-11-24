@@ -16,7 +16,7 @@ function ArrowDown({ color }: { color: string }) {
       pointerEvents: 'none'
     }}>
       <svg width="24" height="12" viewBox="0 0 24 12" fill="none">
-        <path d="M2 2L12 11L22 2" stroke="#eee" strokeWidth="2" fill="none"/>
+        <path d="M2 2L12 11L22 2" stroke="var(--border)" strokeWidth="2" fill="none"/>
         <polygon points="4,2 12,9 20,2" fill={color}/>
       </svg>
     </Box>
@@ -47,7 +47,7 @@ const ApprovePopper: React.FC<Props> = ({
   const borderColor =
     theme.palette.mode === "dark"
       ? alpha(theme.palette.divider, 0.32)
-      : "#eee";
+      : "var(--border)";
   const arrowColor = popperBg;
 
   useEffect(() => {

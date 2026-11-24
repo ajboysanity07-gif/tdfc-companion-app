@@ -60,6 +60,20 @@
     --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-ring: var(--sidebar-ring);
+
+    --color-page: var(--page);
+    --color-brand-red: var(--brand-red);
+    --color-brand-yellow: var(--brand-yellow);
+    --color-brand-blue: var(--brand-blue);
+    --color-brand-ink: var(--brand-ink);
+    --color-red-text: var(--red-text);
+    --color-red-soft: var(--red-soft);
+    --color-yellow-text: var(--yellow-text);
+    --color-yellow-soft: var(--yellow-soft);
+    --color-blue-text: var(--blue-text);
+    --color-blue-soft: var(--blue-soft);
+    --color-success: var(--success);
+    --color-success-soft: var(--success-soft);
 }
 
 :root {
@@ -74,14 +88,14 @@
     --secondary: oklch(0.97 0 0);
     --secondary-foreground: oklch(0.205 0 0);
     --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
+    --muted-foreground: oklch(0.5 0 0);
     --accent: oklch(0.97 0 0);
     --accent-foreground: oklch(0.205 0 0);
-    --destructive: oklch(0.577 0.245 27.325);
-    --destructive-foreground: oklch(0.577 0.245 27.325);
+    --destructive: oklch(0.577 0.245 27.3);
+    --destructive-foreground: oklch(0.577 0.245 27.3);
     --border: oklch(0.922 0 0);
     --input: oklch(0.922 0 0);
-    --ring: oklch(0.87 0 0);
+    --ring: oklch(0.708 0 0);
     --chart-1: oklch(0.646 0.222 41.116);
     --chart-2: oklch(0.6 0.118 184.704);
     --chart-3: oklch(0.398 0.07 227.392);
@@ -95,42 +109,69 @@
     --sidebar-accent: oklch(0.97 0 0);
     --sidebar-accent-foreground: oklch(0.205 0 0);
     --sidebar-border: oklch(0.922 0 0);
-    --sidebar-ring: oklch(0.87 0 0);
+    --sidebar-ring: oklch(0.708 0 0);
+    --page: oklch(0.975 0 0);
+
+    /* brand (sampled from the TDFC logo) */
+    --brand-red: #da5655;
+    --brand-yellow: #f9de7c;
+    --brand-blue: #1074df;
+    --brand-ink: oklch(0.16 0.03 24);
+    --red-text: oklch(0.52 0.16 24);
+    --yellow-text: oklch(0.45 0.09 85);
+    --blue-text: oklch(0.5 0.19 258);
+    --red-soft: color-mix(in oklch, var(--brand-red) 16%, white);
+    --yellow-soft: color-mix(in oklch, var(--brand-yellow) 35%, white);
+    --blue-soft: color-mix(in oklch, var(--brand-blue) 12%, white);
+    --success: oklch(0.55 0.14 155);
+    --success-soft: oklch(0.96 0.04 155);
 }
 
 .dark {
     --background: oklch(0.145 0 0);
     --foreground: oklch(0.985 0 0);
-    --card: oklch(0.145 0 0);
+    --card: oklch(0.175 0 0);
     --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.145 0 0);
+    --popover: oklch(0.175 0 0);
     --popover-foreground: oklch(0.985 0 0);
     --primary: oklch(0.985 0 0);
     --primary-foreground: oklch(0.205 0 0);
-    --secondary: oklch(0.269 0 0);
+    --secondary: oklch(0.24 0 0);
     --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-    --accent: oklch(0.269 0 0);
+    --muted: oklch(0.24 0 0);
+    --muted-foreground: oklch(0.76 0 0);
+    --accent: oklch(0.24 0 0);
     --accent-foreground: oklch(0.985 0 0);
-    --destructive: oklch(0.396 0.141 25.723);
-    --destructive-foreground: oklch(0.637 0.237 25.331);
-    --border: oklch(0.269 0 0);
-    --input: oklch(0.269 0 0);
-    --ring: oklch(0.439 0 0);
+    --destructive: oklch(0.7 0.19 25);
+    --destructive-foreground: oklch(0.7 0.19 25);
+    --border: oklch(0.27 0 0);
+    --input: oklch(0.32 0 0);
+    --ring: oklch(0.55 0 0);
     --chart-1: oklch(0.488 0.243 264.376);
     --chart-2: oklch(0.696 0.17 162.48);
     --chart-3: oklch(0.769 0.188 70.08);
     --chart-4: oklch(0.627 0.265 303.9);
     --chart-5: oklch(0.645 0.246 16.439);
-    --sidebar: oklch(0.205 0 0);
+    --sidebar: oklch(0.145 0 0);
     --sidebar-foreground: oklch(0.985 0 0);
     --sidebar-primary: oklch(0.985 0 0);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.269 0 0);
+    --sidebar-primary-foreground: oklch(0.205 0 0);
+    --sidebar-accent: oklch(0.24 0 0);
     --sidebar-accent-foreground: oklch(0.985 0 0);
-    --sidebar-border: oklch(0.269 0 0);
-    --sidebar-ring: oklch(0.439 0 0);
+    --sidebar-border: oklch(0.27 0 0);
+    --sidebar-ring: oklch(0.55 0 0);
+    --page: oklch(0.145 0 0);
+
+    --red-text: oklch(0.74 0.14 24);
+    --yellow-text: oklch(0.86 0.1 90);
+    --blue-text: oklch(0.76 0.12 258);
+    --red-soft: color-mix(in oklch, var(--brand-red) 20%, var(--card));
+    --yellow-soft: color-mix(in oklch, var(--brand-yellow) 18%, var(--card));
+    --blue-soft: color-mix(in oklch, var(--brand-blue) 22%, var(--card));
+    --success: oklch(0.72 0.15 155);
+    --success-soft: color-mix(in oklch, var(--success) 18%, var(--card));
+    --color-tdfc-line: oklch(0.45 0 0);
+    --color-tdfc-card-line: var(--border);
 }
 
 @layer base {
@@ -160,27 +201,27 @@
 .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 /* Auth screens (login/register) — tokens from design/tdfc.css + design/auth.css */
 @theme {
-    --color-tdfc-coral: #f57979;
-    --color-tdfc-coral-ink: oklch(0.5 0.17 24);
-    --color-tdfc-coral-soft: color-mix(in oklch, #f57979 16%, white);
-    --color-tdfc-on-coral: oklch(0.2 0.05 24);
+    --color-tdfc-coral: var(--brand-red);
+    --color-tdfc-coral-ink: var(--red-text);
+    --color-tdfc-coral-soft: var(--red-soft);
+    --color-tdfc-on-coral: var(--brand-ink);
     --color-tdfc-line: oklch(0.78 0 0);
     --color-tdfc-card-line: oklch(0.9 0 0);
-    --color-tdfc-error: #b91c1c;
-    --color-tdfc-error-line: #dc2626;
-    --color-tdfc-ok: #047857;
-    --color-tdfc-ok-ink: oklch(0.55 0.14 155);
-    --color-tdfc-ok-soft: oklch(0.96 0.04 155);
-    --color-tdfc-sun: #ffe57e;
-    --color-tdfc-sun-ink: oklch(0.45 0.09 85);
-    --color-tdfc-sun-soft: color-mix(in oklch, #ffe57e 35%, white);
-    --color-tdfc-blue: #3b82f6;
-    --color-tdfc-blue-ink: oklch(0.48 0.19 262);
-    --color-tdfc-blue-soft: color-mix(in oklch, #3b82f6 12%, white);
-    --color-tdfc-page: oklch(0.975 0 0);
-    --color-tdfc-stripe: oklch(0.985 0 0);
-    --color-tdfc-page-from: oklch(0.96 0 0);
-    --color-tdfc-page-to: oklch(0.93 0 0);
+    --color-tdfc-error: var(--destructive);
+    --color-tdfc-error-line: var(--destructive);
+    --color-tdfc-ok: var(--success);
+    --color-tdfc-ok-ink: var(--success);
+    --color-tdfc-ok-soft: var(--success-soft);
+    --color-tdfc-sun: var(--brand-yellow);
+    --color-tdfc-sun-ink: var(--yellow-text);
+    --color-tdfc-sun-soft: var(--yellow-soft);
+    --color-tdfc-blue: var(--brand-blue);
+    --color-tdfc-blue-ink: var(--blue-text);
+    --color-tdfc-blue-soft: var(--blue-soft);
+    --color-tdfc-page: var(--page);
+    --color-tdfc-stripe: color-mix(in oklch, var(--muted) 45%, transparent);
+    --color-tdfc-page-from: var(--page);
+    --color-tdfc-page-to: var(--muted);
     --radius-tdfc-card: 20px;
     --radius-tdfc-field: 10px;
     --radius-tdfc-btn: 12px;

@@ -28,12 +28,12 @@ export function StepHeading({ children }: { children: React.ReactNode }) {
 }
 
 export const wizBtn =
-    'flex min-h-[52px] w-full items-center justify-center rounded-tdfc-btn bg-tdfc-coral px-4 font-bold text-tdfc-on-coral hover:bg-[color-mix(in_oklch,#f57979_88%,black)] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-tdfc-coral-ink disabled:opacity-40';
+    'flex min-h-[52px] w-full items-center justify-center rounded-tdfc-btn bg-tdfc-coral px-4 font-bold text-tdfc-on-coral hover:bg-[color-mix(in_oklch,var(--brand-red)_88%,black)] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-tdfc-coral-ink disabled:opacity-40';
 export const wizSecondary =
-    'min-h-11 w-full rounded-full border border-blue-500 bg-blue-50 px-4 font-semibold text-blue-700 hover:bg-blue-100 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-tdfc-coral-ink';
+    'min-h-11 w-full rounded-full border border-brand-blue bg-blue-soft px-4 font-semibold text-blue-text hover:bg-blue-soft focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-tdfc-coral-ink';
 
 const box =
-    'grid min-h-[150px] w-full place-items-center overflow-hidden rounded-tdfc-btn border-2 border-dashed border-black/20 bg-white text-sm text-black/60 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-tdfc-coral-ink';
+    'grid min-h-[150px] w-full place-items-center overflow-hidden rounded-tdfc-btn border-2 border-dashed border-foreground/20 bg-card text-sm text-foreground/60 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-tdfc-coral-ink';
 
 type Props = { mode: PhotoMode; alt: string; file: File | null; onChange: (f: File | null) => void };
 
@@ -107,7 +107,7 @@ export default function PhotoSlot({ mode, alt, file, onChange }: Props) {
                 <button type="button" className={box} onClick={() => input.current?.click()}>
                     {url ? <img src={url} alt={alt} className="h-auto w-full" /> : 'Tap to choose a photo'}
                 </button>
-                {url && <p className="mt-2 text-xs text-black/60">Tap the photo to choose a different one.</p>}
+                {url && <p className="mt-2 text-xs text-foreground/60">Tap the photo to choose a different one.</p>}
                 <p role="alert" className="mt-2 text-[13px] text-tdfc-error empty:hidden">
                     {err}
                 </p>
@@ -130,7 +130,7 @@ export default function PhotoSlot({ mode, alt, file, onChange }: Props) {
                     )}
                 </button>
             )}
-            <p className="mt-2 text-xs text-black/60">
+            <p className="mt-2 text-xs text-foreground/60">
                 {url ? 'Tap the photo to retake.' : 'Fit the whole document in view, then tap the preview to capture.'}
             </p>
         </>

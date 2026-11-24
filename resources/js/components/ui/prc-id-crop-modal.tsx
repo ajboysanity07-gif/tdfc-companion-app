@@ -47,15 +47,15 @@ const PrcIdCropModal: React.FC<Props> = ({
   return open ? (
     <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center">
       <div
-        className="bg-white shadow-2xl max-w-md w-full mx-auto flex flex-col h-screen md:h-[650px] md:max-h-[90vh] md:rounded-xl"
+        className="bg-card shadow-2xl max-w-md w-full mx-auto flex flex-col h-screen md:h-[650px] md:max-h-[90vh] md:rounded-xl"
         style={{ maxWidth: "100vw", maxHeight: "100vh" }}
       >
         <div className="overflow-y-auto py-7 px-5 w-full flex-1 flex flex-col">
           <div className="mb-4">
-            <h2 className="text-center font-bold text-2xl text-[#F57979] mb-2 tracking-tight">
+            <h2 className="text-center font-bold text-2xl text-red-text mb-2 tracking-tight">
               Upload PRC ID Photos
             </h2>
-            <div className="w-full border-b border-gray-200"></div>
+            <div className="w-full border-b border-border"></div>
           </div>
 
           <PrcIdCropBox
@@ -80,24 +80,24 @@ const PrcIdCropModal: React.FC<Props> = ({
           <div className="w-full mt-6 mb-3">
             <div className="flex flex-row justify-center gap-8">
               <div className="flex flex-col items-center">
-                <div className="bg-white border border-gray-300 shadow rounded-xl w-32 h-18 flex items-center justify-center">
+                <div className="bg-card border border-border shadow rounded-xl w-32 h-18 flex items-center justify-center">
                   {frontPreview ? (
                     <img src={frontPreview} className="w-full h-full object-cover rounded-xl" alt="Front Preview" />
                   ) : (
-                    <span className="text-xs text-gray-400">No Photo</span>
+                    <span className="text-xs text-muted-foreground">No Photo</span>
                   )}
                 </div>
-                <span className="mt-2 text-xs text-gray-600 text-center">Front ID</span>
+                <span className="mt-2 text-xs text-muted-foreground text-center">Front ID</span>
               </div>
               <div className="flex flex-col items-center">
-                <div className="bg-white border border-gray-300 shadow rounded-xl w-32 h-18 flex items-center justify-center">
+                <div className="bg-card border border-border shadow rounded-xl w-32 h-18 flex items-center justify-center">
                   {backPreview ? (
                     <img src={backPreview} className="w-full h-full object-cover rounded-xl" alt="Back Preview" />
                   ) : (
-                    <span className="text-xs text-gray-400">No Photo</span>
+                    <span className="text-xs text-muted-foreground">No Photo</span>
                   )}
                 </div>
-                <span className="mt-2 text-xs text-gray-600 text-center">Back ID</span>
+                <span className="mt-2 text-xs text-muted-foreground text-center">Back ID</span>
               </div>
             </div>
           </div>
@@ -105,7 +105,7 @@ const PrcIdCropModal: React.FC<Props> = ({
           <div className="flex flex-row gap-4 w-full justify-center items-end mt-6 mb-2">
             <button
               type="button"
-              className="w-36 py-3 border rounded-xl border-gray-300 bg-white text-black font-semibold transition hover:bg-gray-100"
+              className="w-36 py-3 border rounded-xl border-border bg-card text-foreground font-semibold transition hover:bg-muted"
               onClick={onCancel}
             >
               Cancel
@@ -113,7 +113,7 @@ const PrcIdCropModal: React.FC<Props> = ({
             <button
               type="button"
               disabled={!frontPreview || !backPreview}
-              className="w-36 py-3 rounded-xl bg-[#F57979] text-white font-bold shadow-md transition hover:bg-[#ea5b5b] disabled:opacity-50"
+              className="w-36 py-3 rounded-xl bg-brand-red text-brand-ink font-bold shadow-md transition hover:bg-[color-mix(in_oklch,var(--brand-red)_88%,black)] disabled:opacity-50"
               onClick={() => onSave(front, back)}
             >
               Use Both Photos

@@ -39,7 +39,7 @@ const HANDLES: Record<string, string> = {
 const ARROWS: Record<string, [number, number]> = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] };
 
 const tool =
-    'min-h-11 rounded-full border border-black/25 bg-white px-4 font-semibold text-black hover:bg-black/5 disabled:opacity-40 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-tdfc-coral-ink';
+    'min-h-11 rounded-full border border-foreground/25 bg-card px-4 font-semibold text-foreground hover:bg-foreground/5 disabled:opacity-40 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-tdfc-coral-ink';
 
 type Props = { file: File; name: string; alt: string; doneLabel?: string; onDone: (f: File) => void };
 
@@ -118,7 +118,7 @@ export default function PhotoEditor({ file, name, alt, doneLabel = 'Use This Pho
                                     aria-label={`Resize crop, ${k} edge`}
                                     className={`group absolute -mt-[22px] -ml-[22px] size-11 touch-none ${pos}`}
                                 >
-                                    <span className="pointer-events-none absolute top-4 left-4 size-3 rounded-[3px] border-2 border-tdfc-coral-ink bg-white group-focus-visible:ring-2 group-focus-visible:ring-tdfc-coral" />
+                                    <span className="pointer-events-none absolute top-4 left-4 size-3 rounded-[3px] border-2 border-tdfc-coral-ink bg-card group-focus-visible:ring-2 group-focus-visible:ring-tdfc-coral" />
                                 </span>
                             ))}
                         </div>

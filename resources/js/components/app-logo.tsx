@@ -1,7 +1,7 @@
 export default function AppLogo() {
     return (
         <>
-            <div className="flex aspect-square size-8 items-center justify-center rounded-md bg-sidebar-primary text-sidebar-primary-foreground">
+            <div className="flex aspect-square size-8 items-center justify-center rounded-md bg-sidebar-primary dark:bg-transparent text-sidebar-primary-foreground">
                 <img
                     src="/images/logo-white.png" // <-- Use white version
                     alt="My Brand"

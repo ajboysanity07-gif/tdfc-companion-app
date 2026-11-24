@@ -20,7 +20,7 @@ export const UserAvatar: FC<UserAvatarProps> = ({
   size = 'md', 
   className = '' 
 }) => {
-  const baseClasses = `${sizeClasses[size]} overflow-hidden rounded-full ring-2 ring-white/60 ${className}`;
+  const baseClasses = `${sizeClasses[size]} overflow-hidden rounded-full ring-2 ring-border ${className}`;
   
   if (avatar) {
     return (
@@ -35,7 +35,7 @@ export const UserAvatar: FC<UserAvatarProps> = ({
   }
 
   return (
-    <div className={`${baseClasses} grid place-items-center bg-white/20 text-white`}>
+    <div className={`${baseClasses} grid place-items-center bg-muted text-foreground`}>
       <span aria-hidden="true">👤</span>
       <span className="sr-only">{name}'s avatar placeholder</span>
     </div>

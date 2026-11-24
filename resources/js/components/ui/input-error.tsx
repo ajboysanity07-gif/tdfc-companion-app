@@ -12,7 +12,7 @@ export default function InputError({ message, fixedHeight = true }: Props) {
 
   return (
     <div className={`mt-1 text-xs ${fixedHeight ? "min-h-[1.25rem]" : ""}`}>
-      {message && <span className="text-[#DC2626]">{message}</span>}
+      {message && <span className="text-destructive">{message}</span>}
     </div>
   );
 }

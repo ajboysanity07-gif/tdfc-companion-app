@@ -9,8 +9,8 @@ type WizardStep = 1 | 2 | 3;
 const aspectRect = 2.37;
 
 const StepHeader: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <div className="w-full flex flex-col items-center sticky top-0 z-20 bg-white pt-2 pb-2 border-b border-gray-200">
-    <span className="text-xl font-bold text-[#F57979] tracking-tight mb-2 mt-1">{children}</span>
+  <div className="w-full flex flex-col items-center sticky top-0 z-20 bg-card pt-2 pb-2 border-b border-border">
+    <span className="text-xl font-bold text-red-text tracking-tight mb-2 mt-1">{children}</span>
   </div>
 );
 
@@ -26,8 +26,8 @@ const SamplePreview: React.FC<{ showFront?: boolean; caption: string }> = ({
         className="w-[70vw] max-w-[300px] h-auto object-contain mb-4 mt-5"
       />
     )}
-    <div className="bg-blue-50 rounded-xl p-4 mb-5 border w-[80vw] max-w-[300px] text-center border-blue-100">
-      <span className="block text-xs text-blue-500">{caption}</span>
+    <div className="bg-blue-soft rounded-xl p-4 mb-5 border w-[80vw] max-w-[300px] text-center border-brand-blue/30">
+      <span className="block text-xs text-blue-text">{caption}</span>
     </div>
   </div>
 );
@@ -146,7 +146,7 @@ const PayslipWizard = ({
         >
           {/* Modal body with fixed height (desktop) and scrollable main area */}
           <motion.div
-            className="bg-white shadow-2xl w-full mx-auto flex flex-col relative overflow-hidden
+            className="bg-card shadow-2xl w-full mx-auto flex flex-col relative overflow-hidden
                       h-screen md:h-[820px] md:max-h-[90vh] md:rounded-2xl md:max-w-lg"
             initial={{ y: "100%", opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -179,13 +179,13 @@ const PayslipWizard = ({
         showFront
         caption="*Your payslip photo should be clear and all text readable."
       />
-      <p className="text-sm text-gray-600 mb-3 mt-2 w-[80vw] max-w-[300px] text-center">
+      <p className="text-sm text-muted-foreground mb-3 mt-2 w-[80vw] max-w-[300px] text-center">
         Choose how you'd like to provide your Payslip photos
       </p>
       <div className="space-y-4 w-full max-w-xs">
         <button
           type="button"
-          className="w-full px-6 py-4 bg-[#F57979] hover:bg-[#ea5b5b] text-white rounded-xl font-bold shadow-md transition flex items-center justify-center gap-3"
+          className="w-full px-6 py-4 bg-brand-red hover:bg-[color-mix(in_oklch,var(--brand-red)_88%,black)] text-brand-ink rounded-xl font-bold shadow-md transition flex items-center justify-center gap-3"
           onClick={() => {
             setMode("upload");
             goToStep(2);
@@ -196,7 +196,7 @@ const PayslipWizard = ({
         </button>
         <button
           type="button"
-          className="w-full px-6 py-4 bg-[#F57979] hover:bg-[#ea5b5b] text-white rounded-xl font-bold shadow-md transition flex items-center justify-center gap-3"
+          className="w-full px-6 py-4 bg-brand-red hover:bg-[color-mix(in_oklch,var(--brand-red)_88%,black)] text-brand-ink rounded-xl font-bold shadow-md transition flex items-center justify-center gap-3"
           onClick={() => {
             setMode("camera");
             goToStep(2);
@@ -217,7 +217,7 @@ const PayslipWizard = ({
                         showFront
                         caption="Upload a photo of your payslip. Make sure it's clear, legible, and no corners are cut off."
                       />
-                      <div className="w-[310px] place-self-center h-px bg-gray-200 mb-5" />
+                      <div className="w-[310px] place-self-center h-px bg-muted mb-5" />
                       <PrcIdCropBox
                         label="Payslip"
                         aspect={aspectRect}
@@ -237,7 +237,7 @@ const PayslipWizard = ({
                         showFront
                         caption="Capture a clear photo. Align your payslip with the example shown."
                       />
-                      <div className="w-[310px] place-self-center h-px bg-gray-200 mb-5" />
+                      <div className="w-[310px] place-self-center h-px bg-muted mb-5" />
                       <CameraCaptureBox
                         label="Payslip"
                         onCapture={(imgSrc) => {
@@ -258,10 +258,10 @@ const PayslipWizard = ({
                         showFront
                         caption="Compare your submitted payslip to this sample. Only proceed if your upload matches the clarity and alignment."
                       />
-                      <div className="w-[310px] place-self-center h-px bg-gray-200 mb-5" />
+                      <div className="w-[310px] place-self-center h-px bg-muted mb-5" />
                       <div className="flex flex-col items-center justify-center w-full">
-                        <span className="mb-3 text-base font-semibold text-gray-700">Your Payslip</span>
-                        <div className="bg-white border-2 border-gray-300 shadow-lg w-[300px] h-[127px] flex items-center justify-center mb-5">
+                        <span className="mb-3 text-base font-semibold text-foreground">Your Payslip</span>
+                        <div className="bg-card border-2 border-border shadow-lg w-[300px] h-[127px] flex items-center justify-center mb-5">
                           {getFinalPreviews().front ? (
                             <img
                               src={getFinalPreviews().front!}
@@ -269,7 +269,7 @@ const PayslipWizard = ({
                               alt="Payslip Preview"
                             />
                           ) : (
-                            <span className="text-sm text-gray-400">No Photo</span>
+                            <span className="text-sm text-muted-foreground">No Photo</span>
                           )}
                         </div>
 
@@ -277,7 +277,7 @@ const PayslipWizard = ({
                           {mode === "upload" && (
                             <button
                               type="button"
-                              className="w-full py-2 px-4 text-sm font-semibold border border-blue-500 bg-blue-50 text-blue-600 rounded-card transition hover:bg-blue-100 flex items-center justify-center gap-2"
+                              className="w-full py-2 px-4 text-sm font-semibold border border-brand-blue bg-blue-soft text-blue-text rounded-card transition hover:bg-blue-soft flex items-center justify-center gap-2"
                               onClick={switchToCamera}
                             >
                               <Camera className="w-4 h-4" />
@@ -287,7 +287,7 @@ const PayslipWizard = ({
                           {mode === "upload" && (
                             <button
                               type="button"
-                              className="w-full py-2 px-4 text-sm font-semibold border border-gray-300 bg-gray-50 text-gray-700 rounded-card transition hover:bg-gray-100 flex items-center justify-center gap-2"
+                              className="w-full py-2 px-4 text-sm font-semibold border border-border bg-muted text-foreground rounded-card transition hover:bg-muted flex items-center justify-center gap-2"
                               onClick={reUploadPhotos}
                             >
                               <RotateCcw className="w-4 h-4" />
@@ -297,7 +297,7 @@ const PayslipWizard = ({
                           {mode === "camera" && (
                             <button
                               type="button"
-                              className="w-full py-2 px-4 text-sm font-semibold border border-gray-300 bg-gray-50 text-gray-700 rounded-card transition hover:bg-gray-100 flex items-center justify-center gap-2"
+                              className="w-full py-2 px-4 text-sm font-semibold border border-border bg-muted text-foreground rounded-card transition hover:bg-muted flex items-center justify-center gap-2"
                               onClick={reTakePhotos}
                             >
                               <RotateCcw className="w-4 h-4" />
@@ -307,7 +307,7 @@ const PayslipWizard = ({
                           {mode === "camera" && (
                             <button
                               type="button"
-                              className="w-full py-2 px-4 text-sm font-semibold border border-blue-500 bg-blue-50 text-blue-600 rounded-card transition hover:bg-blue-100 flex items-center justify-center gap-2"
+                              className="w-full py-2 px-4 text-sm font-semibold border border-brand-blue bg-blue-soft text-blue-text rounded-card transition hover:bg-blue-soft flex items-center justify-center gap-2"
                               onClick={reUploadPhotos}
                             >
                               <SwitchCamera className="w-4 h-4" />
@@ -317,7 +317,7 @@ const PayslipWizard = ({
                           <button
                             type="button"
                             disabled={!getFinalPreviews().front}
-                            className="w-full py-2 px-4 text-sm font-semibold rounded-card bg-[#F57979] text-white shadow transition hover:bg-[#ea5b5b] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                            className="w-full py-2 px-4 text-sm font-semibold rounded-card bg-brand-red text-brand-ink shadow transition hover:bg-[color-mix(in_oklch,var(--brand-red)_88%,black)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                             onClick={() => {
                               const { front } = getFinalFiles();
                               onComplete(front, null);
@@ -336,10 +336,10 @@ const PayslipWizard = ({
             </div>
 
             {/* Fixed bottom navigation / footer */}
-            <div className="sticky bottom-0 left-0 w-full py-5 flex flex-row gap-4 justify-center items-center bg-white border-t border-gray-200 shadow-lg">
+            <div className="sticky bottom-0 left-0 w-full py-5 flex flex-row gap-4 justify-center items-center bg-card border-t border-border shadow-lg">
               <button
                 type="button"
-                className="w-32 py-3 border rounded-full border-gray-300 bg-white text-black font-semibold transition hover:bg-gray-50"
+                className="w-32 py-3 border rounded-full border-border bg-card text-foreground font-semibold transition hover:bg-muted"
                 onClick={() => {
                   if (step === 1) {
                     resetWizard();
@@ -353,7 +353,7 @@ const PayslipWizard = ({
               </button>
               <button
                 type="button"
-                className="w-32 py-3 border rounded-full border-gray-300 bg-gray-100 text-black font-semibold transition hover:bg-gray-200"
+                className="w-32 py-3 border rounded-full border-border bg-muted text-foreground font-semibold transition hover:bg-muted"
                 onClick={() => {
                   resetWizard();
                   onCancel();

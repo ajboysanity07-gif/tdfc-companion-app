@@ -23,12 +23,9 @@ export default function AppSidebarLayout({
       <div className="flex flex-col flex-1 w-full relative min-h-screen pb-16 md:pb-0 transition-all duration-300">
         <AppContent
           variant="sidebar"
-          className="w-full flex-1 overflow-x-hidden bg-tdfc-page dark:bg-background md:rounded-[14px] md:border md:border-border"
+          className="w-full flex-1 overflow-x-hidden bg-page md:rounded-[14px] md:border md:border-border"
         >
-          {/* Sidebar header: visible only on desktop */}
-          <div className="hidden md:block">
-            <AppSidebarHeader breadcrumbs={breadcrumbs} />
-          </div>
+          <AppSidebarHeader breadcrumbs={breadcrumbs} />
 
           {/* Page content */}
           <div key={path} className="animate-tdfc-fade">

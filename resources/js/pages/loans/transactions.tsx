@@ -153,7 +153,7 @@ export default function LoansTransactionPage({ transactions }: { transactions: T
                 </section>
 
                 <Panel className="overflow-hidden">
-                    <div className="flex flex-wrap items-end gap-3 border-b border-border bg-[oklch(.995_0_0)] p-4">
+                    <div className="flex flex-wrap items-end gap-3 border-b border-border bg-muted/40 p-4">
                         <div className="grid min-w-0 flex-[1_1_220px] gap-1">
                             <label htmlFor="q" className={lbl}>
                                 Search loans
@@ -227,10 +227,7 @@ export default function LoansTransactionPage({ transactions }: { transactions: T
                                     </thead>
                                     <tbody>
                                         {view.map((r) => (
-                                            <tr
-                                                key={r.lnnumber}
-                                                className="border-b border-border last:border-0 even:bg-[oklch(.985_0_0)] hover:bg-muted"
-                                            >
+                                            <tr key={r.lnnumber} className="border-b border-border last:border-0 even:bg-muted/45 hover:bg-muted">
                                                 <td className="px-4 py-3.5 text-muted-foreground">{fd(r.date)}</td>
                                                 <td className="px-4 py-3.5 font-medium">{r.lnnumber}</td>
                                                 <td className="px-4 py-3.5 font-bold">{r.description}</td>
