@@ -1,10 +1,10 @@
 export default function AppLogo() {
     return (
         <>
-            <div className="flex aspect-square size-8 items-center justify-center rounded-md bg-sidebar-primary dark:bg-transparent text-sidebar-primary-foreground">
+            <div className="flex aspect-square size-8 items-center justify-center">
                 <img
-                    src="/images/logo-white.png" // <-- Use white version
-                    alt="My Brand"
+                    src="/images/logo.png"
+                    alt="TDFC"
                     className="h-8 w-8 object-contain"
                 />
             </div>
