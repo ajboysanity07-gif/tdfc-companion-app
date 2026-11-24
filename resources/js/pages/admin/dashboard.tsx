@@ -1,7 +1,7 @@
-import { Panel, RISE, StatCard, fdate, riseStyle } from '@/components/tdfc/ui';
+import { Panel, RISE, StatBand, StatCard, fdate, riseStyle } from '@/components/tdfc/ui';
 import AppLayout from '@/layouts/app-layout';
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { LogOut, Package, User, Users } from 'lucide-react';
+import { LogOut, Package, Users } from 'lucide-react';
 import { ReactNode } from 'react';
 
 type Props = {
@@ -30,24 +30,21 @@ export default function AdminDashboard() {
         <AppLayout breadcrumbs={[{ title: 'Admin Dashboard', href: '/admin/dashboard' }]}>
             <Head title="Admin Dashboard" />
             <div className="mx-auto grid w-full max-w-[1120px] content-start gap-5 p-4 md:p-6">
-                <section className="flex items-center justify-between gap-4 rounded-[14px] bg-tdfc-coral p-6 text-tdfc-on-coral">
+                <section className="flex flex-wrap items-end justify-between gap-4">
                     <div>
-                        <h1 className="text-[clamp(24px,4vw,34px)] font-bold">Welcome back, {user.name.split(' ')[0]}</h1>
-                        <p className="mt-1.5">
+                        <h1 className="text-2xl font-extrabold">Welcome back, {user.name.split(' ')[0]}</h1>
+                        <p className="mt-1 text-muted-foreground">
                             You are logged in as <b className="ml-1 rounded-md bg-tdfc-sun px-2 py-0.5 text-xs text-[oklch(.3_.07_85)] uppercase">{user.role}</b>
                         </p>
                     </div>
-                    <div className="hidden size-18 place-items-center overflow-hidden rounded-full bg-card shadow-sm md:grid">
-                        {user.avatar ? <img src={user.avatar} alt={`${user.name} profile photo`} className="size-full object-cover" /> : <User className="size-9 text-tdfc-coral" />}
-                    </div>
                 </section>
 
-                <section aria-label="Key metrics" className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
-                    <StatCard accent index={0} label="Pending approvals" value={stats.pending} />
-                    <StatCard index={1} label="Total clients" value={stats.clients} />
-                    <StatCard index={2} label="Products active" value={stats.products} />
-                    <StatCard index={3} label="Registrations today" value={stats.today} />
-                </section>
+                <StatBand label="Key metrics">
+                    <StatCard accent index={0} label="Pending approvals" value={stats.pending} hint="Needs review" />
+                    <StatCard index={1} label="Total clients" value={stats.clients} hint="Registered in system" />
+                    <StatCard index={2} label="Products active" value={stats.products} hint="Across loan products" />
+                    <StatCard index={3} label="Registrations today" value={stats.today} hint="New submissions" />
+                </StatBand>
 
                 <section className="grid items-start gap-5 xl:grid-cols-[1.4fr_1fr]">
                     <Panel className="p-5">

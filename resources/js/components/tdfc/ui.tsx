@@ -127,20 +127,28 @@ export const SkelDl = ({ rows = 6 }: { rows?: number }) => (
 );
 
 export const PageBanner = ({ title, sub, children }: { title: string; sub?: string; children?: ReactNode }) => (
-    <div className="flex flex-wrap items-center justify-between gap-4 rounded-[14px] bg-tdfc-coral p-6 text-tdfc-on-coral">
+    <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
             <h1 className="text-2xl font-extrabold">{title}</h1>
-            {sub && <p className="mt-1 text-sm opacity-90">{sub}</p>}
+            {sub && <p className="mt-1 text-muted-foreground">{sub}</p>}
         </div>
         {children}
     </div>
 );
 
-export const StatCard = ({ label, value, accent, index = 0 }: { label: string; value: ReactNode; accent?: boolean; index?: number }) => (
-    <Panel style={riseStyle(index)} className={`${RISE} px-5 py-4 ${accent ? 'border-tdfc-coral bg-tdfc-coral-soft' : ''}`}>
-        <small className="text-[13px] text-muted-foreground">{label}</small>
-        <b className="mt-1 block text-[26px] font-semibold tabular-nums">{typeof value === 'number' ? <CountUp value={value} /> : value}</b>
-    </Panel>
+/** Connected KPI band: 1px dividers, shared border (mockup .stats). */
+export const StatBand = ({ children, label }: { children: ReactNode; label: string }) => (
+    <section aria-label={label} className="grid gap-px overflow-hidden rounded-[14px] border border-border bg-border shadow-sm max-[860px]:grid-cols-1 min-[861px]:max-[1100px]:grid-cols-2 min-[1101px]:grid-cols-4">
+        {children}
+    </section>
+);
+
+export const StatCard = ({ label, value, hint, accent, index = 0 }: { label: string; value: ReactNode; hint?: string; accent?: boolean; index?: number }) => (
+    <div style={riseStyle(index)} className={`${RISE} flex flex-col gap-1 bg-card px-[18px] py-4`}>
+        <span className="text-xs font-medium text-muted-foreground">{label}</span>
+        <b className={`text-xl leading-tight font-bold tabular-nums ${accent ? 'text-tdfc-coral-ink' : ''}`}>{typeof value === 'number' ? <CountUp value={value} /> : value}</b>
+        {hint && <span className="text-xs text-muted-foreground">{hint}</span>}
+    </div>
 );
 
 export const Tabs = <T extends string>({
@@ -161,7 +169,7 @@ export const Tabs = <T extends string>({
                     role="tab"
                     aria-selected={value === t.id}
                     onClick={() => onChange(t.id)}
-                    className={`relative h-8 rounded-full px-3.5 text-[13px] font-semibold transition-colors ${value === t.id ? 'text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-border'}`}
+                    className={`relative inline-flex h-[38px] items-center rounded-full border px-3.5 text-sm font-semibold transition-colors ${value === t.id ? 'border-primary text-primary-foreground' : 'border-border bg-background text-muted-foreground hover:bg-muted'}`}
                 >
                     {value === t.id && (
                         <motion.span
@@ -170,9 +178,9 @@ export const Tabs = <T extends string>({
                             transition={{ type: 'spring', duration: 0.35, bounce: 0.15 }}
                         />
                     )}
-                    <span className="relative">
+                    <span className="relative flex items-center gap-2">
                         {t.label}
-                        {t.count !== undefined && <span className="ml-1.5 opacity-70">{t.count}</span>}
+                        {t.count !== undefined && <span className="grid h-[22px] min-w-[22px] place-items-center rounded-full bg-current/15 px-[7px] text-xs">{t.count}</span>}
                     </span>
                 </button>
             ))}
@@ -187,7 +195,7 @@ export const Switch = ({ checked, onChange, label }: { checked: boolean; onChang
         aria-checked={checked}
         aria-label={label}
         onClick={() => onChange(!checked)}
-        className={`relative h-6 w-11 rounded-full transition-colors ${checked ? 'bg-tdfc-ok-ink' : 'bg-border'}`}
+        className={`relative h-6 w-11 rounded-full transition-colors ${checked ? 'bg-tdfc-ok-ink' : 'bg-[color-mix(in_oklch,var(--foreground)_25%,var(--card))]'}`}
     >
         <i className={`absolute top-0.5 left-0.5 size-5 rounded-full bg-white shadow transition-transform ${checked ? 'translate-x-5' : ''}`} />
     </button>

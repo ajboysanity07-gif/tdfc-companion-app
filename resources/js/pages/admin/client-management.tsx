@@ -113,8 +113,9 @@ export default function ClientManagement({ pendingUsers, rejectionReasons }: Pro
             <div className="grid content-start gap-5 p-4 md:p-6">
                 <PageBanner title="Client Management" sub="Review registrations in a pending-first queue and open each client for details and documents." />
 
-                <Panel className="grid gap-3.5 overflow-hidden pt-5">
-                    <div className="flex flex-wrap items-center justify-between gap-3 px-5 max-md:flex-col max-md:items-stretch">
+                <Panel className="overflow-hidden">
+                    <div className="grid gap-3.5 p-5">
+                    <div className="flex flex-wrap items-center justify-between gap-3 max-md:flex-col max-md:items-stretch">
                         <Tabs tabs={tabs} value={tab} onChange={(v) => { setTab(v); setSelId(null); t.setPage(0); }} />
                         <div className="flex flex-1 items-center justify-end gap-2">
                             <input value={q} onChange={(e) => { setQ(e.target.value); t.setPage(0); }} placeholder="Search name, email, or account no." aria-label="Search clients" autoComplete="off" className={`${input} max-w-80 min-w-0 flex-1 max-md:max-w-none`} />
@@ -167,6 +168,7 @@ export default function ClientManagement({ pendingUsers, rejectionReasons }: Pro
                             </tbody>
                         </table>
                         {t.view.length === 0 && <div className="p-8 text-center text-muted-foreground">No clients match this view.</div>}
+                    </div>
                     </div>
                     <NumPager t={t} noun="clients" />
                 </Panel>

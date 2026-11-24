@@ -1,4 +1,4 @@
-import { Badge, NumPager, PageBanner, Panel, RISE, StatCard, Tabs, btn, riseStyle, useTable, useToast } from '@/components/tdfc/ui';
+import { Badge, NumPager, PageBanner, Panel, StatBand, StatCard, Tabs, btn, riseStyle, useTable, useToast } from '@/components/tdfc/ui';
 import AppLayout from '@/layouts/app-layout';
 import { Head, Link, usePage } from '@inertiajs/react';
 import { useMemo, useState } from 'react';
@@ -51,15 +51,16 @@ export default function Registrations() {
                     <Link href="/admin/client-management" className={`${btn.base} ${btn.plain}`}>Review pending queue</Link>
                 </PageBanner>
 
-                <section aria-label="Registration metrics" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                    <StatCard index={0} label="Received this month" value={stats.month} />
-                    <StatCard accent index={1} label="Pending review" value={stats.pending} />
-                    <StatCard index={2} label="Approval rate" value={rate === null ? '—' : `${rate}%`} />
-                    <StatCard index={3} label="Avg. review time" value={stats.avg_days === null ? '—' : `${stats.avg_days} days`} />
-                </section>
+                <StatBand label="Registration metrics">
+                    <StatCard index={0} label="Received this month" value={stats.month} hint="Submissions in November" />
+                    <StatCard accent index={1} label="Pending review" value={stats.pending} hint="Waiting on documents review" />
+                    <StatCard index={2} label="Approval rate" value={rate === null ? '—' : `${rate}%`} hint={`${stats.approved} approved of ${stats.decided} decided`} />
+                    <StatCard index={3} label="Avg. review time" value={stats.avg_days === null ? '—' : `${stats.avg_days} days`} hint="From submission to decision" />
+                </StatBand>
 
-                <Panel className="grid gap-3.5 overflow-hidden pt-5">
-                    <div className="flex flex-wrap items-center justify-between gap-3 px-5">
+                <Panel className="overflow-hidden">
+                    <div className="grid gap-3.5 p-5">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
                         <Tabs tabs={tabs} value={tab} onChange={(v) => { setTab(v); t.setPage(0); }} />
                         <div className="flex flex-1 items-center justify-end gap-2">
                             <input value={q} onChange={(e) => { setQ(e.target.value); t.setPage(0); }} placeholder="Search client, account no., or note" aria-label="Search events" autoComplete="off" className="h-10 max-w-80 min-w-0 flex-1 rounded-[10px] border border-input bg-card px-3 shadow-sm" />
@@ -103,6 +104,7 @@ export default function Registrations() {
                             </tbody>
                         </table>
                         {t.view.length === 0 && <div className="p-8 text-center text-muted-foreground">No events match this view.</div>}
+                    </div>
                     </div>
 
                     <NumPager t={t} noun="events" />
