@@ -26,8 +26,17 @@ export default function NavMobile() {
             {items.map(({ href, label, icon: Icon }) => {
                 const on = url.startsWith(href);
                 return (
-                    <Link key={href} href={href} prefetch className={`grid flex-1 place-items-center content-center gap-0.5 text-[11px] transition-colors active:bg-muted ${on ? 'font-semibold text-tdfc-coral-ink' : 'text-muted-foreground'}`}>
-                        <Icon className={`size-6 transition-transform ${on ? 'scale-110' : ''}`} />
+                    <Link
+                        key={href}
+                        href={href}
+                        prefetch
+                        className={`grid flex-1 place-items-center content-center gap-0.5 text-[11px] transition-colors active:bg-muted ${on ? 'font-semibold text-tdfc-coral-ink' : 'text-muted-foreground'}`}
+                    >
+                        <span
+                            className={`grid h-[30px] place-items-center rounded-full transition-all ${on ? 'w-[52px] bg-[color-mix(in_oklch,var(--brand-red)_35%,var(--card))]' : 'w-[52px]'}`}
+                        >
+                            <Icon className="size-6" />
+                        </span>
                         {label}
                     </Link>
                 );

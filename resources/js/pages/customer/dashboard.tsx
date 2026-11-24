@@ -153,7 +153,7 @@ export default function Dashboard() {
     return (
         <AppLayout breadcrumbs={[{ title: 'Dashboard', href: `${base}/dashboard` }]}>
             <Head title="Dashboard" />
-            <div id="main-content" className="p-4 md:p-6">
+            <div id="main-content" className="p-4 pt-[max(16px,env(safe-area-inset-top))] max-md:pb-[88px] md:p-6">
                 {/* Mobile */}
                 <section className="grid gap-4 md:hidden">
                     <div className="-mx-4 -mt-4 rounded-b-[32px] bg-tdfc-coral p-6 text-tdfc-on-coral">
@@ -161,7 +161,7 @@ export default function Dashboard() {
                             <div>
                                 <p className="text-lg font-extrabold">Welcome,</p>
                                 <h1 className="text-4xl leading-tight font-extrabold tracking-tight">{cap(firstName(fullName))}</h1>
-                                <p className="mt-2.5 inline-block rounded-full bg-black/10 px-2.5 py-0.5 text-xs font-bold tracking-wider uppercase">
+                                <p className="mt-2.5 inline-block rounded-full bg-[oklch(.2_.05_24/.14)] px-2.5 py-0.5 text-xs font-bold tracking-wider uppercase">
                                     {role}
                                 </p>
                                 <div>
@@ -169,7 +169,7 @@ export default function Dashboard() {
                                 </div>
                             </div>
                             <div
-                                className="grid size-14 place-items-center overflow-hidden rounded-full bg-white/55 text-[22px] font-extrabold ring-2 ring-white/70"
+                                className="grid size-14 place-items-center overflow-hidden rounded-full bg-[oklch(1_0_0/.55)] text-[22px] font-extrabold ring-2 ring-[oklch(1_0_0/.7)]"
                                 role="img"
                                 aria-label={fullName}
                             >
@@ -179,25 +179,26 @@ export default function Dashboard() {
                         <p className="mt-5 text-center text-xs font-bold tracking-widest uppercase opacity-80">Personal savings</p>
                         <p className="mt-1 text-center text-[42px] leading-tight">
                             {loading ? (
-                                <Skeleton className="mx-auto h-10 w-48 bg-black/10" />
+                                <Skeleton className="mx-auto h-10 w-48 bg-[oklch(.2_.05_24/.18)]" />
                             ) : (
                                 <>
                                     ₱<b className="font-extrabold">{savingsText}</b>
                                 </>
                             )}
                         </p>
-                        <hr className="my-4 h-px border-0 bg-black/20" />
+                        <hr className="my-4 h-px border-0 bg-[oklch(.2_.05_24/.18)]" />
                         <div className="grid grid-cols-2 gap-2 rounded-3xl bg-tdfc-sun p-3 text-center">
                             {quick.slice(0, 2).map((q) => {
                                 const inner = (
                                     <>
-                                        <span className="grid size-16 place-items-center rounded-2xl bg-tdfc-on-coral text-white">
+                                        <span className="grid size-16 place-items-center rounded-2xl bg-brand-surface text-white shadow-[0_2px_6px_oklch(.16_.03_24/.25)] transition-colors group-hover:bg-[oklch(.15_.05_24)] group-active:bg-[oklch(.15_.05_24)] dark:bg-[oklch(.16_.03_24)]">
                                             <q.icon className="size-8" />
                                         </span>
                                         {q.label}
                                     </>
                                 );
-                                const c = 'grid min-h-11 justify-items-center gap-2 rounded-2xl p-3.5 text-base font-bold hover:bg-white/35';
+                                const c =
+                                    'group grid min-h-11 justify-items-center gap-2 rounded-2xl p-3.5 text-base font-bold text-[oklch(.16_.03_24)] transition-colors hover:bg-white/35 active:bg-white/35 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[oklch(.16_.03_24)]';
                                 return q.href ? (
                                     <Link key={q.label} href={q.href} className={c}>
                                         {inner}

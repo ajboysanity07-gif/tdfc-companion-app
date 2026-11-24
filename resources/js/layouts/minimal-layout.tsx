@@ -1,3 +1,4 @@
+import MobileFab from '@/components/mobile-fab';
 import ThemeToggle from '@/components/theme-toggle';
 import { router } from '@inertiajs/react';
 import React from 'react';
@@ -11,7 +12,7 @@ export default function MinimalLayout({ children }: { children: React.ReactNode 
                     <span className="text-xl font-extrabold tracking-widest text-red-text">TDFC Companion</span>
                 </div>
                 <div className="flex items-center gap-3">
-                    <ThemeToggle />
+                    <ThemeToggle className="max-md:hidden" />
                     <button
                         type="button"
                         onClick={() => router.post('/logout')}
@@ -22,6 +23,7 @@ export default function MinimalLayout({ children }: { children: React.ReactNode 
                 </div>
             </header>
             <main className="flex flex-1 flex-col items-center justify-center">{children}</main>
+            <MobileFab inApp />
         </div>
     );
 }

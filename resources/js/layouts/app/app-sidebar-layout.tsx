@@ -2,6 +2,7 @@ import { AppContent } from '@/components/app-content';
 import { AppShell } from '@/components/app-shell';
 import { AppSidebar } from '@/components/app-sidebar';
 import { AppSidebarHeader } from '@/components/app-sidebar-header';
+import MobileFab from '@/components/mobile-fab';
 import NavMobile from '@/components/nav-mobile';
 import { type BreadcrumbItem } from '@/types';
 import { usePage } from '@inertiajs/react';
@@ -35,6 +36,7 @@ export default function AppSidebarLayout({
 
         {/* Mobile bottom nav */}
         <NavMobile />
+        <MobileFab inApp hasNav />
       </div>
     </AppShell>
   );
