@@ -294,3 +294,17 @@
         scroll-behavior: auto !important;
     }
 }
+
+/* Welcome page only: dark theme v2 (blue-tinted charcoal, lifted logo red). See design/claude-code-color-palette-guidelines1.md */
+.dark .welcome-v2 {
+    --background: oklch(0.2 0.02 265);
+    --foreground: oklch(0.97 0.008 265);
+    --card: oklch(0.225 0.022 265);
+    --muted: oklch(0.28 0.024 265);
+    --muted-foreground: oklch(0.78 0.02 265);
+    --border: oklch(0.33 0.025 265);
+    --page: oklch(0.165 0.02 265);
+    --brand-surface: oklch(0.68 0.17 24);
+    --on-brand-surface: oklch(0.14 0.02 265);
+    --blue-text: oklch(0.78 0.12 252);
+}
