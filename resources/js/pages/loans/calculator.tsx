@@ -431,12 +431,6 @@ export default function LoanCalculator({ products }: { products: Product[] }) {
                                 </div>
                             </div>
                             <Link
-                                href={`/loans/transactions?apply=${p.id}&term=${e.term}&amount=${amount}`}
-                                className="flex min-h-12 items-center justify-center rounded-[10px] bg-[oklch(.18_.04_24)] text-[15px] font-bold text-white transition-colors hover:bg-[oklch(.3_.06_24)] focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-white!"
-                            >
-                                Apply for this loan
-                            </Link>
-                            <Link
                                 href="/loans/transactions"
                                 className="inline-flex min-h-11 items-center justify-self-start rounded-md text-sm font-bold underline underline-offset-3 hover:bg-white/25"
                             >
