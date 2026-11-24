@@ -39,20 +39,30 @@ class LoanTransactionController extends Controller
     {
         $acctno = AppUser::subject($request)?->acctno;
 
-        $transactions = $acctno
+        $loans = $acctno
             ? DB::table('wlnmaster')
                 ->where('acctno', $acctno)
                 ->orderByDesc('date_rel')
                 ->get(['lnnumber', 'lntype', 'date_rel', 'principal', 'balance'])
-                ->map(fn ($r) => [
-                    'lnnumber' => trim((string) $r->lnnumber),
-                    'description' => trim((string) $r->lntype),
-                    'date' => $this->day($r->date_rel),
-                    'principal' => $this->num($r->principal),
-                    'raw_balance' => $this->num($r->balance),
-                ])
-                ->values()
-            : [];
+            : collect();
+
+        // Next installment per active loan: first schedule row whose balance is below what is still owed.
+        $owed = $loans->filter(fn ($r) => $this->num($r->balance) > 0)->mapWithKeys(fn ($r) => [$r->lnnumber => $this->num($r->balance)]);
+        $next = $owed->isEmpty() ? collect() : VWebAmortsched::whereIn('lnnumber', $owed->keys())
+            ->orderBy('Date_pay')
+            ->get()
+            ->groupBy('lnnumber')
+            ->map(fn ($rows, $ln) => $rows->first(fn ($i) => $this->num($i->Balance) < $owed[$ln]))
+            ->filter();
+
+        $transactions = $loans->map(fn ($r) => [
+            'lnnumber' => trim((string) $r->lnnumber),
+            'description' => trim((string) $r->lntype),
+            'date' => $this->day($r->date_rel),
+            'principal' => $this->num($r->principal),
+            'raw_balance' => $this->num($r->balance),
+            'next_due' => ($n = $next->get($r->lnnumber)) ? ['date' => $this->day($n->Date_pay), 'amount' => $this->num($n->Amortization)] : null,
+        ])->values();
 
         return Inertia::render('loans/transactions', ['transactions' => $transactions] + AppUser::adminViewProps($request));
     }

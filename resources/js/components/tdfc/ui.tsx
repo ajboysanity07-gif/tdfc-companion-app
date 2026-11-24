@@ -12,6 +12,12 @@ export const fdate = (iso?: string | null) => {
     return Number.isFinite(d.getTime()) ? d.toLocaleDateString('en-PH') : iso;
 };
 
+export const fdateLong = (iso?: string | null) => {
+    if (!iso) return '';
+    const d = new Date(`${iso.slice(0, 10)}T00:00:00`);
+    return Number.isFinite(d.getTime()) ? d.toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric' }) : iso;
+};
+
 export const Panel = ({ className = '', style, children }: { className?: string; style?: CSSProperties; children: ReactNode }) => (
     <section style={style} className={`rounded-[14px] border border-border bg-card shadow-sm ${className}`}>
         {children}
