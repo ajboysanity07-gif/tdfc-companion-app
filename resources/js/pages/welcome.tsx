@@ -1,3 +1,4 @@
+import InstallPrompt from '@/components/install-prompt';
 import ThemeToggle from '@/components/theme-toggle';
 import { Head } from '@inertiajs/react';
 
@@ -6,6 +7,7 @@ export default function Welcome() {
         <>
             <Head title="Welcome" />
             <ThemeToggle floating />
+            <InstallPrompt />
 
             {/* MOBILE (unchanged, smaller image) */}
             <div className="welcome-v2 mx-auto grid min-h-screen place-items-center bg-card px-4 py-8 md:hidden">
