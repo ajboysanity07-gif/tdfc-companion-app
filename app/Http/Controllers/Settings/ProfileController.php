@@ -45,7 +45,7 @@ class ProfileController extends Controller
 
             // Store the new avatar
             try {
-                $avatarPath = $request->file('avatar')->storePublicly('avatars', ['disk' => $disk]);
+                $avatarPath = $request->file('avatar')->store('avatars', ['disk' => $disk]);
             } catch (\Throwable $exception) {
                 Log::warning('Avatar upload failed', [
                     'disk' => $disk,
