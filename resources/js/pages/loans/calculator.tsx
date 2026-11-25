@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from 'react';
 type Product = {
     id: string;
     name: string;
+    tags: string[];
     max_term_months: number;
     term_editable: boolean;
     max_amortization: number;
@@ -26,16 +27,18 @@ const nf2 = new Intl.NumberFormat('en-PH', { minimumFractionDigits: 2, maximumFr
 const fmtAm = (v: number) => (v ? (v % 1 ? nf2 : nf0).format(v) : '');
 
 /** Deductions, monthly payment and total repayable for one product, amount and term (months). */
-export function estimate(p: Product, amount: number, months: number) {
+export function estimate(p: Product, amount: number, months: number, old = 0) {
     const term = Math.min(months, p.max_term_months);
+    // Tagged old-loan balances are paid off from the proceeds, so only the remainder is newly amortized.
+    const principal = Math.max(0, amount - old);
     const sf = (p.service_fee / 100) * amount;
     const lrf = (p.lrf / 100) * amount;
     // ponytail: mockup convention — a document stamp above 100 is a flat peso amount, otherwise a % of the amount.
     const ds = p.document_stamp > 100 ? p.document_stamp : (p.document_stamp / 100) * amount;
     const ded = sf + lrf + ds + p.mort_plus_notarial;
     const i = p.interest_rate / 12 / 100;
-    const monthly = term && amount ? (i === 0 ? amount / term : (amount * (i * (1 + i) ** term)) / ((1 + i) ** term - 1)) : 0;
-    return { term, sf, lrf, ds, mn: p.mort_plus_notarial, ded, net: Math.max(0, amount - ded), monthly, total: monthly * term };
+    const monthly = term && principal ? (i === 0 ? principal / term : (principal * (i * (1 + i) ** term)) / ((1 + i) ** term - 1)) : 0;
+    return { term, sf, lrf, ds, mn: p.mort_plus_notarial, ded, old, principal, net: Math.max(0, amount - ded - old), monthly, total: monthly * term };
 }
 
 const inputCls =
@@ -80,8 +83,10 @@ export default function LoanCalculator({ products }: { products: Product[] }) {
             .then((d) => {
                 const m: Record<string, number> = {};
                 for (const r of d.items ?? [])
-                    if (String(r.lnnumber).toUpperCase().startsWith('LN') && r.raw_balance > 0)
-                        m[r.description] = (m[r.description] ?? 0) + r.raw_balance;
+                    if (String(r.lnnumber).toUpperCase().startsWith('LN') && r.raw_balance > 0) {
+                        const k = String(r.description).trim().toUpperCase();
+                        m[k] = (m[k] ?? 0) + r.raw_balance;
+                    }
                 setOwed(m);
             })
             .catch(() => undefined);
@@ -122,14 +127,22 @@ export default function LoanCalculator({ products }: { products: Product[] }) {
         touch();
     };
 
-    const e = estimate(p, amount, months);
-    const owe = owed[p.name];
+    const oldLoans = [...new Set(p.tags.map((t) => t.trim().toUpperCase()))]
+        .map((name) => ({ name, balance: owed[name] ?? 0 }))
+        .filter((l) => l.balance > 0);
+    const e = estimate(
+        p,
+        amount,
+        months,
+        oldLoans.reduce((s, l) => s + l.balance, 0),
+    );
+    const dedAll = e.ded + e.old;
     const termLocked = !p.term_editable;
     const amMax = p.max_amortization || 100000;
     const termChips = [...new Set([...[6, 12, 18, 24, 36].filter((v) => v <= p.max_term_months), p.max_term_months])].sort((a, b) => a - b);
     const maxLabel = p.amortization_editable ? `Maximum ${pesoS(p.max_amortization)}.` : 'Fixed amount for this product.';
-    const interest = Math.max(0, e.total - amount);
-    const all = Math.max(1, e.net + e.ded + interest);
+    const interest = Math.max(0, e.total - e.principal);
+    const all = Math.max(1, e.net + dedAll + interest);
     const seg = (n: number) => ({ width: `${(n / all) * 100}%` });
     const rows: [string, string][] = [
         ['Amortization amount', pesoS(amount)],
@@ -137,6 +150,7 @@ export default function LoanCalculator({ products }: { products: Product[] }) {
         ['LRF', `− ${pesoS(e.lrf)}`],
         ['Document stamp', `− ${pesoS(e.ds)}`],
         ['Mortgage + notarial', `− ${pesoS(e.mn)}`],
+        ...oldLoans.map((l): [string, string] => [`Balance: ${l.name}`, `− ${pesoS(l.balance)}`]),
     ];
     const recv = 'bg-white dark:bg-brand-ink';
     const fees = 'bg-[oklch(.2_.05_24)] dark:bg-white';
@@ -332,15 +346,15 @@ export default function LoanCalculator({ products }: { products: Product[] }) {
                             </div>
                         </Panel>
 
-                        {owe && (
+                        {e.old > 0 && (
                             <p
                                 role="status"
                                 className="flex animate-tdfc-rise items-start gap-2.5 rounded-xl border border-[oklch(.85_.1_85)] bg-[oklch(.95_.08_90)] px-3.5 py-3 text-[13px] leading-normal text-[oklch(.3_.07_70)]"
                             >
                                 <TriangleAlert className="mt-px size-[18px] flex-none" aria-hidden />
                                 <span>
-                                    You still owe <b className="tabular-nums">{pesoS(owe)}</b> on your current {p.name}. Shown for reference; it is
-                                    not deducted in this estimate.
+                                    You still owe <b className="tabular-nums">{pesoS(e.old)}</b> on {oldLoans.map((l) => l.name).join(' and ')}. This
+                                    balance is deducted from your net proceeds.
                                 </span>
                             </p>
                         )}
@@ -371,7 +385,7 @@ export default function LoanCalculator({ products }: { products: Product[] }) {
                                     <small className="block text-[11px] font-bold tracking-wider uppercase">*Net proceeds</small>
                                     <b className="text-[28px] font-extrabold tabular-nums">{pesoS(e.net)}</b>
                                 </div>
-                                <span className="text-[13px] font-medium">{amount ? `After ${pesoS(e.ded)} in deductions` : 'Enter an amount'}</span>
+                                <span className="text-[13px] font-medium">{amount ? `After ${pesoS(dedAll)} in deductions` : 'Enter an amount'}</span>
                             </div>
                             <div className="grid gap-2">
                                 <div
@@ -381,6 +395,7 @@ export default function LoanCalculator({ products }: { products: Product[] }) {
                                 >
                                     <i className={`${segCls} ${recv}`} style={seg(e.net)} />
                                     <i className={`${segCls} ${fees}`} style={seg(e.ded)} />
+                                    <i className={`${segCls} bg-[oklch(.55_.06_24)]`} style={seg(e.old)} />
                                     <i className={`${segCls} bg-brand-yellow`} style={seg(interest)} />
                                 </div>
                                 <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs font-medium">
@@ -388,14 +403,17 @@ export default function LoanCalculator({ products }: { products: Product[] }) {
                                         [
                                             [recv, 'You receive', e.net],
                                             [fees, 'Fees', e.ded],
+                                            ['bg-[oklch(.55_.06_24)]', 'Old loans', e.old],
                                             ['bg-brand-yellow', 'Interest', interest],
                                         ] as const
-                                    ).map(([c, l, v]) => (
-                                        <span key={l} className="inline-flex items-center gap-1.5">
-                                            <i className={`size-2.5 flex-none rounded-full shadow-[0_0_0_1px_oklch(.2_.05_24/.35)] ${c}`} />
-                                            {l} <b className="tabular-nums">{pesoS(v)}</b>
-                                        </span>
-                                    ))}
+                                    )
+                                        .filter(([, l, v]) => l !== 'Old loans' || v > 0)
+                                        .map(([c, l, v]) => (
+                                            <span key={l} className="inline-flex items-center gap-1.5">
+                                                <i className={`size-2.5 flex-none rounded-full shadow-[0_0_0_1px_oklch(.2_.05_24/.35)] ${c}`} />
+                                                {l} <b className="tabular-nums">{pesoS(v)}</b>
+                                            </span>
+                                        ))}
                                 </div>
                             </div>
                             <details className={`group px-3.5 ${wcard}`}>
@@ -404,7 +422,7 @@ export default function LoanCalculator({ products }: { products: Product[] }) {
                                         See deductions
                                         <i className="mb-1 ml-2.5 inline-block size-[7px] rotate-45 border-r-2 border-b-2 border-current transition-transform group-open:mb-0 group-open:-rotate-[135deg] motion-reduce:transition-none" />
                                     </span>
-                                    <b className="tabular-nums">− {pesoS(e.ded)}</b>
+                                    <b className="tabular-nums">− {pesoS(dedAll)}</b>
                                 </summary>
                                 <dl aria-label="Deductions" className="border-t border-[oklch(.9_0_0)] pb-1">
                                     {rows.map(([l, v]) => (

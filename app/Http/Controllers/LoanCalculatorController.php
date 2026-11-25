@@ -16,12 +16,14 @@ class LoanCalculatorController extends Controller
         $acctno = $request->user()?->acctno;
         $basic = $acctno ? WSalaryRecord::where('acctno', $acctno)->orderBy('created_at', 'desc')->value('salary_amount') : null;
 
-        $products = WlnProduct::where('isDisplayed', true)
+        $products = WlnProduct::with('tags')
+            ->where('isDisplayed', true)
             ->where('ln_isActive', true)
             ->get()
             ->map(fn ($t) => [
                 'id' => $t->typecode,
                 'name' => $t->lntype,
+                'tags' => $t->tags->pluck('tag_name')->map(fn ($n) => trim($n))->values(),
                 // max_term is stored in days; the calculator works in months
                 'max_term_months' => max(1, (int) round(($t->max_term ?? 0) / 30)),
                 'term_editable' => (bool) $t->max_term_isEditable,
