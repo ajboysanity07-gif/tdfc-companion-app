@@ -533,7 +533,7 @@ export default function ProductsManagement() {
                                 onChange={(e) => setQ(e.target.value)}
                                 placeholder="Search loan type..."
                                 aria-label="Search loan type"
-                                className={`${field} min-w-0 flex-1 basis-50 max-[860px]:max-w-none md:max-w-80`}
+                                className={`${field} min-w-0 flex-1 basis-50 max-[860px]:flex-none max-[860px]:max-w-none md:max-w-80`}
                             />
                         </div>
                         <div className="overflow-x-auto">
