@@ -78,7 +78,7 @@ export default function AvatarCropModal({
   const handleUse = async () => {
     if (!area) return;
     const blob = await cropToBlob(localSrc, area);
-    const file = new File([blob], "avatar.png", { type: "image/png" });
+    const file = new File([blob], "avatar.jpg", { type: "image/jpeg" });
     onCroppedFile(file);
     if (internalUrlToRevoke) {
       URL.revokeObjectURL(internalUrlToRevoke);
@@ -92,7 +92,7 @@ export default function AvatarCropModal({
     setIsUploading(true);
     try {
       const blob = await cropToBlob(localSrc, area);
-      const file = new File([blob], "avatar.png", { type: "image/png" });
+      const file = new File([blob], "avatar.jpg", { type: "image/jpeg" });
 
       const formData = new FormData();
       formData.append('avatar', file);
@@ -112,7 +112,7 @@ export default function AvatarCropModal({
         },
         onError: (errors) => {
           console.error('Avatar upload failed:', errors);
-          alert('Failed to upload avatar. Please try again.');
+          alert(Object.values(errors)[0] || 'Failed to upload avatar. Please try again.');
         },
         forceFormData: true
       });
@@ -251,13 +251,15 @@ async function cropToBlob(imageSrc: string, area: Area): Promise<Blob> {
   const img = await loadImage(imageSrc);
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d")!;
-  const w = Math.round(area.width);
-  const h = Math.round(area.height);
-  canvas.width = w;
-  canvas.height = h;
-  ctx.drawImage(img, area.x, area.y, area.width, area.height, 0, 0, w, h);
+  // Cap at 512px and use JPEG so the upload stays far below the server's 2MB limit.
+  const size = Math.min(512, Math.round(Math.min(area.width, area.height)));
+  canvas.width = size;
+  canvas.height = size;
+  ctx.fillStyle = "#fff";
+  ctx.fillRect(0, 0, size, size);
+  ctx.drawImage(img, area.x, area.y, area.width, area.height, 0, 0, size, size);
   return new Promise((resolve) => {
-    canvas.toBlob((b) => resolve((b as Blob) ?? new Blob()), "image/png", 0.92);
+    canvas.toBlob((b) => resolve((b as Blob) ?? new Blob()), "image/jpeg", 0.9);
   });
 }
 
