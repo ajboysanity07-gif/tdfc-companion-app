@@ -50,7 +50,13 @@ class RegisteredUserController extends Controller
             if ($request->hasFile($input)) {
                 // Avatar is resolved from avatar_disk (see HandleInertiaRequests); ID/payslip are read from /storage (public).
                 $disk = $input === 'profile_picture' ? config('filesystems.avatar_disk') : 'public';
-                $paths[$column] = $request->file($input)->storePublicly('uploads', ['disk' => $disk]);
+                try {
+                    $paths[$column] = $request->file($input)->storePublicly('uploads', ['disk' => $disk]);
+                } catch (\Throwable $e) {
+                    // Remote disk (R2) failed: log it and fall back to public so registration doesn't 500.
+                    report($e);
+                    $paths[$column] = $request->file($input)->storePublicly('uploads', ['disk' => 'public']);
+                }
             }
         }
 
