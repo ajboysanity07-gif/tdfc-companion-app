@@ -5,10 +5,12 @@ use App\Models\AppUser;
 use App\Models\WlnProduct;
 use App\Models\WlnTags;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
+use function Pest\Laravel\postJson;
 use function Pest\Laravel\putJson;
 use function Pest\Laravel\withoutMiddleware;
 use function Pest\Laravel\withoutVite;
@@ -20,7 +22,7 @@ beforeEach(function () {
     withoutMiddleware([HandleInertiaRequests::class, \App\Http\Middleware\VerifyCsrfToken::class]);
     withoutVite();
 
-    foreach (['wsalary_records', 'wln_tag_summary', (new WlnTags)->getTable(), 'wlnproducts'] as $table) {
+    foreach (['wlntype', 'wsalary_records', 'wln_tag_summary', (new WlnTags)->getTable(), 'wlnproducts'] as $table) {
         Schema::dropIfExists($table);
     }
     foreach ([
@@ -40,6 +42,10 @@ beforeEach(function () {
         $table->id();
         $table->unsignedBigInteger('wlntag_id');
         $table->timestamps();
+    });
+    Schema::create('wlntype', function (Blueprint $table) {
+        $table->string('typecode');
+        $table->string('lntype');
     });
     Schema::create('wsalary_records', function (Blueprint $table) {
         $table->string('acctno');
@@ -92,3 +98,23 @@ it('rejects bad custom fees', function (array $fee, string $key) {
     'negative' => [['label' => 'X', 'type' => 'fixed', 'value' => -1], 'value'],
     'percent over 100' => [['label' => 'X', 'type' => 'percent', 'value' => 101], 'value'],
 ]);
+
+it('creates a product from its name, taking the master loan type code or a free one', function () {
+    // the master list is CHAR-padded, and 99 belongs to a loan type that has no product yet
+    DB::table('wlntype')->insert([
+        ['typecode' => '04', 'lntype' => 'SALARY LOAN   '],
+        ['typecode' => '99', 'lntype' => 'CALAMITY LOAN'],
+    ]);
+    actingAsRole('admin');
+
+    postJson('/api/admin/products', ['lntype' => 'Salary Loan'])->assertCreated()->assertJsonPath('typecode', '04');
+    postJson('/api/admin/products', ['lntype' => 'TRAVEL LOAN'])->assertCreated()->assertJsonPath('typecode', '98');
+});
+
+it('rejects a loan name that is already taken', function () {
+    actingAsRole('admin');
+
+    postJson('/api/admin/products', ['lntype' => 'ATM LOAN'])
+        ->assertStatus(422)
+        ->assertJsonValidationErrors(['lntype' => 'The loan name has already been taken.']);
+});

@@ -15,10 +15,26 @@ class ProductController extends Controller
 {
     private const WITH = ['tags.summaries'];
 
-    // wlntype is the read-only master list; its CHAR columns come back space-padded.
-    private function masterType(string $typecode): WlnType
+    // The product code is an internal key the admin never sees: reuse the master code of a
+    // same-named loan type, else the highest code nobody uses (the master list grows from the low end).
+    // wlntype is read-only and its CHAR columns come back space-padded.
+    private function newTypecode(string $name): string
     {
-        return WlnType::whereRaw('RTRIM(typecode) = ?', [$typecode])->firstOrFail();
+        $used = WlnProduct::pluck('typecode')->map(fn ($c) => trim($c));
+        $master = WlnType::get(['typecode', 'lntype']);
+        $same = $master->first(fn ($t) => strcasecmp(trim($t->lntype), $name) === 0);
+
+        if ($same && ! $used->contains(trim($same->typecode))) {
+            return trim($same->typecode);
+        }
+
+        $taken = $used->merge($master->map(fn ($t) => trim($t->typecode)))->flip();
+        $code = collect(range(99, 1))
+            ->map(fn ($n) => sprintf('%02d', $n))
+            ->first(fn ($c) => ! $taken->has($c));
+        abort_if($code === null, 422, 'No product codes are left.');
+
+        return $code;
     }
 
     // List displayed products
@@ -89,6 +105,7 @@ class ProductController extends Controller
 
     // Readable names for the errors the admin drawer shows in a toast.
     private const ATTRIBUTES = [
+        'lntype' => 'loan name',
         'settings.custom_fees.*.label' => 'custom fee name',
         'settings.custom_fees.*.type' => 'custom fee type',
         'settings.custom_fees.*.value' => 'custom fee value',
@@ -117,11 +134,12 @@ class ProductController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'typecode' => 'required|max:2|unique:wlnproducts,typecode',
-            'lntype' => 'required|string',
+            'lntype' => 'required|string|max:255|unique:wlnproducts,lntype',
         ] + $this->fieldRules($request), [], self::ATTRIBUTES);
 
-        $product = DB::transaction(fn () => WlnProduct::create($this->columns($data) + ['isDisplayed' => true]));
+        $product = DB::transaction(fn () => WlnProduct::create(
+            $this->columns($data) + ['typecode' => $this->newTypecode($data['lntype']), 'isDisplayed' => true]
+        ));
 
         return response()->json($product->load(self::WITH), 201);
     }

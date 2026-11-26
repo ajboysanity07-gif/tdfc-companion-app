@@ -252,7 +252,7 @@ window.addEventListener('storage',function(e){if(e.key===K&&e.newValue)set(res(e
 <style>
 .banner{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap}
 .banner h1{font-size:24px;font-weight:800}.banner p{margin:4px 0 0;color:var(--muted-fg)}
-.panel{overflow:hidden}
+.panel{overflow:hidden}.panel .card-b{padding-bottom:0}
 .stack{display:grid;gap:14px;grid-template-columns:minmax(0,1fr)}
 .toolbar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:space-between;min-width:0}
 .tabs{display:flex;gap:6px;flex-wrap:wrap;min-width:0}
@@ -271,11 +271,13 @@ window.addEventListener('storage',function(e){if(e.key===K&&e.newValue)set(res(e
 .tbl tbody tr:focus-visible{outline-offset:-2px}
 .tbl td.num,.tbl th.num{text-align:right}
 .tbl th:last-child,.tbl td:last-child{width:84px;text-align:center}
+.tbl td .sw{display:block;margin:0 auto}
+.derived{display:inline-block;max-width:160px;overflow-wrap:anywhere;color:var(--muted-fg);font-size:13px}
 .tag-row{display:flex;gap:4px;flex-wrap:wrap}
 .pill{display:inline-flex;height:22px;align-items:center;padding:0 8px;border-radius:999px;font-size:11px;font-weight:600;background:var(--blue-soft);color:var(--blue-ink)}
 .pill.off{background:var(--muted);color:var(--muted-fg)}
 .foot-n{padding:12px 16px;border-top:1px solid var(--border);color:var(--muted-fg);font-size:13px}
-.toast{position:fixed;bottom:84px;left:50%;transform:translateX(-50%);background:var(--primary);color:var(--primary-fg);padding:10px 16px;border-radius:10px;display:none;z-index:90;font-size:13px;box-shadow:var(--shadow-lg)}.toast.on{display:block}
+.toast{position:fixed;bottom:84px;left:50%;transform:translateX(-50%);background:var(--primary);color:var(--primary-fg);padding:10px 16px;border-radius:10px;display:none;z-index:90;font-size:13px;box-shadow:var(--shadow-lg)}.toast.on{display:block}.toast.err{background:var(--destructive);color:var(--on-deep,#fff)}
 /* drawer */
 .scrim{position:fixed;inset:0;background:oklch(0 0 0/.35);opacity:0;visibility:hidden;transition:opacity .2s,visibility .2s;z-index:55}
 .scrim.on{opacity:1;visibility:visible}
@@ -283,7 +285,6 @@ window.addEventListener('storage',function(e){if(e.key===K&&e.newValue)set(res(e
 .drawer.open{transform:none;visibility:visible}
 .dh{display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid var(--border)}
 .dh h2{font-size:18px;font-weight:600;flex:1;min-width:0}
-.dh .badge{font-variant-numeric:tabular-nums}
 .mini{display:flex;gap:4px;padding:0 20px;border-bottom:1px solid var(--border);background:var(--bg)}
 .mini button{height:44px;padding:0 12px;border:0;border-bottom:2px solid transparent;background:none;font-weight:500;color:var(--muted-fg);cursor:pointer;margin-bottom:-1px}
 .mini button:hover{color:var(--fg);background:var(--muted)}
@@ -298,10 +299,18 @@ window.addEventListener('storage',function(e){if(e.key===K&&e.newValue)set(res(e
 .btn.dangertxt{color:var(--destructive);border-color:transparent;background:none}.btn.dangertxt:hover{background:color-mix(in oklch,var(--destructive) 14%,var(--card))}
 .status{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--border);border-radius:var(--radius)}
 .status small{display:block;color:var(--muted-fg)}
-.tags{display:flex;gap:6px;flex-wrap:wrap;border:1px solid var(--input);border-radius:var(--radius);padding:6px;min-height:42px;box-shadow:var(--shadow);cursor:text}
+.combo{position:relative}
+.tags{display:flex;gap:6px;flex-wrap:wrap;align-items:center;border:1px solid var(--input);border-radius:var(--radius);padding:5px 6px;min-height:42px;box-shadow:var(--shadow)}
 .tags:focus-within{border-color:var(--ring)}
 .tags .badge{background:var(--blue-soft);color:var(--blue-ink)}.tags .badge button{border:0;background:none;padding:0;color:inherit;cursor:pointer;line-height:1;font-size:15px}
-.tags input{border:0;outline:0;flex:1;min-width:90px;background:none;padding:0 4px;box-shadow:none}
+.tags .open{flex:1;min-width:120px;height:30px;border:0;background:none;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 4px;color:var(--muted-fg);cursor:pointer}
+.tags .open .ico{margin-left:auto}
+.pop{position:absolute;z-index:5;left:0;right:0;top:calc(100% + 4px);background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-lg);padding:6px}
+.opts{max-height:220px;overflow:auto;margin-top:6px;display:grid}
+.opts button{display:flex;align-items:center;gap:8px;min-height:36px;padding:0 8px;border:0;border-radius:8px;background:none;text-align:left;cursor:pointer}
+.opts button:hover{background:var(--muted)}.opts button .ico{opacity:0}.opts button[aria-pressed=true] .ico{opacity:1}
+.fee{display:grid;grid-template-columns:minmax(0,1fr) 72px 104px 40px;gap:8px;align-items:center}
+.fee .select{padding:0 8px}.btn.icon{width:40px;padding:0}.add{justify-self:start}
 .row2{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end}
 .ed{display:flex;gap:6px;align-items:center;height:40px;font-size:13px;color:var(--muted-fg)}
 .ed.solo{height:auto}
@@ -316,6 +325,8 @@ window.addEventListener('storage',function(e){if(e.key===K&&e.newValue)set(res(e
   .tbl tbody tr:hover{background:var(--bg)}
   .tbl tbody tr:active{background:var(--muted)}
   .tbl td{display:block;padding:0;border-bottom:0;width:auto}
+  .tbl td.c-scheme,.tbl td.c-term,.tbl td.c-amort,.tbl td.c-tags{display:none}
+  .tbl td[colspan]{grid-column:1/-1}
   .tbl td:nth-child(1){grid-column:1;grid-row:1;align-self:start}
   .tbl td:nth-child(8){grid-column:2;grid-row:1;justify-self:end}
   .tbl td:nth-child(3){grid-column:1;grid-row:2}
@@ -366,7 +377,7 @@ window.addEventListener('storage',function(e){if(e.key===K&&e.newValue)set(res(e
 
 <div class="scrim" id="scrim"></div>
 <aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="dT" tabindex="-1" data-od-id="product-drawer">
-  <div class="dh"><h2 id="dT"></h2><span class="badge" id="dC"></span><button class="btn ghost sm" id="dX" aria-label="Close" style="width:36px;padding:0"><svg class="ico" style="width:20px;height:20px" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
+  <div class="dh"><h2 id="dT"></h2><button class="btn ghost sm" id="dX" aria-label="Close" style="width:36px;padding:0"><svg class="ico" style="width:20px;height:20px" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
   <nav class="mini" aria-label="Jump to section">
     <button data-sec="general">General</button>
     <button data-sec="terms">Terms</button>
@@ -379,103 +390,141 @@ window.addEventListener('storage',function(e){if(e.key===K&&e.newValue)set(res(e
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
+// Sample data. Shape and rules follow ProductController + products-management.tsx.
+const mk=o=>({on:1,scheme:'ADD-ON',mode:'MONTHLY',rate:null,ed:0,term:null,ted:0,amode:'FIXED',formula:'',amort:null,aed:0,multi:0,sf:null,lrf:null,ds:null,mn:null,fees:[],tags:[],info:'',...o});
 let P=[
- {c:'SAL',n:'Salary Loan',on:1,scheme:'ADD-ON',mode:'MONTHLY',rate:12,term:720,amort:30000,ed:1,ted:1,aed:0,multi:0,amode:'FIXED',formula:'',sf:1.5,lrf:1,ds:1.5,mn:350,tags:['PUBLIC','TEACHER'],info:'Available to regular employees with at least 6 months of service. Payable via salary deduction.'},
- {c:'EMG',n:'Emergency Loan',on:1,scheme:'PREPAID',mode:'MONTHLY',rate:10,term:360,amort:15000,ed:0,ted:1,aed:1,multi:0,amode:'BASIC',formula:'',sf:1,lrf:1,ds:1.5,mn:250,tags:['PUBLIC'],info:'Short-term loan for urgent needs. Maximum of one active emergency loan per client.'},
- {c:'HSG',n:'Housing Loan',on:1,scheme:'ADD-ON',mode:'MONTHLY',rate:9,term:3650,amort:60000,ed:0,ted:0,aed:0,multi:0,amode:'CUSTOM',formula:'basic * 0.4',sf:2,lrf:1,ds:1.5,mn:1500,tags:['TEACHER'],info:'Requires mortgage documents and notarized deed. Subject to credit committee approval.'},
- {c:'APP',n:'Appliance Loan',on:0,scheme:'ADD-ON',mode:'WEEKLY',rate:14,term:365,amort:8000,ed:1,ted:1,aed:1,multi:1,amode:'FIXED',formula:'',sf:1.5,lrf:1,ds:1.5,mn:200,tags:[],info:'Appliance financing through accredited partner stores.'},
- {c:'EDU',n:'Educational Loan',on:1,scheme:'PREPAID',mode:'DUE-DATE',rate:8,term:540,amort:20000,ed:0,ted:1,aed:0,multi:1,amode:'FIXED',formula:'',sf:1,lrf:1,ds:1.5,mn:300,tags:['PUBLIC','TEACHER'],info:'Tuition and school-fee assistance, payable on the due date of each term.'}];
-const POOL=['PEN','CAL','SLP','MED','TRV','VEH'];
-let sel=null,flt='all',opener=null;const $=s=>document.querySelector(s);
-const toast=m=>{const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('on'),2200)};
-const num=s=>{const v=(s??'').toString().replace(/[^0-9.\-]/g,'');return v===''||v==='-'?0:+v};
-const peso=n=>'₱'+n.toLocaleString();
-const find=c=>P.find(x=>x.c==c);
-const real=()=>P.filter(p=>!p.isNew);
+ mk({n:'SALARY LOAN',rate:12,ed:1,term:720,ted:1,amort:30000,sf:1.5,lrf:1,ds:1.5,mn:350,fees:[{label:'Insurance premium',type:'percent',value:0.5},{label:'Membership fee',type:'fixed',value:100}],tags:['ATM LOAN','EMERGENCY LOAN'],info:'Available to regular employees with at least 6 months of service. Payable via salary deduction.'}),
+ mk({n:'EMERGENCY LOAN',scheme:'PREPAID',rate:10,term:360,ted:1,amode:'BASIC',formula:'basic',sf:1,lrf:1,ds:1.5,mn:250,tags:['SALARY LOAN'],info:'Short-term loan for urgent needs. Maximum of one active emergency loan per client.'}),
+ mk({n:'HOUSING LOAN',rate:9,term:3650,amode:'CUSTOM',formula:'basic * 0.4',sf:2,lrf:1,ds:1.5,mn:1500,fees:[{label:'Appraisal fee',type:'fixed',value:2500}],tags:['SALARY LOAN'],info:'Requires mortgage documents and a notarized deed. Subject to credit committee approval.'}),
+ mk({n:'APPLIANCE LOAN',on:0,mode:'WEEKLY',rate:14,ed:1,term:365,ted:1,amort:8000,aed:1,multi:1,sf:1.5,lrf:1,ds:1.5,mn:200,info:'Appliance financing through accredited partner stores.'}),
+ mk({n:'EDUCATIONAL LOAN',scheme:'PREPAID',mode:'DUE-DATE',rate:8,term:540,ted:1,amort:20000,multi:1,sf:1,lrf:1,ds:1.5,mn:300,tags:['EMERGENCY LOAN','SALARY LOAN'],info:'Tuition and school-fee assistance, payable on the due date of each term.'}),
+ mk({n:'ATM LOAN',rate:15,term:180,amort:10000,sf:2,lrf:1,ds:1.5,mn:150,tags:['SALARY LOAN'],info:'Short-term loan deducted from the client\'s payroll ATM account.'})];
+// internal row key only, never shown
+P.forEach((p,i)=>p.id=String(i+1));let nextId=P.length+1;
+// stands in for the read-only wlntype master list behind the tag picker
+const TYPES=['APPLIANCE LOAN','ATM LOAN','CALAMITY LOAN','EDUCATIONAL LOAN','EMERGENCY LOAN','HOUSING LOAN','MEDICAL LOAN','PENSION LOAN','SALARY LOAN'];
+const NUM=['rate','term','amort','sf','lrf','ds','mn'],TYPED=/^\d*\.?\d{0,2}$/;
+let sel=null,F=null,init='',pop=false,tq='',flt='all',opener=null;
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const toast=(m,err)=>{const t=$('#toast');t.textContent=m;t.classList.toggle('err',!!err);t.classList.add('on');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('on'),err?3600:2200)};
+const num=s=>{const v=String(s??'').replace(/[^0-9.\-]/g,'');return v===''||v==='-'||v==='.'?null:+v};
+const ico=d=>`<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="${d}"/></svg>`;
+const X=ico('M18 6L6 18M6 6l12 12'),PLUS=ico('M12 5v14M5 12h14'),CHECK=ico('M20 6L9 17l-5-5'),UPDOWN=ico('M7 15l5 5 5-5M7 9l5-5 5 5');
+const find=id=>P.find(x=>x.id===id);
+const row=id=>$(`#rows tr[data-id="${id}"]`);
 
-function chips(){const R=real(),a=R.filter(p=>p.on).length,o=[['all','All',R.length],['on','Active',a],['off','Inactive',R.length-a]];
+function chips(){const a=P.filter(p=>p.on).length,o=[['all','All',P.length],['on','Active',a],['off','Inactive',P.length-a]];
  $('#chips').innerHTML=o.map(([v,l,n])=>`<button class="${flt==v?'on':''}" data-f="${v}" aria-pressed="${flt==v}">${l} <span class="cnt">${n}</span></button>`).join('')}
+// salary-based limits have no stored amount, so show how they are worked out
+const amort=p=>p.amode=='BASIC'?'<span class="derived">Basic salary</span>':p.amode=='CUSTOM'?`<span class="derived">${esc(p.formula.replace(/\*/g,'×'))}</span>`:p.amort==null?'—':'₱'+p.amort.toLocaleString();
 function rows(){const q=$('#q').value.toLowerCase();
- const f=real().filter(p=>(p.n.toLowerCase().includes(q)||p.c.toLowerCase().includes(q))&&(flt=='all'||(flt=='on')==!!p.on));
- $('#rows').innerHTML=f.map(p=>`<tr data-c="${p.c}" tabindex="0" class="${sel==p.c?'sel':''}" data-od-id="product-row-${p.c.toLowerCase()}">
-  <td><b>${p.n}</b><div class="hint">${p.c}</div></td>
+ const f=P.filter(p=>p.n.toLowerCase().includes(q)&&(flt=='all'||(flt=='on')==!!p.on)).sort((a,b)=>a.n.localeCompare(b.n));
+ $('#rows').innerHTML=f.map(p=>`<tr data-id="${p.id}" tabindex="0" class="${sel===p.id?'sel':''}" data-od-id="product-row-${p.id}">
+  <td><b>${esc(p.n)}</b></td>
   <td class="c-scheme"><span class="pill off">${p.scheme}</span></td><td class="c-mode">${p.mode}</td>
-  <td class="num mono">${p.rate}%</td><td class="num mono c-term">${p.term.toLocaleString()} d</td><td class="num mono c-amort">${peso(p.amort)}</td>
+  <td class="num mono">${p.rate==null?'—':p.rate+'%'}</td><td class="num mono c-term">${p.term==null?'—':p.term.toLocaleString()+' d'}</td><td class="num mono c-amort">${amort(p)}</td>
   <td class="c-tags"><span class="tag-row">${p.tags.length?p.tags.map(t=>`<span class="pill">${t}</span>`).join(''):'<span class="muted">—</span>'}</span></td>
-  <td><label class="sw row-sw" data-c="${p.c}"><input type="checkbox" ${p.on?'checked':''} aria-label="Toggle ${p.n} active"><i></i></label></td></tr>`).join('')
+  <td><label class="sw row-sw"><input type="checkbox" ${p.on?'checked':''} aria-label="Toggle ${esc(p.n)} active"><i></i></label></td></tr>`).join('')
   ||'<tr><td colspan="8" class="muted" style="padding:28px 16px;text-align:center">No products found</td></tr>';
- $('#count').textContent=`Showing ${f.length} of ${real().length} products`;
- const a=real().filter(p=>p.on).length;$('#sub').textContent=`${real().length} loan products · ${a} active`;chips()}
+ $('#count').textContent=`Showing ${f.length} of ${P.length} products`;
+ $('#sub').textContent=`${P.length} loan products · ${P.filter(p=>p.on).length} active`;chips()}
 
 const opt=(v,a)=>a.map(x=>`<option ${x==v?'selected':''}>${x}</option>`).join('');
-const pct=(id,l,f,v)=>`<div class="field"><label for="${id}">${l}</label><div class="sfx"><input class="input mono" id="${id}" data-f="${f}" inputmode="decimal" value="${v}"><span>%</span></div></div>`;
-const ed=(f,on)=>`<label class="ed"><input type="checkbox" data-f="${f}" ${on?'checked':''}> editable by client</label>`;
-function details(p){return `<div class="det" data-c="${p.c}">
+const input=(id,k)=>`<input class="input mono" id="${id}" data-k="${k}" inputmode="decimal" value="${esc(F[k])}">`;
+const field=(id,label,ctl)=>`<div class="field"><label for="${id}">${label}</label>${ctl}</div>`;
+const pct=(id,k,label)=>field(id,label,`<div class="sfx">${input(id,k)}<span>%</span></div>`);
+const check=(k,text,cls='ed')=>`<label class="${cls}"><input type="checkbox" id="c-${k}" data-k="${k}" ${F[k]?'checked':''}> ${text}</label>`;
+const optList=()=>TYPES.map((t,i)=>[t,i]).filter(([t])=>t.toLowerCase().includes(tq.toLowerCase()))
+ .map(([t,i])=>`<button type="button" id="opt-${i}" data-tag="${t}" aria-pressed="${F.tags.includes(t)}">${CHECK}${t}</button>`).join('')||'<span class="hint" style="padding:8px">No loan types</span>';
+function details(){return `<div class="det">
  <section class="sec" id="p-general" aria-labelledby="h-general"><h3 id="h-general">General</h3>
-  <div class="status"><div><b>Available to clients</b><small>Inactive products are hidden from the loan calculator.</small></div><label class="sw"><input type="checkbox" data-f="on" ${p.on?'checked':''} aria-label="Active"><i></i></label></div>
-  <div class="field"><label for="d-tags">Type relation tags</label><div class="tags">${p.tags.map(t=>`<span class="badge">${t}<button aria-label="Remove ${t}" data-t="${t}">×</button></span>`).join('')}<input id="d-tags" placeholder="Add tag, press Enter" aria-label="Add tag"></div></div>
-  <div class="field"><label for="d-info">Terms / information for clients</label><textarea class="textarea" id="d-info" data-f="info" rows="6">${p.info}</textarea></div>
+  <div class="status"><div><b>Available to clients</b><small>Inactive products are hidden from the loan calculator.</small></div><label class="sw"><input type="checkbox" data-k="on" ${F.on?'checked':''} aria-label="Active"><i></i></label></div>
+  <div class="field"><label for="d-tags">Type relation tags</label><div class="combo" data-od-id="tag-picker">
+   <div class="tags">${F.tags.map(t=>`<span class="badge">${t}<button type="button" aria-label="Remove ${t}" data-rm="${t}">×</button></span>`).join('')}<button type="button" class="open" id="d-tags" aria-expanded="${pop}">${F.tags.length?'<span class="sr">Choose loan types</span>':'Select loan types'}${UPDOWN}</button></div>
+   ${pop?`<div class="pop"><input class="input" id="d-tagq" type="search" placeholder="Search loan types..." aria-label="Search loan types" value="${esc(tq)}"><div class="opts">${optList()}</div></div>`:''}
+  </div></div>
+  ${field('d-info','Terms / information for clients',`<textarea class="textarea" id="d-info" data-k="info" rows="6">${esc(F.info)}</textarea>`)}
  </section>
  <section class="sec" id="p-terms" aria-labelledby="h-terms"><h3 id="h-terms">Terms</h3>
-  <div class="grid2"><div class="field"><label for="d-scheme">Scheme</label><select class="select" id="d-scheme" data-f="scheme">${opt(p.scheme,['ADD-ON','PREPAID'])}</select></div>
-   <div class="field"><label for="d-mode">Mode</label><select class="select" id="d-mode" data-f="mode">${opt(p.mode,['MONTHLY','WEEKLY','DUE-DATE'])}</select></div></div>
-  <div class="row2"><div class="field"><label for="d-rate">Rate (p.a.)</label><div class="sfx"><input class="input mono" id="d-rate" data-f="rate" inputmode="decimal" value="${p.rate}"><span>%</span></div></div>${ed('ed',p.ed)}</div>
-  <div class="row2"><div class="field"><label for="d-term">Max term (days)</label><input class="input mono" id="d-term" data-f="term" inputmode="numeric" value="${p.term}"></div>${ed('ted',p.ted)}</div>
-  <div class="field"><label for="d-amode">Max amortization mode</label><select class="select" id="d-amode" data-f="amode"><option value="FIXED" ${p.amode=='FIXED'?'selected':''}>FIXED amount</option><option value="BASIC" ${p.amode=='BASIC'?'selected':''}>BASIC (client's basic salary)</option><option value="CUSTOM" ${p.amode=='CUSTOM'?'selected':''}>CUSTOM formula</option></select></div>
-  ${p.amode=='CUSTOM'?`<div class="field"><label for="d-formula">Formula</label><input class="input" id="d-formula" data-f="formula" value="${p.formula}" placeholder="e.g. basic * 0.4"><small class="hint"><b>basic</b> is the client's basic salary. Use numbers and + - * / ( ).</small></div>`:''}
-  ${p.amode=='FIXED'?`<div class="row2"><div class="field"><label for="d-amort">Max amortization</label><input class="input mono" id="d-amort" data-f="amort" inputmode="decimal" value="${p.amort.toLocaleString()}"></div>${ed('aed',p.aed)}</div>`:''}
-  <label class="ed solo"><input type="checkbox" data-f="multi" ${p.multi?'checked':''}> Allow multiple active loans per client</label>
+  <div class="grid2">${field('d-scheme','Scheme',`<select class="select" id="d-scheme" data-k="scheme">${opt(F.scheme,['ADD-ON','PREPAID'])}</select>`)}
+   ${field('d-mode','Mode',`<select class="select" id="d-mode" data-k="mode">${opt(F.mode,['MONTHLY','WEEKLY','DUE-DATE'])}</select>`)}</div>
+  <div class="row2">${pct('d-rate','rate','Rate (p.a.)')}${check('ed','editable by client')}</div>
+  <div class="row2">${field('d-term','Max term (days)',input('d-term','term'))}${check('ted','editable by client')}</div>
+  ${field('d-amode','Max amortization mode',`<select class="select" id="d-amode" data-k="amode">${[['FIXED','FIXED amount'],['BASIC',"BASIC (client's basic salary)"],['CUSTOM','CUSTOM formula']].map(([v,l])=>`<option value="${v}" ${F.amode==v?'selected':''}>${l}</option>`).join('')}</select>`)}
+  ${F.amode=='CUSTOM'?`<div class="field"><label for="d-formula">Formula</label><input class="input" id="d-formula" data-k="formula" value="${esc(F.formula)}" placeholder="e.g. basic * 0.4"><small class="hint"><b>basic</b> is the client's basic salary. Use numbers and + - * / ( ).</small></div>`:''}
+  ${F.amode=='FIXED'?`<div class="row2">${field('d-amort','Max amortization',input('d-amort','amort'))}${check('aed','editable by client')}</div>`:''}
+  ${check('multi','Allow multiple active loans per client','ed solo')}
  </section>
  <section class="sec" id="p-fees" aria-labelledby="h-fees"><h3 id="h-fees">Fees</h3>
   <p class="hint">Percent fees are computed on the amount applied.</p>
-  <div class="grid2">${pct('d-sf','Service fee','sf',p.sf)}${pct('d-lrf','LRF','lrf',p.lrf)}${pct('d-ds','Doc stamp','ds',p.ds)}
-   <div class="field"><label for="d-mn">Mortgage + notarial</label><input class="input mono" id="d-mn" data-f="mn" inputmode="decimal" value="${p.mn}"></div></div>
+  <div class="grid2">${pct('d-sf','sf','Service fee')}${pct('d-lrf','lrf','LRF')}${pct('d-ds','ds','Doc stamp')}${field('d-mn','Mortuary + notarial',input('d-mn','mn'))}</div>
+  ${F.fees.map((c,i)=>`<div class="fee" data-od-id="custom-fee-${i+1}">
+   <input class="input" id="f-label-${i}" data-fee="${i}" data-k="label" maxlength="60" placeholder="Fee name" aria-label="Custom fee ${i+1} name" value="${esc(c.label)}">
+   <select class="select" id="f-type-${i}" data-fee="${i}" data-k="type" aria-label="Custom fee ${i+1} type"><option value="percent" ${c.type=='percent'?'selected':''}>%</option><option value="fixed" ${c.type=='fixed'?'selected':''}>₱</option></select>
+   <input class="input mono" id="f-value-${i}" data-fee="${i}" data-k="value" inputmode="decimal" placeholder="0.00" aria-label="Custom fee ${i+1} value" value="${esc(c.value)}">
+   <button type="button" class="btn ghost icon" data-del="${i}" aria-label="Remove custom fee ${i+1}">${X}</button></div>`).join('')}
+  ${F.fees.length<20?`<button type="button" class="btn add" id="addFee" data-od-id="add-custom-fee">${PLUS}Add custom fee</button>`:''}
  </section></div>`}
+
+// The drawer edits a draft that keeps numbers as typed text; converted back on save.
+const toForm=p=>{const f=structuredClone(p);NUM.forEach(k=>f[k]=f[k]==null?'':String(f[k]));f.fees.forEach(c=>c.value=String(c.value));return f};
+const dirty=()=>!!F&&JSON.stringify(F)!==init;
+function invalid(){
+ if(sel===''&&P.some(p=>p.n.toLowerCase()===F.n.trim().toLowerCase()))return 'The loan name has already been taken.';
+ for(const [k,l] of [['term','max term'],['amort','max amortization']]){const v=num(F[k]);if(v!=null&&!Number.isInteger(v)&&!(k=='amort'&&F.amode!='FIXED'))return `The settings.${l} field must be an integer.`}
+ if(F.amode=='CUSTOM'){if(!F.formula.trim())return 'The settings.max amortization formula field is required.';
+  if(!/^[0-9+\-*\/().\s]*\bbasic\b[0-9+\-*\/().\s]*$/i.test(F.formula))return 'Formula may only use numbers, + - * / ( ) and the word "basic".'}
+ for(const c of F.fees){if(!c.label.trim())return 'The custom fee name field is required.';const v=num(c.value);if(v==null)return 'The custom fee value field is required.';
+  if(c.type=='percent'&&v>100)return 'A percent custom fee cannot be more than 100.'}
+ return ''}
 function spy(){const db=$('#dB'),ids=['general','terms','fees'];let cur=ids[0];
  ids.forEach(k=>{const el=$('#p-'+k);if(el&&el.offsetTop-db.scrollTop<=60)cur=k});
  if(db.scrollTop+db.clientHeight>=db.scrollHeight-2)cur=ids[2];
  document.querySelectorAll('.mini button').forEach(b=>b.setAttribute('aria-current',b.dataset.sec==cur))}
-function jump(k){const db=$('#dB'),el=$('#p-'+k);if(el)db.scrollTo({top:el.offsetTop-20,behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth'})}
-const get=(d,f)=>d.querySelector(`[data-f="${f}"]`);
-const chk=(d,f)=>get(d,f).checked?1:0;
-function saveForm(d){const p=find(d.dataset.c);if(!p)return;
- p.on=chk(d,'on');p.scheme=get(d,'scheme').value;p.mode=get(d,'mode').value;
- ['rate','term','amort','sf','lrf','ds','mn'].forEach(k=>{const el=get(d,k);if(el)p[k]=num(el.value)});
- ['ed','ted','aed','multi'].forEach(k=>{if(get(d,k))p[k]=chk(d,k)});p.amode=get(d,'amode').value;if(get(d,'formula'))p.formula=get(d,'formula').value;p.info=get(d,'info').value}
-function isDirty(d){const p=find(d.dataset.c);if(!p)return false;
- return chk(d,'on')!=p.on||get(d,'scheme').value!=p.scheme||get(d,'mode').value!=p.mode
- ||get(d,'amode').value!=p.amode||(get(d,'formula')&&get(d,'formula').value!=p.formula)
- ||['rate','term','amort','sf','lrf','ds','mn'].some(k=>get(d,k)&&num(get(d,k).value)!=p[k])
- ||['ed','ted','aed','multi'].some(k=>get(d,k)&&chk(d,k)!=p[k])||!!p.isNew&&(!!$('#nName').value||!!$('#nCode').value)||get(d,'info').value!=p.info||d.querySelector('.tags input').value.trim()!==''}
+function jump(k){const el=$('#p-'+k);if(el)$('#dB').scrollTo({top:el.offsetTop-20,behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth'})}
+function paint(focus){const db=$('#dB'),y=db.scrollTop,ly=$('.opts')?.scrollTop||0,id=focus||document.activeElement?.id;
+ db.innerHTML=details();db.scrollTop=y;if($('.opts'))$('.opts').scrollTop=ly;if(id)document.getElementById(id)?.focus({preventScroll:true});spy()}
+const modal=on=>{$('#drawer').classList.toggle('open',on);$('#scrim').classList.toggle('on',on);$('.shell').inert=$('.mnav').inert=on;document.body.style.overflow=on?'hidden':''};
+const ready=()=>$('#dSave').disabled=sel===''&&!F.n.trim();
+// sel is a product id, or '' for the blank "Add Loan" drawer
+function openDrawer(id,from){const nw=id==='';sel=id;opener=from;pop=false;tq='';
+ F=toForm(nw?mk({n:'',on:0}):find(id));init=JSON.stringify(F);
+ $('#dT').innerHTML=nw?'<input class="input" id="nName" placeholder="Loan name" aria-label="Loan name">':esc(F.n);
+ $('#dDel').hidden=nw;$('#dSave').textContent=nw?'Add loan':'Save changes';ready();
+ modal(true);$('#dB').innerHTML='';paint();$('#dB').scrollTop=0;spy();rows();(nw?$('#nName'):$('#drawer')).focus()}
+function closeDrawer(force){if(!force&&dirty()&&!confirm('Discard unsaved changes?'))return;
+ const id=sel;modal(false);sel=F=null;rows();(opener||row(id))?.focus()}
 
-const isOpen=()=>$('#drawer').classList.contains('open');
-function paint(keep){const p=find(sel);if(!p)return;const nw=!!p.isNew;
- $('#dT').innerHTML=nw?'<input class="input" id="nName" placeholder="Loan name" aria-label="Loan name">':'';if(!nw)$('#dT').textContent=p.n;
- $('#dC').className=nw?'':'badge';$('#dC').innerHTML=nw?'<input class="input" id="nCode" maxlength="2" placeholder="Code" aria-label="Type code" style="width:72px;text-align:center;text-transform:uppercase">':'';if(!nw)$('#dC').textContent=p.c;
- $('#dDel').hidden=nw;$('#dSave').textContent=nw?'Add loan':'Save changes';$('#dSave').disabled=nw;$('#dB').innerHTML=details(p);$('#dB').scrollTop=keep||0;spy();
- if(nw){const chkNew=()=>$('#dSave').disabled=!($('#nName').value.trim()&&$('#nCode').value.trim());$('#nName').oninput=chkNew;$('#nCode').oninput=e=>{e.target.value=e.target.value.toUpperCase();chkNew()}}}
-function openDrawer(c,from){sel=c;opener=from||opener;paint(0);$('#drawer').classList.add('open');$('#scrim').classList.add('on');document.body.style.overflow='hidden';rows();$('#drawer').focus()}
-function closeDrawer(force){const d=$('#dB .det');if(!force&&d&&isOpen()&&isDirty(d)&&!confirm('Discard unsaved changes?'))return;
- $('#drawer').classList.remove('open');$('#scrim').classList.remove('on');document.body.style.overflow='';sel=null;P=real();rows();if(opener&&document.contains(opener))opener.focus()}
-
-$('#rows').addEventListener('click',e=>{if(e.target.closest('.row-sw'))return;const r=e.target.closest('tr[data-c]');if(!r)return;
- if(isOpen()&&sel!=r.dataset.c){const d=$('#dB .det');if(d&&isDirty(d)&&!confirm('Discard unsaved changes?'))return}
- openDrawer(r.dataset.c,r)});
-$('#rows').addEventListener('keydown',e=>{if(e.target.closest('.row-sw'))return;const r=e.target.closest('tr[data-c]');if(e.key=='Enter'&&r)openDrawer(r.dataset.c,r)});
-$('#rows').addEventListener('change',e=>{const i=e.target.closest('.row-sw input');if(!i)return;const p=find(i.closest('.row-sw').dataset.c);p.on=i.checked?1:0;
- const m=document.querySelector(`.det[data-c="${p.c}"] [data-f="on"]`);if(m)m.checked=!!p.on;rows();toast(p.n+(p.on?' enabled':' disabled'))});
+$('#rows').addEventListener('click',e=>{if(e.target.closest('.row-sw'))return;const r=e.target.closest('tr[data-id]');if(r)openDrawer(r.dataset.id)});
+$('#rows').addEventListener('keydown',e=>{if(e.key=='Enter'&&e.target.matches('tr[data-id]'))openDrawer(e.target.dataset.id)});
+$('#rows').addEventListener('change',e=>{const id=e.target.closest('tr').dataset.id,p=find(id);p.on=e.target.checked?1:0;rows();row(id)?.querySelector('input').focus();toast(p.n+(p.on?' enabled':' disabled'))});
 $('#q').oninput=rows;
 $('#chips').addEventListener('click',e=>{const b=e.target.closest('[data-f]');if(b){flt=b.dataset.f;rows()}});
-$('#dX').onclick=()=>closeDrawer();$('#scrim').onclick=()=>closeDrawer();
-document.querySelector('.mini').addEventListener('click',e=>{const b=e.target.closest('[data-sec]');if(b)jump(b.dataset.sec)});
+$('#dT').addEventListener('input',e=>{F.n=e.target.value;ready()});
+$('#dB').addEventListener('input',e=>{const t=e.target;if(t.id=='d-tagq'){tq=t.value;$('.opts').innerHTML=optList();return}
+ const k=t.dataset.k;if(!k)return;const o=t.dataset.fee!=null?F.fees[t.dataset.fee]:F;
+ if(t.type=='checkbox'){o[k]=t.checked?1:0;return}
+ if((NUM.includes(k)||k=='value')&&!TYPED.test(t.value)){t.value=o[k];return}
+ o[k]=t.value});
+$('#dB').addEventListener('change',e=>{if(e.target.id=='d-amode'){F.amode=e.target.value;paint()}});
+$('#dB').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const d=b.dataset;
+ if(b.id=='d-tags'){pop=!pop;tq='';paint(pop?'d-tagq':'d-tags')}
+ else if(d.tag||d.rm){const t=d.tag||d.rm;F.tags=F.tags.includes(t)?F.tags.filter(x=>x!=t):[...F.tags,t];paint(d.rm?'d-tags':b.id)}
+ else if(b.id=='addFee'){F.fees.push({label:'',type:'fixed',value:''});paint('f-label-'+(F.fees.length-1))}
+ else if(d.del){F.fees.splice(+d.del,1);paint('addFee')}});
+document.addEventListener('click',e=>{if(pop&&F&&!e.target.closest('.combo')){pop=false;paint()}});
 $('#dB').addEventListener('scroll',spy,{passive:true});
-$('#dB').addEventListener('change',e=>{if(e.target.id!=='d-amode')return;const d=e.target.closest('.det');saveForm(d);paint($('#dB').scrollTop);$('#d-amode').focus()});
-$('#dSave').onclick=()=>{const d=$('#dB .det');if(!d)return;const p0=find(sel);if(p0.isNew){const c=$('#nCode').value.trim().toUpperCase(),n=$('#nName').value.trim();if(!c||!n)return;saveForm(d);p0.c=c;p0.n=n;delete p0.isNew;sel=c;rows();paint(0);toast(n+' added');return}saveForm(d);rows();paint($('#dB').scrollTop);toast(find(sel).n+' updated')};
+document.querySelector('.mini').addEventListener('click',e=>{const b=e.target.closest('[data-sec]');if(b)jump(b.dataset.sec)});
+$('#dX').onclick=$('#scrim').onclick=()=>closeDrawer();
+$('#dSave').onclick=()=>{const err=invalid();if(err)return toast(err,true);
+ const p=structuredClone(F);NUM.forEach(k=>p[k]=num(p[k]));p.fees.forEach(c=>{c.label=c.label.trim();c.value=num(c.value)});
+ if(p.amode=='FIXED')p.formula='';else{p.amort=null;if(p.amode=='BASIC')p.formula='basic'}
+ if(sel===''){p.id=String(nextId++);p.n=p.n.trim();P.push(p);closeDrawer(true);return toast(p.n+' added')}
+ P[P.findIndex(x=>x.id===sel)]=p;F=toForm(p);init=JSON.stringify(F);paint();rows();toast(p.n+' updated')};
 $('#dDel').onclick=()=>{const p=find(sel);if(p&&confirm('Delete "'+p.n+'"? This cannot be undone.')){P=P.filter(x=>x!=p);closeDrawer(true);toast(p.n+' deleted')}};
-$('#dB').addEventListener('click',e=>{if(!e.target.matches('.tags button'))return;const d=e.target.closest('.det');saveForm(d);const p=find(d.dataset.c);p.tags=p.tags.filter(t=>t!=e.target.dataset.t);paint($('#dB').scrollTop);rows()});
-$('#dB').addEventListener('keydown',e=>{if(e.key=='Enter'&&e.target.matches('.tags input')&&e.target.value.trim()){e.preventDefault();const d=e.target.closest('.det');saveForm(d);const p=find(d.dataset.c);const t=e.target.value.trim().toUpperCase();if(!p.tags.includes(t))p.tags.push(t);paint($('#dB').scrollTop);rows();$('#d-tags').focus()}});
-document.addEventListener('keydown',e=>{if(e.key!='Escape')return;if(isOpen())closeDrawer()});
-const NEWC='+';
-$('#addBtn').onclick=()=>{if(isOpen()){const d=$('#dB .det');if(d&&isDirty(d)&&!confirm('Discard unsaved changes?'))return}P=P.filter(x=>!x.isNew);P.push({c:NEWC,isNew:1,n:'',on:0,scheme:'ADD-ON',mode:'MONTHLY',rate:0,term:0,amort:0,ed:0,ted:0,aed:0,multi:0,amode:'FIXED',formula:'',sf:0,lrf:0,ds:0,mn:0,tags:[],info:''});openDrawer(NEWC,$('#addBtn'));$('#nName').focus()};
+document.addEventListener('keydown',e=>{if(e.key!='Escape'||!F)return;if(pop){pop=false;paint('d-tags')}else closeDrawer()});
+$('#addBtn').onclick=e=>openDrawer('',e.currentTarget);
 rows();
-</script></body></html>
+</script>
+</body></html>

@@ -1,7 +1,7 @@
+import { Drawer, PageBanner, Panel, SkelRows, Switch, btn, peso, useToast } from '@/components/tdfc/ui';
 import { Badge } from '@/components/ui/badge';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Drawer, PageBanner, Panel, SkelRows, Switch, btn, peso, useToast } from '@/components/tdfc/ui';
+import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useProductsApi } from '@/hooks/use-products-api';
 import AppLayout from '@/layouts/app-layout';
 import { Head } from '@inertiajs/react';
@@ -69,6 +69,20 @@ const field = 'h-10 w-full rounded-[10px] border border-input bg-card px-3 shado
 const pill = 'inline-flex h-5.5 items-center rounded-full px-2 text-[11px] font-semibold';
 const sections = ['general', 'terms', 'fees'] as const;
 const NEW = '+'; // sel value for the blank "Add Loan" drawer
+const TYPED = /^\d*\.?\d{0,2}$/; // numeric inputs: at most two decimals
+
+// salary-based limits have no stored amount, so show how they are worked out
+function maxAmort(s: Settings) {
+    const mode = s.max_amortization_mode;
+    if (mode === 'BASIC' || mode === 'CUSTOM') {
+        return (
+            <span className="inline-block max-w-40 text-[13px] wrap-anywhere text-muted-foreground">
+                {mode === 'BASIC' ? 'Basic salary' : (s.max_amortization_formula ?? '').replace(/\*/g, '×')}
+            </span>
+        );
+    }
+    return s.max_amortization != null ? peso(Number(s.max_amortization)) : '—';
+}
 
 function Check({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
     return (
@@ -82,44 +96,42 @@ function Check({ label, checked, onChange }: { label: string; checked: boolean; 
 type FormProps = {
     product: Product;
     dirty: MutableRefObject<boolean>;
-    onSave: (p: Product, body: Record<string, unknown>, tags: string[]) => Promise<void>;
+    onSave: (p: Product, body: Record<string, unknown>, tags: string[]) => Promise<boolean>;
     onDelete: (p: Product) => void;
     onClose: () => void;
     toast: React.ReactNode;
 };
 
 function ProductDrawerBody({ product, dirty, onSave, onDelete, onClose, toast }: FormProps) {
-    const initial = useMemo(() => toForm(product), [product]);
-    const [f, setF] = useState(initial);
+    // the last saved draft; compared as typed text, so a refetched "12.00" doesn't count as an edit
+    const [base, setBase] = useState(() => toForm(product));
+    const [f, setF] = useState(base);
     const isNew = !product.typecode;
-    const [code, setCode] = useState('');
     const [name, setName] = useState('');
     const [cur, setCur] = useState<(typeof sections)[number]>('general');
     const body = useRef<HTMLDivElement>(null);
     const s = f.settings;
     const set = <K extends keyof Settings>(k: K, v: Settings[K]) =>
         setF((x) => ({ ...x, settings: { ...x.settings, [k]: v } as Required<Settings> }));
-    dirty.current = JSON.stringify(f) !== JSON.stringify(initial) || code !== '' || name !== '';
+    dirty.current = JSON.stringify(f) !== JSON.stringify(base) || name !== '';
     const fees = s.custom_fees ?? [];
     const setFees = (next: Fee[]) => set('custom_fees', next);
     const setFee = (i: number, change: Partial<Fee>) => setFees(fees.map((c, j) => (j === i ? { ...c, ...change } : c)));
     // numeric fields are kept as typed text (so "1." survives) and converted here
-    const save = () => {
+    const save = async () => {
         const settings = { ...f.settings } as Record<string, unknown>;
         for (const k of ['max_term', 'max_amortization', 'service_fee', 'lrf', 'doc_stamp', 'mort_notarial']) settings[k] = num(text(settings[k]));
         settings.custom_fees = fees.map((c) => ({ ...c, label: c.label.trim(), value: num(text(c.value)) }));
-        return onSave(product, { ...(isNew && { typecode: code.trim(), lntype: name.trim() }), int_rate: num(f.int_rate), settings }, f.tags);
+        if (await onSave(product, { ...(isNew && { lntype: name.trim() }), int_rate: num(f.int_rate), settings }, f.tags)) setBase(f);
     };
-    // row switch toggles ln_isActive outside the drawer; mirror it without discarding other edits
-    const active = !!product.settings?.ln_isActive;
-    useEffect(() => {
-        setF((x) => ({ ...x, settings: { ...x.settings, ln_isActive: active } }));
-    }, [active]);
     const toggleTag = (t: string) => setF((x) => ({ ...x, tags: x.tags.includes(t) ? x.tags.filter((n) => n !== t) : [...x.tags, t] }));
     const [types, setTypes] = useState<string[]>([]);
     const [dlg, setDlg] = useState<HTMLElement | null>(null); // popover must render inside the <dialog> or it sits behind it
     useEffect(() => {
-        axios.get('/api/admin/products/types').then((r) => setTypes(r.data), () => setTypes([]));
+        axios.get('/api/admin/products/types').then(
+            (r) => setTypes(r.data),
+            () => setTypes([]),
+        );
     }, []);
 
     const spy = () => {
@@ -140,7 +152,13 @@ function ProductDrawerBody({ product, dirty, onSave, onDelete, onClose, toast }:
     };
 
     const numField = (k: 'max_term' | 'max_amortization' | 'service_fee' | 'lrf' | 'doc_stamp' | 'mort_notarial', id: string) => (
-        <input id={id} className={`${field} tabular-nums`} inputMode="decimal" value={text(s[k])} onChange={(e) => /^\d*\.?\d{0,2}$/.test(e.target.value) && set(k, e.target.value)} />
+        <input
+            id={id}
+            className={`${field} tabular-nums`}
+            inputMode="decimal"
+            value={text(s[k])}
+            onChange={(e) => TYPED.test(e.target.value) && set(k, e.target.value)}
+        />
     );
     const pct = (k: 'service_fee' | 'lrf' | 'doc_stamp', id: string, label: string) => (
         <div className="grid gap-1.5">
@@ -171,17 +189,15 @@ function ProductDrawerBody({ product, dirty, onSave, onDelete, onClose, toast }:
         <>
             <div className="flex items-center gap-3 border-b border-border px-5 py-4">
                 {isNew ? (
-                    <>
-                        <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Loan name" aria-label="Loan name" className={`${field} min-w-0 flex-1`} />
-                        <input value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} maxLength={2} placeholder="Code" aria-label="Type code" className={`${field} !w-18 text-center`} />
-                    </>
+                    <input
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        placeholder="Loan name"
+                        aria-label="Loan name"
+                        className={`${field} min-w-0 flex-1`}
+                    />
                 ) : (
-                    <>
-                        <h2 className="min-w-0 flex-1 text-lg font-semibold">{product.lntype}</h2>
-                        <span className="inline-flex h-6 items-center rounded-full border border-border px-2.5 text-xs font-semibold tabular-nums">
-                            {product.typecode}
-                        </span>
-                    </>
+                    <h2 className="min-w-0 flex-1 text-lg font-semibold">{product.lntype}</h2>
                 )}
                 <button
                     type="button"
@@ -223,34 +239,42 @@ function ProductDrawerBody({ product, dirty, onSave, onDelete, onClose, toast }:
                             Type relation tags
                         </label>
                         <Popover>
-                            <PopoverTrigger asChild>
-                                <button
-                                    id="d-tags"
-                                    type="button"
-                                    ref={(el) => setDlg(el?.closest('dialog') ?? null)}
-                                    className={`${field} flex h-auto min-h-10 items-center justify-between gap-2 py-1.5 text-left`}
+                            <PopoverAnchor asChild>
+                                <div
+                                    className={`${field} flex h-auto min-h-10.5 flex-wrap items-center gap-1.5 !px-1.5 py-1 focus-within:border-ring`}
                                 >
-                                    <span className="flex min-w-0 flex-1 flex-wrap gap-1.5">
-                                        {f.tags.length === 0 && <span className="text-muted-foreground">Select loan types</span>}
-                                        {f.tags.map((t) => (
-                                            <Badge key={t} variant="secondary" title={t} className="max-w-full gap-1.5">
-                                                <span className="truncate">{t}</span>
-                                                <span
-                                                    role="button"
-                                                    aria-label={`Remove ${t}`}
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        toggleTag(t);
-                                                    }}
-                                                >
-                                                    <X />
-                                                </span>
-                                            </Badge>
-                                        ))}
-                                    </span>
-                                    <ChevronsUpDown className="size-4 shrink-0 opacity-50" />
-                                </button>
-                            </PopoverTrigger>
+                                    {f.tags.map((t) => (
+                                        <Badge
+                                            key={t}
+                                            title={t}
+                                            className="max-w-full gap-1.5 border-transparent bg-tdfc-blue-soft text-tdfc-blue-ink"
+                                        >
+                                            <span className="truncate">{t}</span>
+                                            <button
+                                                type="button"
+                                                aria-label={`Remove ${t}`}
+                                                onClick={() => toggleTag(t)}
+                                                className="cursor-pointer text-[15px] leading-none"
+                                            >
+                                                ×
+                                            </button>
+                                        </Badge>
+                                    ))}
+                                    <PopoverTrigger asChild>
+                                        <button
+                                            id="d-tags"
+                                            type="button"
+                                            ref={(el) => setDlg(el?.closest('dialog') ?? null)}
+                                            className="flex h-7.5 min-w-30 flex-1 cursor-pointer items-center justify-between gap-2 px-1 text-muted-foreground"
+                                        >
+                                            <span className={f.tags.length ? 'sr-only' : ''}>
+                                                {f.tags.length ? 'Choose loan types' : 'Select loan types'}
+                                            </span>
+                                            <ChevronsUpDown className="ml-auto size-4 shrink-0 opacity-50" />
+                                        </button>
+                                    </PopoverTrigger>
+                                </div>
+                            </PopoverAnchor>
                             <PopoverContent container={dlg} align="start" className="w-(--radix-popover-trigger-width) p-0">
                                 <Command>
                                     <CommandInput placeholder="Search loan types..." />
@@ -323,7 +347,7 @@ function ProductDrawerBody({ product, dirty, onSave, onDelete, onClose, toast }:
                                 className={`${field} tabular-nums`}
                                 inputMode="decimal"
                                 value={f.int_rate}
-                                onChange={(e) => setF({ ...f, int_rate: e.target.value })}
+                                onChange={(e) => TYPED.test(e.target.value) && setF({ ...f, int_rate: e.target.value })}
                             />
                             <span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground">%</span>
                         </div>,
@@ -339,7 +363,12 @@ function ProductDrawerBody({ product, dirty, onSave, onDelete, onClose, toast }:
                         <label htmlFor="d-amode" className="font-medium">
                             Max amortization mode
                         </label>
-                        <select id="d-amode" className={field} value={s.max_amortization_mode} onChange={(e) => set('max_amortization_mode', e.target.value)}>
+                        <select
+                            id="d-amode"
+                            className={field}
+                            value={s.max_amortization_mode}
+                            onChange={(e) => set('max_amortization_mode', e.target.value)}
+                        >
                             <option value="FIXED">FIXED amount</option>
                             <option value="BASIC">BASIC (client&apos;s basic salary)</option>
                             <option value="CUSTOM">CUSTOM formula</option>
@@ -417,7 +446,7 @@ function ProductDrawerBody({ product, dirty, onSave, onDelete, onClose, toast }:
                                 inputMode="decimal"
                                 placeholder="0.00"
                                 value={text(c.value)}
-                                onChange={(e) => /^\d*\.?\d{0,2}$/.test(e.target.value) && setFee(i, { value: e.target.value })}
+                                onChange={(e) => TYPED.test(e.target.value) && setFee(i, { value: e.target.value })}
                             />
                             <button
                                 type="button"
@@ -453,7 +482,7 @@ function ProductDrawerBody({ product, dirty, onSave, onDelete, onClose, toast }:
                     </button>
                 )}
                 <span className="flex-1" />
-                <button type="button" disabled={isNew && (!code.trim() || !name.trim())} onClick={save} className={`${btn.base} ${btn.dark}`}>
+                <button type="button" disabled={isNew && !name.trim()} onClick={save} className={`${btn.base} ${btn.dark}`}>
                     {isNew ? 'Add loan' : 'Save changes'}
                 </button>
             </div>
@@ -486,11 +515,7 @@ export default function ProductsManagement() {
     const shown = useMemo(() => {
         const n = q.toLowerCase();
         return list
-            .filter(
-                (p) =>
-                    (p.lntype?.toLowerCase().includes(n) || p.typecode?.toLowerCase().includes(n)) &&
-                    (flt === 'all' || (flt === 'on') === !!p.settings?.ln_isActive),
-            )
+            .filter((p) => (p.lntype ?? '').toLowerCase().includes(n) && (flt === 'all' || (flt === 'on') === !!p.settings?.ln_isActive))
             .sort((a, b) => (a.lntype ?? '').localeCompare(b.lntype ?? ''));
     }, [list, q, flt]);
     const cur = sel === NEW ? { typecode: '', lntype: '' } : (list.find((p) => p.typecode === sel) ?? null);
@@ -513,8 +538,9 @@ export default function ProductsManagement() {
     const save = async (p: Product, body: Record<string, unknown>, next: string[]) => {
         try {
             const isNew = sel === NEW;
-            const code = isNew ? String(body.typecode) : p.typecode;
-            if (isNew) await axios.post('/api/admin/products', body); // one atomic request: row + settings
+            let code = p.typecode;
+            // one atomic request: row + settings; the server assigns the code
+            if (isNew) code = (await axios.post('/api/admin/products', body)).data.typecode;
             else await updateProduct(code, body);
             const old = (p.tags ?? []).map((t) => t.tag_name);
             const base = `/api/admin/products/${code}/tags`;
@@ -527,10 +553,12 @@ export default function ProductsManagement() {
                 dirty.current = false;
                 setSel(null);
             }
-            show(`${body.lntype ?? p.lntype ?? code} ${isNew ? 'added' : 'updated'}`);
+            show(`${body.lntype ?? p.lntype} ${isNew ? 'added' : 'updated'}`);
+            return true;
         } catch (e) {
             const errs = axios.isAxiosError(e) ? (Object.values(e.response?.data?.errors ?? {})[0] as string[] | undefined) : undefined;
             show(errs?.[0] ?? (axios.isAxiosError(e) ? (e.response?.data?.message ?? 'Save failed') : 'Save failed'), 'error');
+            return false;
         }
     };
     const remove = async (p: Product) => {
@@ -565,7 +593,7 @@ export default function ProductsManagement() {
                 </PageBanner>
 
                 <Panel className="overflow-hidden">
-                    <div className="grid gap-3.5 p-5">
+                    <div className="grid gap-3.5 p-5 pb-0">
                         <div className="flex flex-wrap items-center justify-between gap-3 max-[860px]:flex-col max-[860px]:items-stretch">
                             <div className="flex flex-wrap gap-1.5" role="group" aria-label="Filter by status">
                                 {chips.map(([v, l, n]) => (
@@ -587,7 +615,7 @@ export default function ProductsManagement() {
                                 onChange={(e) => setQ(e.target.value)}
                                 placeholder="Search loan type..."
                                 aria-label="Search loan type"
-                                className={`${field} min-w-0 flex-1 basis-50 max-[860px]:flex-none max-[860px]:max-w-none md:max-w-80`}
+                                className={`${field} min-w-0 flex-1 basis-50 max-[860px]:max-w-none max-[860px]:flex-none md:max-w-80`}
                             />
                         </div>
                         <div className="overflow-x-auto">
@@ -618,7 +646,6 @@ export default function ProductsManagement() {
                                             >
                                                 <td className="px-4 py-3.5 max-[720px]:col-start-1 max-[720px]:row-start-1 max-[720px]:block max-[720px]:self-start max-[720px]:p-0">
                                                     <b>{p.lntype}</b>
-                                                    <div className="text-[13px] text-muted-foreground">{p.typecode}</div>
                                                 </td>
                                                 <td className="px-4 py-3.5 max-[860px]:hidden max-[720px]:p-0">
                                                     <span className={`${pill} bg-muted text-muted-foreground`}>{s.ln_scheme ?? '—'}</span>
@@ -627,13 +654,13 @@ export default function ProductsManagement() {
                                                     {s.installment_mode ?? '—'}
                                                 </td>
                                                 <td className="px-4 py-3.5 text-right tabular-nums max-[720px]:col-start-2 max-[720px]:row-start-2 max-[720px]:block max-[720px]:p-0">
-                                                    {p.int_rate ?? '—'}%
+                                                    {p.int_rate != null ? `${p.int_rate}%` : '—'}
                                                 </td>
                                                 <td className="px-4 py-3.5 text-right tabular-nums max-[860px]:hidden max-[720px]:p-0">
                                                     {s.max_term != null ? `${Number(s.max_term).toLocaleString()} d` : '—'}
                                                 </td>
                                                 <td className="px-4 py-3.5 text-right tabular-nums max-[860px]:hidden max-[720px]:p-0">
-                                                    {s.max_amortization != null ? peso(Number(s.max_amortization)) : '—'}
+                                                    {maxAmort(s)}
                                                 </td>
                                                 <td className="px-4 py-3.5 max-[1100px]:hidden max-[720px]:p-0">
                                                     <span className="flex flex-wrap gap-1">
@@ -664,8 +691,8 @@ export default function ProductsManagement() {
                                         );
                                     })}
                                     {shown.length === 0 && !loading && (
-                                        <tr>
-                                            <td colSpan={8} className="px-4 py-7 text-center text-muted-foreground">
+                                        <tr className="max-[720px]:block">
+                                            <td colSpan={8} className="px-4 py-7 text-center text-muted-foreground max-[720px]:block">
                                                 No products found
                                             </td>
                                         </tr>
