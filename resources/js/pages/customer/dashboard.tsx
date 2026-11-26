@@ -280,14 +280,9 @@ export default function Dashboard() {
                                                 {late && <span className="font-bold text-tdfc-coral-ink"> · overdue</span>}
                                             </p>
                                         </div>
-                                        <div className="flex items-center gap-5">
-                                            <Link href={loansUrl} className="text-sm font-semibold text-tdfc-coral-ink hover:underline">
-                                                View schedule
-                                            </Link>
-                                            <Link href={loansUrl} className={`${btn.base} ${btn.dark}`}>
-                                                Pay now
-                                            </Link>
-                                        </div>
+                                        <Link href={loansUrl} className="text-sm font-semibold text-tdfc-coral-ink hover:underline">
+                                            View schedule
+                                        </Link>
                                     </>
                                 ) : (
                                     <div className="w-full py-2 text-center text-muted-foreground">No upcoming payments</div>
