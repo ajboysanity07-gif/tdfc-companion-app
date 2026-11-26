@@ -13,7 +13,7 @@ class WlnProduct extends Model
         'ln_isActive', 'ln_scheme', 'installment_mode', 'rate_isEditable', 'allow_multiple',
         'max_term', 'max_term_isEditable', 'max_amortization', 'max_amortization_isEditable',
         'max_amortization_mode', 'max_amortization_formula',
-        'service_fee', 'lrf', 'doc_stamp', 'mort_notarial', 'terms_and_info',
+        'service_fee', 'lrf', 'doc_stamp', 'mort_notarial', 'custom_fees', 'terms_and_info',
     ];
 
     protected $fillable = ['typecode', 'lntype', 'int_rate', 'isDisplayed', ...self::SETTINGS];
@@ -27,6 +27,7 @@ class WlnProduct extends Model
         'allow_multiple' => 'boolean',
         'max_term_isEditable' => 'boolean',
         'max_amortization_isEditable' => 'boolean',
+        'custom_fees' => 'array',
     ];
 
     // Keeps the nested `settings` JSON shape the frontend already reads.

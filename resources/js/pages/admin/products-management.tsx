@@ -9,6 +9,7 @@ import axios from 'axios';
 import { Check as CheckIcon, ChevronsUpDown, Plus, X } from 'lucide-react';
 import { MutableRefObject, useEffect, useMemo, useRef, useState } from 'react';
 
+type Fee = { label: string; type: 'percent' | 'fixed'; value: number | string | null };
 type Settings = {
     ln_isActive?: boolean;
     ln_scheme?: string;
@@ -25,6 +26,7 @@ type Settings = {
     lrf?: number | string | null;
     doc_stamp?: number | string | null;
     mort_notarial?: number | string | null;
+    custom_fees?: Fee[] | null;
     terms_and_info?: string | null;
 };
 type Product = { typecode: string; lntype?: string; int_rate?: number | null; settings?: Settings; tags?: { tag_name: string }[] };
@@ -57,6 +59,7 @@ const toForm = (p: Product): Form => {
             lrf: s.lrf ?? null,
             doc_stamp: s.doc_stamp ?? null,
             mort_notarial: s.mort_notarial ?? null,
+            custom_fees: (s.custom_fees ?? []).map((c) => ({ ...c, value: text(c.value) })),
             terms_and_info: s.terms_and_info ?? '',
         },
     };
@@ -97,10 +100,14 @@ function ProductDrawerBody({ product, dirty, onSave, onDelete, onClose, toast }:
     const set = <K extends keyof Settings>(k: K, v: Settings[K]) =>
         setF((x) => ({ ...x, settings: { ...x.settings, [k]: v } as Required<Settings> }));
     dirty.current = JSON.stringify(f) !== JSON.stringify(initial) || code !== '' || name !== '';
+    const fees = s.custom_fees ?? [];
+    const setFees = (next: Fee[]) => set('custom_fees', next);
+    const setFee = (i: number, change: Partial<Fee>) => setFees(fees.map((c, j) => (j === i ? { ...c, ...change } : c)));
     // numeric fields are kept as typed text (so "1." survives) and converted here
     const save = () => {
         const settings = { ...f.settings } as Record<string, unknown>;
         for (const k of ['max_term', 'max_amortization', 'service_fee', 'lrf', 'doc_stamp', 'mort_notarial']) settings[k] = num(text(settings[k]));
+        settings.custom_fees = fees.map((c) => ({ ...c, label: c.label.trim(), value: num(text(c.value)) }));
         return onSave(product, { ...(isNew && { typecode: code.trim(), lntype: name.trim() }), int_rate: num(f.int_rate), settings }, f.tags);
     };
     // row switch toggles ln_isActive outside the drawer; mirror it without discarding other edits
@@ -380,11 +387,58 @@ function ProductDrawerBody({ product, dirty, onSave, onDelete, onClose, toast }:
                         {pct('doc_stamp', 'd-ds', 'Doc stamp')}
                         <div className="grid gap-1.5">
                             <label htmlFor="d-mn" className="font-medium">
-                                Mortgage + notarial
+                                Mortuary + notarial
                             </label>
                             {numField('mort_notarial', 'd-mn')}
                         </div>
                     </div>
+                    {fees.map((c, i) => (
+                        <div key={i} className="grid grid-cols-[minmax(0,1fr)_4.5rem_6.5rem_auto] items-center gap-2">
+                            <input
+                                className={field}
+                                aria-label={`Custom fee ${i + 1} name`}
+                                placeholder="Fee name"
+                                maxLength={60}
+                                value={c.label}
+                                onChange={(e) => setFee(i, { label: e.target.value })}
+                            />
+                            <select
+                                className={`${field} !px-2`}
+                                aria-label={`Custom fee ${i + 1} type`}
+                                value={c.type}
+                                onChange={(e) => setFee(i, { type: e.target.value as Fee['type'] })}
+                            >
+                                <option value="percent">%</option>
+                                <option value="fixed">₱</option>
+                            </select>
+                            <input
+                                className={`${field} tabular-nums`}
+                                aria-label={`Custom fee ${i + 1} value`}
+                                inputMode="decimal"
+                                placeholder="0.00"
+                                value={text(c.value)}
+                                onChange={(e) => /^\d*\.?\d{0,2}$/.test(e.target.value) && setFee(i, { value: e.target.value })}
+                            />
+                            <button
+                                type="button"
+                                aria-label={`Remove custom fee ${i + 1}`}
+                                onClick={() => setFees(fees.filter((_, j) => j !== i))}
+                                className={`${btn.base} !h-10 !w-9 border-transparent !px-0 hover:bg-muted`}
+                            >
+                                <X className="size-4" />
+                            </button>
+                        </div>
+                    ))}
+                    {fees.length < 20 && (
+                        <button
+                            type="button"
+                            onClick={() => setFees([...fees, { label: '', type: 'fixed', value: '' }])}
+                            className={`${btn.base} justify-self-start border-border hover:bg-muted`}
+                        >
+                            <Plus className="size-4" />
+                            Add custom fee
+                        </button>
+                    )}
                 </section>
             </div>
 

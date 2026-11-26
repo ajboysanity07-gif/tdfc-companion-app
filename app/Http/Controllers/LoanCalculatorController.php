@@ -39,6 +39,9 @@ class LoanCalculatorController extends Controller
                 'lrf' => (float) ($t->lrf ?? 0),
                 'document_stamp' => (float) ($t->doc_stamp ?? 0),
                 'mort_plus_notarial' => (float) ($t->mort_notarial ?? 0),
+                'custom_fees' => collect($t->custom_fees)
+                    ->map(fn ($f) => ['label' => $f['label'], 'type' => $f['type'], 'value' => (float) $f['value']])
+                    ->values(),
                 'terms' => $t->terms_and_info,
             ])
             ->values();

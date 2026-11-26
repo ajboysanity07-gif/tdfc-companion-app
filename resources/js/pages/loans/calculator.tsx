@@ -17,6 +17,7 @@ type Product = {
     lrf: number;
     document_stamp: number;
     mort_plus_notarial: number;
+    custom_fees: { label: string; type: 'percent' | 'fixed'; value: number }[];
     terms: string | null;
 };
 
@@ -35,10 +36,24 @@ export function estimate(p: Product, amount: number, months: number, old = 0) {
     const lrf = (p.lrf / 100) * amount;
     // ponytail: mockup convention — a document stamp above 100 is a flat peso amount, otherwise a % of the amount.
     const ds = p.document_stamp > 100 ? p.document_stamp : (p.document_stamp / 100) * amount;
-    const ded = sf + lrf + ds + p.mort_plus_notarial;
+    const custom = p.custom_fees.map((f) => ({ label: f.label, fee: f.type === 'percent' ? (f.value / 100) * amount : f.value }));
+    const ded = sf + lrf + ds + p.mort_plus_notarial + custom.reduce((s, c) => s + c.fee, 0);
     const i = p.interest_rate / 12 / 100;
     const monthly = term && principal ? (i === 0 ? principal / term : (principal * (i * (1 + i) ** term)) / ((1 + i) ** term - 1)) : 0;
-    return { term, sf, lrf, ds, mn: p.mort_plus_notarial, ded, old, principal, net: Math.max(0, amount - ded - old), monthly, total: monthly * term };
+    return {
+        term,
+        sf,
+        lrf,
+        ds,
+        mn: p.mort_plus_notarial,
+        custom,
+        ded,
+        old,
+        principal,
+        net: Math.max(0, amount - ded - old),
+        monthly,
+        total: monthly * term,
+    };
 }
 
 const inputCls =
@@ -137,6 +152,12 @@ export default function LoanCalculator({ products }: { products: Product[] }) {
         oldLoans.reduce((s, l) => s + l.balance, 0),
     );
     const dedAll = e.ded + e.old;
+    // Blocked: even the product's maximum can't pay off the old balances plus fees. A max of 0 means uncapped.
+    const best = estimate(p, p.max_amortization, months, e.old);
+    const blocked = e.old > 0 && p.max_amortization > 0 && best.net === 0;
+    const payFirst = Math.round((best.old + best.ded - p.max_amortization) * 100) / 100 + 0.01;
+    const owedOn = oldLoans.map((l) => l.name).join(' and ');
+    const monthlyText = blocked ? 'Not available' : pesoS(e.monthly);
     const termLocked = !p.term_editable;
     const amMax = p.max_amortization || 100000;
     const termChips = [...new Set([...[6, 12, 18, 24, 36].filter((v) => v <= p.max_term_months), p.max_term_months])].sort((a, b) => a - b);
@@ -149,7 +170,8 @@ export default function LoanCalculator({ products }: { products: Product[] }) {
         ['Service fee', `− ${pesoS(e.sf)}`],
         ['LRF', `− ${pesoS(e.lrf)}`],
         ['Document stamp', `− ${pesoS(e.ds)}`],
-        ['Mortgage + notarial', `− ${pesoS(e.mn)}`],
+        ['Mortuary + notarial', `− ${pesoS(e.mn)}`],
+        ...e.custom.map((c): [string, string] => [c.label, `− ${pesoS(c.fee)}`]),
         ...oldLoans.map((l): [string, string] => [`Balance: ${l.name}`, `− ${pesoS(l.balance)}`]),
     ];
     const recv = 'bg-white dark:bg-brand-ink';
@@ -349,13 +371,30 @@ export default function LoanCalculator({ products }: { products: Product[] }) {
                         {e.old > 0 && (
                             <p
                                 role="status"
-                                className="flex animate-tdfc-rise items-start gap-2.5 rounded-xl border border-[oklch(.85_.1_85)] bg-[oklch(.95_.08_90)] px-3.5 py-3 text-[13px] leading-normal text-[oklch(.3_.07_70)]"
+                                className={`flex animate-tdfc-rise items-start gap-2.5 rounded-xl border px-3.5 py-3 text-[13px] leading-normal ${
+                                    blocked
+                                        ? 'border-red-text bg-red-soft text-red-text'
+                                        : 'border-[oklch(.85_.1_85)] bg-[oklch(.95_.08_90)] text-[oklch(.3_.07_70)]'
+                                }`}
                             >
                                 <TriangleAlert className="mt-px size-[18px] flex-none" aria-hidden />
-                                <span>
-                                    You still owe <b className="tabular-nums">{pesoS(e.old)}</b> on {oldLoans.map((l) => l.name).join(' and ')}. This
-                                    balance is deducted from your net proceeds.
-                                </span>
+                                {blocked ? (
+                                    <span>
+                                        <b>You can't avail this loan yet.</b> You still owe <b className="tabular-nums">{pesoS(e.old)}</b> on {owedOn}
+                                        , more than this loan can cover. Pay at least <b className="tabular-nums">{pesoS(payFirst)}</b>, or close the
+                                        balance, to qualify.
+                                    </span>
+                                ) : e.net === 0 ? (
+                                    <span>
+                                        This amount doesn't cover your <b className="tabular-nums">{pesoS(e.old)}</b> balance on {owedOn} plus fees.
+                                        Enter a higher amount.
+                                    </span>
+                                ) : (
+                                    <span>
+                                        You still owe <b className="tabular-nums">{pesoS(e.old)}</b> on {owedOn}. This balance is deducted from your
+                                        net proceeds.
+                                    </span>
+                                )}
                             </p>
                         )}
 
@@ -377,8 +416,10 @@ export default function LoanCalculator({ products }: { products: Product[] }) {
                         >
                             <p className="text-xs font-bold tracking-widest uppercase">*Estimated monthly payment</p>
                             <div className="flex flex-wrap items-baseline gap-x-2.5 font-extrabold tabular-nums">
-                                <span className="text-[clamp(32px,11vw,40px)] leading-[1.05] min-[901px]:text-[52px]">{pesoS(e.monthly)}</span>
-                                <small className="text-[15px] font-semibold">{e.term ? `a month for ${e.term} months` : 'Enter a term'}</small>
+                                <span className="text-[clamp(32px,11vw,40px)] leading-[1.05] min-[901px]:text-[52px]">{monthlyText}</span>
+                                <small className="text-[15px] font-semibold">
+                                    {blocked ? 'Settle your old balance first' : e.term ? `a month for ${e.term} months` : 'Enter a term'}
+                                </small>
                             </div>
                             <div className="flex flex-wrap items-baseline justify-between gap-3 border-y border-current/20 py-3">
                                 <div>
@@ -425,9 +466,9 @@ export default function LoanCalculator({ products }: { products: Product[] }) {
                                     <b className="tabular-nums">− {pesoS(dedAll)}</b>
                                 </summary>
                                 <dl aria-label="Deductions" className="border-t border-[oklch(.9_0_0)] pb-1">
-                                    {rows.map(([l, v]) => (
+                                    {rows.map(([l, v], i) => (
                                         <div
-                                            key={l}
+                                            key={i} // custom fee names can repeat
                                             className="flex justify-between gap-3 border-b border-[oklch(.9_0_0)] py-2.25 text-sm last:border-0"
                                         >
                                             <dt className={wsub}>{l}</dt>
@@ -463,7 +504,7 @@ export default function LoanCalculator({ products }: { products: Product[] }) {
                     </div>
                 </div>
                 <p className="sr-only" role="status" aria-live="polite">
-                    Net proceeds {pesoS(e.net)}. Monthly payment {pesoS(e.monthly)}.
+                    Net proceeds {pesoS(e.net)}. Monthly payment {monthlyText}.
                 </p>
             </div>
 
@@ -473,7 +514,7 @@ export default function LoanCalculator({ products }: { products: Product[] }) {
             >
                 <div>
                     <small className="block text-[10px] font-bold tracking-wider uppercase">Monthly*</small>
-                    <b className="text-[clamp(16px,5vw,20px)] tabular-nums">{pesoS(e.monthly)}</b>
+                    <b className="text-[clamp(16px,5vw,20px)] tabular-nums">{monthlyText}</b>
                 </div>
                 <div className="text-right">
                     <small className="block text-[10px] font-bold tracking-wider uppercase">Net proceeds*</small>

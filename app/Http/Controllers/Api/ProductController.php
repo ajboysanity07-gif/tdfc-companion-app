@@ -59,6 +59,17 @@ class ProductController extends Controller
             'settings.lrf' => 'nullable|numeric',
             'settings.doc_stamp' => 'nullable|numeric',
             'settings.mort_notarial' => 'nullable|numeric',
+            'settings.custom_fees' => 'nullable|array|max:20',
+            'settings.custom_fees.*.label' => 'required|string|max:60',
+            'settings.custom_fees.*.type' => 'required|in:percent,fixed',
+            'settings.custom_fees.*.value' => [
+                'required', 'numeric', 'min:0', 'max:99999999',
+                function ($attr, $v, $fail) use ($request) {
+                    if ($v > 100 && $request->input(preg_replace('/value$/', 'type', $attr)) === 'percent') {
+                        $fail('A percent custom fee cannot be more than 100.');
+                    }
+                },
+            ],
             'settings.max_amortization_mode' => 'nullable|in:FIXED,BASIC,CUSTOM',
             'settings.max_amortization_formula' => [
                 'nullable', 'string', 'max:255',
@@ -75,6 +86,13 @@ class ProductController extends Controller
             'settings.terms_and_info' => 'nullable|string',
         ];
     }
+
+    // Readable names for the errors the admin drawer shows in a toast.
+    private const ATTRIBUTES = [
+        'settings.custom_fees.*.label' => 'custom fee name',
+        'settings.custom_fees.*.type' => 'custom fee type',
+        'settings.custom_fees.*.value' => 'custom fee value',
+    ];
 
     // Flatten validated `settings` into columns; BASIC/CUSTOM derive the max from salary, so the stored number is dropped.
     private function columns(array $data): array
@@ -101,7 +119,7 @@ class ProductController extends Controller
         $data = $request->validate([
             'typecode' => 'required|max:2|unique:wlnproducts,typecode',
             'lntype' => 'required|string',
-        ] + $this->fieldRules($request));
+        ] + $this->fieldRules($request), [], self::ATTRIBUTES);
 
         $product = DB::transaction(fn () => WlnProduct::create($this->columns($data) + ['isDisplayed' => true]));
 
@@ -113,7 +131,7 @@ class ProductController extends Controller
     {
         $product = WlnProduct::where('typecode', $typecode)->firstOrFail();
 
-        $data = $request->validate(['lntype' => 'nullable|string'] + $this->fieldRules($request));
+        $data = $request->validate(['lntype' => 'nullable|string'] + $this->fieldRules($request), [], self::ATTRIBUTES);
 
         $product->update($this->columns($data));
 
