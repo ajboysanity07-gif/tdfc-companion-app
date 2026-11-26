@@ -132,51 +132,52 @@
 }
 
 .dark {
-    --background: oklch(0.145 0 0);
-    --foreground: oklch(0.985 0 0);
-    --card: oklch(0.175 0 0);
-    --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.175 0 0);
-    --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.985 0 0);
-    --primary-foreground: oklch(0.205 0 0);
-    --secondary: oklch(0.24 0 0);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.24 0 0);
-    --muted-foreground: oklch(0.76 0 0);
-    --accent: oklch(0.24 0 0);
-    --accent-foreground: oklch(0.985 0 0);
-    --destructive: oklch(0.7 0.19 25);
-    --destructive-foreground: oklch(0.7 0.19 25);
-    --border: oklch(0.27 0 0);
-    --input: oklch(0.32 0 0);
-    --ring: oklch(0.55 0 0);
+    /* blue-tinted charcoal, from the [data-theme=dark] block of the design/ mockups */
+    --background: oklch(0.2 0.02 265);
+    --foreground: oklch(0.97 0.008 265);
+    --card: oklch(0.225 0.022 265);
+    --card-foreground: oklch(0.97 0.008 265);
+    --popover: oklch(0.225 0.022 265);
+    --popover-foreground: oklch(0.97 0.008 265);
+    --primary: oklch(0.97 0.008 265);
+    --primary-foreground: oklch(0.2 0.02 265);
+    --secondary: oklch(0.28 0.024 265);
+    --secondary-foreground: oklch(0.97 0.008 265);
+    --muted: oklch(0.28 0.024 265);
+    --muted-foreground: oklch(0.78 0.02 265);
+    --accent: oklch(0.28 0.024 265);
+    --accent-foreground: oklch(0.97 0.008 265);
+    --destructive: oklch(0.72 0.18 25);
+    --destructive-foreground: oklch(0.72 0.18 25);
+    --border: oklch(0.33 0.025 265);
+    --input: oklch(0.38 0.027 265);
+    --ring: oklch(0.62 0.09 258);
     --chart-1: oklch(0.488 0.243 264.376);
     --chart-2: oklch(0.696 0.17 162.48);
     --chart-3: oklch(0.769 0.188 70.08);
     --chart-4: oklch(0.627 0.265 303.9);
     --chart-5: oklch(0.645 0.246 16.439);
-    --sidebar: oklch(0.145 0 0);
-    --sidebar-foreground: oklch(0.985 0 0);
-    --sidebar-primary: oklch(0.985 0 0);
-    --sidebar-primary-foreground: oklch(0.205 0 0);
-    --sidebar-accent: oklch(0.24 0 0);
-    --sidebar-accent-foreground: oklch(0.985 0 0);
-    --sidebar-border: oklch(0.27 0 0);
-    --sidebar-ring: oklch(0.55 0 0);
-    --page: oklch(0.145 0 0);
+    --sidebar: oklch(0.165 0.02 265);
+    --sidebar-foreground: oklch(0.97 0.008 265);
+    --sidebar-primary: oklch(0.97 0.008 265);
+    --sidebar-primary-foreground: oklch(0.2 0.02 265);
+    --sidebar-accent: oklch(0.28 0.024 265);
+    --sidebar-accent-foreground: oklch(0.97 0.008 265);
+    --sidebar-border: oklch(0.33 0.025 265);
+    --sidebar-ring: oklch(0.62 0.09 258);
+    --page: oklch(0.165 0.02 265);
 
-    --brand-surface: #da5655;
-    --on-brand-surface: oklch(0.16 0.03 24);
-    --red-text: oklch(0.74 0.14 24);
-    --yellow-text: oklch(0.86 0.1 90);
-    --blue-text: oklch(0.76 0.12 258);
-    --red-soft: color-mix(in oklch, var(--brand-red) 20%, var(--card));
+    --brand-surface: oklch(0.68 0.17 24);
+    --on-brand-surface: oklch(0.14 0.02 265);
+    --red-text: oklch(0.77 0.13 24);
+    --yellow-text: oklch(0.88 0.11 92);
+    --blue-text: oklch(0.78 0.12 252);
+    --red-soft: color-mix(in oklch, var(--brand-red) 22%, var(--card));
     --yellow-soft: color-mix(in oklch, var(--brand-yellow) 18%, var(--card));
-    --blue-soft: color-mix(in oklch, var(--brand-blue) 22%, var(--card));
-    --success: oklch(0.72 0.15 155);
+    --blue-soft: color-mix(in oklch, var(--brand-blue) 26%, var(--card));
+    --success: oklch(0.76 0.15 155);
     --success-soft: color-mix(in oklch, var(--success) 18%, var(--card));
-    --color-tdfc-line: oklch(0.45 0 0);
+    --color-tdfc-line: oklch(0.45 0.027 265);
     --color-tdfc-card-line: var(--border);
 }
 
@@ -293,18 +294,4 @@
         transition-duration: 0.01ms !important;
         scroll-behavior: auto !important;
     }
-}
-
-/* Welcome page only: dark theme v2 (blue-tinted charcoal, lifted logo red). See design/claude-code-color-palette-guidelines1.md */
-.dark .welcome-v2 {
-    --background: oklch(0.2 0.02 265);
-    --foreground: oklch(0.97 0.008 265);
-    --card: oklch(0.225 0.022 265);
-    --muted: oklch(0.28 0.024 265);
-    --muted-foreground: oklch(0.78 0.02 265);
-    --border: oklch(0.33 0.025 265);
-    --page: oklch(0.165 0.02 265);
-    --brand-surface: oklch(0.68 0.17 24);
-    --on-brand-surface: oklch(0.14 0.02 265);
-    --blue-text: oklch(0.78 0.12 252);
 }

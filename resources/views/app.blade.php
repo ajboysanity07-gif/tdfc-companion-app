@@ -24,7 +24,7 @@
         }
 
         html.dark {
-            background-color: oklch(0.145 0 0);
+            background-color: oklch(0.165 0.02 265);
         }
     </style>
 
@@ -39,7 +39,7 @@
     <meta name="theme-color" content="#DA5655">
 
     <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
+    <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700,800" rel="stylesheet" />
 
     @routes
     <!-- ZIGGY DEBUG MARKER -->

@@ -5,7 +5,7 @@ type Props = { title: string; lead?: string; wide?: boolean; footer?: ReactNode;
 /** Page shell + white card shared by the auth screens (logo, title, lead, card, footer line). */
 export default function AuthCard({ title, lead, wide, footer, children }: Props) {
     return (
-        <main className="grid min-h-screen place-items-center bg-linear-to-br from-tdfc-page-from via-white to-tdfc-page-to px-4 py-8">
+        <main className="grid min-h-screen place-items-center bg-linear-to-br from-tdfc-page-from via-white to-tdfc-page-to px-4 py-8 dark:via-background">
             <div className={`w-full ${wide ? 'max-w-[560px]' : 'max-w-[420px]'}`}>
                 <img src="/images/logo.png" alt="TDFC" className="mx-auto mb-5 h-11 w-auto" />
                 <h1 className="text-center text-[32px] font-extrabold tracking-tight text-tdfc-coral-ink sm:text-4xl">{title}</h1>

@@ -19,6 +19,10 @@ export const fdateLong = (iso?: string | null) => {
     return Number.isFinite(d.getTime()) ? d.toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric' }) : iso;
 };
 
+/** Page root for mockup-matched pages: 14px text at 1.5 line height, including Tailwind's tighter named sizes. */
+export const mockupText =
+    'text-sm leading-normal [--text-2xl--line-height:1.5] [--text-lg--line-height:1.5] [--text-sm--line-height:1.5] [--text-xl--line-height:1.5] [--text-xs--line-height:1.5]';
+
 export const Panel = ({ className = '', style, children }: { className?: string; style?: CSSProperties; children: ReactNode }) => (
     <section style={style} className={`rounded-[14px] border border-border bg-card shadow-sm ${className}`}>
         {children}

@@ -10,7 +10,7 @@ export default function Welcome() {
             <InstallPrompt />
 
             {/* MOBILE (unchanged, smaller image) */}
-            <div className="welcome-v2 mx-auto grid min-h-screen place-items-center bg-card px-4 py-8 md:hidden">
+            <div className="mx-auto grid min-h-screen place-items-center bg-card px-4 py-8 md:hidden">
                 <div className="w-full max-w-[720px]">
                     <div className="mb-6 grid place-items-center">
                         <img src="/images/tdfc-icon.png" alt="TDFC Logo" className="w-full max-w-[220px] select-none" />
@@ -36,7 +36,7 @@ export default function Welcome() {
             </div>
 
             {/* DESKTOP/TABLET: card with colored top bar */}
-            <div className="welcome-v2 hidden min-h-screen place-items-center bg-page md:grid">
+            <div className="hidden min-h-screen place-items-center bg-page md:grid">
                 <div className="w-full max-w-lg overflow-hidden rounded-3xl bg-card shadow-xl">
                     {/* Colored top strip */}
                     <div className="h-3 w-full bg-gradient-to-r from-brand-red via-brand-yellow to-brand-blue" />

@@ -71,7 +71,7 @@ export default function InstallPrompt() {
                 aria-labelledby="ia-title"
                 aria-describedby="ia-desc"
                 inert={!open}
-                className={`welcome-v2 fixed z-71 border bg-card p-5 text-foreground shadow-tdfc-modal transition duration-350 ease-[cubic-bezier(.2,.9,.3,1)] motion-reduce:transition-none max-[560px]:inset-x-0 max-[560px]:bottom-0 max-[560px]:rounded-t-3xl max-[560px]:border-x-0 max-[560px]:border-b-0 max-[560px]:px-5 max-[560px]:pt-3 max-[560px]:pb-[calc(20px+env(safe-area-inset-bottom))] min-[561px]:right-6 min-[561px]:bottom-6 min-[561px]:w-[380px] min-[561px]:max-w-[calc(100vw-32px)] min-[561px]:rounded-[20px] ${open ? 'translate-y-0 opacity-100' : 'pointer-events-none translate-y-6 opacity-0 max-[560px]:translate-y-full'}`}
+                className={`fixed z-71 border bg-card p-5 text-foreground shadow-tdfc-modal transition duration-350 ease-[cubic-bezier(.2,.9,.3,1)] motion-reduce:transition-none max-[560px]:inset-x-0 max-[560px]:bottom-0 max-[560px]:rounded-t-3xl max-[560px]:border-x-0 max-[560px]:border-b-0 max-[560px]:px-5 max-[560px]:pt-3 max-[560px]:pb-[calc(20px+env(safe-area-inset-bottom))] min-[561px]:right-6 min-[561px]:bottom-6 min-[561px]:w-[380px] min-[561px]:max-w-[calc(100vw-32px)] min-[561px]:rounded-[20px] ${open ? 'translate-y-0 opacity-100' : 'pointer-events-none translate-y-6 opacity-0 max-[560px]:translate-y-full'}`}
             >
                 <div aria-hidden className="mx-auto mb-4 h-1 w-9 rounded-full bg-border min-[561px]:hidden" />
                 <button

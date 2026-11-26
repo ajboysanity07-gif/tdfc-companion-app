@@ -4,7 +4,6 @@ import PayslipWizard from '@/components/ui/payslip-wizard';
 import PrcWizard from '@/components/ui/prc-wizard';
 import MinimalLayout from '@/layouts/minimal-layout';
 import { Head, useForm } from '@inertiajs/react';
-import { alpha, useTheme, useMediaQuery } from '@mui/material';
 import { motion } from 'framer-motion';
 import React, { useState } from 'react';
 
@@ -25,9 +24,6 @@ export default function RegistrationStatus({
   reviewed_at,
   reviewed_by,
 }: Props) {
-  const theme = useTheme();
-  const isMobile = useMediaQuery('(max-width:639px)');
-
   const prcCodes = ['prc_id_blurry', 'not_prc_id', 'prc_id_expired'];
   const payslipCodes = ['payslip_blurry', 'payslip_too_old', 'documents_tampered'];
   const userCodes = rejection_reasons.map((r) => r.code);
@@ -62,22 +58,6 @@ export default function RegistrationStatus({
     post('/customer/register-resubmit', { forceFormData: true });
   };
 
-  const errorBorder =
-    theme.palette.mode === 'dark'
-      ? `1.5px solid ${alpha(theme.palette.error.main, 0.34)}`
-      : '1.5px solid var(--brand-red)';
-  const errorBg =
-    theme.palette.mode === 'dark'
-      ? alpha(theme.palette.error.main, 0.08)
-      : 'var(--red-soft)';
-
-  const headlineFont = theme.typography.h4?.fontFamily ?? 'inherit';
-  const welcomeFontSize = theme.typography.subtitle1?.fontSize ?? '16px';
-  const welcomeLetterSpacing = theme.typography.subtitle1?.letterSpacing ?? '0.05em';
-  const nameFontSize = isMobile
-    ? (theme.typography.h5?.fontSize ?? '1.5rem')
-    : (theme.typography.h6?.fontSize ?? '1.125rem');
-
   const getPrcStatusDisplay = () => {
     if (prcFront && prcBack) return 'Front & Back completed ✓';
     if (prcFront) return 'Front completed, back pending';
@@ -92,43 +72,12 @@ export default function RegistrationStatus({
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
-    className={`
-      w-full max-h-50vh
-      ${isMobile ? "" : "max-w-xl"}
-      ${isMobile ? "" : "rounded-3xl"}
-      border border-border bg-card text-center shadow-xl
-      dark:border-neutral-700 dark:bg-neutral-800
-      ${isMobile ? "py-6 px-4" : "py-10 px-10"}
-      mx-auto
-      ${isMobile ? "" : "h-fit max-h-[90vh] flex flex-col justify-center"}
-    `}
- 
+    className="mx-auto w-full border border-border bg-card px-4 py-6 text-center shadow-xl sm:flex sm:h-fit sm:max-h-[90vh] sm:max-w-xl sm:flex-col sm:justify-center sm:rounded-3xl sm:p-10"
   >
           {/* Greeting */}
           <div className="mb-4 text-center">
-            <div
-              style={{
-                color: theme.palette.text.secondary,
-                fontWeight: 500,
-                fontSize: welcomeFontSize,
-                letterSpacing: welcomeLetterSpacing,
-                fontFamily: headlineFont,
-              }}
-            >
-              Welcome
-            </div>
-            <div
-              style={{
-                color: theme.palette.text.primary,
-                fontWeight: 800,
-                fontSize: nameFontSize,
-                fontFamily: headlineFont,
-                marginTop: 6,
-                display: 'block',
-              }}
-            >
-              {name}
-            </div>
+            <div className="text-base font-medium tracking-[0.00938em] text-muted-foreground">Welcome</div>
+            <div className="mt-1.5 text-2xl font-extrabold text-foreground sm:text-xl">{name}</div>
           </div>
 
           {/* Main status content */}
@@ -166,31 +115,9 @@ export default function RegistrationStatus({
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">Status</span>
               <span
-                style={{
-                  paddingLeft: '12px',
-                  paddingRight: '12px',
-                  paddingTop: '4px',
-                  paddingBottom: '4px',
-                  borderRadius: '9999px',
-                  fontSize: '14px',
-                  fontWeight: 500,
-                  background:
-                    status === 'pending'
-                      ? theme.palette.mode === 'dark'
-                        ? alpha(theme.palette.warning.main, 0.15)
-                        : 'var(--yellow-soft)'
-                      : theme.palette.mode === 'dark'
-                      ? alpha(theme.palette.error.main, 0.15)
-                      : 'var(--red-soft)',
-                  color:
-                    status === 'pending'
-                      ? theme.palette.mode === 'dark'
-                        ? theme.palette.warning.light
-                        : 'var(--yellow-text)'
-                      : theme.palette.mode === 'dark'
-                      ? theme.palette.error.light
-                      : 'var(--red-text)',
-                }}
+                className={`rounded-full px-3 py-1 text-sm font-medium ${
+                  status === 'pending' ? 'bg-yellow-soft text-yellow-text' : 'bg-red-soft text-red-text'
+                }`}
               >
                 {status === 'pending' ? 'Pending' : 'Rejected'}
               </span>
@@ -214,31 +141,10 @@ export default function RegistrationStatus({
           {status === 'rejected' && rejection_reasons && rejection_reasons.length > 0 && (
             <div className="mb-6">
               <h3 className="mb-2 text-left font-semibold text-foreground">Reasons for Rejection:</h3>
-              <div
-                style={{
-                  border: errorBorder,
-                  background: errorBg,
-                  borderRadius: isMobile ? 12 : 16,
-                  padding: isMobile ? '12px 6px' : '17px 14px',
-                  textAlign: 'left',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '9px',
-                  marginBottom: '18px',
-                }}
-              >
+              <div className="mb-[18px] flex flex-col gap-[9px] rounded-xl border-[1.5px] border-brand-red bg-red-soft px-1.5 py-3 text-left sm:rounded-2xl sm:px-3.5 sm:py-[17px] dark:border-brand-red/35">
                 {rejection_reasons.map((reason) => (
-                  <div
-                    key={reason.code}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      color: theme.palette.error.main,
-                      fontWeight: 500,
-                      fontSize: isMobile ? '14px' : '15px',
-                    }}
-                  >
-                    <span style={{ marginRight: 8, fontSize: '1.1em' }}>•</span>
+                  <div key={reason.code} className="flex items-center text-sm font-medium text-red-text sm:text-[15px]">
+                    <span className="mr-2 text-[1.1em]">•</span>
                     <span>{reason.label}</span>
                   </div>
                 ))}
@@ -267,19 +173,7 @@ export default function RegistrationStatus({
                 <button
                   type="submit"
                   disabled={!canSubmit || processing}
-                  style={{
-                    width: '100%',
-                    background: theme.palette.error.main,
-                    color: '#fff',
-                    fontWeight: 600,
-                    fontSize: '15px',
-                    padding: isMobile ? '10px 12px' : '12px 16px',
-                    borderRadius: '12px',
-                    border: 'none',
-                    cursor: canSubmit ? 'pointer' : 'not-allowed',
-                    opacity: canSubmit && !processing ? 1 : 0.6,
-                    marginTop: '14px',
-                  }}
+                  className="mt-3.5 w-full cursor-pointer rounded-xl bg-brand-surface px-3 py-2.5 text-[15px] font-semibold text-on-brand-surface disabled:cursor-not-allowed disabled:opacity-60 sm:px-4 sm:py-3"
                 >
                   {processing ? 'Submitting...' : 'Register Again'}
                 </button>
@@ -304,7 +198,7 @@ export default function RegistrationStatus({
               />
             </div>
           )}
-          <p className={`mb-6 text-sm text-muted-foreground ${isMobile ? "px-2" : ""}`}>
+          <p className="mb-6 px-2 text-sm text-muted-foreground sm:px-0">
             {status === 'pending'
               ? "We'll notify you once your registration has been reviewed. This typically takes 1-2 business days."
               : 'Please address the issues above and submit a new registration.'}
