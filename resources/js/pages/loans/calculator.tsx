@@ -459,7 +459,7 @@ export default function LoanCalculator({ products }: { products: Product[] }) {
                                 </div>
                                 <span className="text-[13px] font-medium">
                                     Computed as of {asOf}
-                                    {p.mode === 'MONTHLY' && <span className="block">First deduction: {startsIn}</span>}
+                                    {p.mode !== 'DUE-DATE' && <span className="block">First deduction: {startsIn}</span>}
                                 </span>
                             </div>
                             <div className="grid gap-2">
