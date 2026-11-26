@@ -142,3 +142,45 @@ it('rejects renaming to a blank or taken name', function (string $name, string $
     'blank' => ['', 'The loan name field is required.'],
     'taken' => ['SALARY LOAN', 'The loan name has already been taken.'],
 ]);
+
+it('sends the calculator the computation settings and hides products with an unsupported mode', function () {
+    WlnProduct::create(['typecode' => '10', 'lntype' => 'WEEKLY LOAN', 'installment_mode' => 'WEEKLY', 'ln_isActive' => true]);
+    WlnProduct::create([
+        'typecode' => '11', 'lntype' => 'BONUS LOAN', 'ln_scheme' => 'PREPAID', 'installment_mode' => 'SEMI-ANNUAL',
+        'max_term' => 365, 'ln_isActive' => true,
+    ]);
+    config(['loans.cutoff_day' => 7]);
+    actingAsRole('client');
+
+    get('/loans/calculator')->assertOk()->assertInertia(fn ($page) => $page
+        ->has('products', 2)
+        ->where('products.0.scheme', 'ADD-ON')
+        ->where('products.0.mode', 'MONTHLY')
+        ->where('products.0.cutoff_day', 7)
+        ->where('products.1.scheme', 'PREPAID')
+        ->where('products.1.mode', 'SEMI-ANNUAL')
+        ->where('products.1.max_term_days', 365));
+});
+
+it('rejects computation settings the calculator cannot use', function (array $body, string $key) {
+    actingAsRole('admin');
+
+    putJson('/api/admin/products/09', $body)->assertStatus(422)->assertJsonValidationErrors($key);
+})->with([
+    'weekly mode' => [['settings' => ['installment_mode' => 'WEEKLY']], 'settings.installment_mode'],
+    'unknown scheme' => [['settings' => ['ln_scheme' => 'OTHER']], 'settings.ln_scheme'],
+    'rate over 100' => [['int_rate' => 101], 'int_rate'],
+    'negative service fee' => [['settings' => ['service_fee' => -1]], 'settings.service_fee'],
+    'lrf over 100' => [['settings' => ['lrf' => 101]], 'settings.lrf'],
+    'flat doc stamp' => [['settings' => ['doc_stamp' => 150]], 'settings.doc_stamp'],
+    'negative mortuary' => [['settings' => ['mort_notarial' => -1]], 'settings.mort_notarial'],
+]);
+
+it('accepts the three modes and both schemes', function () {
+    actingAsRole('admin');
+
+    foreach (['MONTHLY', 'SEMI-ANNUAL', 'DUE-DATE'] as $mode) {
+        putJson('/api/admin/products/09', ['settings' => ['installment_mode' => $mode, 'ln_scheme' => 'PREPAID']])->assertOk();
+    }
+    putJson('/api/admin/products/09', ['int_rate' => 7.5, 'settings' => ['ln_scheme' => 'ADD-ON', 'doc_stamp' => 0.75, 'mort_notarial' => 850]])->assertOk();
+});

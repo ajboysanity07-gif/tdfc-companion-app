@@ -342,7 +342,8 @@ function ProductDrawerBody({ product, dirty, onSave, onDelete, onClose, toast }:
                                 value={s.installment_mode}
                                 onChange={(e) => set('installment_mode', e.target.value)}
                             >
-                                {['MONTHLY', 'WEEKLY', 'DUE-DATE'].map((o) => (
+                                {/* a retired saved mode (WEEKLY) stays listed so the admin can see it and change it */}
+                                {[...new Set(['MONTHLY', 'SEMI-ANNUAL', 'DUE-DATE', base.settings.installment_mode])].map((o) => (
                                     <option key={o}>{o}</option>
                                 ))}
                             </select>
@@ -403,7 +404,7 @@ function ProductDrawerBody({ product, dirty, onSave, onDelete, onClose, toast }:
                     )}
                     {s.max_amortization_mode === 'FIXED' &&
                         row(
-                            'Max amortization',
+                            'Max amortization (per payment)',
                             'd-amort',
                             numField('max_amortization', 'd-amort'),
                             <Check
@@ -419,7 +420,7 @@ function ProductDrawerBody({ product, dirty, onSave, onDelete, onClose, toast }:
                     <h3 id="h-fees" className={h3}>
                         Fees
                     </h3>
-                    <p className="text-[13px] text-muted-foreground">Percent fees are computed on the amount applied.</p>
+                    <p className="text-[13px] text-muted-foreground">Percent fees are computed on the principal.</p>
                     <div className="grid gap-4 sm:grid-cols-2">
                         {pct('service_fee', 'd-sf', 'Service fee')}
                         {pct('lrf', 'd-lrf', 'LRF')}

@@ -62,7 +62,7 @@ class ProductController extends Controller
     private function fieldRules(Request $request): array
     {
         return [
-            'int_rate' => 'nullable|numeric',
+            'int_rate' => 'nullable|numeric|min:0|max:100',
             'settings' => 'nullable|array',
             'settings.ln_isActive' => 'boolean',
             'settings.rate_isEditable' => 'boolean',
@@ -71,10 +71,10 @@ class ProductController extends Controller
             'settings.max_amortization_isEditable' => 'boolean',
             'settings.max_term' => 'nullable|integer',
             'settings.max_amortization' => 'nullable|integer',
-            'settings.service_fee' => 'nullable|numeric',
-            'settings.lrf' => 'nullable|numeric',
-            'settings.doc_stamp' => 'nullable|numeric',
-            'settings.mort_notarial' => 'nullable|numeric',
+            'settings.service_fee' => 'nullable|numeric|min:0|max:100',
+            'settings.lrf' => 'nullable|numeric|min:0|max:100',
+            'settings.doc_stamp' => 'nullable|numeric|min:0|max:100',
+            'settings.mort_notarial' => 'nullable|numeric|min:0',
             'settings.custom_fees' => 'nullable|array|max:20',
             'settings.custom_fees.*.label' => 'required|string|max:60',
             'settings.custom_fees.*.type' => 'required|in:percent,fixed',
@@ -97,8 +97,8 @@ class ProductController extends Controller
                     }
                 },
             ],
-            'settings.ln_scheme' => 'nullable|string',
-            'settings.installment_mode' => 'nullable|string',
+            'settings.ln_scheme' => 'nullable|in:ADD-ON,PREPAID',
+            'settings.installment_mode' => 'nullable|in:MONTHLY,SEMI-ANNUAL,DUE-DATE',
             'settings.terms_and_info' => 'nullable|string',
         ];
     }
@@ -106,6 +106,13 @@ class ProductController extends Controller
     // Readable names for the errors the admin drawer shows in a toast.
     private const ATTRIBUTES = [
         'lntype' => 'loan name',
+        'int_rate' => 'rate',
+        'settings.ln_scheme' => 'scheme',
+        'settings.installment_mode' => 'mode',
+        'settings.service_fee' => 'service fee',
+        'settings.lrf' => 'LRF',
+        'settings.doc_stamp' => 'doc stamp',
+        'settings.mort_notarial' => 'mortuary + notarial',
         'settings.custom_fees.*.label' => 'custom fee name',
         'settings.custom_fees.*.type' => 'custom fee type',
         'settings.custom_fees.*.value' => 'custom fee value',
