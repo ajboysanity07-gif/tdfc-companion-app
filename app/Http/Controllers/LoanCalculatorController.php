@@ -39,7 +39,6 @@ class LoanCalculatorController extends Controller
                     default => (float) ($t->max_amortization ?? 0),
                 },
                 'max_amortization_formula' => $t->max_amortization_mode === 'CUSTOM' ? $t->max_amortization_formula : null,
-                'amortization_editable' => (bool) $t->max_amortization_isEditable,
                 'interest_rate' => (float) ($t->int_rate ?? 0),
                 'service_fee' => (float) ($t->service_fee ?? 0),
                 'lrf' => (float) ($t->lrf ?? 0),

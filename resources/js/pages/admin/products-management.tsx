@@ -402,17 +402,14 @@ function ProductDrawerBody({ product, dirty, onSave, onDelete, onClose, toast }:
                             </small>
                         </div>
                     )}
-                    {s.max_amortization_mode === 'FIXED' &&
-                        row(
-                            'Max amortization (per payment)',
-                            'd-amort',
-                            numField('max_amortization', 'd-amort'),
-                            <Check
-                                label="editable by client"
-                                checked={!!s.max_amortization_isEditable}
-                                onChange={(v) => set('max_amortization_isEditable', v)}
-                            />,
-                        )}
+                    {s.max_amortization_mode === 'FIXED' && (
+                        <div className="grid gap-1.5">
+                            <label htmlFor="d-amort" className="font-medium">
+                                Max amortization (per payment)
+                            </label>
+                            {numField('max_amortization', 'd-amort')}
+                        </div>
+                    )}
                     <Check label="Allow multiple active loans per client" checked={!!s.allow_multiple} onChange={(v) => set('allow_multiple', v)} />
                 </section>
 

@@ -11,23 +11,21 @@ type Product = LoanProduct & {
     tags: string[];
     max_term_days: number;
     term_editable: boolean;
-    max_amortization: number; // caps the payment per period; 0 means uncapped
-    amortization_editable: boolean;
+    max_amortization: number; // the payment per period, set by the admin; 0 means none is set
     terms: string | null;
 };
 
 // How the term is typed in each mode: monthly in months, semi-annual in 6-month steps, due date in days.
-const TERM: Record<LoanMode, { unit: string; step: number; days: number; chips: number[]; amount: string; every: string }> = {
-    MONTHLY: { unit: 'month', step: 1, days: PERIOD_DAYS.MONTHLY, chips: [6, 12, 18, 24, 36], amount: 'Monthly amortization', every: 'monthly' },
+const TERM: Record<LoanMode, { unit: string; step: number; days: number; chips: number[]; every: string }> = {
+    MONTHLY: { unit: 'month', step: 1, days: PERIOD_DAYS.MONTHLY, chips: [6, 12, 18, 24, 36], every: 'monthly' },
     'SEMI-ANNUAL': {
         unit: 'month',
         step: 6,
         days: PERIOD_DAYS.MONTHLY,
         chips: [6, 12, 18, 24, 36],
-        amount: 'Semi-annual amortization',
         every: 'semi-annual',
     },
-    'DUE-DATE': { unit: 'day', step: 1, days: 1, chips: [30, 60, 90, 180, 360], amount: 'Total due on due date', every: 'due date' },
+    'DUE-DATE': { unit: 'day', step: 1, days: 1, chips: [30, 60, 90, 180, 360], every: 'due date' },
 };
 /** The longest term, in the mode's unit, with whole periods inside the product's maximum days. */
 const maxTerm = (p: Product) => Math.floor(p.max_term_days / (TERM[p.mode].days * TERM[p.mode].step)) * TERM[p.mode].step;
@@ -35,9 +33,6 @@ const plural = (n: number, unit: string) => `${n} ${unit}${n === 1 ? '' : 's'}`;
 
 const pesoS = (n: number) => peso(n).replace('₱', '₱ ');
 const pct = (n: number) => `${n.toFixed(n % 1 ? 1 : 0)}%`;
-const nf0 = new Intl.NumberFormat('en-PH', { maximumFractionDigits: 0 });
-const nf2 = new Intl.NumberFormat('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-const fmtAm = (v: number) => (v ? (v % 1 ? nf2 : nf0).format(v) : '');
 
 const inputCls =
     'h-11 w-full rounded-[10px] border border-input bg-background px-3 text-base text-foreground shadow-xs focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-red-text disabled:cursor-not-allowed disabled:bg-muted disabled:opacity-100 disabled:[-webkit-text-fill-color:var(--foreground)]';
@@ -66,9 +61,7 @@ export default function LoanCalculator({ products }: { products: Product[] }) {
     const [p, setP] = useState<Product | undefined>(initial);
     const [typedTerm, setTypedTerm] = useState(initial ? maxTerm(initial) : 0);
     const [today] = useState(() => new Date());
-    const [amount, setAmount] = useState(initial?.max_amortization ?? 0);
-    const [amountText, setAmountText] = useState(fmtAm(initial?.max_amortization ?? 0));
-    const [hint, setHint] = useState<{ term?: string; amount?: string }>({});
+    const [hint, setHint] = useState<string>();
     const [dirty, setDirty] = useState(false);
     const [reset, setReset] = useState<string | null>(null);
     const [owed, setOwed] = useState<Record<string, number>>({});
@@ -109,13 +102,11 @@ export default function LoanCalculator({ products }: { products: Product[] }) {
         );
 
     const choose = (n: Product) => {
-        setReset(dirty && n !== p ? `Term and amortization were reset to the ${n.name} defaults.` : null);
+        setReset(dirty && n !== p ? `The term was reset to the ${n.name} default.` : null);
         setDirty(false);
         setP(n);
         setTypedTerm(maxTerm(n));
-        setAmount(n.max_amortization);
-        setAmountText(fmtAm(n.max_amortization));
-        setHint({});
+        setHint(undefined);
     };
     const touch = () => {
         setDirty(true);
@@ -133,14 +124,14 @@ export default function LoanCalculator({ products }: { products: Product[] }) {
     const longest = maxTerm(p);
     const term = Math.floor(typedTerm / cfg.step) * cfg.step;
     const days = term * cfg.days;
+    const amount = p.max_amortization;
     const old = oldLoans.reduce((s, l) => s + l.balance, 0);
     const e = computeLoan(p, amount, days, today.getDate(), old);
     const dedAll = e.deductions + e.old;
     const prepaid = p.scheme === 'PREPAID';
-    // Blocked: even the product's maximum can't pay off the old balances plus fees. A max of 0 means uncapped.
-    const best = computeLoan(p, p.max_amortization, days, today.getDate(), old);
-    const blocked = old > 0 && days > 0 && p.max_amortization > 0 && best.net === 0;
-    const payFirst = Math.round((best.old + best.deductions - best.principal) * 100) / 100 + 0.01;
+    // Blocked: the loan can't pay off the old balances plus fees.
+    const blocked = old > 0 && days > 0 && amount > 0 && e.net === 0;
+    const payFirst = Math.round((e.old + e.deductions - e.principal) * 100) / 100 + 0.01;
     const owedOn = oldLoans.map((l) => l.name).join(' and ');
     const netText = blocked ? 'Not available' : pesoS(e.net);
     const netNote = blocked
@@ -148,12 +139,11 @@ export default function LoanCalculator({ products }: { products: Product[] }) {
         : !days
           ? 'Enter a term'
           : !amount
-            ? 'Enter an amount'
+            ? 'No maximum amortization is set for this loan'
             : dedAll >= e.principal
               ? 'Deductions are as large as the loan amount'
               : `After ${pesoS(dedAll)} in deductions`;
     const termLocked = !p.term_editable;
-    const amMax = p.max_amortization || 100000;
     const termChips = [...new Set([...cfg.chips.filter((v) => v <= longest), longest])].filter(Boolean).sort((a, b) => a - b);
     const asOf = today.toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric' });
     const startsIn = firstDeduction(today, p.cutoff_day).toLocaleDateString('en-PH', { month: 'long', year: 'numeric' });
@@ -162,7 +152,6 @@ export default function LoanCalculator({ products }: { products: Product[] }) {
         : p.mode === 'DUE-DATE'
           ? `a year · due in ${plural(days, 'day')}`
           : `a year · ${plural(e.periods, `${cfg.every} payment`)} of ${pesoS(amount)}`;
-    const maxLabel = p.amortization_editable ? `Maximum ${pesoS(p.max_amortization)}.` : 'Fixed amount for this product.';
     const all = Math.max(1, e.net + e.charges + e.old + e.interest);
     const seg = (n: number) => ({ width: `${(n / all) * 100}%` });
     const less = (label: string, v: number): [string, string] => [label, `− ${pesoS(v)}`];
@@ -201,7 +190,7 @@ export default function LoanCalculator({ products }: { products: Product[] }) {
                 <div>
                     <h1 className="text-[22px] font-extrabold min-[901px]:text-2xl">Loan Calculator</h1>
                     <p className="mt-1 text-[13px] text-muted-foreground min-[901px]:text-sm">
-                        Estimate a loan before you apply. Pick a product, then adjust the term and amortization.
+                        Estimate a loan before you apply. Pick a product, then adjust the term.
                     </p>
                 </div>
 
@@ -253,7 +242,7 @@ export default function LoanCalculator({ products }: { products: Product[] }) {
                                                     type="button"
                                                     aria-pressed={v === term}
                                                     onClick={() => {
-                                                        setHint({ ...hint, term: undefined });
+                                                        setHint(undefined);
                                                         setTerm(v);
                                                     }}
                                                     className={`min-h-9 px-3.5 text-[13px] font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-text ${pill(v === term)}`}
@@ -272,10 +261,7 @@ export default function LoanCalculator({ products }: { products: Product[] }) {
                                         value={typedTerm || ''}
                                         onChange={(ev) => {
                                             let v = parseInt(ev.target.value.replace(/\D/g, '')) || 0;
-                                            setHint({
-                                                ...hint,
-                                                term: v > longest ? `Capped at the maximum of ${plural(longest, cfg.unit)}.` : undefined,
-                                            });
+                                            setHint(v > longest ? `Capped at the maximum of ${plural(longest, cfg.unit)}.` : undefined);
                                             v = Math.min(v, longest);
                                             setTerm(v);
                                         }}
@@ -291,7 +277,7 @@ export default function LoanCalculator({ products }: { products: Product[] }) {
                                         value={term}
                                         disabled={termLocked}
                                         onChange={(ev) => {
-                                            setHint({ ...hint, term: undefined });
+                                            setHint(undefined);
                                             setTerm(+ev.target.value);
                                         }}
                                         className={rangeCls}
@@ -301,7 +287,7 @@ export default function LoanCalculator({ products }: { products: Product[] }) {
                                         <span>{plural(longest, cfg.unit)}</span>
                                     </div>
                                     <p className="text-xs text-muted-foreground">
-                                        {hint.term ??
+                                        {hint ??
                                             (!longest
                                                 ? 'No term is set for this product.'
                                                 : !p.term_editable
@@ -311,68 +297,17 @@ export default function LoanCalculator({ products }: { products: Product[] }) {
                                 </div>
                                 <div className="grid gap-1.5">
                                     <label htmlFor="cAmort" className="flex items-center text-sm font-medium max-[560px]:block">
-                                        {cfg.amount}
-                                        {!p.amortization_editable && lock}
+                                        Max amortization{lock}
                                     </label>
-                                    <div className="relative">
-                                        <span
-                                            aria-hidden
-                                            className="pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 text-2xl font-extrabold text-muted-foreground"
-                                        >
-                                            ₱
-                                        </span>
-                                        <input
-                                            id="cAmort"
-                                            inputMode="decimal"
-                                            autoComplete="off"
-                                            placeholder="0.00"
-                                            disabled={!p.amortization_editable}
-                                            value={amountText}
-                                            onChange={(ev) => {
-                                                let t = ev.target.value.replace(/[^\d.]/g, '');
-                                                const [int, ...dec] = t.split('.');
-                                                t = dec.length ? `${int}.${dec.join('').slice(0, 2)}` : int;
-                                                let v = parseFloat(t) || 0;
-                                                const max = p.max_amortization;
-                                                if (max && v > max) {
-                                                    v = max;
-                                                    t = String(max);
-                                                    setHint({ ...hint, amount: `Capped at the maximum of ${pesoS(max)}.` });
-                                                } else setHint({ ...hint, amount: undefined });
-                                                const [ip, dp] = t.split('.');
-                                                setAmount(v);
-                                                setAmountText((ip ? nf0.format(+ip) : '') + (dp !== undefined ? `.${dp}` : ''));
-                                                touch();
-                                            }}
-                                            onBlur={() => {
-                                                setAmountText(amount ? nf2.format(amount) : '');
-                                                setHint({ ...hint, amount: undefined });
-                                            }}
-                                            className={`${inputCls} h-14 pl-10 text-[22px] font-extrabold tabular-nums min-[561px]:text-[26px]`}
-                                        />
-                                    </div>
                                     <input
-                                        type="range"
-                                        aria-label={`${cfg.amount} slider`}
-                                        min={0}
-                                        max={amMax}
-                                        step={100}
-                                        value={amount}
-                                        disabled={!p.amortization_editable}
-                                        onChange={(ev) => {
-                                            const v = +ev.target.value;
-                                            setHint({ ...hint, amount: undefined });
-                                            setAmount(v);
-                                            setAmountText(fmtAm(v));
-                                            touch();
-                                        }}
-                                        className={rangeCls}
+                                        id="cAmort"
+                                        disabled
+                                        value={pesoS(amount)}
+                                        className={`${inputCls} h-14 text-[22px] font-extrabold tabular-nums min-[561px]:text-[26px]`}
                                     />
-                                    <div className="flex justify-between text-xs text-muted-foreground tabular-nums">
-                                        <span>₱ 0</span>
-                                        <span>₱ {nf0.format(amMax)}</span>
-                                    </div>
-                                    <p className="text-xs text-muted-foreground">{hint.amount ?? maxLabel}</p>
+                                    <p className="text-xs text-muted-foreground">
+                                        {amount ? 'Fixed amount per payment for this product.' : 'No maximum amortization is set for this loan.'}
+                                    </p>
                                 </div>
                             </div>
                         </Panel>
@@ -392,11 +327,6 @@ export default function LoanCalculator({ products }: { products: Product[] }) {
                                         <b>You can't avail this loan yet.</b> You still owe <b className="tabular-nums">{pesoS(e.old)}</b> on {owedOn}
                                         , more than this loan can cover. Pay at least <b className="tabular-nums">{pesoS(payFirst)}</b>, or close the
                                         balance, to qualify.
-                                    </span>
-                                ) : days > 0 && e.net === 0 ? (
-                                    <span>
-                                        This amount doesn't cover your <b className="tabular-nums">{pesoS(e.old)}</b> balance on {owedOn} plus fees.
-                                        Enter a higher amount.
                                     </span>
                                 ) : (
                                     <span>
