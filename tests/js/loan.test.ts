@@ -1,7 +1,7 @@
 // Expected figures come from the cooperative's "Loans Calculator.xlsx". Run with: npm run test:js
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { computeLoan, firstDeduction, type LoanProduct } from '../../resources/js/lib/loan.ts';
+import { computeLoan, firstDeduction, inUnit, snapTerm, toDays, type LoanProduct } from '../../resources/js/lib/loan.ts';
 
 const sheet: LoanProduct = {
     scheme: 'ADD-ON',
@@ -72,4 +72,13 @@ test('first deduction falls next month from the cut-off day', () => {
     assert.deepEqual(ym(firstDeduction(new Date(2026, 10, 4), 5)), [2026, 10, 1]);
     assert.deepEqual(ym(firstDeduction(new Date(2026, 10, 5), 5)), [2026, 11, 1]);
     assert.deepEqual(ym(firstDeduction(new Date(2026, 11, 31), 5)), [2027, 0, 1]);
+});
+
+test('a month is 30 days in both directions', () => {
+    assert.deepEqual([toDays(60, 'month'), toDays(1.5, 'month'), toDays(1.33, 'month'), toDays(45, 'day')], [1800, 45, 40, 45]);
+    assert.deepEqual([inUnit(1800, 'month'), inUnit(45, 'month'), inUnit(100, 'month'), inUnit(100, 'day')], [60, 1.5, 3.33, 100]);
+});
+
+test('a term snaps down to whole payment periods', () => {
+    assert.deepEqual([snapTerm(45, 'MONTHLY'), snapTerm(359, 'SEMI-ANNUAL'), snapTerm(45, 'DUE-DATE')], [30, 180, 45]);
 });

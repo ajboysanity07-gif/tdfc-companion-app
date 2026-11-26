@@ -17,6 +17,15 @@ export type LoanProduct = {
 /** Days in one payment period (a due-date term is typed in days). */
 export const PERIOD_DAYS: Record<LoanMode, number> = { MONTHLY: 30, 'SEMI-ANNUAL': 180, 'DUE-DATE': 1 };
 
+export type TermUnit = 'day' | 'month';
+export const UNIT_DAYS: Record<TermUnit, number> = { day: 1, month: 30 };
+/** A term typed in `unit`, as whole days (how terms are stored and computed). */
+export const toDays = (value: number, unit: TermUnit) => Math.round(value * UNIT_DAYS[unit]);
+/** Days shown in `unit`, to two decimals: 45 days is 1.5 months. */
+export const inUnit = (days: number, unit: TermUnit) => +(days / UNIT_DAYS[unit]).toFixed(2);
+/** Rounds down to whole payment periods. */
+export const snapTerm = (days: number, mode: LoanMode) => Math.floor(days / PERIOD_DAYS[mode]) * PERIOD_DAYS[mode];
+
 // Half-up like Excel's ROUND: toFixed absorbs float noise such as 1012.4999999999999.
 const round = (n: number, digits = 2) => Math.round(+(n * 10 ** digits).toFixed(6)) / 10 ** digits;
 

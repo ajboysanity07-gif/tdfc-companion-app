@@ -206,6 +206,22 @@ export const Switch = ({ checked, onChange, label }: { checked: boolean; onChang
     </button>
 );
 
+export const UnitSwitch = ({ value, onChange }: { value: 'day' | 'month'; onChange: (v: 'day' | 'month') => void }) => (
+    <div role="group" aria-label="Term unit" className="inline-flex flex-none gap-0.5 rounded-[10px] border border-input p-0.5">
+        {(['day', 'month'] as const).map((u) => (
+            <button
+                key={u}
+                type="button"
+                aria-pressed={u === value}
+                onClick={() => onChange(u)}
+                className="h-8 rounded-lg px-3 text-[13px] font-semibold text-muted-foreground hover:bg-muted aria-pressed:bg-primary aria-pressed:text-primary-foreground"
+            >
+                {u === 'day' ? 'Days' : 'Months'}
+            </button>
+        ))}
+    </div>
+);
+
 /** Sorting + paging state shared by every table. */
 export function useTable<T>(rows: T[], init: { key: keyof T | string; asc?: boolean; per?: number }, get?: (r: T, k: string) => string | number) {
     const [key, setKey] = useState(String(init.key));

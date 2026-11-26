@@ -1,6 +1,6 @@
-import { Panel, peso } from '@/components/tdfc/ui';
+import { Panel, peso, UnitSwitch } from '@/components/tdfc/ui';
 import AppLayout from '@/layouts/app-layout';
-import { computeLoan, firstDeduction, type LoanMode, type LoanProduct, PERIOD_DAYS } from '@/lib/loan';
+import { computeLoan, firstDeduction, inUnit, type LoanMode, type LoanProduct, PERIOD_DAYS, snapTerm, type TermUnit, toDays } from '@/lib/loan';
 import { Head, Link } from '@inertiajs/react';
 import { ChevronLeft, TriangleAlert } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
@@ -16,20 +16,14 @@ type Product = LoanProduct & {
     terms: string | null;
 };
 
-// How the term is typed in each mode: monthly in months, semi-annual in 6-month steps, due date in days.
-const TERM: Record<LoanMode, { unit: string; step: number; days: number; chips: number[]; every: string }> = {
-    MONTHLY: { unit: 'month', step: 1, days: PERIOD_DAYS.MONTHLY, chips: [6, 12, 18, 24, 36], every: 'monthly' },
-    'SEMI-ANNUAL': {
-        unit: 'month',
-        step: 6,
-        days: PERIOD_DAYS.MONTHLY,
-        chips: [6, 12, 18, 24, 36],
-        every: 'semi-annual',
-    },
-    'DUE-DATE': { unit: 'day', step: 1, days: 1, chips: [30, 60, 90, 180, 360], every: 'due date' },
+// Each mode's starting unit and its term shortcuts (in days).
+const TERM: Record<LoanMode, { unit: TermUnit; chips: number[]; every: string }> = {
+    MONTHLY: { unit: 'month', chips: [180, 360, 540, 720, 1080], every: 'monthly' },
+    'SEMI-ANNUAL': { unit: 'month', chips: [180, 360, 540, 720, 1080], every: 'semi-annual' },
+    'DUE-DATE': { unit: 'day', chips: [30, 60, 90, 180, 360], every: 'due date' },
 };
-/** The longest term, in the mode's unit, with whole periods inside the product's maximum days. */
-const maxTerm = (p: Product) => Math.floor(p.max_term_days / (TERM[p.mode].days * TERM[p.mode].step)) * TERM[p.mode].step;
+/** The longest term in days, with whole periods inside the product's maximum. */
+const maxTerm = (p: Product) => snapTerm(p.max_term_days, p.mode);
 const plural = (n: number, unit: string) => `${n} ${unit}${n === 1 ? '' : 's'}`;
 
 const pesoS = (n: number) => peso(n).replace('₱', '₱ ');
@@ -63,7 +57,9 @@ export default function LoanCalculator({ products }: { products: Product[] }) {
         return products.find((p) => p.id === q) ?? products[0];
     })();
     const [p, setP] = useState<Product | undefined>(initial);
-    const [typedTerm, setTypedTerm] = useState(initial ? maxTerm(initial) : 0);
+    const [typedDays, setTypedDays] = useState(initial ? maxTerm(initial) : 0);
+    const [termText, setTermText] = useState<string | null>(null); // what is being typed, so "1." survives
+    const [pickedUnit, setPickedUnit] = useState<TermUnit | null>(null); // null follows the mode
     const [today] = useState(() => new Date());
     const [amount, setAmount] = useState(initial?.max_amortization ?? 0);
     const [amountText, setAmountText] = useState(fmtAm(initial?.max_amortization ?? 0));
@@ -111,7 +107,8 @@ export default function LoanCalculator({ products }: { products: Product[] }) {
         setReset(dirty && n !== p ? `Term and amortization were reset to the ${n.name} defaults.` : null);
         setDirty(false);
         setP(n);
-        setTypedTerm(maxTerm(n));
+        setTypedDays(maxTerm(n));
+        setTermText(null);
         setAmount(n.max_amortization);
         setAmountText(fmtAm(n.max_amortization));
         setHint({});
@@ -121,7 +118,8 @@ export default function LoanCalculator({ products }: { products: Product[] }) {
         setReset(null);
     };
     const setTerm = (v: number) => {
-        setTypedTerm(v);
+        setTypedDays(v);
+        setTermText(null);
         touch();
     };
 
@@ -130,8 +128,12 @@ export default function LoanCalculator({ products }: { products: Product[] }) {
         .filter((l) => l.balance > 0);
     const cfg = TERM[p.mode];
     const longest = maxTerm(p);
-    const term = Math.floor(typedTerm / cfg.step) * cfg.step;
-    const days = term * cfg.days;
+    const days = snapTerm(typedDays, p.mode);
+    const unit = pickedUnit ?? cfg.unit;
+    const shown = (d: number) => plural(inUnit(d, unit), unit);
+    const step = PERIOD_DAYS[p.mode];
+    // only a due-date term can be part of a month
+    const decimals = unit === 'month' && p.mode === 'DUE-DATE';
     const old = oldLoans.reduce((s, l) => s + l.balance, 0);
     const e = computeLoan(p, amount, days, today.getDate(), old);
     const dedAll = e.deductions + e.old;
@@ -156,13 +158,13 @@ export default function LoanCalculator({ products }: { products: Product[] }) {
     const termLocked = !p.term_editable;
     // The member may only lower the amount, and only when the admin allows it.
     const canEdit = p.amortization_editable && p.max_amortization > 0;
-    const termChips = [...new Set([...cfg.chips.filter((v) => v <= longest), longest])].filter(Boolean).sort((a, b) => a - b);
+    const termChips = [...new Set([...cfg.chips.filter((d) => d <= longest), longest])].filter(Boolean).sort((a, b) => a - b);
     const asOf = today.toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric' });
     const startsIn = firstDeduction(today, p.cutoff_day).toLocaleDateString('en-PH', { month: 'long', year: 'numeric' });
     const schedule = !days
         ? 'a year'
         : p.mode === 'DUE-DATE'
-          ? `a year · due in ${plural(days, 'day')}`
+          ? `a year · due in ${shown(days)}`
           : `a year · ${plural(e.periods, `${cfg.every} payment`)} of ${pesoS(amount)}`;
     const maxLabel = !p.max_amortization
         ? 'No maximum amortization is set for this loan.'
@@ -248,53 +250,69 @@ export default function LoanCalculator({ products }: { products: Product[] }) {
                             )}
                             <div className="grid gap-3.5 min-[901px]:gap-4 [&>*]:min-w-0">
                                 <div className="grid gap-1.5">
-                                    <label htmlFor="cTerm" className="flex items-center text-sm font-medium max-[560px]:block">
-                                        Term in {cfg.unit}s{termLocked && lock}
-                                    </label>
+                                    <div className="flex items-center justify-between gap-3">
+                                        <label htmlFor="cTerm" className="flex items-center text-sm font-medium max-[560px]:block">
+                                            Term in {unit}s{termLocked && lock}
+                                        </label>
+                                        <UnitSwitch
+                                            value={unit}
+                                            onChange={(u) => {
+                                                setPickedUnit(u);
+                                                setTermText(null);
+                                                setHint({ ...hint, term: undefined });
+                                            }}
+                                        />
+                                    </div>
                                     {!termLocked && (
                                         <div role="group" aria-label="Term shortcuts" className="flex flex-wrap gap-1.5">
                                             {termChips.map((v) => (
                                                 <button
                                                     key={v}
                                                     type="button"
-                                                    aria-pressed={v === term}
+                                                    aria-pressed={v === days}
                                                     onClick={() => {
                                                         setHint({ ...hint, term: undefined });
                                                         setTerm(v);
                                                     }}
-                                                    className={`min-h-9 px-3.5 text-[13px] font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-text ${pill(v === term)}`}
+                                                    className={`min-h-9 px-3.5 text-[13px] font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-text ${pill(v === days)}`}
                                                 >
-                                                    {v} {cfg.unit === 'day' ? 'days' : 'mo'}
+                                                    {inUnit(v, unit)} {unit === 'day' ? 'days' : 'mo'}
                                                 </button>
                                             ))}
                                         </div>
                                     )}
                                     <input
                                         id="cTerm"
-                                        inputMode="numeric"
+                                        inputMode={decimals ? 'decimal' : 'numeric'}
                                         autoComplete="off"
                                         placeholder="0"
                                         disabled={termLocked}
-                                        value={typedTerm || ''}
+                                        value={termText ?? (typedDays ? inUnit(typedDays, unit) : '')}
                                         onChange={(ev) => {
-                                            let v = parseInt(ev.target.value.replace(/\D/g, '')) || 0;
+                                            const t = ev.target.value.replace(decimals ? /[^\d.]/g : /\D/g, '');
+                                            if (t.indexOf('.') !== t.lastIndexOf('.')) return;
+                                            const v = toDays(parseFloat(t) || 0, unit);
                                             setHint({
                                                 ...hint,
-                                                term: v > longest ? `Capped at the maximum of ${plural(longest, cfg.unit)}.` : undefined,
+                                                term: v > longest ? `Capped at the maximum of ${shown(longest)}.` : undefined,
                                             });
-                                            v = Math.min(v, longest);
-                                            setTerm(v);
+                                            setTerm(Math.min(v, longest));
+                                            if (v <= longest) setTermText(t);
                                         }}
-                                        onBlur={() => setTypedTerm(term)}
+                                        onBlur={() => {
+                                            setTypedDays(days);
+                                            setTermText(null);
+                                        }}
                                         className={inputCls}
                                     />
                                     <input
                                         type="range"
-                                        aria-label={`Term in ${cfg.unit}s slider`}
-                                        min={cfg.step}
+                                        aria-label={`Term in ${unit}s slider`}
+                                        aria-valuetext={shown(days)}
+                                        min={step}
                                         max={longest}
-                                        step={cfg.step}
-                                        value={term}
+                                        step={step}
+                                        value={days}
                                         disabled={termLocked}
                                         onChange={(ev) => {
                                             setHint({ ...hint, term: undefined });
@@ -303,16 +321,16 @@ export default function LoanCalculator({ products }: { products: Product[] }) {
                                         className={rangeCls}
                                     />
                                     <div className="flex justify-between text-xs text-muted-foreground tabular-nums">
-                                        <span>{plural(cfg.step, cfg.unit)}</span>
-                                        <span>{plural(longest, cfg.unit)}</span>
+                                        <span>{shown(step)}</span>
+                                        <span>{shown(longest)}</span>
                                     </div>
                                     <p className="text-xs text-muted-foreground">
                                         {hint.term ??
                                             (!longest
                                                 ? 'No term is set for this product.'
                                                 : !p.term_editable
-                                                  ? `Fixed at ${plural(longest, cfg.unit)} for this product.`
-                                                  : `Up to ${plural(longest, cfg.unit)}${cfg.step > 1 ? `, in steps of ${cfg.step}` : ''}.`)}
+                                                  ? `Fixed at ${shown(longest)} for this product.`
+                                                  : `Up to ${shown(longest)}${inUnit(step, unit) > 1 ? `, in steps of ${inUnit(step, unit)}` : ''}.`)}
                                     </p>
                                 </div>
                                 <div className="grid gap-1.5">

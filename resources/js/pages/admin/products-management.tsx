@@ -1,9 +1,10 @@
-import { Drawer, PageBanner, Panel, SkelRows, Switch, btn, peso, useToast } from '@/components/tdfc/ui';
+import { Drawer, PageBanner, Panel, SkelRows, Switch, UnitSwitch, btn, peso, useToast } from '@/components/tdfc/ui';
 import { Badge } from '@/components/ui/badge';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useProductsApi } from '@/hooks/use-products-api';
 import AppLayout from '@/layouts/app-layout';
+import { inUnit, toDays, type TermUnit } from '@/lib/loan';
 import { Head } from '@inertiajs/react';
 import axios from 'axios';
 import { Check as CheckIcon, ChevronsUpDown, Plus, X } from 'lucide-react';
@@ -111,6 +112,9 @@ function ProductDrawerBody({ product, dirty, onSave, onDelete, onClose, toast }:
     const [cur, setCur] = useState<(typeof sections)[number]>('general');
     const body = useRef<HTMLDivElement>(null);
     const s = f.settings;
+    // max_term is always kept in days; the unit only changes how it is shown and typed
+    const [termUnit, setTermUnit] = useState<TermUnit>('day');
+    const [termText, setTermText] = useState<string | null>(null);
     const set = <K extends keyof Settings>(k: K, v: Settings[K]) =>
         setF((x) => ({ ...x, settings: { ...x.settings, [k]: v } as Required<Settings> }));
     dirty.current = JSON.stringify(f) !== JSON.stringify(base);
@@ -163,7 +167,7 @@ function ProductDrawerBody({ product, dirty, onSave, onDelete, onClose, toast }:
             body.current?.scrollTo({ top: el.offsetTop - 20, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
     };
 
-    const numField = (k: 'max_term' | 'max_amortization' | 'service_fee' | 'lrf' | 'doc_stamp' | 'mort_notarial', id: string) => (
+    const numField = (k: 'max_amortization' | 'service_fee' | 'lrf' | 'doc_stamp' | 'mort_notarial', id: string) => (
         <input
             id={id}
             className={`${field} tabular-nums`}
@@ -368,9 +372,30 @@ function ProductDrawerBody({ product, dirty, onSave, onDelete, onClose, toast }:
                         <Check label="editable by client" checked={!!s.rate_isEditable} onChange={(v) => set('rate_isEditable', v)} />,
                     )}
                     {row(
-                        'Max term (days)',
+                        `Max term (${termUnit}s)`,
                         'd-term',
-                        numField('max_term', 'd-term'),
+                        <div className="flex items-center gap-2">
+                            <input
+                                id="d-term"
+                                className={`${field} min-w-0 tabular-nums`}
+                                inputMode="decimal"
+                                value={termText ?? (num(text(s.max_term)) === null ? '' : inUnit(Number(s.max_term), termUnit))}
+                                onChange={(e) => {
+                                    const v = e.target.value;
+                                    if (!TYPED.test(v)) return;
+                                    setTermText(v);
+                                    set('max_term', v === '' || v === '.' ? null : String(toDays(+v, termUnit)));
+                                }}
+                                onBlur={() => setTermText(null)}
+                            />
+                            <UnitSwitch
+                                value={termUnit}
+                                onChange={(u) => {
+                                    setTermUnit(u);
+                                    setTermText(null);
+                                }}
+                            />
+                        </div>,
                         <Check label="editable by client" checked={!!s.max_term_isEditable} onChange={(v) => set('max_term_isEditable', v)} />,
                     )}
                     <div className="grid gap-1.5">
