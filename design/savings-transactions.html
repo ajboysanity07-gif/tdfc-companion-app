@@ -258,25 +258,18 @@ window.addEventListener('storage',function(e){if(e.key===K&&e.newValue)set(res(e
 .ph h1{font-size:24px;font-weight:800;margin:0}.ph p{margin:4px 0 0;color:var(--muted-fg)}.ph small{font-size:13px;color:var(--muted-fg)}
 h2{font-size:16px;font-weight:700}
 .panel{background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);overflow:hidden}
-/* 1: the one number */
-.hero{background:var(--coral-deep);color:var(--on-deep);border-radius:var(--radius-lg);padding:24px 28px}
-.hero h2{font-size:14px;font-weight:600}
-.hero b{display:block;font-size:clamp(36px,5vw,52px);font-weight:800;line-height:1.15;letter-spacing:-.02em;font-variant-numeric:tabular-nums;margin:4px 0}
-.hero p{font-size:14px}
-/* 2: accounts */
-.sec-h{display:flex;justify-content:space-between;align-items:baseline;gap:4px 16px;flex-wrap:wrap;margin-bottom:10px}.sec-h p{font-size:13px;color:var(--muted-fg)}
-.accts{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
-.acct{display:grid;gap:2px;align-content:start;text-align:left;padding:16px;background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);cursor:pointer;transition:border-color .15s,background .15s}
-.acct:hover{border-color:var(--muted-fg)}
-.acct[aria-pressed=true]{border-color:var(--fg);box-shadow:0 0 0 1px var(--fg);background:var(--muted)}
-.acct .n{font-weight:700}.acct .no,.acct .d{font-size:12px;color:var(--muted-fg);font-variant-numeric:tabular-nums}
-.acct[aria-pressed=true] :is(.no,.d){color:var(--fg)}
-.acct .bal{font-size:22px;font-weight:800;margin:10px 0 2px;font-variant-numeric:tabular-nums}
-.acct .act{margin-top:10px;font-size:13px;font-weight:600;text-decoration:underline;text-underline-offset:3px}
-/* 3: history */
-.hh{display:flex;justify-content:space-between;align-items:center;gap:12px 24px;flex-wrap:wrap;padding:16px;border-bottom:1px solid var(--border)}
-.hh p{font-size:13px;color:var(--muted-fg)}.hh .btn{margin-top:8px}.hh .btn[hidden]{display:none}
-.flow{display:flex;flex-wrap:wrap;gap:8px 24px;margin:0}.flow dt{font-size:12px;color:var(--muted-fg)}.flow dd{margin:0;font-size:16px;font-weight:700;font-variant-numeric:tabular-nums}
+/* 1: the balance, with what explains it alongside */
+.hero{display:flex;flex-wrap:wrap;align-items:center;gap:20px 32px;background:var(--coral-deep);color:var(--on-deep);border-radius:var(--radius-lg);padding:24px 28px}
+.owe{flex:1 1 280px;min-width:0}.owe h2{font-size:18px}.owe p{font-size:14px}
+.owe .lbl{margin-top:20px;font-weight:600}
+.owe b{display:block;font-size:clamp(48px,7vw,72px);font-weight:800;line-height:1.1;letter-spacing:-.02em;font-variant-numeric:tabular-nums;margin:2px 0 6px}
+.side-card{flex:1 1 360px;min-width:0;background:var(--card);color:var(--fg);border-radius:14px;padding:18px 20px}.side-card[hidden]{display:none}
+.side-card h2{font-size:13px;font-weight:600;color:var(--muted-fg)}
+.side-card .big{display:block;font-size:28px;font-weight:800;line-height:1.25;margin:4px 0;font-variant-numeric:tabular-nums}
+.side-card p{font-size:13px;color:var(--muted-fg)}
+.flow{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:14px 0 0;padding-top:14px;border-top:1px solid var(--border)}.flow dt{font-size:12px;color:var(--muted-fg)}.flow dd{margin:0;font-size:18px;font-weight:700;font-variant-numeric:tabular-nums}
+/* 2: history */
+.hh{padding:16px;border-bottom:1px solid var(--border)}
 .toolbar{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;padding:12px 16px;border-bottom:1px solid var(--border)}
 .toolbar .field{gap:4px;min-width:0;flex:0 1 180px}.toolbar .search{flex:1 1 220px}.toolbar label{font-size:12px;font-weight:600;color:var(--muted-fg)}
 .pos{color:color-mix(in oklch,var(--ok) 85%,var(--fg))}.neg{color:color-mix(in oklch,var(--destructive) 85%,var(--fg))}
@@ -291,9 +284,8 @@ h2{font-size:16px;font-weight:700}
 .empty{padding:48px 16px;text-align:center;color:var(--muted-fg)}.empty b{display:block;font-size:15px;color:var(--fg);margin-bottom:4px}.empty .btn{margin-top:12px}
 .topbar a{color:var(--muted-fg)}.topbar a:hover{color:var(--fg);text-decoration:underline}
 @media(max-width:860px){.topbar{display:none}.main{background:var(--bg)}.ph h1{font-size:22px}.ph p{font-size:13px}
- .hero{padding:20px}.accts{grid-template-columns:1fr}
- .acct{grid-template-columns:minmax(0,1fr) auto;column-gap:12px;padding:14px}.acct .bal{grid-column:2;grid-row:1/span 2;margin:0;font-size:18px;align-self:center}.acct .d{grid-column:1/-1;margin-top:6px}.acct .act{display:none}
- .toolbar .field{flex:1 1 140px}.toolbar .search{flex-basis:100%}.toolbar .input,.toolbar .select,.toolbar .btn,.hh .btn,.pager .btn,.pager select{height:44px}.pager .btn{min-width:44px}.toolbar>.btn{flex:1 1 100%}
+ .hero{padding:20px}.side-card{flex-basis:100%}
+ .toolbar .field{flex:1 1 140px}.toolbar .search{flex-basis:100%}.toolbar .input,.toolbar .select,.toolbar .btn,.pager .btn,.pager select{height:44px}.pager .btn{min-width:44px}.toolbar>.btn{flex:1 1 100%}
  .tbl,.tbl tbody{display:block}.tbl thead{display:none}.tbl tr{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:12px;padding:12px 16px;border-bottom:1px solid var(--border)}.tbl tbody tr:last-child{border:0}
  .tbl td,.tbl tr:last-child td{display:block;padding:0;border:0}.tbl tr td.date{display:none}.sdate{display:inline}
  .tbl td.what{grid-column:1;grid-row:1/span 2}.tbl td.amt,.tbl td.after{grid-column:2;text-align:right}.tbl td.after{font-size:12px}.tbl td.after::before{content:'Balance '}
@@ -317,19 +309,15 @@ h2{font-size:16px;font-weight:700}
   <div class="main">
     <header class="topbar" data-od-id="breadcrumbs"><span>Savings</span></header>
     <main class="content" data-od-id="savings-content">
-      <div class="ph" data-od-id="page-header"><div><h1>Savings</h1><p>See what you have, in which account, and how it changed</p></div><small id="asof"></small></div>
-      <section class="hero" data-od-id="total-balance" aria-labelledby="totalL"><h2 id="totalL">Total balance</h2><b id="total"></b><p id="totalSub"></p></section>
-      <section data-od-id="savings-accounts" aria-labelledby="acctL" id="acctSec">
-        <div class="sec-h"><h2 id="acctL">Your accounts</h2><p>Select an account to see only its history</p></div>
-        <div class="accts" id="accts"></div>
+      <div class="ph" data-od-id="page-header"><div><h1>Savings</h1><p>Your Personal Savings balance and how it changed</p></div><small id="asof"></small></div>
+      <section class="hero" data-od-id="personal-savings" aria-labelledby="psL">
+        <div class="owe"><h2 id="psL">Personal Savings</h2><p id="acctNo"></p><p class="lbl">Current balance</p><b id="total"></b><p id="totalSub"></p></div>
+        <div class="side-card" id="latest" data-od-id="latest-transaction"></div>
       </section>
       <section class="panel" data-od-id="savings-history" aria-labelledby="histL">
-        <div class="hh">
-          <div><h2 id="histL">Transaction history</h2><p id="scope" aria-live="polite"></p><button type="button" class="btn sm" id="showAll" hidden>Show all accounts</button></div>
-          <dl class="flow" id="flow"></dl>
-        </div>
+        <div class="hh"><h2 id="histL">Transaction history</h2></div>
         <div class="toolbar">
-          <div class="field search"><label for="q">Search transactions</label><input class="input" id="q" type="search" placeholder="Account, reference or type"></div>
+          <div class="field search"><label for="q">Search transactions</label><input class="input" id="q" type="search" placeholder="Reference or type"></div>
           <div class="field"><label for="ftype">Show</label><select class="select" id="ftype"><option value="all">Money in and out</option><option value="in">Money in only</option><option value="out">Money out only</option></select></div>
           <div class="field"><label for="fsort">Sort by</label><select class="select" id="fsort"><option value="new">Newest first</option><option value="old">Oldest first</option><option value="big">Largest amount</option></select></div>
           <button type="button" class="btn" id="exportBtn">Export CSV</button>
@@ -351,23 +339,12 @@ h2{font-size:16px;font-weight:700}
 const T=[
 ['2026-11-05','001-100001-04','PERSONAL SAVINGS','WD',0,27390,4.26],
 ['2026-11-05','001-100001-04','PERSONAL SAVINGS','Loan Rel.',27364.59,0,27394.26],
-['2026-11-05','001-100002-07','CISP-SAVINGS','Loan Rel.',200,0,354.37],
-['2026-11-05','001-100003-02','PS-MORTUARY','Loan Rel.',1250,0,1300],
-['2026-10-20','001-100003-02','PS-MORTUARY','Service Fee',0,25,50],
-['2026-09-11','001-100003-02','PS-MORTUARY','Service Fee',0,25,75],
-['2026-09-04','001-100003-02','PS-MORTUARY','Service Fee',0,25,100],
-['2026-09-01','001-100003-02','PS-MORTUARY','Service Fee',0,75,125],
-['2026-05-21','001-100003-02','PS-MORTUARY','Service Fee',0,25,200],
-['2026-05-15','001-100004-08','CISP-INSURANCE','Renewal-08',200,0,245.63],
-['2026-05-15','001-100002-07','CISP-SAVINGS','Loan Rel.',100,0,154.37],
-['2026-04-02','001-100003-02','PS-MORTUARY','Loan Rel.',225,0,225],
 ['2026-03-20','001-100001-04','PERSONAL SAVINGS','WD',0,4970.33,29.67],
-['2026-03-18','001-100001-04','PERSONAL SAVINGS','Deposit',5000,0,5000],
-['2025-05-15','001-100004-08','CISP-INSURANCE','Renewal-07',45.63,0,45.63],
-['2025-04-30','001-100002-07','CISP-SAVINGS','Deposit',54.37,0,54.37]
+['2026-03-18','001-100001-04','PERSONAL SAVINGS','Deposit',5000,0,5000]
 ].map(([date,svnumber,description,reference,deposit,withdrawal,raw_balance],seq)=>({date,svnumber,description,reference,deposit,withdrawal,raw_balance,seq}));
 const state=new URLSearchParams(location.search).get('state')||'ready'; // ready | empty
-const data=state==='empty'?[]:T;
+// this page shows Personal Savings only; in the app, filter on the account type server-side
+const data=state==='empty'?[]:T.filter(r=>r.description==='PERSONAL SAVINGS');
 const peso=n=>new Intl.NumberFormat('en-PH',{style:'currency',currency:'PHP'}).format(n);
 const day=s=>new Date(s+'T00:00:00');
 const fd=s=>day(s).toLocaleDateString('en-PH',{year:'numeric',month:'short',day:'numeric'});
@@ -376,30 +353,25 @@ const month=s=>day(s).toLocaleDateString('en-PH',{year:'numeric',month:'long'});
 const label=r=>r==='WD'?'Withdrawal':r==='Loan Rel.'?'Loan release':r==='Service Fee'?'Service fee':r.startsWith('Renewal')?'Renewal':r;
 const sum=(a,k)=>a.reduce((s,r)=>s+Math.round(r[k]*100),0)/100; // centavos, no float drift
 const $=id=>document.getElementById(id);
-// an account's balance = its newest row. Needs the full history, not one paginated page.
-const accounts=[...new Map([...data].reverse().map(r=>[r.svnumber,r])).values()].sort((a,b)=>a.seq-b.seq);
-let acct='',q='',type='all',sort='new',per=15,pg=0;
+let q='',type='all',sort='new',per=15,pg=0;
 
 function filtered(){
- const d=data.filter(r=>(!acct||r.svnumber===acct)&&(type==='all'||(type==='in'?r.deposit>0:r.withdrawal>0))&&(!q||`${r.svnumber} ${r.description} ${r.reference} ${label(r.reference)} ${fd(r.date)}`.toLowerCase().includes(q)));
+ const d=data.filter(r=>(type==='all'||(type==='in'?r.deposit>0:r.withdrawal>0))&&(!q||`${r.reference} ${label(r.reference)} ${fd(r.date)}`.toLowerCase().includes(q)));
  return d.sort((a,b)=>sort==='big'?(b.deposit+b.withdrawal)-(a.deposit+a.withdrawal):sort==='old'?b.seq-a.seq:a.seq-b.seq);
 }
 function summary(){
+ const last=data[0]; // newest row = current balance; needs the full history, not one paginated page
  $('asof').textContent='Updated '+new Date().toLocaleDateString('en-PH',{year:'numeric',month:'short',day:'numeric'});
- $('total').textContent=peso(sum(accounts,'raw_balance'));
- $('totalSub').textContent=data.length?`${accounts.length} accounts added together · last transaction ${fd(data[0].date)}`:'No account activity yet';
- $('acctSec').hidden=!data.length;
- $('accts').innerHTML=accounts.map(a=>`<button type="button" class="acct" data-a="${a.svnumber}" data-od-id="account-${a.svnumber}" aria-pressed="false"><span class="n">${a.description}</span><span class="no">${a.svnumber}</span><span class="bal">${peso(a.raw_balance)}</span><span class="d">Last activity ${fd(a.date)}</span><span class="act"></span></button>`).join('');
- $('accts').querySelectorAll('button').forEach(b=>b.onclick=()=>{acct=acct===b.dataset.a?'':b.dataset.a;pg=0;render()});
+ $('acctNo').textContent=last?last.svnumber:'';
+ $('total').textContent=peso(last?last.raw_balance:0);
+ $('totalSub').textContent=last?`As of ${fd(last.date)}`:'No account activity yet';
+ $('latest').hidden=!last;
+ if(!last)return;
+ const inn=last.deposit>0;
+ $('latest').innerHTML=`<h2>Latest transaction</h2><span class="big ${inn?'pos':'neg'}">${inn?'+':'−'}${peso(inn?last.deposit:last.withdrawal)}</span><p>${label(last.reference)} · ${fd(last.date)}</p><dl class="flow"><div><dt>Money in, all time</dt><dd class="pos">+${peso(sum(data,'deposit'))}</dd></div><div><dt>Money out, all time</dt><dd class="neg">−${peso(sum(data,'withdrawal'))}</dd></div></dl>`;
 }
 function reset(){q='';type='all';pg=0;$('q').value='';$('ftype').value='all';render()}
 function render(){
- const sel=accounts.find(a=>a.svnumber===acct);
- $('accts').querySelectorAll('button').forEach(b=>{const on=b.dataset.a===acct;b.setAttribute('aria-pressed',on);b.querySelector('.act').textContent=on?'Showing history below':'View history'});
- $('scope').textContent=sel?`${sel.description} · ${sel.svnumber}`:'All accounts';
- $('showAll').hidden=!sel;
- const mine=data.filter(r=>!acct||r.svnumber===acct);
- $('flow').innerHTML=`<div><dt>Money in, all time</dt><dd class="pos">+${peso(sum(mine,'deposit'))}</dd></div><div><dt>Money out, all time</dt><dd class="neg">−${peso(sum(mine,'withdrawal'))}</dd></div>`;
  const box=$('tbox'),d=filtered();
  $('exportBtn').disabled=!d.length;
  if(!data.length){box.innerHTML='<div class="empty"><b>No savings transactions yet</b>Deposits and withdrawals will appear here.</div>';return}
@@ -410,10 +382,10 @@ function render(){
   let head='';
   if(sort!=='big'&&month(r.date)!==m){m=month(r.date);head=`<tr class="month"><th colspan="4" scope="colgroup">${m}</th></tr>`}
   const inn=r.deposit>0;
-  return head+`<tr><td class="date">${fd(r.date)}</td><td class="what"><b>${label(r.reference)}</b><small><span class="sdate">${fd(r.date)}${acct?'':' · '}</span>${acct?'':r.description}</small></td><td class="r mono amt ${inn?'pos':'neg'}">${inn?'+':'−'}${peso(inn?r.deposit:r.withdrawal)}</td><td class="r mono after">${peso(r.raw_balance)}</td></tr>`;
+  return head+`<tr><td class="date">${fd(r.date)}</td><td class="what"><b>${label(r.reference)}</b><small><span class="sdate">${fd(r.date)}</span></small></td><td class="r mono amt ${inn?'pos':'neg'}">${inn?'+':'−'}${peso(inn?r.deposit:r.withdrawal)}</td><td class="r mono after">${peso(r.raw_balance)}</td></tr>`;
  }).join('');
- box.innerHTML=`<div class="tbl-wrap"><table class="tbl"><thead><tr><th scope="col">Date</th><th scope="col">${acct?'Transaction':'Transaction and account'}</th><th scope="col" class="r">Amount</th><th scope="col" class="r">${acct?'Balance after':'Account balance after'}</th></tr></thead><tbody>${rows}</tbody></table></div><div class="pager"><span>${s+1}–${s+v.length} of ${d.length} transactions</span><div><label for="per">Rows</label><select id="per">${[10,15,25,50].map(n=>`<option ${n===per?'selected':''}>${n}</option>`).join('')}</select><button type="button" class="btn sm" id="pv" ${pg?'':'disabled'} aria-label="Previous page">‹</button><button type="button" class="btn sm" id="nx" ${s+per<d.length?'':'disabled'} aria-label="Next page">›</button></div></div>`;
- $('per').onchange=e=>{per=+e.target.value;pg=0;render()};$('pv').onclick=()=>{pg--;render()};$('nx').onclick=()=>{pg++;render()};
+ box.innerHTML=`<div class="tbl-wrap"><table class="tbl"><thead><tr><th scope="col">Date</th><th scope="col">Transaction</th><th scope="col" class="r">Amount</th><th scope="col" class="r">Balance after</th></tr></thead><tbody>${rows}</tbody></table></div>${d.length>10?`<div class="pager"><span>${s+1}–${s+v.length} of ${d.length} transactions</span><div><label for="per">Rows</label><select id="per">${[10,15,25,50].map(n=>`<option ${n===per?'selected':''}>${n}</option>`).join('')}</select><button type="button" class="btn sm" id="pv" ${pg?'':'disabled'} aria-label="Previous page">‹</button><button type="button" class="btn sm" id="nx" ${s+per<d.length?'':'disabled'} aria-label="Next page">›</button></div></div>`:''}`;
+ if(d.length>10){$('per').onchange=e=>{per=+e.target.value;pg=0;render()};$('pv').onclick=()=>{pg--;render()};$('nx').onclick=()=>{pg++;render()}}
 }
 function exportCSV(){
  const rows=[['Date','Savings Number','Description','Reference','Deposit','Withdrawal','Balance'],...filtered().map(r=>[r.date,r.svnumber,r.description,r.reference,r.deposit,r.withdrawal,r.raw_balance])];
@@ -424,10 +396,9 @@ function exportCSV(){
 $('q').oninput=e=>{q=e.target.value.trim().toLowerCase();pg=0;render()};
 $('ftype').onchange=e=>{type=e.target.value;pg=0;render()};
 $('fsort').onchange=e=>{sort=e.target.value;pg=0;render()};
-$('showAll').onclick=()=>{acct='';pg=0;render()};
 $('exportBtn').onclick=exportCSV;
-// self-check: each account's running balance must chain from its older rows
-accounts.forEach(a=>data.filter(r=>r.svnumber===a.svnumber).reduceRight((prev,r)=>{console.assert(Math.round((prev+r.deposit-r.withdrawal)*100)===Math.round(r.raw_balance*100),'balance chain broken',r);return r.raw_balance},0));
+// self-check: the running balance must chain from older rows
+data.reduceRight((prev,r)=>{console.assert(Math.round((prev+r.deposit-r.withdrawal)*100)===Math.round(r.raw_balance*100),'balance chain broken',r);return r.raw_balance},0);
 summary();render();
 </script>
 </body>

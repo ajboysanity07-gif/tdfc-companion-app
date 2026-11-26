@@ -9,7 +9,7 @@ use Inertia\Inertia;
 
 class SavingsController extends Controller
 {
-    /** Savings ledger of the member (wsavled), newest first. */
+    /** Personal Savings ledger of the member (wsavled, typecode 04 as in VWeb_Account), newest first. */
     public function index(Request $request)
     {
         $acctno = AppUser::subject($request)?->acctno;
@@ -18,6 +18,7 @@ class SavingsController extends Controller
         $transactions = $acctno
             ? DB::table('wsavled')
                 ->where('acctno', $acctno)
+                ->where('typecode', '04')
                 ->orderByDesc('date_in')
                 ->orderByDesc('controlno')
                 ->get(['svnumber', 'svtype', 'date_in', 'mreference', 'deposit', 'withdrawal', 'balance', 'controlno'])

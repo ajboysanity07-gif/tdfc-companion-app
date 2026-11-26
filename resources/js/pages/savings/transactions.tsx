@@ -51,7 +51,6 @@ const Empty = ({ title, text, onClear }: { title: string; text: string; onClear?
 
 export default function SavingsTransactionPage({ transactions }: { transactions: Transaction[] }) {
     const base = usePage<{ base?: string }>().props.base ?? '';
-    const [acct, setAcct] = useState('');
     const [q, setQ] = useState('');
     const [flow, setFlow] = useState<Flow>('all');
     const [sort, setSort] = useState<Sort>('new');
@@ -60,13 +59,15 @@ export default function SavingsTransactionPage({ transactions }: { transactions:
 
     // Rows arrive newest first (same-day rows too), so an account's balance is its first row.
     const accounts = transactions.filter((r, i) => transactions.findIndex((x) => x.svnumber === r.svnumber) === i);
-    const selected = accounts.find((a) => a.svnumber === acct);
-    const mine = transactions.filter((r) => !acct || r.svnumber === acct);
+    // Usually one Personal Savings account; with more, balances add up and each row names its account.
+    const several = accounts.length > 1;
+    const last = transactions[0];
+    const lastIn = last?.deposit > 0;
     const needle = q.trim().toLowerCase();
-    const rows = mine.filter(
+    const rows = transactions.filter(
         (r) =>
             (flow === 'all' || (flow === 'in' ? r.deposit > 0 : r.withdrawal > 0)) &&
-            (!needle || `${r.svnumber} ${r.description} ${r.reference} ${label(r)} ${fd(r.date)}`.toLowerCase().includes(needle)),
+            (!needle || `${r.reference} ${label(r)} ${fd(r.date)}`.toLowerCase().includes(needle)),
     );
     if (sort === 'old') rows.reverse();
     if (sort === 'big') rows.sort((a, b) => b.deposit + b.withdrawal - (a.deposit + a.withdrawal));
@@ -76,10 +77,6 @@ export default function SavingsTransactionPage({ transactions }: { transactions:
     const start = page * per;
     const view = rows.slice(start, start + per);
 
-    const select = (svnumber: string) => {
-        setAcct(svnumber);
-        setPg(0);
-    };
     const clear = () => {
         setQ('');
         setFlow('all');
@@ -108,84 +105,53 @@ export default function SavingsTransactionPage({ transactions }: { transactions:
                 <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
                     <div>
                         <h1 className="text-2xl font-extrabold max-[861px]:text-[22px]">Savings</h1>
-                        <p className="mt-1 text-muted-foreground max-[861px]:text-[13px]">See what you have, in which account, and how it changed</p>
+                        <p className="mt-1 text-muted-foreground max-[861px]:text-[13px]">Your Personal Savings balance and how it changed</p>
                     </div>
                     <small className="text-[13px] text-muted-foreground">Updated {fd(new Date().toLocaleDateString('en-CA'))}</small>
                 </div>
 
-                <section aria-labelledby="totalL" className="rounded-tdfc-card bg-tdfc-coral px-7 py-6 text-tdfc-on-coral max-[861px]:p-5">
-                    <h2 id="totalL" className="text-sm font-semibold">
-                        Total balance
-                    </h2>
-                    <b className="my-1 block text-[clamp(36px,5vw,52px)] leading-[1.15] font-extrabold tracking-[-0.02em] tabular-nums">
-                        {peso(sum(accounts, 'raw_balance'))}
-                    </b>
-                    <p className="text-sm">
-                        {transactions.length
-                            ? `${accounts.length === 1 ? '1 account' : `${accounts.length} accounts added together`} · last transaction ${fd(transactions[0].date)}`
-                            : 'No account activity yet'}
-                    </p>
+                <section
+                    aria-labelledby="psL"
+                    className="flex flex-wrap items-center gap-x-8 gap-y-5 rounded-tdfc-card bg-tdfc-coral px-7 py-6 text-tdfc-on-coral max-[861px]:p-5"
+                >
+                    <div className="min-w-0 flex-[1_1_280px]">
+                        <h2 id="psL" className="text-lg font-bold">
+                            Personal Savings
+                        </h2>
+                        <p className="text-sm">{accounts.map((a) => a.svnumber).join(', ')}</p>
+                        <p className="mt-5 text-sm font-semibold">Current balance</p>
+                        <b className="mt-0.5 mb-1.5 block text-[clamp(48px,7vw,72px)] leading-[1.1] font-extrabold tracking-[-0.02em] tabular-nums">
+                            {peso(sum(accounts, 'raw_balance'))}
+                        </b>
+                        <p className="text-sm">{last ? `As of ${fd(last.date)}` : 'No account activity yet'}</p>
+                    </div>
+                    {last && (
+                        <div className="min-w-0 flex-[1_1_360px] rounded-[14px] bg-card px-5 py-[18px] text-foreground max-[861px]:basis-full">
+                            <h2 className="text-[13px] font-semibold text-muted-foreground">Latest transaction</h2>
+                            <span className={`my-1 block text-[28px] leading-[1.25] font-extrabold tabular-nums ${lastIn ? pos : neg}`}>
+                                {lastIn ? '+' : '−'}
+                                {peso(lastIn ? last.deposit : last.withdrawal)}
+                            </span>
+                            <p className="text-[13px] text-muted-foreground">
+                                {label(last)} · {fd(last.date)}
+                            </p>
+                            <dl className="mt-3.5 grid grid-cols-2 gap-4 border-t border-border pt-3.5">
+                                <div>
+                                    <dt className="text-xs text-muted-foreground">Money in, all time</dt>
+                                    <dd className={`text-lg font-bold tabular-nums ${pos}`}>+{peso(sum(transactions, 'deposit'))}</dd>
+                                </div>
+                                <div>
+                                    <dt className="text-xs text-muted-foreground">Money out, all time</dt>
+                                    <dd className={`text-lg font-bold tabular-nums ${neg}`}>−{peso(sum(transactions, 'withdrawal'))}</dd>
+                                </div>
+                            </dl>
+                        </div>
+                    )}
                 </section>
 
-                {accounts.length > 0 && (
-                    <section aria-labelledby="acctL">
-                        <div className="mb-2.5 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-                            <h2 id="acctL" className="text-base font-bold">
-                                Your accounts
-                            </h2>
-                            <p className="text-[13px] text-muted-foreground">Select an account to see only its history</p>
-                        </div>
-                        <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-3 max-[861px]:grid-cols-1">
-                            {accounts.map((a) => {
-                                const on = a.svnumber === acct;
-                                const sub = `text-xs tabular-nums ${on ? 'text-foreground' : 'text-muted-foreground'}`;
-                                return (
-                                    <button
-                                        key={a.svnumber}
-                                        type="button"
-                                        aria-pressed={on}
-                                        onClick={() => select(on ? '' : a.svnumber)}
-                                        className={`grid cursor-pointer content-start gap-0.5 rounded-[14px] border p-4 text-left shadow-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tdfc-coral-ink max-[861px]:grid-cols-[minmax(0,1fr)_auto] max-[861px]:gap-x-3 max-[861px]:p-3.5 ${on ? 'border-foreground bg-muted ring-1 ring-foreground' : 'border-border bg-card hover:border-muted-foreground'}`}
-                                    >
-                                        <span className="font-bold">{a.description}</span>
-                                        <span className={sub}>{a.svnumber}</span>
-                                        <span className="mt-2.5 mb-0.5 text-[22px] font-extrabold tabular-nums max-[861px]:col-start-2 max-[861px]:row-span-2 max-[861px]:row-start-1 max-[861px]:m-0 max-[861px]:self-center max-[861px]:text-lg">
-                                            {peso(a.raw_balance)}
-                                        </span>
-                                        <span className={`${sub} max-[861px]:col-span-full max-[861px]:mt-1.5`}>Last activity {fd(a.date)}</span>
-                                        <span className="mt-2.5 text-[13px] font-semibold underline underline-offset-[3px] max-[861px]:hidden">
-                                            {on ? 'Showing history below' : 'View history'}
-                                        </span>
-                                    </button>
-                                );
-                            })}
-                        </div>
-                    </section>
-                )}
-
                 <Panel className="overflow-hidden">
-                    <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 border-b border-border p-4">
-                        <div>
-                            <h2 className="text-base font-bold">Transaction history</h2>
-                            <p aria-live="polite" className="text-[13px] text-muted-foreground">
-                                {selected ? `${selected.description} · ${selected.svnumber}` : 'All accounts'}
-                            </p>
-                            {selected && (
-                                <button type="button" onClick={() => select('')} className={`${smBtn} mt-2 max-[861px]:!h-11`}>
-                                    Show all accounts
-                                </button>
-                            )}
-                        </div>
-                        <dl className="flex flex-wrap gap-x-6 gap-y-2">
-                            <div>
-                                <dt className="text-xs text-muted-foreground">Money in, all time</dt>
-                                <dd className={`text-base font-bold tabular-nums ${pos}`}>+{peso(sum(mine, 'deposit'))}</dd>
-                            </div>
-                            <div>
-                                <dt className="text-xs text-muted-foreground">Money out, all time</dt>
-                                <dd className={`text-base font-bold tabular-nums ${neg}`}>−{peso(sum(mine, 'withdrawal'))}</dd>
-                            </div>
-                        </dl>
+                    <div className="border-b border-border p-4">
+                        <h2 className="text-base font-bold">Transaction history</h2>
                     </div>
 
                     <div className="flex flex-wrap items-end gap-3 border-b border-border px-4 py-3">
@@ -201,7 +167,7 @@ export default function SavingsTransactionPage({ transactions }: { transactions:
                                     setQ(e.target.value);
                                     setPg(0);
                                 }}
-                                placeholder="Account, reference or type"
+                                placeholder="Reference or type"
                                 className={field}
                             />
                         </div>
@@ -265,13 +231,13 @@ export default function SavingsTransactionPage({ transactions }: { transactions:
                                                 Date
                                             </th>
                                             <th scope="col" className={`${th} text-left`}>
-                                                {acct ? 'Transaction' : 'Transaction and account'}
+                                                Transaction
                                             </th>
                                             <th scope="col" className={`${th} text-right`}>
                                                 Amount
                                             </th>
                                             <th scope="col" className={`${th} text-right`}>
-                                                {acct ? 'Balance after' : 'Account balance after'}
+                                                Balance after
                                             </th>
                                         </tr>
                                     </thead>
@@ -302,12 +268,12 @@ export default function SavingsTransactionPage({ transactions }: { transactions:
                                                             className={`${td} max-[861px]:col-start-1 max-[861px]:row-span-2 max-[861px]:row-start-1`}
                                                         >
                                                             <b className="block font-semibold">{label(r)}</b>
-                                                            <small className={`block text-xs ${dim}`}>
+                                                            <small className={`block text-xs ${dim} ${several ? '' : 'min-[861px]:hidden'}`}>
                                                                 <span className="min-[861px]:hidden">
                                                                     {fd(r.date)}
-                                                                    {!acct && ' · '}
+                                                                    {several && ' · '}
                                                                 </span>
-                                                                {!acct && r.description}
+                                                                {several && r.svnumber}
                                                             </small>
                                                         </td>
                                                         <td
@@ -328,45 +294,47 @@ export default function SavingsTransactionPage({ transactions }: { transactions:
                                     </tbody>
                                 </table>
                             </div>
-                            <div className="flex flex-wrap items-center justify-between gap-2.5 border-t border-border px-4 py-2.5 text-[13px] text-muted-foreground">
-                                <span>
-                                    {start + 1}–{start + view.length} of {total} transactions
-                                </span>
-                                <div className="flex items-center gap-2.5">
-                                    <label htmlFor="per">Rows</label>
-                                    <select
-                                        id="per"
-                                        value={per}
-                                        onChange={(e) => {
-                                            setPer(+e.target.value);
-                                            setPg(0);
-                                        }}
-                                        className={`${pagerSelect} !h-8 py-0 text-[13px] text-foreground max-[861px]:!h-11`}
-                                    >
-                                        {[10, 15, 25, 50].map((n) => (
-                                            <option key={n}>{n}</option>
-                                        ))}
-                                    </select>
-                                    <button
-                                        type="button"
-                                        className={`${smBtn} text-foreground max-[861px]:!h-11 max-[861px]:min-w-11`}
-                                        disabled={page === 0}
-                                        onClick={() => setPg(page - 1)}
-                                        aria-label="Previous page"
-                                    >
-                                        ‹
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className={`${smBtn} text-foreground max-[861px]:!h-11 max-[861px]:min-w-11`}
-                                        disabled={start + per >= total}
-                                        onClick={() => setPg(page + 1)}
-                                        aria-label="Next page"
-                                    >
-                                        ›
-                                    </button>
+                            {total > 10 && (
+                                <div className="flex flex-wrap items-center justify-between gap-2.5 border-t border-border px-4 py-2.5 text-[13px] text-muted-foreground">
+                                    <span>
+                                        {start + 1}–{start + view.length} of {total} transactions
+                                    </span>
+                                    <div className="flex items-center gap-2.5">
+                                        <label htmlFor="per">Rows</label>
+                                        <select
+                                            id="per"
+                                            value={per}
+                                            onChange={(e) => {
+                                                setPer(+e.target.value);
+                                                setPg(0);
+                                            }}
+                                            className={`${pagerSelect} !h-8 py-0 text-[13px] text-foreground max-[861px]:!h-11`}
+                                        >
+                                            {[10, 15, 25, 50].map((n) => (
+                                                <option key={n}>{n}</option>
+                                            ))}
+                                        </select>
+                                        <button
+                                            type="button"
+                                            className={`${smBtn} text-foreground max-[861px]:!h-11 max-[861px]:min-w-11`}
+                                            disabled={page === 0}
+                                            onClick={() => setPg(page - 1)}
+                                            aria-label="Previous page"
+                                        >
+                                            ‹
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className={`${smBtn} text-foreground max-[861px]:!h-11 max-[861px]:min-w-11`}
+                                            disabled={start + per >= total}
+                                            onClick={() => setPg(page + 1)}
+                                            aria-label="Next page"
+                                        >
+                                            ›
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
+                            )}
                         </>
                     )}
                 </Panel>
