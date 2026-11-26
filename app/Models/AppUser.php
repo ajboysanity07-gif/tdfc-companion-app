@@ -5,15 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as AuthenticatableUser;
+use Illuminate\Notifications\Notifiable;
 
 class AppUser extends AuthenticatableUser
 {
+    use Notifiable;
+
     protected $table = 'app_user_table';
     protected $primaryKey = 'user_id';
-
-    // Uncomment if user_id is not auto-incrementing, adjust if needed for your schema
-    public $incrementing = false;
-    protected $keyType = 'string';
 
     protected $fillable = [
         'acctno',

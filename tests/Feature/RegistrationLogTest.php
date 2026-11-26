@@ -11,8 +11,6 @@ use Tests\TestCase;
 uses(TestCase::class);
 
 test('registration log marks only submissions of pending clients', function () {
-    // Wmaster pins sqlsrv: remap it so nothing can reach the remote server.
-    config(['database.connections.sqlsrv' => config('database.connections.sqlite')]);
     Schema::create('app_user_table', fn (Blueprint $table) => $table->id('user_id'));
 
     $clients = collect(['pending', 'approved', 'rejected'])->map(function (string $status) {
@@ -28,8 +26,7 @@ test('registration log marks only submissions of pending clients', function () {
 });
 
 test('dashboard queues pending clients oldest first and lists submissions as activity', function () {
-    config(['database.connections.sqlsrv' => config('database.connections.sqlite')]);
-    Schema::connection('sqlsrv')->create('wmaster', function (Blueprint $table) {
+    Schema::create('wmaster', function (Blueprint $table) {
         $table->string('acctno');
         $table->string('bname');
     });
