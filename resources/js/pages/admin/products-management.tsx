@@ -194,6 +194,9 @@ function ProductDrawerBody({ product, dirty, onSave, onDelete, onClose, toast }:
             {ed}
         </div>
     );
+    const amortEditable = (label: string) => (
+        <Check label={label} checked={!!s.max_amortization_isEditable} onChange={(v) => set('max_amortization_isEditable', v)} />
+    );
     const h3 = 'text-base font-semibold';
     const sec = 'grid gap-4.5 border-b border-border pb-7 mb-7 last:mb-0 last:border-0 max-md:gap-3.5 max-md:pb-5 max-md:mb-5';
 
@@ -402,17 +405,14 @@ function ProductDrawerBody({ product, dirty, onSave, onDelete, onClose, toast }:
                             </small>
                         </div>
                     )}
-                    {s.max_amortization_mode === 'FIXED' &&
-                        row(
-                            'Max amortization (per payment)',
-                            'd-amort',
-                            numField('max_amortization', 'd-amort'),
-                            <Check
-                                label="editable by client"
-                                checked={!!s.max_amortization_isEditable}
-                                onChange={(v) => set('max_amortization_isEditable', v)}
-                            />,
-                        )}
+                    {s.max_amortization_mode === 'FIXED'
+                        ? row(
+                              'Max amortization (per payment)',
+                              'd-amort',
+                              numField('max_amortization', 'd-amort'),
+                              amortEditable('editable by client'),
+                          )
+                        : amortEditable('Max amortization editable by client')}
                     <Check label="Allow multiple active loans per client" checked={!!s.allow_multiple} onChange={(v) => set('allow_multiple', v)} />
                 </section>
 
