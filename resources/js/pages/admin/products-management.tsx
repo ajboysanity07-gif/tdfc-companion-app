@@ -1,4 +1,4 @@
-import { Drawer, PageBanner, Panel, SkelRows, Switch, UnitSwitch, btn, peso, useToast } from '@/components/tdfc/ui';
+import { BtnSpinner, Drawer, PageBanner, Panel, SkelRows, Switch, UnitSwitch, btn, peso, useToast } from '@/components/tdfc/ui';
 import { Badge } from '@/components/ui/badge';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -98,16 +98,17 @@ function Check({ label, checked, onChange }: { label: string; checked: boolean; 
 type FormProps = {
     product: Product;
     dirty: MutableRefObject<boolean>;
-    onSave: (p: Product, body: Record<string, unknown>, tags: string[]) => Promise<boolean>;
+    onSave: (p: Product, body: Record<string, unknown>, tags: string[]) => Promise<void>;
     onDelete: (p: Product) => void;
     onClose: () => void;
     toast: React.ReactNode;
 };
 
 function ProductDrawerBody({ product, dirty, onSave, onDelete, onClose, toast }: FormProps) {
-    // the last saved draft; compared as typed text, so a refetched "12.00" doesn't count as an edit
-    const [base, setBase] = useState(() => toForm(product));
+    // the opened draft; compared as typed text, so a refetched "12.00" doesn't count as an edit
+    const [base] = useState(() => toForm(product));
     const [f, setF] = useState(base);
+    const [busy, setBusy] = useState(false);
     const isNew = !product.typecode;
     const [cur, setCur] = useState<(typeof sections)[number]>('general');
     const body = useRef<HTMLDivElement>(null);
@@ -126,7 +127,9 @@ function ProductDrawerBody({ product, dirty, onSave, onDelete, onClose, toast }:
         const settings = { ...f.settings } as Record<string, unknown>;
         for (const k of ['max_term', 'max_amortization', 'service_fee', 'lrf', 'doc_stamp', 'mort_notarial']) settings[k] = num(text(settings[k]));
         settings.custom_fees = fees.map((c) => ({ ...c, label: c.label.trim(), value: num(text(c.value)) }));
-        if (await onSave(product, { lntype: f.name.trim(), int_rate: num(f.int_rate), settings }, f.tags)) setBase(f);
+        setBusy(true);
+        await onSave(product, { lntype: f.name.trim(), int_rate: num(f.int_rate), settings }, f.tags);
+        setBusy(false);
     };
     // sits in the header for a new loan, at the top of General for an existing one
     const nameInput = (className = '') => (
@@ -511,6 +514,7 @@ function ProductDrawerBody({ product, dirty, onSave, onDelete, onClose, toast }:
                 {!isNew && (
                     <button
                         type="button"
+                        disabled={busy}
                         onClick={() => onDelete(product)}
                         className={`${btn.base} border-transparent bg-transparent text-destructive hover:bg-destructive/10`}
                     >
@@ -518,7 +522,8 @@ function ProductDrawerBody({ product, dirty, onSave, onDelete, onClose, toast }:
                     </button>
                 )}
                 <span className="flex-1" />
-                <button type="button" disabled={isNew && !f.name.trim()} onClick={save} className={`${btn.base} ${btn.dark}`}>
+                <button type="button" disabled={busy || (isNew && !f.name.trim())} onClick={save} className={`${btn.base} ${btn.dark}`}>
+                    {busy && <BtnSpinner />}
                     {isNew ? 'Add loan' : 'Save changes'}
                 </button>
             </div>
@@ -585,16 +590,12 @@ export default function ProductsManagement() {
                 ...old.filter((t) => !next.includes(t)).map((t) => axios.delete(`${base}/${encodeURIComponent(t)}`)),
             ]);
             await fetchProducts();
-            if (isNew) {
-                dirty.current = false;
-                setSel(null);
-            }
+            // close only the drawer that was saved, not one opened while the request was in flight
+            setSel((s) => (s === sel ? null : s));
             show(`${body.lntype ?? p.lntype} ${isNew ? 'added' : 'updated'}`);
-            return true;
         } catch (e) {
             const errs = axios.isAxiosError(e) ? (Object.values(e.response?.data?.errors ?? {})[0] as string[] | undefined) : undefined;
             show(errs?.[0] ?? (axios.isAxiosError(e) ? (e.response?.data?.message ?? 'Save failed') : 'Save failed'), 'error');
-            return false;
         }
     };
     const remove = async (p: Product) => {
