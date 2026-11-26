@@ -6,6 +6,7 @@ use App\Models\AppUser;
 use App\Models\VWebAmortsched;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -17,9 +18,10 @@ class LoanTransactionController extends Controller
         return is_numeric($v) ? (float) $v : 0.0;
     }
 
+    /** ISO date. Parsed, not cut: VWeb_Amortsched returns Date_pay as MM/DD/YYYY text. */
     private function day(mixed $v): ?string
     {
-        return $v ? substr((string) $v, 0, 10) : null;
+        return $v ? Carbon::parse((string) $v)->toDateString() : null;
     }
 
     /** The loan row, only if it belongs to the logged-in user. */
@@ -49,8 +51,8 @@ class LoanTransactionController extends Controller
         // Next installment per active loan: first schedule row whose balance is below what is still owed.
         $owed = $loans->filter(fn ($r) => $this->num($r->balance) > 0)->mapWithKeys(fn ($r) => [$r->lnnumber => $this->num($r->balance)]);
         $next = $owed->isEmpty() ? collect() : VWebAmortsched::whereIn('lnnumber', $owed->keys())
-            ->orderBy('Date_pay')
             ->get()
+            ->sortBy(fn ($i) => $this->day($i->Date_pay))
             ->groupBy('lnnumber')
             ->map(fn ($rows, $ln) => $rows->first(fn ($i) => $this->num($i->Balance) < $owed[$ln]))
             ->filter();
@@ -143,8 +145,8 @@ class LoanTransactionController extends Controller
         $nextFound = false;
 
         return VWebAmortsched::where('lnnumber', $loan->lnnumber)
-            ->orderBy('Date_pay')
             ->get()
+            ->sortBy(fn ($i) => $this->day($i->Date_pay))
             ->map(function ($item) use ($owed, &$nextFound) {
                 $balance = $this->num($item->Balance);
                 if ($owed <= 0 || $balance >= $owed) {

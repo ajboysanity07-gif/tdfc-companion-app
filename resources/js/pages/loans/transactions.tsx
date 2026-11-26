@@ -130,13 +130,14 @@ export default function LoansTransactionPage({ transactions }: { transactions: T
                             </h2>
                             <p className="text-[13px] text-muted-foreground">Earliest payment date first</p>
                         </div>
-                        <div className="grid grid-cols-[repeat(auto-fill,minmax(250px,1fr))] gap-3">
+                        <div className="flex flex-wrap gap-3">
                             {active.map((r) => {
                                 const pct = paidPct(r.raw_balance, r.principal);
                                 return (
+                                    // Cards stretch to fill the row; a wide one lays its parts out side by side.
                                     <article
                                         key={r.lnnumber}
-                                        className="flex flex-col gap-3.5 rounded-[14px] border border-border bg-card p-[18px] shadow-sm"
+                                        className="grid min-w-0 flex-[1_1_250px] grid-cols-[repeat(auto-fit,minmax(min(100%,200px),1fr))] content-start items-center gap-x-6 gap-y-3.5 rounded-[14px] border border-border bg-card p-[18px] shadow-sm"
                                     >
                                         <div>
                                             <h3 className="text-[15px] font-bold">{r.description}</h3>
@@ -157,7 +158,7 @@ export default function LoansTransactionPage({ transactions }: { transactions: T
                                                 {pct}% paid of {peso(r.principal)} borrowed
                                             </small>
                                         </div>
-                                        <div className="grid justify-items-start gap-1 border-t border-border pt-3">
+                                        <div className="grid justify-items-start gap-1">
                                             {r.next_due?.date ? (
                                                 <>
                                                     <small className="text-xs text-muted-foreground">Payment date {fd(r.next_due.date)}</small>
@@ -168,11 +169,7 @@ export default function LoansTransactionPage({ transactions }: { transactions: T
                                                 <small className="text-xs text-muted-foreground">No scheduled payment</small>
                                             )}
                                         </div>
-                                        <Link
-                                            href={href(r.lnnumber, 'details')}
-                                            aria-label={`View details for ${r.lnnumber}`}
-                                            className={`${mainBtn} mt-auto`}
-                                        >
+                                        <Link href={href(r.lnnumber, 'details')} aria-label={`View details for ${r.lnnumber}`} className={mainBtn}>
                                             View details
                                         </Link>
                                     </article>
