@@ -439,6 +439,7 @@ const optList=()=>TYPES.map((t,i)=>[t,i]).filter(([t])=>t.toLowerCase().includes
  .map(([t,i])=>`<button type="button" id="opt-${i}" data-tag="${t}" aria-pressed="${F.tags.includes(t)}">${CHECK}${t}</button>`).join('')||'<span class="hint" style="padding:8px">No loan types</span>';
 function details(){return `<div class="det">
  <section class="sec" id="p-general" aria-labelledby="h-general"><h3 id="h-general">General</h3>
+  ${sel===''?'':field('d-name','Loan name',`<input class="input" id="d-name" data-k="n" data-od-id="loan-name" maxlength="255" value="${esc(F.n)}">`)}
   <div class="status"><div><b>Available to clients</b><small>Inactive products are hidden from the loan calculator.</small></div><label class="sw"><input type="checkbox" data-k="on" ${F.on?'checked':''} aria-label="Active"><i></i></label></div>
   <div class="field"><label for="d-tags">Type relation tags</label><div class="combo" data-od-id="tag-picker">
    <div class="tags">${F.tags.map(t=>`<span class="badge">${t}<button type="button" aria-label="Remove ${t}" data-rm="${t}">×</button></span>`).join('')}<button type="button" class="open" id="d-tags" aria-expanded="${pop}">${F.tags.length?'<span class="sr">Choose loan types</span>':'Select loan types'}${UPDOWN}</button></div>
@@ -471,7 +472,8 @@ function details(){return `<div class="det">
 const toForm=p=>{const f=structuredClone(p);NUM.forEach(k=>f[k]=f[k]==null?'':String(f[k]));f.fees.forEach(c=>c.value=String(c.value));return f};
 const dirty=()=>!!F&&JSON.stringify(F)!==init;
 function invalid(){
- if(sel===''&&P.some(p=>p.n.toLowerCase()===F.n.trim().toLowerCase()))return 'The loan name has already been taken.';
+ const name=F.n.trim().toLowerCase();if(!name)return 'The loan name field is required.';
+ if(P.some(p=>p.id!==sel&&p.n.toLowerCase()===name))return 'The loan name has already been taken.';
  for(const [k,l] of [['term','max term'],['amort','max amortization']]){const v=num(F[k]);if(v!=null&&!Number.isInteger(v)&&!(k=='amort'&&F.amode!='FIXED'))return `The settings.${l} field must be an integer.`}
  if(F.amode=='CUSTOM'){if(!F.formula.trim())return 'The settings.max amortization formula field is required.';
   if(!/^[0-9+\-*\/().\s]*\bbasic\b[0-9+\-*\/().\s]*$/i.test(F.formula))return 'Formula may only use numbers, + - * / ( ) and the word "basic".'}
@@ -520,8 +522,9 @@ $('#dX').onclick=$('#scrim').onclick=()=>closeDrawer();
 $('#dSave').onclick=()=>{const err=invalid();if(err)return toast(err,true);
  const p=structuredClone(F);NUM.forEach(k=>p[k]=num(p[k]));p.fees.forEach(c=>{c.label=c.label.trim();c.value=num(c.value)});
  if(p.amode=='FIXED')p.formula='';else{p.amort=null;if(p.amode=='BASIC')p.formula='basic'}
- if(sel===''){p.id=String(nextId++);p.n=p.n.trim();P.push(p);closeDrawer(true);return toast(p.n+' added')}
- P[P.findIndex(x=>x.id===sel)]=p;F=toForm(p);init=JSON.stringify(F);paint();rows();toast(p.n+' updated')};
+ p.n=p.n.trim();
+ if(sel===''){p.id=String(nextId++);P.push(p);closeDrawer(true);return toast(p.n+' added')}
+ P[P.findIndex(x=>x.id===sel)]=p;F=toForm(p);init=JSON.stringify(F);$('#dT').textContent=p.n;paint();rows();toast(p.n+' updated')};
 $('#dDel').onclick=()=>{const p=find(sel);if(p&&confirm('Delete "'+p.n+'"? This cannot be undone.')){P=P.filter(x=>x!=p);closeDrawer(true);toast(p.n+' deleted')}};
 document.addEventListener('keydown',e=>{if(e.key!='Escape'||!F)return;if(pop){pop=false;paint('d-tags')}else closeDrawer()});
 $('#addBtn').onclick=e=>openDrawer('',e.currentTarget);

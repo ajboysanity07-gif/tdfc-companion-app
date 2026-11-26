@@ -149,7 +149,10 @@ class ProductController extends Controller
     {
         $product = WlnProduct::where('typecode', $typecode)->firstOrFail();
 
-        $data = $request->validate(['lntype' => 'nullable|string'] + $this->fieldRules($request), [], self::ATTRIBUTES);
+        $data = $request->validate([
+            // `sometimes`: the table's active switch sends only `settings`
+            'lntype' => ['sometimes', 'required', 'string', 'max:255', Rule::unique('wlnproducts', 'lntype')->ignore($product->id)],
+        ] + $this->fieldRules($request), [], self::ATTRIBUTES);
 
         $product->update($this->columns($data));
 

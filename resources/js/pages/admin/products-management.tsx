@@ -30,7 +30,7 @@ type Settings = {
     terms_and_info?: string | null;
 };
 type Product = { typecode: string; lntype?: string; int_rate?: number | null; settings?: Settings; tags?: { tag_name: string }[] };
-type Form = { settings: Required<Settings>; int_rate: string; tags: string[] };
+type Form = { name: string; settings: Required<Settings>; int_rate: string; tags: string[] };
 
 const text = (n: unknown) => (n === null || n === undefined ? '' : String(n));
 // ponytail: empty input saves null (not the mockup's 0) so "no limit" stays distinguishable
@@ -41,6 +41,7 @@ const num = (s: string) => {
 const toForm = (p: Product): Form => {
     const s = p.settings ?? {};
     return {
+        name: p.lntype ?? '',
         int_rate: text(p.int_rate),
         tags: (p.tags ?? []).map((t) => t.tag_name),
         settings: {
@@ -107,13 +108,12 @@ function ProductDrawerBody({ product, dirty, onSave, onDelete, onClose, toast }:
     const [base, setBase] = useState(() => toForm(product));
     const [f, setF] = useState(base);
     const isNew = !product.typecode;
-    const [name, setName] = useState('');
     const [cur, setCur] = useState<(typeof sections)[number]>('general');
     const body = useRef<HTMLDivElement>(null);
     const s = f.settings;
     const set = <K extends keyof Settings>(k: K, v: Settings[K]) =>
         setF((x) => ({ ...x, settings: { ...x.settings, [k]: v } as Required<Settings> }));
-    dirty.current = JSON.stringify(f) !== JSON.stringify(base) || name !== '';
+    dirty.current = JSON.stringify(f) !== JSON.stringify(base);
     const fees = s.custom_fees ?? [];
     const setFees = (next: Fee[]) => set('custom_fees', next);
     const setFee = (i: number, change: Partial<Fee>) => setFees(fees.map((c, j) => (j === i ? { ...c, ...change } : c)));
@@ -122,8 +122,20 @@ function ProductDrawerBody({ product, dirty, onSave, onDelete, onClose, toast }:
         const settings = { ...f.settings } as Record<string, unknown>;
         for (const k of ['max_term', 'max_amortization', 'service_fee', 'lrf', 'doc_stamp', 'mort_notarial']) settings[k] = num(text(settings[k]));
         settings.custom_fees = fees.map((c) => ({ ...c, label: c.label.trim(), value: num(text(c.value)) }));
-        if (await onSave(product, { ...(isNew && { lntype: name.trim() }), int_rate: num(f.int_rate), settings }, f.tags)) setBase(f);
+        if (await onSave(product, { lntype: f.name.trim(), int_rate: num(f.int_rate), settings }, f.tags)) setBase(f);
     };
+    // sits in the header for a new loan, at the top of General for an existing one
+    const nameInput = (className = '') => (
+        <input
+            id="d-name"
+            value={f.name}
+            onChange={(e) => setF({ ...f, name: e.target.value })}
+            maxLength={255}
+            placeholder="Loan name"
+            aria-label="Loan name"
+            className={`${field} ${className}`}
+        />
+    );
     const toggleTag = (t: string) => setF((x) => ({ ...x, tags: x.tags.includes(t) ? x.tags.filter((n) => n !== t) : [...x.tags, t] }));
     const [types, setTypes] = useState<string[]>([]);
     const [dlg, setDlg] = useState<HTMLElement | null>(null); // popover must render inside the <dialog> or it sits behind it
@@ -188,17 +200,7 @@ function ProductDrawerBody({ product, dirty, onSave, onDelete, onClose, toast }:
     return (
         <>
             <div className="flex items-center gap-3 border-b border-border px-5 py-4">
-                {isNew ? (
-                    <input
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        placeholder="Loan name"
-                        aria-label="Loan name"
-                        className={`${field} min-w-0 flex-1`}
-                    />
-                ) : (
-                    <h2 className="min-w-0 flex-1 text-lg font-semibold">{product.lntype}</h2>
-                )}
+                {isNew ? nameInput('min-w-0 flex-1') : <h2 className="min-w-0 flex-1 text-lg font-semibold">{product.lntype}</h2>}
                 <button
                     type="button"
                     onClick={onClose}
@@ -227,6 +229,14 @@ function ProductDrawerBody({ product, dirty, onSave, onDelete, onClose, toast }:
                     <h3 id="h-general" className={h3}>
                         General
                     </h3>
+                    {!isNew && (
+                        <div className="grid gap-1.5">
+                            <label htmlFor="d-name" className="font-medium">
+                                Loan name
+                            </label>
+                            {nameInput()}
+                        </div>
+                    )}
                     <div className="flex items-center justify-between gap-3 rounded-[10px] border border-border px-3.5 py-3">
                         <div>
                             <b>Available to clients</b>
@@ -482,7 +492,7 @@ function ProductDrawerBody({ product, dirty, onSave, onDelete, onClose, toast }:
                     </button>
                 )}
                 <span className="flex-1" />
-                <button type="button" disabled={isNew && !name.trim()} onClick={save} className={`${btn.base} ${btn.dark}`}>
+                <button type="button" disabled={isNew && !f.name.trim()} onClick={save} className={`${btn.base} ${btn.dark}`}>
                     {isNew ? 'Add loan' : 'Save changes'}
                 </button>
             </div>

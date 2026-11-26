@@ -118,3 +118,27 @@ it('rejects a loan name that is already taken', function () {
         ->assertStatus(422)
         ->assertJsonValidationErrors(['lntype' => 'The loan name has already been taken.']);
 });
+
+it('renames a product without changing its code', function () {
+    actingAsRole('admin');
+
+    // saving its own name again is not a duplicate
+    putJson('/api/admin/products/09', ['lntype' => 'ATM LOAN'])->assertOk();
+    putJson('/api/admin/products/09', ['lntype' => 'PAYROLL LOAN'])
+        ->assertOk()
+        ->assertJsonPath('lntype', 'PAYROLL LOAN')
+        ->assertJsonPath('typecode', '09');
+});
+
+it('rejects renaming to a blank or taken name', function (string $name, string $message) {
+    WlnProduct::create(['typecode' => '10', 'lntype' => 'SALARY LOAN']);
+    actingAsRole('admin');
+
+    putJson('/api/admin/products/09', ['lntype' => $name])
+        ->assertStatus(422)
+        ->assertJsonValidationErrors(['lntype' => $message]);
+    expect(WlnProduct::where('typecode', '09')->value('lntype'))->toBe('ATM LOAN');
+})->with([
+    'blank' => ['', 'The loan name field is required.'],
+    'taken' => ['SALARY LOAN', 'The loan name has already been taken.'],
+]);
