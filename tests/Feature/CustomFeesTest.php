@@ -184,3 +184,11 @@ it('accepts the three modes and both schemes', function () {
     }
     putJson('/api/admin/products/09', ['int_rate' => 7.5, 'settings' => ['ln_scheme' => 'ADD-ON', 'doc_stamp' => 0.75, 'mort_notarial' => 850]])->assertOk();
 });
+
+it('tells the calculator whether the client may change the max amortization', function (bool $editable) {
+    WlnProduct::where('typecode', '09')->update(['max_amortization_isEditable' => $editable]);
+    actingAsRole('client');
+
+    get('/loans/calculator')->assertOk()->assertInertia(fn ($page) => $page
+        ->where('products.0.amortization_editable', $editable));
+})->with([true, false]);
