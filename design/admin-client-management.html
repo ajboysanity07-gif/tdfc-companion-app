@@ -255,12 +255,39 @@ window.addEventListener('storage',function(e){if(e.key===K&&e.newValue)set(res(e
 .toolbar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:space-between;min-width:0}
 .tabs{display:flex;gap:6px;flex-wrap:wrap;min-width:0}
 .tabs button{height:38px;padding:0 14px;border:1px solid var(--border);background:var(--bg);border-radius:999px;cursor:pointer;font-weight:600;color:var(--muted-fg);display:inline-flex;align-items:center;gap:8px}
-.tabs button.on{background:var(--primary);color:var(--primary-fg);border-color:var(--primary)}
+.tabs button:hover{border-color:var(--muted-fg);color:var(--fg)}
+.tabs button.on{background:var(--muted);color:var(--fg);border-color:var(--muted-fg)}
 .tabs .cnt{min-width:22px;height:22px;padding:0 7px;border-radius:99px;background:color-mix(in oklch,currentColor 14%,transparent);font-size:12px;display:grid;place-items:center}
 .filters{display:flex;gap:8px;flex-wrap:nowrap;align-items:center;justify-content:flex-end;flex:1;min-width:0}
 .search{flex:1 1 200px;min-width:0;max-width:320px}
 .filters .select{flex:none;width:auto;min-width:0}
 .select{height:38px;padding:0 34px 0 12px;border:1px solid var(--input);border-radius:var(--radius);background:var(--bg);box-shadow:var(--shadow);cursor:pointer}
+.focus{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:14px}
+.queue{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:20px 40px;align-items:center;padding:24px 28px;border-radius:var(--radius-lg);background:var(--coral-deep);color:var(--on-deep)}
+.queue h2{font-size:16px;font-weight:700}
+.queue .big{display:block;font-size:72px;font-weight:800;line-height:1;letter-spacing:-.03em;margin:8px 0;font-variant-numeric:tabular-nums}
+.queue .btn{margin-top:18px;height:44px;background:var(--on-deep);color:var(--coral-ink);border-color:var(--on-deep);font-weight:700}
+.queue .btn:hover{background:color-mix(in oklch,var(--on-deep) 90%,var(--coral-deep))}
+.queue .btn[hidden],.queue .list[hidden]{display:none}
+.queue :focus-visible{outline-color:var(--on-deep)}
+.queue h3{font-size:12px;font-weight:600;padding-bottom:6px}
+.queue ol{list-style:none;margin:0;padding:0}
+.queue li{border-top:1px solid color-mix(in oklch,var(--on-deep) 35%,transparent)}
+.queue li button{width:100%;min-height:44px;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:0;border:0;background:none;color:inherit;text-align:left;cursor:pointer;font-variant-numeric:tabular-nums}
+.queue li button:hover span:first-child{text-decoration:underline;text-underline-offset:3px}
+.queue li:first-child button{font-size:17px;font-weight:700}
+.queue li span:last-child{white-space:nowrap}
+.metrics{display:grid;overflow:hidden}
+.metric{display:grid;grid-template-columns:minmax(0,1fr) auto;align-content:center;align-items:center;gap:2px 12px;padding:14px 20px}
+.metric+.metric{border-top:1px solid var(--border)}
+.metric .label{font-weight:600}
+.metric .value{grid-column:2;grid-row:1/span 2;font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}
+.metric .hint{grid-column:1;font-size:12px}
+.metric .progress{grid-column:1/-1;height:6px;margin-top:8px}
+.list-h{display:flex;align-items:baseline;gap:4px 12px;flex-wrap:wrap;margin-top:8px}
+.list-h h2{font-size:18px;font-weight:700}
+.tbl td.quiet{color:var(--muted-fg)}
+.badge.plain{background:transparent;border:1px solid var(--border);color:var(--muted-fg)}
 .panel{overflow:hidden}
 .stack{display:grid;gap:14px;grid-template-columns:minmax(0,1fr)}
 .badge{white-space:nowrap}
@@ -269,6 +296,7 @@ window.addEventListener('storage',function(e){if(e.key===K&&e.newValue)set(res(e
 .tbl th .ind{font-size:11px;opacity:.7;min-width:10px;display:inline-block}
 .tbl tr.sel{background:var(--blue-soft)}
 .tbl td .name{font-weight:600}.tbl td .sub{display:block;color:var(--muted-fg);font-size:12px}
+.cli{display:flex;gap:10px;align-items:center;min-width:0}.cli>div{min-width:0}
 .empty{padding:32px;text-align:center;color:var(--muted-fg)}
 .pg{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 16px;border-top:1px solid var(--border);flex-wrap:wrap}
 .pgs{display:flex;gap:4px}
@@ -304,12 +332,15 @@ window.addEventListener('storage',function(e){if(e.key===K&&e.newValue)set(res(e
 .viewer .btn{background:#fff2;color:#fff;border-color:#fff3}.viewer .btn:hover{background:#fff4}
 .viewer footer{display:flex;gap:8px;justify-content:center;padding:12px}
 .toast{position:fixed;bottom:84px;left:50%;transform:translateX(-50%);background:var(--primary);color:var(--primary-fg);padding:10px 16px;border-radius:10px;display:none;z-index:90}.toast.on{display:block}
+@media(max-width:1100px){.focus{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:860px){
   .hide-sm{display:none}
   .toolbar{flex-direction:column;align-items:stretch;gap:10px}
   .search{max-width:none}
 }
 @media(max-width:720px){
+  .queue{grid-template-columns:minmax(0,1fr);padding:20px}
+  .queue .btn{width:100%}
   .tabs button{padding:0 12px}
   .tbl thead{display:none}
   .tbl tbody tr{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 12px;align-items:center;border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);padding:14px;margin:0 0 10px;background:var(--bg)}
@@ -323,8 +354,6 @@ window.addEventListener('storage',function(e){if(e.key===K&&e.newValue)set(res(e
   .tbl td:nth-child(4){grid-column:2;grid-row:3;justify-self:end}
   .tbl td:nth-child(7){grid-column:1/-1;grid-row:4;justify-self:start}.tbl td:nth-child(7):empty{display:none}
   .tbl td:nth-child(2),.tbl td:nth-child(3),.tbl td:nth-child(4){font-size:12px;color:var(--muted-fg)}
-  .cli{display:flex;gap:10px;align-items:center;min-width:0}
-  .cli>div{min-width:0}
   .tbl-wrap{padding:4px 0 6px}
 
 }
@@ -344,7 +373,22 @@ window.addEventListener('storage',function(e){if(e.key===K&&e.newValue)set(res(e
 <div class="main">
   <div class="topbar" data-od-id="breadcrumb"><span>Admin</span> / <b>Client Management</b></div>
   <div class="content">
-    <section class="banner" data-od-id="page-banner"><h1>Client Management</h1><p>Review registrations in a pending-first queue and open each client for details and documents.</p></section>
+    <section class="banner" data-od-id="page-banner"><div><h1>Client Management</h1><p>Review registrations in a pending-first queue and open each client for details and documents.</p></div></section>
+    <div class="focus">
+      <section class="queue" data-od-id="pending-queue" aria-labelledby="qH">
+        <div>
+          <h2 id="qH">Waiting for your review</h2>
+          <b class="big" id="pendingN" aria-live="polite"></b>
+          <p id="qNote"></p>
+          <button class="btn" type="button" id="reviewNext" data-od-id="review-next">Review next in queue</button>
+        </div>
+        <div class="list" id="qList"><h3>Oldest first, by date submitted</h3><ol id="queue"></ol></div>
+      </section>
+      <section class="card metrics" id="metrics" data-od-id="client-stats" aria-label="Client totals"></section>
+    </div>
+
+    <div class="list-h" data-od-id="list-heading"><h2>Client list</h2><span class="muted">Select a client to see details and documents</span></div>
+
     <section class="card panel" data-od-id="client-queue">
       <div class="card-b stack">
         <div class="toolbar">
@@ -404,23 +448,30 @@ const N=[['Angelica Reyes','A',1],['Benedict Cruz','C',1],['Carla Mendoza','B',1
 const today=()=>new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
 let U=N.map((n,i)=>({id:i+1,name:n[0],cls:n[1],st:['approved','pending','rejected'][n[2]-1],email:n[0].split(' ')[0].toLowerCase()+'@example.com',ph:'0917 555 '+String(1000+i*37).padStart(4,'0'),acct:'TD-'+String(20400+i*13),at:'Nov '+(2+i)+', 2026',sal:n[2]==1?[28500,31000,24800,35200][i]:0,why:n[2]==3?[REASONS[0],REASONS[4]]:[]}));
 const TABS=[['pending','Pending'],['approved','Approved'],['rejected','Rejected'],['all','All']];
-const PS=8; let tab='pending',q='',clsFilter='all',sortKey='at',sortDir='desc',page=1,selId=null,imgId=null,imgI=0,cur=null,rejU=null,lastFocus=null;
+const PS=8; let tab='pending',q='',clsFilter='all',sortKey='at',sortDir='asc',page=1,selId=null,imgId=null,imgI=0,cur=null,rejU=null,lastFocus=null;
 const $=s=>document.querySelector(s),$$=s=>document.querySelectorAll(s);
 const php=n=>'Php '+Number(n).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
 const ini=n=>n.split(' ').map(w=>w[0]).slice(0,2).join('');
 const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const statusBadge=s=>s==='approved'?'<span class="badge ok">Approved</span>':s==='rejected'?'<span class="badge bad">Rejected</span>':'<span class="badge warn">Pending</span>';
-const clsBadge=c=>'<span class="badge">Class '+esc(c)+'</span>';
+const clsBadge=c=>'<span class="badge plain">Class '+esc(c)+'</span>';
 const parseDate=s=>{const d=new Date(String(s).replace(',',''));return isNaN(d)?0:d.getTime()};
 function filtered(){const needle=q.trim().toLowerCase();let list=U.filter(u=>(tab==='all'||u.st===tab)&&(clsFilter==='all'||u.cls===clsFilter)&&(!needle||[u.name,u.email,u.acct].some(v=>v.toLowerCase().includes(needle))));
   const dir=sortDir==='asc'?1:-1; list=[...list].sort((a,b)=>{let va=a[sortKey],vb=b[sortKey]; if(sortKey==='at'){va=parseDate(va);vb=parseDate(vb)} else {va=String(va||'').toLowerCase();vb=String(vb||'').toLowerCase()} if(va<vb)return -1*dir; if(va>vb)return 1*dir; return a.id-b.id}); return list}
-function renderTabs(){$('#tabs').innerHTML=TABS.map(([k,l])=>`<button type="button" role="tab" aria-selected="${k===tab}" class="${k===tab?'on':''}" data-tab="${k}">${l} <span class="cnt">${U.filter(u=>k==='all'||u.st===k).length}</span></button>`).join('')}
+const pendingQueue=()=>U.filter(u=>u.st==='pending').sort((a,b)=>parseDate(a.at)-parseDate(b.at));
+function renderSummary(){const p=pendingQueue(),count=s=>U.filter(u=>u.st===s).length,ok=count('approved'),no=count('rejected'),pct=ok+no?Math.round(ok/(ok+no)*100):0;
+  $('#pendingN').textContent=p.length; $('#qNote').textContent=p.length?'Registrations with documents to check':'The queue is clear';
+  $('#reviewNext').hidden=$('#qList').hidden=!p.length; if(p.length)$('#reviewNext').dataset.row=p[0].id; else delete $('#reviewNext').dataset.row;
+  $('#queue').innerHTML=p.map(u=>`<li><button type="button" data-row="${u.id}" aria-label="Review ${esc(u.name)}, submitted ${esc(u.at)}"><span>${esc(u.name)}</span><span>${esc(u.at.split(',')[0])}</span></button></li>`).join('');
+  const row=(l,v,h,x='')=>`<div class="metric"><span class="label">${l}</span><span class="value">${v}</span><span class="hint muted">${h}</span>${x}</div>`;
+  $('#metrics').innerHTML=row('Approved',ok,pct+'% of '+(ok+no)+' decided',`<div class="progress" aria-hidden="true"><i style="width:${pct}%"></i></div>`)+row('Rejected',no,'Declined with reasons')+row('All clients',U.length,'Every registration on file')}
+function renderTabs(){renderSummary(); $('#tabs').innerHTML=TABS.map(([k,l])=>`<button type="button" role="tab" aria-selected="${k===tab}" class="${k===tab?'on':''}" data-tab="${k}">${l} <span class="cnt">${U.filter(u=>k==='all'||u.st===k).length}</span></button>`).join('')}
 function renderHead(){document.querySelectorAll('#headRow th').forEach(th=>{const btn=th.querySelector('[data-sort]'); if(!btn)return; const k=btn.dataset.sort,on=k===sortKey; th.setAttribute('aria-sort',on?(sortDir==='asc'?'ascending':'descending'):'none'); btn.querySelector('.ind').textContent=on?(sortDir==='asc'?'▲':'▼'):''})}
 function renderTable(){const list=filtered(),n=Math.max(1,Math.ceil(list.length/PS));page=Math.min(page,n);const start=(page-1)*PS,rows=list.slice(start,start+PS);
   renderHead();
   $('#rows').innerHTML=rows.map(u=>`<tr class="${u.id===selId?'sel':''}" data-row="${u.id}" tabindex="0" aria-label="Open review for ${esc(u.name)}">
     <td><div class="cli"><span class="avatar" aria-hidden="true">${ini(u.name)}</span><div><span class="name">${esc(u.name)}</span><span class="sub">${esc(u.email)}</span></div></div></td>
-    <td class="hide-sm">${esc(u.ph)}</td><td class="hide-sm mono">${esc(u.acct)}</td><td class="hide-sm">${esc(u.at)}</td>
+    <td class="hide-sm quiet">${esc(u.ph)}</td><td class="hide-sm quiet mono">${esc(u.acct)}</td><td class="hide-sm quiet">${esc(u.at)}</td>
     <td>${clsBadge(u.cls)}</td><td>${statusBadge(u.st)}</td><td class="r">${u.st==='approved'?`<a class="btn sm" data-prof href="customer-dashboard.html" aria-label="Open profile of ${esc(u.name)}">Open profile</a>`:''}</td></tr>`).join('');
   $('#empty').hidden=rows.length>0; $('#range').textContent=list.length?`Showing ${start+1}-${start+rows.length} of ${list.length}`:'No results';
   let h=`<button type="button" data-page="${page-1}" ${page<2?'disabled':''} aria-label="Previous page">‹</button>`;for(let i=1;i<=n;i++)h+=`<button type="button" class="${i===page?'on':''}" data-page="${i}" ${i===page?'aria-current="page"':''}>${i}</button>`;h+=`<button type="button" data-page="${page+1}" ${page>=n?'disabled':''} aria-label="Next page">›</button>`;$('#pager').innerHTML=h}

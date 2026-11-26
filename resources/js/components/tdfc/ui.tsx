@@ -1,8 +1,8 @@
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { router } from '@inertiajs/react';
-import { animate, motion, useReducedMotion } from 'framer-motion';
-import { CSSProperties, ImgHTMLAttributes, ReactNode, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { motion } from 'framer-motion';
+import { CSSProperties, ImgHTMLAttributes, ReactNode, useEffect, useId, useMemo, useState } from 'react';
 
 export const peso = (n: number) =>
     Number.isFinite(n) ? new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP', maximumFractionDigits: 2 }).format(n) : '₱0.00';
@@ -35,6 +35,7 @@ const badgeTone = {
     warn: 'bg-tdfc-sun-soft text-tdfc-sun-ink',
     bad: 'bg-tdfc-coral-soft text-tdfc-coral-ink',
     info: 'bg-tdfc-blue-soft text-tdfc-blue-ink',
+    plain: 'border border-border text-muted-foreground',
 };
 export const Badge = ({ tone = 'neutral', children }: { tone?: keyof typeof badgeTone; children: ReactNode }) => (
     <span className={`inline-flex h-6 items-center gap-1.5 rounded-full px-2.5 text-xs font-semibold ${badgeTone[tone]}`}>{children}</span>
@@ -54,32 +55,6 @@ export const BtnSpinner = () => <Spinner className="mr-0 size-4 border-current" 
 /** Entrance stagger: add RISE to the element and spread riseStyle(i) on it. */
 export const RISE = 'animate-tdfc-rise';
 export const riseStyle = (i: number) => ({ animationDelay: `${Math.min(i, 12) * 40}ms` });
-
-/** Counts up to `value`; the final value stays in the DOM for screen readers. */
-export function CountUp({ value, format = (n: number) => String(Math.round(n)) }: { value: number; format?: (n: number) => string }) {
-    const ref = useRef<HTMLSpanElement>(null);
-    const reduce = useReducedMotion();
-    useEffect(() => {
-        if (reduce || !Number.isFinite(value)) return;
-        const c = animate(0, value, {
-            duration: 0.8,
-            ease: 'easeOut',
-            onUpdate: (v) => {
-                if (ref.current) ref.current.textContent = format(v);
-            },
-        });
-        return () => c.stop();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [value, reduce]);
-    return (
-        <>
-            <span aria-hidden ref={ref}>
-                {format(value)}
-            </span>
-            <span className="sr-only">{format(value)}</span>
-        </>
-    );
-}
 
 /** Skeleton placeholders sized like the real content, to avoid layout shift. */
 export const SkelRows = ({ rows = 5, cols = 4 }: { rows?: number; cols?: number }) => (
@@ -141,21 +116,6 @@ export const PageBanner = ({ title, sub, children }: { title: string; sub?: stri
     </div>
 );
 
-/** Connected KPI band: 1px dividers, shared border (mockup .stats). */
-export const StatBand = ({ children, label }: { children: ReactNode; label: string }) => (
-    <section aria-label={label} className="grid gap-px overflow-hidden rounded-[14px] border border-border bg-border shadow-sm max-[860px]:grid-cols-1 min-[861px]:max-[1100px]:grid-cols-2 min-[1101px]:grid-cols-4">
-        {children}
-    </section>
-);
-
-export const StatCard = ({ label, value, hint, accent, index = 0 }: { label: string; value: ReactNode; hint?: string; accent?: boolean; index?: number }) => (
-    <div style={riseStyle(index)} className={`${RISE} flex flex-col gap-1 bg-card px-[18px] py-4`}>
-        <span className="text-xs font-medium text-muted-foreground">{label}</span>
-        <b className={`text-xl leading-tight font-bold tabular-nums ${accent ? 'text-tdfc-coral-ink' : ''}`}>{typeof value === 'number' ? <CountUp value={value} /> : value}</b>
-        {hint && <span className="text-xs text-muted-foreground">{hint}</span>}
-    </div>
-);
-
 export const Tabs = <T extends string>({
     tabs,
     value,
@@ -174,12 +134,12 @@ export const Tabs = <T extends string>({
                     role="tab"
                     aria-selected={value === t.id}
                     onClick={() => onChange(t.id)}
-                    className={`relative inline-flex h-[38px] items-center rounded-full border px-3.5 text-sm font-semibold transition-colors ${value === t.id ? 'border-primary text-primary-foreground' : 'border-border bg-background text-muted-foreground hover:bg-muted'}`}
+                    className={`relative inline-flex h-[38px] cursor-pointer items-center rounded-full border px-3.5 text-sm font-semibold transition-colors ${value === t.id ? 'border-muted-foreground text-foreground' : 'border-border bg-background text-muted-foreground hover:border-muted-foreground hover:text-foreground'}`}
                 >
                     {value === t.id && (
                         <motion.span
                             layoutId={`tab-${id}`}
-                            className="absolute inset-0 rounded-full bg-primary"
+                            className="absolute inset-0 rounded-full bg-muted"
                             transition={{ type: 'spring', duration: 0.35, bounce: 0.15 }}
                         />
                     )}

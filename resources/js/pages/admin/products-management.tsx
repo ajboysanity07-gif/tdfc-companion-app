@@ -1,4 +1,4 @@
-import { BtnSpinner, Drawer, PageBanner, Panel, SkelRows, Switch, UnitSwitch, btn, peso, useToast } from '@/components/tdfc/ui';
+import { BtnSpinner, Drawer, PageBanner, Panel, SkelRows, Switch, Tabs, UnitSwitch, btn, peso, useToast } from '@/components/tdfc/ui';
 import { Badge } from '@/components/ui/badge';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -606,11 +606,11 @@ export default function ProductsManagement() {
         show(`${p.lntype} deleted`);
     };
 
-    const chips = [
-        ['all', 'All', list.length],
-        ['on', 'Active', active],
-        ['off', 'Inactive', list.length - active],
-    ] as const;
+    const chips: { id: typeof flt; label: string; count: number }[] = [
+        { id: 'all', label: 'All', count: list.length },
+        { id: 'on', label: 'Active', count: active },
+        { id: 'off', label: 'Inactive', count: list.length - active },
+    ];
     const th = 'px-4 py-2.5 text-left text-xs font-semibold text-muted-foreground';
 
     return (
@@ -632,20 +632,7 @@ export default function ProductsManagement() {
                 <Panel className="overflow-hidden">
                     <div className="grid gap-3.5 p-5 pb-0">
                         <div className="flex flex-wrap items-center justify-between gap-3 max-[860px]:flex-col max-[860px]:items-stretch">
-                            <div className="flex flex-wrap gap-1.5" role="group" aria-label="Filter by status">
-                                {chips.map(([v, l, n]) => (
-                                    <button
-                                        key={v}
-                                        type="button"
-                                        aria-pressed={flt === v}
-                                        onClick={() => setFlt(v)}
-                                        className={`inline-flex h-9.5 items-center gap-2 rounded-full border px-3.5 font-semibold max-[720px]:px-3 ${flt === v ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-card text-muted-foreground hover:bg-muted'}`}
-                                    >
-                                        {l}
-                                        <span className="grid h-5.5 min-w-5.5 place-items-center rounded-full bg-current/15 px-1.5 text-xs">{n}</span>
-                                    </button>
-                                ))}
-                            </div>
+                            <Tabs tabs={chips} value={flt} onChange={setFlt} />
                             <input
                                 type="search"
                                 value={q}
@@ -679,18 +666,21 @@ export default function ProductsManagement() {
                                                 tabIndex={0}
                                                 onClick={() => open(p.typecode)}
                                                 onKeyDown={(e) => e.key === 'Enter' && e.target === e.currentTarget && open(p.typecode)}
-                                                className={`cursor-pointer border-b border-border last:border-0 hover:bg-muted max-[720px]:mb-2.5 max-[720px]:grid max-[720px]:grid-cols-[minmax(0,1fr)_auto] max-[720px]:items-center max-[720px]:gap-x-3 max-[720px]:gap-y-1.5 max-[720px]:rounded-xl max-[720px]:border max-[720px]:p-3.5 max-[720px]:shadow-sm max-[720px]:hover:bg-white max-[720px]:active:bg-muted ${sel === p.typecode ? 'bg-tdfc-coral-soft' : ''}`}
+                                                className={`cursor-pointer border-b border-border last:border-0 hover:bg-muted max-[720px]:mb-2.5 max-[720px]:grid max-[720px]:grid-cols-[minmax(0,1fr)_auto] max-[720px]:items-center max-[720px]:gap-x-3 max-[720px]:gap-y-1.5 max-[720px]:rounded-xl max-[720px]:border max-[720px]:p-3.5 max-[720px]:shadow-sm max-[720px]:hover:bg-white max-[720px]:active:bg-muted ${sel === p.typecode ? 'bg-tdfc-coral-soft' : ''} ${s.ln_isActive ? '' : 'text-muted-foreground'}`}
                                             >
                                                 <td className="px-4 py-3.5 max-[720px]:col-start-1 max-[720px]:row-start-1 max-[720px]:block max-[720px]:self-start max-[720px]:p-0">
-                                                    <b>{p.lntype}</b>
+                                                    <b className="text-[15px]">{p.lntype}</b>
+                                                    {!s.ln_isActive && (
+                                                        <span className={`${pill} ml-2 border border-border bg-muted align-[1px] whitespace-nowrap text-muted-foreground`}>Inactive</span>
+                                                    )}
                                                 </td>
                                                 <td className="px-4 py-3.5 max-[860px]:hidden max-[720px]:p-0">
-                                                    <span className={`${pill} bg-muted text-muted-foreground`}>{s.ln_scheme ?? '—'}</span>
+                                                    <span className="text-[11px] font-semibold text-muted-foreground">{s.ln_scheme ?? '—'}</span>
                                                 </td>
-                                                <td className="px-4 py-3.5 max-[1100px]:hidden max-[720px]:col-start-1 max-[720px]:row-start-2 max-[720px]:block max-[720px]:p-0">
+                                                <td className="px-4 py-3.5 text-[13px] text-muted-foreground max-[1100px]:hidden max-[720px]:col-start-1 max-[720px]:row-start-2 max-[720px]:block max-[720px]:p-0">
                                                     {s.installment_mode ?? '—'}
                                                 </td>
-                                                <td className="px-4 py-3.5 text-right tabular-nums max-[720px]:col-start-2 max-[720px]:row-start-2 max-[720px]:block max-[720px]:p-0">
+                                                <td className="px-4 py-3.5 text-right text-[17px] font-bold tabular-nums max-[720px]:col-start-2 max-[720px]:row-start-2 max-[720px]:block max-[720px]:p-0">
                                                     {p.int_rate != null ? `${p.int_rate}%` : '—'}
                                                 </td>
                                                 <td className="px-4 py-3.5 text-right tabular-nums max-[860px]:hidden max-[720px]:p-0">
@@ -703,7 +693,7 @@ export default function ProductsManagement() {
                                                     <span className="flex flex-wrap gap-1">
                                                         {p.tags?.length ? (
                                                             p.tags.map(({ tag_name }) => (
-                                                                <span key={tag_name} className={`${pill} bg-tdfc-blue-soft text-tdfc-blue-ink`}>
+                                                                <span key={tag_name} className={`${pill} border border-border text-muted-foreground`}>
                                                                     {tag_name}
                                                                 </span>
                                                             ))

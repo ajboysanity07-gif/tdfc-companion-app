@@ -1,9 +1,10 @@
-import { Badge, NumPager, PageBanner, Panel, StatBand, StatCard, Tabs, btn, riseStyle, useTable, useToast } from '@/components/tdfc/ui';
+import { ListHeading, Metric, ReviewSummary, queueAction } from '@/components/tdfc/review-queue';
+import { Badge, NumPager, PageBanner, Panel, Tabs, btn, riseStyle, useTable, useToast } from '@/components/tdfc/ui';
 import AppLayout from '@/layouts/app-layout';
 import { Head, Link, usePage } from '@inertiajs/react';
 import { useMemo, useState } from 'react';
 
-type Ev = { id: string; at: string; name: string; email: string; acctno: string | null; event: 'submitted' | 'approved' | 'rejected'; by: string | null; note: string };
+type Ev = { id: string; at: string; name: string; email: string; acctno: string | null; event: 'submitted' | 'approved' | 'rejected'; by: string | null; note: string; pending?: boolean };
 type Props = { events: Ev[]; stats: { month: number; pending: number; approved: number; decided: number; avg_days: number | null } };
 
 const TABS = [
@@ -14,7 +15,7 @@ const TABS = [
 ] as const;
 type Tab = (typeof TABS)[number]['id'];
 
-const BADGE = { submitted: <Badge>Submitted</Badge>, approved: <Badge tone="ok">Approved</Badge>, rejected: <Badge tone="bad">Rejected</Badge> };
+const BADGE = { submitted: <Badge tone="plain">Submitted</Badge>, approved: <Badge tone="ok">Approved</Badge>, rejected: <Badge tone="bad">Rejected</Badge> };
 const ini = (n: string) => n.split(' ').map((w) => w[0]).slice(0, 2).join('').toUpperCase();
 const csv = (v: string | null) => `"${(v ?? '').replace(/"/g, '""')}"`;
 
@@ -32,6 +33,10 @@ export default function Registrations() {
     const t = useTable(list, { key: 'at', per: 8 });
     const rate = stats.decided ? Math.round((stats.approved / stats.decided) * 100) : null;
 
+    // events arrive newest first
+    const queue = events.filter((e) => e.pending).reverse();
+    const month = new Date().toLocaleDateString('en-US', { month: 'long' });
+
     const exportCsv = () => {
         const head = 'Date,Client,Email,Account no.,Event,Details,By';
         const body = list.map((e) => [e.at, e.name, e.email, e.acctno, e.event, e.note, e.by].map(csv).join(','));
@@ -47,16 +52,21 @@ export default function Registrations() {
         <AppLayout breadcrumbs={[{ title: 'Admin', href: '/admin/dashboard' }, { title: 'Registrations', href: '/admin/registrations' }]}>
             <Head title="Registrations" />
             <div className="grid content-start gap-5 p-4 md:p-6">
-                <PageBanner title="Registrations" sub="Every registration event in one log — submissions and decisions.">
-                    <Link href="/admin/client-management" className={`${btn.base} ${btn.plain}`}>Review pending queue</Link>
-                </PageBanner>
+                <PageBanner title="Registrations" sub="Every registration event in one log — submissions and decisions." />
 
-                <StatBand label="Registration metrics">
-                    <StatCard index={0} label="Received this month" value={stats.month} hint="Submissions in November" />
-                    <StatCard accent index={1} label="Pending review" value={stats.pending} hint="Waiting on documents review" />
-                    <StatCard index={2} label="Approval rate" value={rate === null ? '—' : `${rate}%`} hint={`${stats.approved} approved of ${stats.decided} decided`} />
-                    <StatCard index={3} label="Avg. review time" value={stats.avg_days === null ? '—' : `${stats.avg_days} days`} hint="From submission to decision" />
-                </StatBand>
+                <ReviewSummary
+                    count={stats.pending}
+                    note={stats.pending ? 'Registrations with documents to check' : 'The queue is clear'}
+                    action={<Link href="/admin/client-management" className={queueAction}>Review pending queue</Link>}
+                    items={queue}
+                    metricsLabel="Registration metrics"
+                >
+                    <Metric label="Approval rate" value={rate === null ? '—' : `${rate}%`} hint={`${stats.approved} approved of ${stats.decided} decided`} pct={rate ?? 0} />
+                    <Metric label="Avg. review time" value={stats.avg_days === null ? '—' : `${stats.avg_days} days`} hint="From submission to decision" />
+                    <Metric label="Received this month" value={stats.month} hint={`Submissions in ${month}`} />
+                </ReviewSummary>
+
+                <ListHeading title="Activity log" sub="Newest first" />
 
                 <Panel className="overflow-hidden">
                     <div className="grid gap-3.5 p-5">
@@ -93,10 +103,10 @@ export default function Registrations() {
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="px-4 py-3.5 tabular-nums max-md:hidden">{e.acctno}</td>
-                                        <td className="px-4 py-3.5 max-sm:block max-sm:p-0 max-sm:pt-1.5">{BADGE[e.event]}</td>
+                                        <td className="px-4 py-3.5 text-muted-foreground tabular-nums max-md:hidden">{e.acctno}</td>
+                                        <td className="px-4 py-3.5 max-sm:block max-sm:p-0 max-sm:pt-1.5">{e.pending ? <Badge tone="warn">Awaiting review</Badge> : BADGE[e.event]}</td>
                                         <td className="px-4 py-3.5 max-sm:block max-sm:p-0 max-sm:pt-1.5">
-                                            {e.note}
+                                            <span className={e.by ? 'font-semibold' : 'text-muted-foreground'}>{e.note}</span>
                                             {e.by && <span className="block text-xs text-muted-foreground">by {e.by}</span>}
                                         </td>
                                     </tr>

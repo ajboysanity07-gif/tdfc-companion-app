@@ -15,16 +15,20 @@ class DashboardController extends Controller
     {
         $clients = $this->clients();
 
+        $pending = $clients->where('status', 'pending')->sortBy('created_at')->values();
+
         return Inertia::render('admin/dashboard', [
             'stats' => [
-                'pending' => $clients->where('status', 'pending')->count(),
+                'pending' => $pending->count(),
+                'approved' => $clients->where('status', 'approved')->count(),
+                'rejected' => $clients->where('status', 'rejected')->count(),
                 'clients' => $clients->count(),
                 'products' => WlnProduct::where('isDisplayed', true)->where('ln_isActive', true)->count(),
-                'today' => $clients->filter(fn ($u) => $u->created_at->isToday())->count(),
+                'productsTotal' => WlnProduct::where('isDisplayed', true)->count(),
+                'month' => $clients->filter(fn ($u) => $u->created_at->isCurrentMonth())->count(),
             ],
-            'pending' => $clients->where('status', 'pending')->sortByDesc('created_at')->take(5)->values()
-                ->map(fn ($u) => ['name' => $u->name, 'at' => $u->created_at->toISOString()]),
-            'activity' => $this->events($clients)->where('event', '!=', 'submitted')->take(5)->values(),
+            'pending' => $pending->map(fn ($u) => ['name' => $u->name, 'at' => $u->created_at->toISOString()]),
+            'activity' => $this->events($clients)->take(4)->values(),
         ]);
     }
 
@@ -63,6 +67,7 @@ class DashboardController extends Controller
             $events->push($base + [
                 'id' => "s{$u->user_id}", 'at' => $u->created_at->toISOString(), 'event' => 'submitted', 'by' => null,
                 'note' => 'New registration with PRC ID and payslip documents',
+                'pending' => $u->status === 'pending',
             ]);
 
             $decidedAt = $u->status === 'rejected' ? ($u->rejected_at ?? $u->reviewed_at) : $u->reviewed_at;

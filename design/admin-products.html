@@ -257,7 +257,8 @@ window.addEventListener('storage',function(e){if(e.key===K&&e.newValue)set(res(e
 .toolbar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:space-between;min-width:0}
 .tabs{display:flex;gap:6px;flex-wrap:wrap;min-width:0}
 .tabs button{height:38px;padding:0 14px;border:1px solid var(--border);background:var(--bg);border-radius:999px;cursor:pointer;font-weight:600;color:var(--muted-fg);display:inline-flex;align-items:center;gap:8px}
-.tabs button.on{background:var(--primary);color:var(--primary-fg);border-color:var(--primary)}
+.tabs button:hover{border-color:var(--muted-fg);color:var(--fg)}
+.tabs button.on{background:var(--muted);color:var(--fg);border-color:var(--muted-fg)}
 .tabs .cnt{min-width:22px;height:22px;padding:0 7px;border-radius:99px;background:color-mix(in oklch,currentColor 14%,transparent);font-size:12px;display:grid;place-items:center}
 .filters{flex:1 1 200px;min-width:0;max-width:320px}
 .filters .input{width:100%}
@@ -276,6 +277,14 @@ window.addEventListener('storage',function(e){if(e.key===K&&e.newValue)set(res(e
 .tag-row{display:flex;gap:4px;flex-wrap:wrap}
 .pill{display:inline-flex;height:22px;align-items:center;padding:0 8px;border-radius:999px;font-size:11px;font-weight:600;background:var(--blue-soft);color:var(--blue-ink)}
 .pill.off{background:var(--muted);color:var(--muted-fg)}
+/* table reading order: name, then rate and limits, then supporting details */
+.tbl td b{font-size:15px}
+.tbl td.rate{font-size:17px;font-weight:700}
+.tbl td.c-scheme,.tbl td.c-mode{color:var(--muted-fg);font-size:13px}
+.tbl .c-scheme .pill{background:none;padding:0}
+.tag-row .pill{background:none;border:1px solid var(--border);color:var(--muted-fg)}
+.tbl tbody tr.off td{color:var(--muted-fg)}
+.state{margin-left:8px;border:1px solid var(--border);white-space:nowrap;vertical-align:1px}
 .foot-n{padding:12px 16px;border-top:1px solid var(--border);color:var(--muted-fg);font-size:13px}
 .toast{position:fixed;bottom:84px;left:50%;transform:translateX(-50%);background:var(--primary);color:var(--primary-fg);padding:10px 16px;border-radius:10px;display:none;z-index:90;font-size:13px;box-shadow:var(--shadow-lg)}.toast.on{display:block}.toast.err{background:var(--destructive);color:var(--on-deep,#fff)}
 /* drawer */
@@ -420,10 +429,10 @@ function chips(){const a=P.filter(p=>p.on).length,o=[['all','All',P.length],['on
 const amort=p=>p.amode=='BASIC'?'<span class="derived">Basic salary</span>':p.amode=='CUSTOM'?`<span class="derived">${esc(p.formula.replace(/\*/g,'×'))}</span>`:p.amort==null?'—':'₱'+p.amort.toLocaleString();
 function rows(){const q=$('#q').value.toLowerCase();
  const f=P.filter(p=>p.n.toLowerCase().includes(q)&&(flt=='all'||(flt=='on')==!!p.on)).sort((a,b)=>a.n.localeCompare(b.n));
- $('#rows').innerHTML=f.map(p=>`<tr data-id="${p.id}" tabindex="0" class="${sel===p.id?'sel':''}" data-od-id="product-row-${p.id}">
-  <td><b>${esc(p.n)}</b></td>
+ $('#rows').innerHTML=f.map(p=>`<tr data-id="${p.id}" tabindex="0" class="${sel===p.id?'sel':''}${p.on?'':' off'}" data-od-id="product-row-${p.id}">
+  <td><b>${esc(p.n)}</b>${p.on?'':'<span class="pill off state">Inactive</span>'}</td>
   <td class="c-scheme"><span class="pill off">${p.scheme}</span></td><td class="c-mode">${p.mode}</td>
-  <td class="num mono">${p.rate==null?'—':p.rate+'%'}</td><td class="num mono c-term">${p.term==null?'—':p.term.toLocaleString()+' d'}</td><td class="num mono c-amort">${amort(p)}</td>
+  <td class="num mono rate">${p.rate==null?'—':p.rate+'%'}</td><td class="num mono c-term">${p.term==null?'—':p.term.toLocaleString()+' d'}</td><td class="num mono c-amort">${amort(p)}</td>
   <td class="c-tags"><span class="tag-row">${p.tags.length?p.tags.map(t=>`<span class="pill">${t}</span>`).join(''):'<span class="muted">—</span>'}</span></td>
   <td><label class="sw row-sw"><input type="checkbox" ${p.on?'checked':''} aria-label="Toggle ${esc(p.n)} active"><i></i></label></td></tr>`).join('')
   ||'<tr><td colspan="8" class="muted" style="padding:28px 16px;text-align:center">No products found</td></tr>';

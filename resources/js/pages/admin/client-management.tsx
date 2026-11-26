@@ -1,4 +1,5 @@
 import Modal from '@/components/auth/modal';
+import { ListHeading, Metric, ReviewSummary, queueAction } from '@/components/tdfc/review-queue';
 import { Badge, BtnSpinner, Drawer, LoadImg, NumPager, PageBanner, Panel, Tabs, btn, useTable, useToast } from '@/components/tdfc/ui';
 import AppLayout from '@/layouts/app-layout';
 import { PendingUser } from '@/types';
@@ -27,6 +28,7 @@ const php = (n: number) => `Php ${n.toLocaleString(undefined, { minimumFractionD
 const ini = (n: string) => n.split(' ').map((w) => w[0]).slice(0, 2).join('').toUpperCase();
 const date = (iso: string) => new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 const stat = (s: string) => STATUS[s as Status] ?? <Badge>{s}</Badge>;
+const classBadge = (c: string) => <Badge tone="plain">Class {c}</Badge>;
 const input = 'h-10 w-full rounded-[10px] border border-input bg-card px-3 shadow-sm focus:border-ring focus:outline-none';
 
 const docsOf = (u: PendingUser) =>
@@ -60,8 +62,13 @@ export default function ClientManagement({ pendingUsers, rejectionReasons }: Pro
             (u) => (tab === 'all' || u.status === tab) && (cls === 'all' || u.class === cls) && (!n || [u.name, u.email, u.acctno].some((v) => (v ?? '').toLowerCase().includes(n))),
         );
     }, [pendingUsers, tab, q, cls]);
-    const t = useTable(list, { key: 'at', per: 8 }, (u, k) => ({ name: u.name, ph: u.phone_no, acct: u.acctno, at: u.created_at, cls: u.class ?? '', st: u.status })[k]?.toLowerCase() ?? '');
+    const t = useTable(list, { key: 'at', asc: true, per: 8 }, (u, k) => ({ name: u.name, ph: u.phone_no, acct: u.acctno, at: u.created_at, cls: u.class ?? '', st: u.status })[k]?.toLowerCase() ?? '');
     const tabs = TABS.map((x) => ({ ...x, count: pendingUsers.filter((u) => x.id === 'all' || u.status === x.id).length }));
+    const queue = useMemo(() => pendingUsers.filter((u) => u.status === 'pending').sort((a, b) => a.created_at.localeCompare(b.created_at)), [pendingUsers]);
+    const approved = pendingUsers.filter((u) => u.status === 'approved').length;
+    const rejected = pendingUsers.filter((u) => u.status === 'rejected').length;
+    const decided = approved + rejected;
+    const rate = decided ? Math.round((approved / decided) * 100) : 0;
     const th = (k: string, label: string, hide?: boolean) => (
         <th key={k} aria-sort={t.key === k ? (t.asc ? 'ascending' : 'descending') : 'none'} className={`px-4 py-2.5 text-left text-xs font-semibold whitespace-nowrap text-muted-foreground ${hide ? 'max-md:hidden' : ''}`}>
             <button type="button" onClick={() => t.sort(k)} className="inline-flex cursor-pointer items-center gap-1.5 hover:text-foreground">
@@ -111,6 +118,24 @@ export default function ClientManagement({ pendingUsers, rejectionReasons }: Pro
             <div className="grid content-start gap-5 p-4 md:p-6">
                 <PageBanner title="Client Management" sub="Review registrations in a pending-first queue and open each client for details and documents." />
 
+                <ReviewSummary
+                    count={queue.length}
+                    note={queue.length ? 'Registrations with documents to check' : 'The queue is clear'}
+                    action={
+                        queue.length > 0 && (
+                            <button type="button" onClick={() => setSelId(queue[0].user_id)} className={queueAction}>Review next in queue</button>
+                        )
+                    }
+                    items={queue.map((u) => ({ id: u.user_id, name: u.name, at: u.created_at, onClick: () => setSelId(u.user_id) }))}
+                    metricsLabel="Client totals"
+                >
+                    <Metric label="Approved" value={approved} hint={`${rate}% of ${decided} decided`} pct={rate} />
+                    <Metric label="Rejected" value={rejected} hint="Declined with reasons" />
+                    <Metric label="All clients" value={pendingUsers.length} hint="Every registration on file" />
+                </ReviewSummary>
+
+                <ListHeading title="Client list" sub="Select a client to see details and documents" />
+
                 <Panel className="overflow-hidden">
                     <div className="grid gap-3.5 p-5">
                     <div className="flex flex-wrap items-center justify-between gap-3 max-md:flex-col max-md:items-stretch">
@@ -151,10 +176,10 @@ export default function ClientManagement({ pendingUsers, rejectionReasons }: Pro
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="px-4 py-3.5 max-md:hidden">{u.phone_no}</td>
-                                        <td className="px-4 py-3.5 tabular-nums max-md:hidden">{u.acctno}</td>
-                                        <td className="px-4 py-3.5 max-md:hidden">{date(u.created_at)}</td>
-                                        <td className="px-4 py-3.5">{u.class ? <Badge>Class {u.class}</Badge> : <span className="text-muted-foreground">—</span>}</td>
+                                        <td className="px-4 py-3.5 text-muted-foreground max-md:hidden">{u.phone_no}</td>
+                                        <td className="px-4 py-3.5 text-muted-foreground tabular-nums max-md:hidden">{u.acctno}</td>
+                                        <td className="px-4 py-3.5 text-muted-foreground max-md:hidden">{date(u.created_at)}</td>
+                                        <td className="px-4 py-3.5">{u.class ? classBadge(u.class) : <span className="text-muted-foreground">—</span>}</td>
                                         <td className="px-4 py-3.5">{stat(u.status)}</td>
                                         <td className="px-4 py-3.5 text-right">
                                             {u.status === 'approved' && (
@@ -193,7 +218,7 @@ export default function ClientManagement({ pendingUsers, rejectionReasons }: Pro
                                     <dt>Phone</dt><dd>{sel.phone_no}</dd>
                                     <dt>Account no.</dt><dd className="tabular-nums">{sel.acctno}</dd>
                                     <dt>Registered</dt><dd>{date(sel.created_at)}</dd>
-                                    <dt>Class</dt><dd>{sel.class ? <Badge>Class {sel.class}</Badge> : '—'}</dd>
+                                    <dt>Class</dt><dd>{sel.class ? classBadge(sel.class) : '—'}</dd>
                                     <dt>Status</dt><dd>{stat(sel.status)}</dd>
                                 </dl>
                             </section>
