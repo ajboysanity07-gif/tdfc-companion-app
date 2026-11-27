@@ -318,13 +318,12 @@ h2{font-size:16px;font-weight:700}.sec-h p,.hh p{font-size:13px;color:var(--mute
 .pay .amt{font-size:28px;font-weight:800;line-height:1.2;font-variant-numeric:tabular-nums}.pay .btn{margin-top:6px}
 .due{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 /* 2: active loans */
-.loans{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
-.loan{display:flex;flex-direction:column;gap:14px;padding:18px;background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow)}
+.loans{display:flex;flex-wrap:wrap;gap:12px}
+.loan{flex:1 1 250px;min-width:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:14px 24px;align-content:start;align-items:center;padding:18px;background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow)}
 .loan h3{font-size:15px;font-weight:700}.loan small{display:block;font-size:12px;color:var(--muted-fg);font-variant-numeric:tabular-nums}
 .loan .bal{display:block;font-size:24px;font-weight:800;line-height:1.25;font-variant-numeric:tabular-nums}
 .loan .bar{height:8px;margin:8px 0 6px}
-.loan .nx{border-top:1px solid var(--border);padding-top:12px;display:grid;gap:4px;justify-items:start}.loan .nx b{font-variant-numeric:tabular-nums}
-.loan .btn{margin-top:auto}
+.loan .nx{display:grid;gap:4px;justify-items:start}.loan .nx b{font-variant-numeric:tabular-nums}
 /* 3: paid history */
 .hh{padding:16px;border-bottom:1px solid var(--border)}
 .tbl .date{white-space:nowrap;color:var(--muted-fg)}.tbl .what b{display:block;font-weight:600}.tbl .what small{display:block;font-size:12px;color:var(--muted-fg)}

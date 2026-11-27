@@ -1,6 +1,7 @@
 import Modal from '@/components/auth/modal';
+import { pageFrame } from '@/components/tdfc/loan';
 import { ListHeading, Metric, ReviewSummary, queueAction } from '@/components/tdfc/review-queue';
-import { Badge, BtnSpinner, Drawer, LoadImg, NumPager, PageBanner, Panel, Tabs, btn, useTable, useToast } from '@/components/tdfc/ui';
+import { Badge, BtnSpinner, Drawer, LoadImg, NumPager, PageBanner, Panel, Tabs, btn, mockupText, useTable, useToast } from '@/components/tdfc/ui';
 import AppLayout from '@/layouts/app-layout';
 import { PendingUser } from '@/types';
 import { Head, router } from '@inertiajs/react';
@@ -29,7 +30,8 @@ const ini = (n: string) => n.split(' ').map((w) => w[0]).slice(0, 2).join('').to
 const date = (iso: string) => new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 const stat = (s: string) => STATUS[s as Status] ?? <Badge>{s}</Badge>;
 const classBadge = (c: string) => <Badge tone="plain">Class {c}</Badge>;
-const input = 'h-10 w-full rounded-[10px] border border-input bg-card px-3 shadow-sm focus:border-ring focus:outline-none';
+const input = 'h-10 w-full rounded-[10px] border border-input bg-background px-3 text-sm shadow-sm focus:border-ring focus:outline-none';
+const formModal = `max-w-[480px] !p-6 ${mockupText}`;
 
 const docsOf = (u: PendingUser) =>
     [
@@ -70,7 +72,7 @@ export default function ClientManagement({ pendingUsers, rejectionReasons }: Pro
     const decided = approved + rejected;
     const rate = decided ? Math.round((approved / decided) * 100) : 0;
     const th = (k: string, label: string, hide?: boolean) => (
-        <th key={k} aria-sort={t.key === k ? (t.asc ? 'ascending' : 'descending') : 'none'} className={`px-4 py-2.5 text-left text-xs font-semibold whitespace-nowrap text-muted-foreground ${hide ? 'min-[720px]:max-md:hidden' : ''}`}>
+        <th key={k} aria-sort={t.key === k ? (t.asc ? 'ascending' : 'descending') : 'none'} className={`px-4 py-2.5 text-left text-xs font-semibold whitespace-nowrap text-muted-foreground ${hide ? 'min-[721px]:max-[861px]:hidden' : ''}`}>
             <button type="button" onClick={() => t.sort(k)} className="inline-flex cursor-pointer items-center gap-1.5 hover:text-foreground">
                 {label}
                 <span className="inline-block min-w-2.5 text-[11px] opacity-70">{t.key === k ? (t.asc ? '▲' : '▼') : ''}</span>
@@ -115,7 +117,7 @@ export default function ClientManagement({ pendingUsers, rejectionReasons }: Pro
     return (
         <AppLayout breadcrumbs={[{ title: 'Admin', href: '/admin/dashboard' }, { title: 'Client Management', href: '/admin/client-management' }]}>
             <Head title="Client Management" />
-            <div className="grid content-start gap-5 p-4 md:p-6">
+            <div className={pageFrame}>
                 <PageBanner title="Client Management" sub="Review registrations in a pending-first queue and open each client for details and documents." />
 
                 <ReviewSummary
@@ -138,11 +140,11 @@ export default function ClientManagement({ pendingUsers, rejectionReasons }: Pro
 
                 <Panel className="overflow-hidden">
                     <div className="grid gap-3.5 p-5">
-                    <div className="flex flex-wrap items-center justify-between gap-3 max-md:flex-col max-md:items-stretch">
+                    <div className="flex flex-wrap items-center justify-between gap-3 max-[861px]:flex-col max-[861px]:items-stretch max-[861px]:gap-2.5">
                         <Tabs tabs={tabs} value={tab} onChange={(v) => { setTab(v); setSelId(null); t.setPage(0); }} />
-                        <div className="flex flex-1 items-center justify-end gap-2">
-                            <input value={q} onChange={(e) => { setQ(e.target.value); t.setPage(0); }} placeholder="Search name, email, or account no." aria-label="Search clients" autoComplete="off" className={`${input} max-w-80 min-w-0 flex-1 max-md:max-w-none`} />
-                            <select aria-label="Filter by class" value={cls} onChange={(e) => { setCls(e.target.value); t.setPage(0); }} className="h-10 flex-none cursor-pointer rounded-[10px] border border-input bg-card px-3 shadow-sm">
+                        <div className="flex min-w-0 flex-1 items-center justify-end gap-2">
+                            <input value={q} onChange={(e) => { setQ(e.target.value); t.setPage(0); }} placeholder="Search name, email, or account no." aria-label="Search clients" autoComplete="off" className={`${input} max-w-80 min-w-0 flex-[1_1_200px] max-[861px]:max-w-none`} />
+                            <select aria-label="Filter by class" value={cls} onChange={(e) => { setCls(e.target.value); t.setPage(0); }} className="h-[38px] flex-none cursor-pointer rounded-[10px] border border-input bg-background py-0 pr-[34px] pl-3 text-sm shadow-sm">
                                 <option value="all">All classes</option>
                                 {['A', 'B', 'C', 'D'].map((c) => (
                                     <option key={c} value={c}>Class {c}</option>
@@ -151,9 +153,9 @@ export default function ClientManagement({ pendingUsers, rejectionReasons }: Pro
                         </div>
                     </div>
 
-                    <div className="overflow-x-auto">
-                        <table aria-label="Clients table" className="w-full border-collapse max-[720px]:block">
-                            <thead className="max-[720px]:hidden">
+                    <div className="overflow-x-auto max-[721px]:pt-1 max-[721px]:pb-1.5">
+                        <table aria-label="Clients table" className="w-full border-collapse max-[721px]:block">
+                            <thead className="max-[721px]:hidden">
                                 <tr className="border-b border-border">
                                     {th('name', 'Client')}
                                     {th('ph', 'Contact', true)}
@@ -164,10 +166,10 @@ export default function ClientManagement({ pendingUsers, rejectionReasons }: Pro
                                     <th className="px-4 py-3"><span className="sr-only">Actions</span></th>
                                 </tr>
                             </thead>
-                            <tbody className="max-[720px]:block">
+                            <tbody className="max-[721px]:block">
                                 {t.view.map((u) => (
-                                    <tr key={u.user_id} tabIndex={0} aria-label={`Open review for ${u.name}`} onClick={() => setSelId(u.user_id)} onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), setSelId(u.user_id))} className={`cursor-pointer border-b border-border hover:bg-muted min-[720px]:last:border-0 max-[720px]:mb-2.5 max-[720px]:grid max-[720px]:grid-cols-[minmax(0,1fr)_auto] max-[720px]:items-center max-[720px]:gap-x-3 max-[720px]:gap-y-1.5 max-[720px]:rounded-xl max-[720px]:border max-[720px]:p-3.5 max-[720px]:shadow-sm ${u.user_id === selId ? 'bg-tdfc-blue/15' : ''}`}>
-                                        <td className="px-4 py-3.5 max-[720px]:col-start-1 max-[720px]:row-start-1 max-[720px]:block max-[720px]:p-0">
+                                    <tr key={u.user_id} tabIndex={0} aria-label={`Open review for ${u.name}`} onClick={() => setSelId(u.user_id)} onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), setSelId(u.user_id))} className={`cursor-pointer border-b border-border hover:bg-muted min-[721px]:last:border-0 max-[721px]:mb-2.5 max-[721px]:grid max-[721px]:grid-cols-[minmax(0,1fr)_auto] max-[721px]:items-center max-[721px]:gap-x-3 max-[721px]:gap-y-1.5 max-[721px]:rounded-xl max-[721px]:border max-[721px]:p-3.5 max-[721px]:shadow-sm max-[721px]:active:bg-muted ${u.user_id === selId ? 'bg-tdfc-blue-soft' : 'max-[721px]:bg-background'}`}>
+                                        <td className="px-4 py-3.5 max-[721px]:col-start-1 max-[721px]:row-start-1 max-[721px]:block max-[721px]:self-start max-[721px]:p-0">
                                             <div className="flex min-w-0 items-center gap-2.5">
                                                 <span aria-hidden className="grid size-9 flex-none place-items-center rounded-full bg-tdfc-blue-soft text-[13px] font-bold text-tdfc-blue-ink">{ini(u.name)}</span>
                                                 <div className="min-w-0 break-words">
@@ -176,12 +178,12 @@ export default function ClientManagement({ pendingUsers, rejectionReasons }: Pro
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="px-4 py-3.5 text-muted-foreground min-[720px]:max-md:hidden max-[720px]:col-start-2 max-[720px]:row-start-2 max-[720px]:block max-[720px]:justify-self-end max-[720px]:p-0 max-[720px]:text-xs">{u.phone_no}</td>
-                                        <td className="px-4 py-3.5 text-muted-foreground tabular-nums min-[720px]:max-md:hidden max-[720px]:col-start-1 max-[720px]:row-start-2 max-[720px]:block max-[720px]:p-0 max-[720px]:text-xs">{u.acctno}</td>
-                                        <td className="px-4 py-3.5 text-muted-foreground min-[720px]:max-md:hidden max-[720px]:col-start-2 max-[720px]:row-start-3 max-[720px]:block max-[720px]:justify-self-end max-[720px]:p-0 max-[720px]:text-xs">{date(u.created_at)}</td>
-                                        <td className="px-4 py-3.5 max-[720px]:col-start-1 max-[720px]:row-start-3 max-[720px]:block max-[720px]:p-0">{u.class ? classBadge(u.class) : <span className="text-muted-foreground">—</span>}</td>
-                                        <td className="px-4 py-3.5 max-[720px]:col-start-2 max-[720px]:row-start-1 max-[720px]:block max-[720px]:self-start max-[720px]:justify-self-end max-[720px]:p-0">{stat(u.status)}</td>
-                                        <td className="px-4 py-3.5 text-right max-[720px]:col-span-2 max-[720px]:row-start-4 max-[720px]:block max-[720px]:p-0 max-[720px]:text-left max-[720px]:empty:hidden">
+                                        <td className="px-4 py-3.5 text-muted-foreground min-[721px]:max-[861px]:hidden max-[721px]:col-start-2 max-[721px]:row-start-2 max-[721px]:block max-[721px]:justify-self-end max-[721px]:p-0 max-[721px]:text-xs">{u.phone_no}</td>
+                                        <td className="px-4 py-3.5 text-muted-foreground tabular-nums min-[721px]:max-[861px]:hidden max-[721px]:col-start-1 max-[721px]:row-start-2 max-[721px]:block max-[721px]:p-0 max-[721px]:text-xs">{u.acctno}</td>
+                                        <td className="px-4 py-3.5 text-muted-foreground min-[721px]:max-[861px]:hidden max-[721px]:col-start-2 max-[721px]:row-start-3 max-[721px]:block max-[721px]:justify-self-end max-[721px]:p-0 max-[721px]:text-xs">{date(u.created_at)}</td>
+                                        <td className="px-4 py-3.5 max-[721px]:col-start-1 max-[721px]:row-start-3 max-[721px]:block max-[721px]:p-0">{u.class ? classBadge(u.class) : <span className="text-muted-foreground">—</span>}</td>
+                                        <td className="px-4 py-3.5 max-[721px]:col-start-2 max-[721px]:row-start-1 max-[721px]:block max-[721px]:self-start max-[721px]:justify-self-end max-[721px]:p-0">{stat(u.status)}</td>
+                                        <td className="px-4 py-3.5 text-right max-[721px]:col-span-2 max-[721px]:row-start-4 max-[721px]:block max-[721px]:p-0 max-[721px]:text-left max-[721px]:empty:hidden">
                                             {u.status === 'approved' && (
                                                 <button type="button" onClick={(e) => { e.stopPropagation(); router.get(`/admin/clients/${u.user_id}/dashboard`); }} onKeyDown={(e) => e.stopPropagation()} className={`${btn.base} ${btn.plain} ${btn.sm}`}>Open profile</button>
                                             )}
@@ -193,13 +195,13 @@ export default function ClientManagement({ pendingUsers, rejectionReasons }: Pro
                         {t.view.length === 0 && <div className="p-8 text-center text-muted-foreground">No clients match this view.</div>}
                     </div>
                     </div>
-                    <NumPager t={t} noun="clients" />
+                    <NumPager t={t} noun="" />
                 </Panel>
             </div>
 
             <Drawer open={!!sel} onClose={() => setSelId(null)} label="Client review">
                 {sel && (
-                    <div className="flex min-h-dvh flex-col">
+                    <div className={`flex min-h-dvh flex-col bg-background ${mockupText}`}>
                         <div className="flex items-start gap-3 border-b border-border px-5 py-4.5">
                             <div className="flex min-w-0 flex-1 items-center gap-3">
                                 <span aria-hidden className="grid size-9 flex-none place-items-center rounded-full bg-tdfc-blue-soft text-[13px] font-bold text-tdfc-blue-ink">{ini(sel.name)}</span>
@@ -255,7 +257,7 @@ export default function ClientManagement({ pendingUsers, rejectionReasons }: Pro
                             )}
                         </div>
                         {sel.status === 'pending' && (
-                            <div className="flex gap-2.5 border-t border-border bg-card px-5 py-4">
+                            <div className="flex gap-2.5 border-t border-border bg-background px-5 py-4">
                                 <button type="button" disabled={busy} onClick={() => { setPicked([]); setRejecting(true); }} className={`${btn.base} ${btn.danger} flex-1`}>Reject</button>
                                 <button type="button" disabled={busy} onClick={() => approve(sel)} className={`${btn.base} ${btn.dark} flex-1`}>{busy && <BtnSpinner />}Approve</button>
                             </div>
@@ -264,7 +266,7 @@ export default function ClientManagement({ pendingUsers, rejectionReasons }: Pro
                 )}
             </Drawer>
 
-            <Modal open={rejecting && !!sel} onClose={() => setRejecting(false)} label="Reject registration">
+            <Modal open={rejecting && !!sel} onClose={() => setRejecting(false)} label="Reject registration" className={formModal}>
                 <h3 className="text-lg font-semibold">Reject registration</h3>
                 <p className="text-muted-foreground">Select every reason for rejecting <b>{sel?.name}</b>.</p>
                 <div className="mt-3.5 grid gap-2">
@@ -284,7 +286,7 @@ export default function ClientManagement({ pendingUsers, rejectionReasons }: Pro
                 </div>
             </Modal>
 
-            <Modal open={!!salaryFor} onClose={() => setSalaryFor(null)} label="Set Basic Salary">
+            <Modal open={!!salaryFor} onClose={() => setSalaryFor(null)} label="Set Basic Salary" className={formModal}>
                 <h3 className="text-lg font-semibold">Set Basic Salary</h3>
                 <p className="text-muted-foreground">Update basic salary for <b>{salaryFor?.name}</b>.</p>
                 <div className="mt-3.5 grid gap-1.5">

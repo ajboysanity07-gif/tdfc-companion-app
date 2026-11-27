@@ -127,14 +127,14 @@ export const Tabs = <T extends string>({
 }) => {
     const id = useId();
     return (
-        <div role="tablist" className="flex flex-wrap gap-2">
+        <div role="tablist" className="flex flex-wrap gap-1.5">
             {tabs.map((t) => (
                 <button
                     key={t.id}
                     role="tab"
                     aria-selected={value === t.id}
                     onClick={() => onChange(t.id)}
-                    className={`relative inline-flex h-[38px] cursor-pointer items-center rounded-full border px-3.5 text-sm font-semibold transition-colors ${value === t.id ? 'border-muted-foreground text-foreground' : 'border-border bg-background text-muted-foreground hover:border-muted-foreground hover:text-foreground'}`}
+                    className={`relative inline-flex h-[38px] cursor-pointer items-center rounded-full border px-3.5 text-sm font-semibold transition-colors max-[721px]:px-3${value === t.id ? 'border-muted-foreground text-foreground' : 'border-border bg-background text-muted-foreground hover:border-muted-foreground hover:text-foreground'}`}
                 >
                     {value === t.id && (
                         <motion.span
@@ -274,7 +274,7 @@ export const NumPager = ({ t, noun = 'results' }: { t: Tbl; noun?: string }) => 
     return (
         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border px-4 py-3">
             <div className="text-muted-foreground">
-                {t.total ? `Showing ${s + 1}-${Math.min(s + t.per, t.total)} of ${t.total} ${noun}` : 'No results'}
+                {t.total ? `Showing ${s + 1}-${Math.min(s + t.per, t.total)} of ${t.total}${noun && ` ${noun}`}` : 'No results'}
             </div>
             <div className="flex gap-1">
                 <button aria-label="Previous page" disabled={t.page < 1} onClick={() => t.setPage(t.page - 1)} className={`${b} hover:bg-muted`}>

@@ -59,6 +59,8 @@ const Dl = ({ l, v }: { l: string; v: string }) => (
 
 const th = 'sticky top-0 z-1 border-b border-border bg-muted px-5 py-3 text-[11px] tracking-[.04em] text-muted-foreground uppercase';
 const td = 'border-b border-border px-5 py-3 text-sm';
+// Recent payments stay a table on phones, tightened to fit three columns.
+const hist = 'max-[701px]:!px-2 max-[701px]:!py-2.5 max-[701px]:!text-[13px]';
 const pad = 'px-6 py-5 max-[701px]:p-4';
 const h2 = 'text-base font-bold';
 const smBtn = `${btn.base} ${btn.sm} gap-2 border-border bg-background hover:bg-muted max-[861px]:!h-11 max-[701px]:w-full`;
@@ -317,46 +319,30 @@ export default function LoanTransactionShow({
                                         {payments.length === 0 ? (
                                             <p className="text-muted-foreground">No payments posted yet.</p>
                                         ) : (
-                                            <>
-                                                <div className="max-h-[360px] overflow-auto rounded-xl border border-border max-[701px]:hidden">
-                                                    <table className="w-full border-separate border-spacing-0 whitespace-nowrap tabular-nums [&_tbody_tr:last-child_td]:border-b-0">
-                                                        <thead>
-                                                            <tr>
-                                                                <th className={`${th} text-left`}>Date</th>
-                                                                <th className={`${th} text-left`}>Description</th>
-                                                                <th className={`${th} text-left`}>Reference</th>
-                                                                <th className={`${th} text-right`}>Amount paid</th>
-                                                                <th className={`${th} text-right`}>Balance after</th>
+                                            <div className="max-h-[360px] overflow-auto rounded-xl border border-border">
+                                                <table className="w-full border-separate border-spacing-0 whitespace-nowrap tabular-nums max-[701px]:whitespace-normal [&_tbody_tr:last-child_td]:border-b-0">
+                                                    <thead>
+                                                        <tr>
+                                                            <th className={`${th} ${hist} text-left`}>Date</th>
+                                                            <th className={`${th} text-left max-[701px]:hidden`}>Description</th>
+                                                            <th className={`${th} text-left max-[701px]:hidden`}>Reference</th>
+                                                            <th className={`${th} ${hist} text-right`}>Amount paid</th>
+                                                            <th className={`${th} ${hist} text-right`}>Balance after</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {payments.map((h, i) => (
+                                                            <tr key={`${h.controlno}-${i}`} className="hover:bg-muted">
+                                                                <td className={`${td} ${hist}`}>{fdateLong(h.date)}</td>
+                                                                <td className={`${td} max-[701px]:hidden`}>Loan payment</td>
+                                                                <td className={`${td} text-muted-foreground max-[701px]:hidden`}>{h.reference || '—'}</td>
+                                                                <td className={`${td} ${hist} text-right font-bold`}>{peso(-h.amount)}</td>
+                                                                <td className={`${td} ${hist} text-right`}>{peso(h.balance)}</td>
                                                             </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            {payments.map((h, i) => (
-                                                                <tr key={`${h.controlno}-${i}`} className="hover:bg-muted">
-                                                                    <td className={td}>{fdateLong(h.date)}</td>
-                                                                    <td className={td}>Loan payment</td>
-                                                                    <td className={`${td} text-muted-foreground`}>{h.reference || '—'}</td>
-                                                                    <td className={`${td} text-right font-bold`}>{peso(-h.amount)}</td>
-                                                                    <td className={`${td} text-right`}>{peso(h.balance)}</td>
-                                                                </tr>
-                                                            ))}
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-                                                <ul className="max-h-[360px] overflow-auto tabular-nums min-[701px]:hidden">
-                                                    {payments.map((h, i) => (
-                                                        <li
-                                                            key={`${h.controlno}-${i}`}
-                                                            className="mt-2.5 flex items-start justify-between gap-3 rounded-xl border border-border px-3.5 py-3 first:mt-0"
-                                                        >
-                                                            <b className="text-sm">{fdateLong(h.date)}</b>
-                                                            <div className="text-right">
-                                                                <b className="block text-base">{peso(-h.amount)}</b>
-                                                                <span className="text-xs text-muted-foreground">Balance after {peso(h.balance)}</span>
-                                                            </div>
-                                                        </li>
-                                                    ))}
-                                                </ul>
-                                            </>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            </div>
                                         )}
                                     </div>
                                     <div className={`${pad} border-t border-border`}>

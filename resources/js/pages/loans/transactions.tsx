@@ -274,11 +274,11 @@ export default function LoansTransactionPage({ transactions }: { transactions: T
                                             </th>
                                         </tr>
                                     </thead>
-                                    <tbody className="max-[861px]:grid max-[861px]:grid-cols-1 max-[861px]:gap-2.5 max-[861px]:p-3">
+                                    <tbody className="max-[861px]:block">
                                         {view.map((r) => (
                                             <tr
                                                 key={r.lnnumber}
-                                                className="group hover:bg-muted max-[861px]:grid max-[861px]:grid-cols-[minmax(0,1fr)_auto_auto] max-[861px]:items-center max-[861px]:gap-x-3 max-[861px]:rounded-xl max-[861px]:border max-[861px]:border-border max-[861px]:px-4 max-[861px]:py-2.5 max-[861px]:shadow-sm"
+                                                className="group hover:bg-muted max-[861px]:grid max-[861px]:grid-cols-[minmax(0,1fr)_auto_auto] max-[861px]:items-center max-[861px]:gap-x-3 max-[861px]:border-b max-[861px]:border-border max-[861px]:px-4 max-[861px]:py-2.5 max-[861px]:last:border-0"
                                             >
                                                 <td className={`${td} ${dim} whitespace-nowrap max-[861px]:!hidden`}>{fd(r.date)}</td>
                                                 <td className={td}>
