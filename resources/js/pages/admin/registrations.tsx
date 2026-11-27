@@ -89,7 +89,7 @@ export default function Registrations() {
                             </thead>
                             <tbody>
                                 {t.view.map((e, i) => (
-                                    <tr key={e.id} style={riseStyle(i)} className="animate-tdfc-rise border-b border-border align-top last:border-0 hover:bg-muted max-sm:mx-4 max-sm:mb-2.5 max-sm:block max-sm:rounded-xl max-sm:border max-sm:p-3.5">
+                                    <tr key={e.id} style={riseStyle(i)} className="animate-tdfc-rise border-b border-border align-top hover:bg-muted min-[721px]:last:border-0 max-sm:mx-4 max-sm:mb-2.5 max-sm:block max-sm:rounded-xl max-sm:border max-sm:p-3.5">
                                         <td className="px-4 py-3.5 max-sm:block max-sm:p-0">
                                             <span className="font-medium">{new Date(e.at).toLocaleDateString('en-PH', { dateStyle: 'medium' })}</span>
                                             <span className="block text-xs text-muted-foreground">{new Date(e.at).toLocaleTimeString('en-PH', { timeStyle: 'short' })}</span>

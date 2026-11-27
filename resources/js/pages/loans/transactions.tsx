@@ -278,7 +278,7 @@ export default function LoansTransactionPage({ transactions }: { transactions: T
                                         {view.map((r) => (
                                             <tr
                                                 key={r.lnnumber}
-                                                className="group hover:bg-muted max-[861px]:grid max-[861px]:grid-cols-[minmax(0,1fr)_auto_auto] max-[861px]:items-center max-[861px]:gap-x-3 max-[861px]:border-b max-[861px]:border-border max-[861px]:px-4 max-[861px]:py-2.5 max-[861px]:last:border-0"
+                                                className="group hover:bg-muted max-[861px]:block max-[861px]:border max-[861px]:border-border max-[861px]:rounded-xl max-[861px]:p-3.5 max-[861px]:shadow-sm max-[861px]:mb-2.5 max-[861px]:last:mb-0"
                                             >
                                                 <td className={`${td} ${dim} whitespace-nowrap max-[861px]:!hidden`}>{fd(r.date)}</td>
                                                 <td className={td}>
