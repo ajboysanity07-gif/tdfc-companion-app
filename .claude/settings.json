@@ -4,5 +4,27 @@
     "ship@dotclaude": true,
     "code-reviewer@dotclaude": true,
     "security-reviewer@dotclaude": true
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|Grep",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"C:/Users/ACER Predator/.local/bin/graphify.EXE\" hook-guard search"
+          }
+        ]
+      },
+      {
+        "matcher": "Read|Glob",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"C:/Users/ACER Predator/.local/bin/graphify.EXE\" hook-guard read"
+          }
+        ]
+      }
+    ]
   }
 }
