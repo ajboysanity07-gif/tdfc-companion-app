@@ -241,7 +241,7 @@ export default function SavingsTransactionPage({ transactions }: { transactions:
                                             </th>
                                         </tr>
                                     </thead>
-                                    <tbody className="max-[861px]:block">
+                                    <tbody className="max-[861px]:grid max-[861px]:grid-cols-1 max-[861px]:gap-2.5 max-[861px]:p-3">
                                         {view.map((r, i) => {
                                             const head =
                                                 sort !== 'big' && (i === 0 || month(r.date) !== month(view[i - 1].date)) ? month(r.date) : null;
@@ -254,13 +254,13 @@ export default function SavingsTransactionPage({ transactions }: { transactions:
                                                             <th
                                                                 colSpan={4}
                                                                 scope="colgroup"
-                                                                className="border-b border-border bg-muted px-4 py-2 text-left text-xs font-semibold max-[861px]:block max-[861px]:border-0"
+                                                                className="border-b border-border bg-muted px-4 py-2 text-left text-xs font-semibold max-[861px]:block max-[861px]:rounded-lg max-[861px]:border-0"
                                                             >
                                                                 {head}
                                                             </th>
                                                         </tr>
                                                     )}
-                                                    <tr className="group hover:bg-muted max-[861px]:block max-[861px]:border max-[861px]:border-border max-[861px]:rounded-xl max-[861px]:p-3.5 max-[861px]:shadow-sm max-[861px]:mb-2.5 max-[861px]:last:mb-0">
+                                                    <tr className="group hover:bg-muted max-[861px]:grid max-[861px]:grid-cols-[minmax(0,1fr)_auto] max-[861px]:gap-x-3 max-[861px]:rounded-xl max-[861px]:border max-[861px]:border-border max-[861px]:px-4 max-[861px]:py-3 max-[861px]:shadow-sm">
                                                         <td className={`${td} ${dim} w-[1%] pr-6 whitespace-nowrap max-[861px]:!hidden`}>
                                                             {fd(r.date)}
                                                         </td>

@@ -30,8 +30,6 @@ const date = (iso: string) => new Date(iso).toLocaleDateString('en-US', { month:
 const stat = (s: string) => STATUS[s as Status] ?? <Badge>{s}</Badge>;
 const classBadge = (c: string) => <Badge tone="plain">Class {c}</Badge>;
 const input = 'h-10 w-full rounded-[10px] border border-input bg-card px-3 shadow-sm focus:border-ring focus:outline-none';
-const card = 'border border-border max-[720px]:rounded-xl max-[720px]:p-3.5 max-[720px]:shadow-sm max-[720px]:mb-2.5';
-const rowGrid = 'grid gap-x-3 gap-y-1.5 max-[720px]:grid-cols-[minmax(0,1fr)_auto] max-[720px]:items-center';
 
 const docsOf = (u: PendingUser) =>
     [
@@ -72,7 +70,7 @@ export default function ClientManagement({ pendingUsers, rejectionReasons }: Pro
     const decided = approved + rejected;
     const rate = decided ? Math.round((approved / decided) * 100) : 0;
     const th = (k: string, label: string, hide?: boolean) => (
-        <th key={k} aria-sort={t.key === k ? (t.asc ? 'ascending' : 'descending') : 'none'} className={`px-4 py-2.5 text-left text-xs font-semibold whitespace-nowrap text-muted-foreground ${hide ? 'min-[721px]:max-md:hidden' : ''}`}>
+        <th key={k} aria-sort={t.key === k ? (t.asc ? 'ascending' : 'descending') : 'none'} className={`px-4 py-2.5 text-left text-xs font-semibold whitespace-nowrap text-muted-foreground ${hide ? 'min-[720px]:max-md:hidden' : ''}`}>
             <button type="button" onClick={() => t.sort(k)} className="inline-flex cursor-pointer items-center gap-1.5 hover:text-foreground">
                 {label}
                 <span className="inline-block min-w-2.5 text-[11px] opacity-70">{t.key === k ? (t.asc ? '▲' : '▼') : ''}</span>
@@ -166,64 +164,33 @@ export default function ClientManagement({ pendingUsers, rejectionReasons }: Pro
                                     <th className="px-4 py-3"><span className="sr-only">Actions</span></th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody className="max-[720px]:block">
                                 {t.view.map((u) => (
-                                    <>
-                                        {/* Desktop table row */}
-                                        <tr key={u.user_id} tabIndex={0} aria-label={`Open review for ${u.name}`} onClick={() => setSelId(u.user_id)} onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), setSelId(u.user_id))} className={`cursor-pointer border-b border-border last:border-0 hover:bg-muted max-[720px]:hidden ${u.user_id === selId ? 'bg-tdfc-blue/15' : ''}`}>
-                                            <td className="px-4 py-3.5">
-                                                <div className="flex min-w-0 items-center gap-2.5">
-                                                    <span aria-hidden className="grid size-9 flex-none place-items-center rounded-full bg-tdfc-blue-soft text-[13px] font-bold text-tdfc-blue-ink">{ini(u.name)}</span>
-                                                    <div className="min-w-0">
-                                                        <span className="font-semibold">{u.name}</span>
-                                                        <span className="block text-xs text-muted-foreground">{u.email}</span>
-                                                    </div>
+                                    <tr key={u.user_id} tabIndex={0} aria-label={`Open review for ${u.name}`} onClick={() => setSelId(u.user_id)} onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), setSelId(u.user_id))} className={`cursor-pointer border-b border-border hover:bg-muted min-[720px]:last:border-0 max-[720px]:mb-2.5 max-[720px]:grid max-[720px]:grid-cols-[minmax(0,1fr)_auto] max-[720px]:items-center max-[720px]:gap-x-3 max-[720px]:gap-y-1.5 max-[720px]:rounded-xl max-[720px]:border max-[720px]:p-3.5 max-[720px]:shadow-sm ${u.user_id === selId ? 'bg-tdfc-blue/15' : ''}`}>
+                                        <td className="px-4 py-3.5 max-[720px]:col-start-1 max-[720px]:row-start-1 max-[720px]:block max-[720px]:p-0">
+                                            <div className="flex min-w-0 items-center gap-2.5">
+                                                <span aria-hidden className="grid size-9 flex-none place-items-center rounded-full bg-tdfc-blue-soft text-[13px] font-bold text-tdfc-blue-ink">{ini(u.name)}</span>
+                                                <div className="min-w-0 break-words">
+                                                    <span className="font-semibold">{u.name}</span>
+                                                    <span className="block text-xs text-muted-foreground">{u.email}</span>
                                                 </div>
-                                            </td>
-                                            <td className="px-4 py-3.5 text-muted-foreground max-md:hidden">{u.phone_no}</td>
-                                            <td className="px-4 py-3.5 text-muted-foreground tabular-nums max-md:hidden">{u.acctno}</td>
-                                            <td className="px-4 py-3.5 text-muted-foreground max-md:hidden">{date(u.created_at)}</td>
-                                            <td className="px-4 py-3.5">{u.class ? classBadge(u.class) : <span className="text-muted-foreground">—</span>}</td>
-                                            <td className="px-4 py-3.5">{stat(u.status)}</td>
-                                            <td className="px-4 py-3.5 text-right">
-                                                {u.status === 'approved' && (
-                                                    <button type="button" onClick={(e) => { e.stopPropagation(); router.get(`/admin/clients/${u.user_id}/dashboard`); }} onKeyDown={(e) => e.stopPropagation()} className={`${btn.base} ${btn.plain} ${btn.sm}`}>Open profile</button>
-                                                )}
-                                            </td>
-                                        </tr>
-                                        {/* Mobile card */}
-                                        <div key={`mobile-${u.user_id}`} className={card}>
-                                            <div className={rowGrid}>
-                                                {/* Row 1: Client (avatar, name, email) | Status */}
-                                                <div className="flex min-w-0 items-center gap-2.5">
-                                                    <span aria-hidden className="grid size-9 flex-none place-items-center rounded-full bg-tdfc-blue-soft text-[13px] font-bold text-tdfc-blue-ink">{ini(u.name)}</span>
-                                                    <div className="min-w-0">
-                                                        <span className="font-semibold">{u.name}</span>
-                                                        <span className="block text-xs text-muted-foreground">{u.email}</span>
-                                                    </div>
-                                                </div>
-                                                <div>{stat(u.status)}</div>
-                                                {/* Row 2: Account no. | Phone */}
-                                                <div className="text-xs text-muted-foreground">
-                                                    <span className="block tabular-nums">{u.acctno}</span>
-                                                    <span className="block text-muted-foreground">{u.phone_no}</span>
-                                                </div>
-                                                {/* Row 3: Class | Submitted date */}
-                                                <div>{u.class ? classBadge(u.class) : <span className="text-muted-foreground">—</span>}</div>
-                                                <div className="text-muted-foreground">{date(u.created_at)}</div>
-                                                {/* Row 4: "Open profile" button - shown on mobile only when approved */}
-                                                {u.status === 'approved' && (
-                                                    <div>
-                                                        <button type="button" onClick={() => setSelId(u.user_id)} className={`${btn.base} ${btn.plain} ${btn.sm}`}>Open profile</button>
-                                                    </div>
-                                                )}
                                             </div>
-                                        </div>
-                                    </>
+                                        </td>
+                                        <td className="px-4 py-3.5 text-muted-foreground min-[720px]:max-md:hidden max-[720px]:col-start-2 max-[720px]:row-start-2 max-[720px]:block max-[720px]:justify-self-end max-[720px]:p-0 max-[720px]:text-xs">{u.phone_no}</td>
+                                        <td className="px-4 py-3.5 text-muted-foreground tabular-nums min-[720px]:max-md:hidden max-[720px]:col-start-1 max-[720px]:row-start-2 max-[720px]:block max-[720px]:p-0 max-[720px]:text-xs">{u.acctno}</td>
+                                        <td className="px-4 py-3.5 text-muted-foreground min-[720px]:max-md:hidden max-[720px]:col-start-2 max-[720px]:row-start-3 max-[720px]:block max-[720px]:justify-self-end max-[720px]:p-0 max-[720px]:text-xs">{date(u.created_at)}</td>
+                                        <td className="px-4 py-3.5 max-[720px]:col-start-1 max-[720px]:row-start-3 max-[720px]:block max-[720px]:p-0">{u.class ? classBadge(u.class) : <span className="text-muted-foreground">—</span>}</td>
+                                        <td className="px-4 py-3.5 max-[720px]:col-start-2 max-[720px]:row-start-1 max-[720px]:block max-[720px]:self-start max-[720px]:justify-self-end max-[720px]:p-0">{stat(u.status)}</td>
+                                        <td className="px-4 py-3.5 text-right max-[720px]:col-span-2 max-[720px]:row-start-4 max-[720px]:block max-[720px]:p-0 max-[720px]:text-left max-[720px]:empty:hidden">
+                                            {u.status === 'approved' && (
+                                                <button type="button" onClick={(e) => { e.stopPropagation(); router.get(`/admin/clients/${u.user_id}/dashboard`); }} onKeyDown={(e) => e.stopPropagation()} className={`${btn.base} ${btn.plain} ${btn.sm}`}>Open profile</button>
+                                            )}
+                                        </td>
+                                    </tr>
                                 ))}
                             </tbody>
                         </table>
-                        {t.view.length === 0 && <div className="p-8 text-center text-muted-foreground max-[720px]:block">No clients match this view.</div>}
+                        {t.view.length === 0 && <div className="p-8 text-center text-muted-foreground">No clients match this view.</div>}
                     </div>
                     </div>
                     <NumPager t={t} noun="clients" />

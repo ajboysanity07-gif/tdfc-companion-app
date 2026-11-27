@@ -318,51 +318,44 @@ export default function LoanTransactionShow({
                                             <p className="text-muted-foreground">No payments posted yet.</p>
                                         ) : (
                                             <>
-                                                {/* Desktop table */}
-                                                <div className="max-[701px]:hidden">
-                                                    <div className="max-h-[360px] overflow-auto rounded-xl border border-border">
-                                                        <table className="w-full border-separate border-spacing-0 whitespace-nowrap tabular-nums [&_tbody_tr:last-child_td]:border-b-0">
-                                                            <thead>
-                                                                <tr>
-                                                                    <th className={`${th} text-left`}>Date</th>
-                                                                    <th className={`${th} text-left`}>Description</th>
-                                                                    <th className={`${th} text-left`}>Reference</th>
-                                                                    <th className={`${th} text-right`}>Amount paid</th>
-                                                                    <th className={`${th} text-right`}>Balance after</th>
+                                                <div className="max-h-[360px] overflow-auto rounded-xl border border-border max-[701px]:hidden">
+                                                    <table className="w-full border-separate border-spacing-0 whitespace-nowrap tabular-nums [&_tbody_tr:last-child_td]:border-b-0">
+                                                        <thead>
+                                                            <tr>
+                                                                <th className={`${th} text-left`}>Date</th>
+                                                                <th className={`${th} text-left`}>Description</th>
+                                                                <th className={`${th} text-left`}>Reference</th>
+                                                                <th className={`${th} text-right`}>Amount paid</th>
+                                                                <th className={`${th} text-right`}>Balance after</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {payments.map((h, i) => (
+                                                                <tr key={`${h.controlno}-${i}`} className="hover:bg-muted">
+                                                                    <td className={td}>{fdateLong(h.date)}</td>
+                                                                    <td className={td}>Loan payment</td>
+                                                                    <td className={`${td} text-muted-foreground`}>{h.reference || '—'}</td>
+                                                                    <td className={`${td} text-right font-bold`}>{peso(-h.amount)}</td>
+                                                                    <td className={`${td} text-right`}>{peso(h.balance)}</td>
                                                                 </tr>
-                                                            </thead>
-                                                            <tbody>
-                                                                {payments.map((h, i) => (
-                                                                    <tr key={`${h.controlno}-${i}`} className="hover:bg-muted">
-                                                                        <td className={`${td}`}>{fdateLong(h.date)}</td>
-                                                                        <td className={`${td}`}>Loan payment</td>
-                                                                        <td className={`${td} text-muted-foreground`}>{h.reference || '—'}</td>
-                                                                        <td className={`${td} text-right font-bold`}>{peso(-h.amount)}</td>
-                                                                        <td className={`${td} text-right`}>{peso(h.balance)}</td>
-                                                                    </tr>
-                                                                ))}
-                                                            </tbody>
-                                                        </table>
-                                                    </div>
+                                                            ))}
+                                                        </tbody>
+                                                    </table>
                                                 </div>
-                                                {/* Mobile card list */}
-                                                <div className="divide-y divide-border max-[701px]:rounded-xl max-[701px]:border max-[701px]:overflow-hidden max-[701px]:max-h-[360px] max-[701px]:overflow-auto">
+                                                <ul className="max-h-[360px] overflow-auto tabular-nums min-[701px]:hidden">
                                                     {payments.map((h, i) => (
-                                                        <div key={`${h.controlno}-${i}`} className="flex items-start justify-between gap-2 p-3 hover:bg-muted">
-                                                            <div>
-                                                                <div className="flex items-baseline gap-2">
-                                                                    <b className="font-semibold">{peso(-h.amount)}</b>
-                                                                    <b className="text-muted-foreground text-xs">Amount paid</b>
-                                                                </div>
-                                                                <div className="text-xs text-muted-foreground">{fdateLong(h.date)}</div>
+                                                        <li
+                                                            key={`${h.controlno}-${i}`}
+                                                            className="mt-2.5 flex items-start justify-between gap-3 rounded-xl border border-border px-3.5 py-3 first:mt-0"
+                                                        >
+                                                            <b className="text-sm">{fdateLong(h.date)}</b>
+                                                            <div className="text-right">
+                                                                <b className="block text-base">{peso(-h.amount)}</b>
+                                                                <span className="text-xs text-muted-foreground">Balance after {peso(h.balance)}</span>
                                                             </div>
-                                                            <div className="text-xs text-muted-foreground text-right">
-                                                                Balance after<br />
-                                                                {peso(h.balance)}
-                                                            </div>
-                                                        </div>
+                                                        </li>
                                                     ))}
-                                                </div>
+                                                </ul>
                                             </>
                                         )}
                                     </div>
