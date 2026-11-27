@@ -78,6 +78,16 @@ export interface PendingUser {
     acctno: string;
     status: string;
     class?: string;
+    detected_class?: string;
+    manual_class?: string | null;
+    class_history?: Array<{
+        previous_override_class: string | null;
+        new_override_class: string | null;
+        detected_class: string | null;
+        reason: string;
+        changed_at: string;
+        changed_by: string;
+    }>;
     prc_id_photo_front?: string;
     prc_id_photo_back?: string;
     payslip_photo_path?: string;

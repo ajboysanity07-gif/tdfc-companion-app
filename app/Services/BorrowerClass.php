@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\AppUser;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -42,5 +43,10 @@ class BorrowerClass
         }
 
         return $worst ? ['A', 'B', 'C', 'D'][$worst - 1] : null;
+    }
+
+    public static function effectiveFor(AppUser $user): ?string
+    {
+        return $user->manual_borrower_class ?? self::for($user->acctno);
     }
 }

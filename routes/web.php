@@ -113,6 +113,9 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::post('/client-management/reject/{user:user_id}', [ClientManagementController::class, 'reject'])
         ->name('client-management.reject');
 
+    Route::post('/client-management/{user:user_id}/borrower-class', [ClientManagementController::class, 'updateBorrowerClass'])
+        ->name('client-management.borrower-class.update');
+
     Route::post('/users/{user}/reject', [UserRejectionController::class, 'reject']);
     Route::get('/users/{user}/rejection-reasons', [UserRejectionController::class, 'getRejectionReasons']);
 

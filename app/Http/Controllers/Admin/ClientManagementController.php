@@ -2,18 +2,18 @@
 
 namespace App\Http\Controllers\Admin;
 
-use Inertia\Inertia;
-use Inertia\Response as InertiaResponse;
-use App\Models\AppUser;
-use Illuminate\Http\Request;
-use Illuminate\Http\RedirectResponse;
-use App\Models\RejectionReason;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Log; // <-- make sure this is here
-use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
+use App\Models\AppUser;
+use App\Models\BorrowerClassOverride;
+use App\Models\RejectionReason;
 use App\Models\WSalaryRecord;
 use App\Services\BorrowerClass;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB; // <-- make sure this is here
+use Illuminate\Support\Facades\Log;
+use Inertia\Inertia;
+use Inertia\Response as InertiaResponse;
 
 class ClientManagementController extends Controller
 {
@@ -25,14 +25,26 @@ class ClientManagementController extends Controller
     {
         try {
             // Just use your Eloquent relationships!
-            $allUsers = AppUser::with(['wmaster', 'rejectionReasons:id,code,label'])
+            $allUsers = AppUser::with(['wmaster', 'rejectionReasons:id,code,label', 'borrowerClassOverrides.changedBy'])
                 ->whereNotNull('prc_id_photo_front')
                 ->whereNotNull('prc_id_photo_back')
                 ->whereNotNull('payslip_photo_path')
                 ->orderBy('created_at', 'asc')
                 ->get()
                 ->map(function ($user) {
-                    $overallClass = BorrowerClass::for($user->acctno);
+                    $detectedClass = BorrowerClass::for($user->acctno);
+                    $classHistory = $user->borrowerClassOverrides
+                        ->sortByDesc('created_at')
+                        ->values()
+                        ->map(fn (BorrowerClassOverride $override) => [
+                            'previous_override_class' => $override->previous_override_class,
+                            'new_override_class' => $override->new_override_class,
+                            'detected_class' => $override->detected_class,
+                            'reason' => $override->reason,
+                            'changed_at' => $override->created_at->toISOString(),
+                            'changed_by' => $override->changedBy?->name ?? 'Unknown admin',
+                        ])
+                        ->all();
 
                     $latestSalary = WSalaryRecord::where('acctno', $user->acctno)
                         ->orderBy('created_at', 'desc')
@@ -46,7 +58,10 @@ class ClientManagementController extends Controller
                         'phone_no' => $user->phone_no,
                         'acctno' => $user->acctno,
                         'status' => $user->status,
-                        'class' => $overallClass,
+                        'class' => BorrowerClass::effectiveFor($user),
+                        'detected_class' => $detectedClass,
+                        'manual_class' => $user->manual_borrower_class,
+                        'class_history' => $classHistory,
                         'prc_id_photo_front' => $user->prc_id_photo_front,
                         'prc_id_photo_back' => $user->prc_id_photo_back,
                         'payslip_photo_path' => $user->payslip_photo_path,
@@ -57,9 +72,9 @@ class ClientManagementController extends Controller
                         'salary_amount' => $latestSalary?->salary_amount,
                         'notes' => $latestSalary?->notes,
                         'rejection_reasons' => $user->isRejected()
-                            ? $user->rejectionReasons->map(fn($r) => [
+                            ? $user->rejectionReasons->map(fn ($r) => [
                                 'code' => $r->code,
-                                'label' => $r->label
+                                'label' => $r->label,
                             ])->toArray()
                             : [],
                     ];
@@ -74,8 +89,9 @@ class ClientManagementController extends Controller
         } catch (\Exception $e) {
             Log::error('Error loading client management page', [
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
+
             return back()->with('error', 'Error loading client management page');
         }
     }
@@ -121,7 +137,8 @@ class ClientManagementController extends Controller
                 'user_id' => $user->user_id ?? 'unknown',
                 'error' => $e->getMessage(),
             ]);
-            return redirect()->back()->with('error', 'Error approving user: ' . $e->getMessage());
+
+            return redirect()->back()->with('error', 'Error approving user: '.$e->getMessage());
         }
     }
 
@@ -144,7 +161,7 @@ class ClientManagementController extends Controller
 
             $validated = $request->validate([
                 'reasons' => 'required|array|min:1',
-                'reasons.*' => 'string|exists:rejection_reasons,code'
+                'reasons.*' => 'string|exists:rejection_reasons,code',
             ]);
 
             $reasonIds = RejectionReason::whereIn('code', $validated['reasons'])
@@ -174,42 +191,81 @@ class ClientManagementController extends Controller
                 'user_id' => $user->user_id ?? 'unknown',
                 'error' => $e->getMessage(),
             ]);
-            return redirect()->back()->with('error', 'Error rejecting user: ' . $e->getMessage());
+
+            return redirect()->back()->with('error', 'Error rejecting user: '.$e->getMessage());
         }
+    }
+
+    public function updateBorrowerClass(Request $request, AppUser $user): RedirectResponse
+    {
+        $validated = $request->validate([
+            'class' => ['nullable', 'string', 'in:A,B,C,D'],
+            'reason' => ['required', 'string', 'max:1000'],
+        ]);
+
+        $newOverrideClass = $validated['class'] ?? null;
+
+        if ($newOverrideClass === $user->manual_borrower_class) {
+            return back()->with('error', 'The borrower class override has not changed.');
+        }
+
+        DB::transaction(function () use ($newOverrideClass, $user, $validated): void {
+            $previousOverrideClass = $user->manual_borrower_class;
+            $detectedClass = BorrowerClass::for($user->acctno);
+
+            $user->update(['manual_borrower_class' => $newOverrideClass]);
+
+            BorrowerClassOverride::create([
+                'user_id' => $user->user_id,
+                'previous_override_class' => $previousOverrideClass,
+                'new_override_class' => $newOverrideClass,
+                'detected_class' => $detectedClass,
+                'reason' => $validated['reason'],
+                'changed_by' => auth()->id(),
+            ]);
+        });
+
+        $message = $newOverrideClass
+            ? "Borrower class overridden to Class {$newOverrideClass}."
+            : 'Automatic borrower-class detection restored.';
+
+        return back()->with('success', $message);
     }
 
     /**
      * Save salary record for user in wsalary_records table.
      */
-public function updateSalary(Request $request, $acctno)
-{
-    Log::info('updateSalary called', ['acctno' => $acctno]);
+    public function updateSalary(Request $request, $acctno)
+    {
+        Log::info('updateSalary called', ['acctno' => $acctno]);
 
-    // Find the user associated with the given acctno
-    $user = AppUser::where('acctno', $acctno)->firstOrFail();
+        // Find the user associated with the given acctno
+        $user = AppUser::where('acctno', $acctno)->firstOrFail();
 
-    $validated = $request->validate([
-        'salary_amount' => ['required', 'numeric', 'min:0.01'],
-        'notes' => ['nullable', 'string', 'max:255'],
-    ]);
-
-    try {
-        Log::info('Inserting salary record', [
-            'acctno' => $user->acctno,
-            'salary_amount' => $validated['salary_amount'],
-            'notes' => $validated['notes'] ?? null
+        $validated = $request->validate([
+            'salary_amount' => ['required', 'numeric', 'min:0.01'],
+            'notes' => ['nullable', 'string', 'max:255'],
         ]);
 
-        $row = WSalaryRecord::create([
-            'acctno'        => $user->acctno,
-            'salary_amount' => $validated['salary_amount'],
-            'notes'         => $validated['notes'] ?? null,
-        ]);
-        Log::info('Salary record created', ['id' => $row->id ?? null]);
-        return response()->json(['message' => 'Salary record saved', 'record' => $row]);
-    } catch (\Exception $e) {
-        Log::error('Error saving salary record', ['msg' => $e->getMessage()]);
-        return response()->json(['error' => $e->getMessage()], 500);
+        try {
+            Log::info('Inserting salary record', [
+                'acctno' => $user->acctno,
+                'salary_amount' => $validated['salary_amount'],
+                'notes' => $validated['notes'] ?? null,
+            ]);
+
+            $row = WSalaryRecord::create([
+                'acctno' => $user->acctno,
+                'salary_amount' => $validated['salary_amount'],
+                'notes' => $validated['notes'] ?? null,
+            ]);
+            Log::info('Salary record created', ['id' => $row->id ?? null]);
+
+            return response()->json(['message' => 'Salary record saved', 'record' => $row]);
+        } catch (\Exception $e) {
+            Log::error('Error saving salary record', ['msg' => $e->getMessage()]);
+
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
-}
 }

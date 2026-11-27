@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as AuthenticatableUser;
 use Illuminate\Notifications\Notifiable;
 
@@ -12,6 +13,7 @@ class AppUser extends AuthenticatableUser
     use Notifiable;
 
     protected $table = 'app_user_table';
+
     protected $primaryKey = 'user_id';
 
     protected $fillable = [
@@ -25,6 +27,7 @@ class AppUser extends AuthenticatableUser
         'payslip_photo_path',
         'role',
         'status',
+        'manual_borrower_class',
         'reviewed_at',
         'reviewed_by',
         'rejected_at',
@@ -82,7 +85,7 @@ class AppUser extends AuthenticatableUser
         $member = $request->route('user') !== null ? static::subject($request) : null;
 
         return $member
-            ? ['base' => '/admin/clients/'.$member->user_id, 'member' => ['name' => $member->name, 'acctno' => $member->acctno, 'class' => \App\Services\BorrowerClass::for($member->acctno)]]
+            ? ['base' => '/admin/clients/'.$member->user_id, 'member' => ['name' => $member->name, 'acctno' => $member->acctno, 'class' => \App\Services\BorrowerClass::effectiveFor($member)]]
             : [];
     }
 
@@ -122,5 +125,10 @@ class AppUser extends AuthenticatableUser
             'user_id',
             'rejection_reason_id'
         );
+    }
+
+    public function borrowerClassOverrides(): HasMany
+    {
+        return $this->hasMany(BorrowerClassOverride::class, 'user_id', 'user_id');
     }
 }

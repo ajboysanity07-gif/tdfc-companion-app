@@ -29,7 +29,7 @@ class HandleInertiaRequests extends Middleware
             // Fetch salary record
             $salaryRecord = $user->acctno ? \App\Models\WSalaryRecord::where('acctno', $user->acctno)->orderBy('created_at', 'desc')->first() : null;
 
-            $loanClass = \App\Services\BorrowerClass::for($user->acctno);
+            $loanClass = \App\Services\BorrowerClass::effectiveFor($user);
 
             // Build avatar URL from the active filesystem disk.
             $avatarUrl = null;
